@@ -50,7 +50,14 @@ watch(
 );
 
 const submit = () => {
-    form.post('/register');
+    form.post('/register', {
+        onError: () => {
+            if (stepTimer) {
+                clearInterval(stepTimer);
+                stepTimer = null;
+            }
+        },
+    });
 };
 </script>
 

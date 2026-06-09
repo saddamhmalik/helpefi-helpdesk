@@ -4,10 +4,10 @@ namespace App\Domains\Tenancy\Controllers\Central;
 
 use App\Domains\Tenancy\Services\TenantProvisioningService;
 use App\Http\Controllers\Controller;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
+use Symfony\Component\HttpFoundation\Response as HttpResponse;
 
 class RegisterController extends Controller
 {
@@ -31,7 +31,7 @@ class RegisterController extends Controller
         ]);
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request): HttpResponse
     {
         $data = $request->validate([
             'organization_name' => ['required', 'string', 'max:255'],
@@ -51,22 +51,6 @@ class RegisterController extends Controller
             plan: $data['plan'],
         );
 
-        tenancy()->initialize($tenant);
-
-        $tenantBaseUrl = $this->provisioning->tenantUrl($tenant);
-        \Illuminate\Support\Facades\URL::forceRootUrl($tenantBaseUrl);
-
-        $welcomePath = \Illuminate\Support\Facades\URL::temporarySignedRoute(
-            'welcome',
-            now()->addMinutes(30),
-            ['email' => $data['email']],
-            absolute: false,
-        );
-
-        \Illuminate\Support\Facades\URL::forceRootUrl(config('app.url'));
-
-        tenancy()->end();
-
-        return redirect()->away($tenantBaseUrl.$welcomePath);
+        return Inertia::location($this->provisioning->welcomeUrl($tenant, $data['email']));
     }
 }

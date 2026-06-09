@@ -8,6 +8,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
+use Symfony\Component\HttpFoundation\Response as HttpResponse;
 
 class LoginController extends Controller
 {
@@ -20,7 +21,7 @@ class LoginController extends Controller
         ]);
     }
 
-    public function redirect(Request $request): RedirectResponse
+    public function redirect(Request $request): HttpResponse|RedirectResponse
     {
         $data = $request->validate([
             'slug' => ['required', 'string', 'max:63', 'regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/'],
@@ -34,11 +35,16 @@ class LoginController extends Controller
             ]);
         }
 
+        $scheme = parse_url((string) config('app.url'), PHP_URL_SCHEME) ?: 'http';
         $domain = $tenant->domains()->value('domain');
-        $url = 'http://'.$domain.'/login';
+        $url = "{$scheme}://{$domain}/login";
 
         if ($request->filled('email')) {
             $url .= '?email='.urlencode($request->string('email')->toString());
+        }
+
+        if ($request->header('X-Inertia')) {
+            return Inertia::location($url);
         }
 
         return redirect()->away($url);

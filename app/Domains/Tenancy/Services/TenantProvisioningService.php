@@ -72,6 +72,27 @@ class TenantProvisioningService
         return "{$scheme}://{$domain}";
     }
 
+    public function welcomeUrl(Tenant $tenant, string $email): string
+    {
+        tenancy()->initialize($tenant);
+
+        $tenantBaseUrl = $this->tenantUrl($tenant);
+        \Illuminate\Support\Facades\URL::forceRootUrl($tenantBaseUrl);
+
+        $welcomePath = \Illuminate\Support\Facades\URL::temporarySignedRoute(
+            'welcome',
+            now()->addMinutes(30),
+            ['email' => $email],
+            absolute: false,
+        );
+
+        \Illuminate\Support\Facades\URL::forceRootUrl(config('app.url'));
+
+        tenancy()->end();
+
+        return $tenantBaseUrl.$welcomePath;
+    }
+
     public function createCentralSubscription(Tenant $tenant, string $plan): Subscription
     {
         return Subscription::query()->create([
