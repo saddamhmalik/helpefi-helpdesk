@@ -13,6 +13,7 @@ class Tenant extends BaseTenant implements TenantWithDatabase
 
     protected $casts = [
         'is_blocked' => 'boolean',
+        'custom_domain_redirect' => 'boolean',
     ];
 
     public static function getCustomColumns(): array
@@ -22,6 +23,7 @@ class Tenant extends BaseTenant implements TenantWithDatabase
             'name',
             'slug',
             'is_blocked',
+            'custom_domain_redirect',
             'stripe_id',
             'pm_type',
             'pm_last_four',

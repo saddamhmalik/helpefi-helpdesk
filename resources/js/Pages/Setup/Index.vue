@@ -2,6 +2,8 @@
 import { Head, Link, router } from '@inertiajs/vue3';
 import { computed, onMounted, ref } from 'vue';
 import AgentLayout from '../../Layouts/AgentLayout.vue';
+import { useClipboard } from '../../composables/useClipboard.js';
+import { useToast } from '../../composables/useToast.js';
 
 const props = defineProps({
     guide: Object,
@@ -9,6 +11,8 @@ const props = defineProps({
 });
 
 const showWelcome = ref(props.welcome);
+const { copied: snippetCopied, copy: copySnippet } = useClipboard();
+const toast = useToast();
 const progress = computed(() => props.guide?.progress ?? { completed: 0, total: 0 });
 const canFinish = computed(() => progress.value.completed >= progress.value.total && progress.value.total > 0);
 const isDismissed = computed(() => props.guide?.completed === true);
@@ -32,11 +36,11 @@ const finish = () => {
 };
 
 const copy = async (text) => {
-    if (! text) {
-        return;
-    }
+    const success = await copySnippet(text);
 
-    await navigator.clipboard.writeText(text);
+    if (! success) {
+        toast.error('Could not copy to clipboard. Select the snippet and copy manually.');
+    }
 };
 </script>
 
@@ -117,8 +121,12 @@ const copy = async (text) => {
                                 <div v-if="step.key === 'chat_widget' && step.meta?.embed_snippet" class="mt-3">
                                     <p class="mb-1 text-xs font-medium uppercase tracking-wide text-slate-500">Embed snippet</p>
                                     <pre class="overflow-x-auto rounded-lg bg-slate-900 p-3 text-xs text-slate-100">{{ step.meta.embed_snippet }}</pre>
-                                    <button type="button" class="mt-2 text-sm font-medium text-blue-600 hover:text-blue-700" @click="copy(step.meta.embed_snippet)">
-                                        Copy snippet
+                                    <button
+                                        type="button"
+                                        class="mt-2 text-sm font-medium text-blue-600 hover:text-blue-700"
+                                        @click="copy(step.meta.embed_snippet)"
+                                    >
+                                        {{ snippetCopied ? 'Copied!' : 'Copy snippet' }}
                                     </button>
                                 </div>
 
@@ -149,33 +157,35 @@ const copy = async (text) => {
                 </article>
             </div>
 
-            <div class="mt-8 flex items-center justify-between rounded-xl border border-slate-200 bg-white p-5">
-                <div>
+            <div class="mt-8 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+                <div class="p-5">
                     <template v-if="isDismissed">
                         <p class="text-sm font-medium text-slate-900">Setup guide</p>
-                        <p class="text-sm text-slate-500">Return to your dashboard. Incomplete items will keep showing warnings until configured.</p>
+                        <p class="mt-1 text-sm text-slate-500">Return to your dashboard. Incomplete items will keep showing warnings until configured.</p>
                     </template>
                     <template v-else>
                         <p class="text-sm font-medium text-slate-900">Ready to start supporting customers?</p>
-                        <p class="text-sm text-slate-500">Finish setup to open your workspace dashboard. Missing configuration will still show warnings.</p>
+                        <p class="mt-1 text-sm text-slate-500">Finish setup to open your workspace dashboard. Missing configuration will still show warnings.</p>
                     </template>
                 </div>
-                <Link
-                    v-if="isDismissed"
-                    href="/dashboard"
-                    class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700"
-                >
-                    Go to dashboard
-                </Link>
-                <button
-                    v-else
-                    type="button"
-                    class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
-                    :disabled="!canFinish"
-                    @click="finish"
-                >
-                    Go to dashboard
-                </button>
+                <div class="flex flex-col-reverse gap-2 border-t border-slate-100 px-5 py-3 sm:flex-row sm:items-center sm:justify-end">
+                    <Link
+                        v-if="isDismissed"
+                        href="/dashboard"
+                        class="inline-flex h-9 w-full items-center justify-center rounded-lg bg-blue-600 px-4 text-sm font-semibold text-white transition hover:bg-blue-700 sm:w-auto"
+                    >
+                        Go to dashboard
+                    </Link>
+                    <button
+                        v-else
+                        type="button"
+                        class="inline-flex h-9 w-full items-center justify-center rounded-lg bg-blue-600 px-4 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
+                        :disabled="!canFinish"
+                        @click="finish"
+                    >
+                        Go to dashboard
+                    </button>
+                </div>
             </div>
         </div>
     </AgentLayout>

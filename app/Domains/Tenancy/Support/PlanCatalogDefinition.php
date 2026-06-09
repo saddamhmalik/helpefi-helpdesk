@@ -83,7 +83,16 @@ class PlanCatalogDefinition
                 continue;
             }
 
-            $catalog[$slug] = self::normalizePlan($slug, array_merge($defaults, $stored[$slug]));
+            $merged = array_merge($defaults, $stored[$slug]);
+
+            if (isset($stored[$slug]['features'])) {
+                $merged['features'] = array_values(array_unique(array_merge(
+                    $defaults['features'] ?? [],
+                    $stored[$slug]['features'] ?? [],
+                )));
+            }
+
+            $catalog[$slug] = self::normalizePlan($slug, $merged);
         }
 
         return $catalog;

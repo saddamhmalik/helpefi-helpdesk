@@ -1,7 +1,9 @@
 <script setup>
 import { Link, router, useForm } from '@inertiajs/vue3';
 import { computed, onMounted, ref } from 'vue';
+import AppConfirmDialog from './AppConfirmDialog.vue';
 import AppAvatar from './AppAvatar.vue';
+import { useAssetDeleteConfirm } from '../composables/useAssetDeleteConfirm.js';
 import CcEmailField from './CcEmailField.vue';
 import CustomFields from './CustomFields.vue';
 import RequesterField from './RequesterField.vue';
@@ -138,11 +140,18 @@ const toggleWatch = () => {
 };
 const merge = () => mergeForm.post(`/tickets/${props.ticket.id}/merge`);
 const split = () => splitForm.post(`/tickets/${props.ticket.id}/split`);
+const { state: confirm, close: closeConfirm, confirm: onConfirm, confirmUnlinkFromTicket } = useAssetDeleteConfirm();
+
 const linkAsset = () => assetForm.post(`/tickets/${props.ticket.id}/assets`, {
     preserveScroll: true,
     onSuccess: () => assetForm.reset('asset_id'),
 });
-const unlinkAsset = (assetId) => router.delete(`/tickets/${props.ticket.id}/assets/${assetId}`, { preserveScroll: true });
+
+const unlinkAsset = (asset) => {
+    confirmUnlinkFromTicket(asset, () => {
+        router.delete(`/tickets/${props.ticket.id}/assets/${asset.id}`, { preserveScroll: true });
+    });
+};
 
 const statusBadgeClass = (name) => {
     const value = (name || '').toLowerCase();
@@ -437,7 +446,7 @@ const priorityBadgeClass = (name) => {
                         <ul class="space-y-2 text-sm">
                             <li v-for="asset in ticket.assets" :key="asset.id" class="flex items-center justify-between gap-2">
                                 <Link :href="`/assets/${asset.id}`" class="text-blue-600 hover:text-blue-700">{{ asset.asset_tag }} — {{ asset.name }}</Link>
-                                <button type="button" class="text-xs text-red-600 hover:text-red-700" @click="unlinkAsset(asset.id)">Remove</button>
+                                <button type="button" class="text-xs text-red-600 hover:text-red-700" @click="unlinkAsset(asset)">Remove</button>
                             </li>
                             <li v-if="!ticket.assets?.length" class="text-slate-500">No linked assets.</li>
                         </ul>
@@ -575,5 +584,15 @@ const priorityBadgeClass = (name) => {
                 </section>
             </div>
         </div>
+
+        <AppConfirmDialog
+            :open="confirm.open"
+            :title="confirm.title"
+            :message="confirm.message"
+            :confirm-label="confirm.confirmLabel"
+            :variant="confirm.variant"
+            @close="closeConfirm"
+            @confirm="onConfirm"
+        />
     </component>
 </template>

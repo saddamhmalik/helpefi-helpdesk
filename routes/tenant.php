@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 use App\Domains\Admin\Controllers\AdminHubController;
 use App\Domains\Assets\Controllers\AssetController;
+use App\Domains\Assets\Controllers\AssetDiscoveryController;
+use App\Domains\Assets\Controllers\AssetExportController;
+use App\Domains\Assets\Controllers\AssetImportController;
+use App\Domains\Assets\Controllers\AssetTypeController;
 use App\Domains\Ai\Controllers\AiAssistController;
 use App\Domains\Ai\Controllers\AiSettingController;
 use App\Domains\Auth\Controllers\AuthController;
@@ -50,6 +54,7 @@ use App\Domains\ServiceCatalog\Controllers\ServiceCatalogController;
 use App\Domains\Sla\Controllers\SlaPolicyController;
 use App\Domains\Performance\Controllers\PerformanceController;
 use App\Domains\Workforce\Controllers\WorkforceController;
+use App\Domains\Tenancy\Controllers\CustomDomainController;
 use App\Domains\Tenancy\Controllers\SetupController;
 use App\Domains\Tickets\Controllers\TicketController;
 use App\Domains\Tickets\Controllers\TicketExportController;
@@ -64,6 +69,7 @@ Route::middleware([
     InitializeTenancyByDomain::class,
     PreventAccessFromCentralDomains::class,
     'tenant.not_blocked',
+    'tenant.custom_domain_redirect',
 ])->group(function () {
 Route::redirect('/', '/login');
 
@@ -245,6 +251,11 @@ Route::middleware('auth')->group(function () {
             Route::post('/settings/service-catalog/items', [ServiceCatalogController::class, 'storeItem'])->name('settings.service-catalog.items.store');
             Route::put('/settings/service-catalog/items/{item}', [ServiceCatalogController::class, 'updateItem'])->name('settings.service-catalog.items.update');
             Route::delete('/settings/service-catalog/items/{item}', [ServiceCatalogController::class, 'destroyItem'])->name('settings.service-catalog.items.destroy');
+            Route::get('/settings/custom-domain', [CustomDomainController::class, 'index'])->name('settings.custom-domain');
+            Route::post('/settings/custom-domain', [CustomDomainController::class, 'store'])->name('settings.custom-domain.store');
+            Route::post('/settings/custom-domain/verify', [CustomDomainController::class, 'verify'])->name('settings.custom-domain.verify');
+            Route::put('/settings/custom-domain/preferences', [CustomDomainController::class, 'updatePreferences'])->name('settings.custom-domain.preferences');
+            Route::delete('/settings/custom-domain', [CustomDomainController::class, 'destroy'])->name('settings.custom-domain.destroy');
             Route::get('/settings/security', [SecuritySettingController::class, 'index'])->name('settings.security');
             Route::put('/settings/security', [SecuritySettingController::class, 'update'])->name('settings.security.update');
             Route::post('/settings/security/purge', [SecuritySettingController::class, 'purge'])->name('settings.security.purge');
@@ -274,6 +285,16 @@ Route::middleware('auth')->group(function () {
         Route::get('/organizations/export', [OrganizationExportController::class, 'csv'])->name('organizations.export');
         Route::resource('organizations', OrganizationController::class)->except(['edit']);
 
+        Route::get('/assets/types', [AssetTypeController::class, 'index'])->name('assets.types.index');
+        Route::post('/assets/types', [AssetTypeController::class, 'store'])->name('assets.types.store');
+        Route::put('/assets/types/{type}', [AssetTypeController::class, 'update'])->name('assets.types.update');
+        Route::delete('/assets/types/{type}', [AssetTypeController::class, 'destroy'])->name('assets.types.destroy');
+        Route::get('/assets/export', [AssetExportController::class, 'csv'])->name('assets.export');
+        Route::post('/assets/import', [AssetImportController::class, 'store'])->name('assets.import');
+        Route::get('/assets/discovery', [AssetDiscoveryController::class, 'index'])->name('assets.discovery.index');
+        Route::post('/assets/discovery/scans', [AssetDiscoveryController::class, 'store'])->name('assets.discovery.store');
+        Route::get('/assets/discovery/scans/{scan}', [AssetDiscoveryController::class, 'show'])->name('assets.discovery.show');
+        Route::post('/assets/discovery/scans/{scan}/import', [AssetDiscoveryController::class, 'import'])->name('assets.discovery.import');
         Route::resource('assets', AssetController::class)->except(['edit']);
         Route::post('/tickets/{ticket}/assets', [AssetController::class, 'attachTicket'])->name('tickets.assets.store');
         Route::delete('/tickets/{ticket}/assets/{asset}', [AssetController::class, 'detachTicket'])->name('tickets.assets.destroy');

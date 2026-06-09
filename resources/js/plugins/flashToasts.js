@@ -28,8 +28,16 @@ function showFromProps(props) {
     });
 }
 
+function isPartialVisit(visit) {
+    return Boolean(visit?.only?.length || visit?.except?.length);
+}
+
 export function registerFlashToasts() {
     router.on('success', (event) => {
+        if (isPartialVisit(event.detail.visit)) {
+            return;
+        }
+
         showFromProps(event.detail.page.props);
     });
 

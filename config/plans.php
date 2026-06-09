@@ -41,6 +41,7 @@ return [
             'ai',
             'integrations',
             'assets',
+            'custom_domain',
         ],
     ],
 ];

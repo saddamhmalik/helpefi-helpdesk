@@ -30,6 +30,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'central.admin' => \App\Http\Middleware\EnsureCentralAdmin::class,
             'platform.permission' => \App\Http\Middleware\EnsurePlatformPermission::class,
             'tenant.not_blocked' => \App\Http\Middleware\EnsureTenantNotBlocked::class,
+            'tenant.custom_domain_redirect' => \App\Http\Middleware\RedirectToCustomDomain::class,
         ]);
 
         $middleware->web(prepend: [

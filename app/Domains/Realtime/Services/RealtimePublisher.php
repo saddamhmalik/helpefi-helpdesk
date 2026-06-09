@@ -57,7 +57,7 @@ class RealtimePublisher
     {
         $payload['timestamp'] = now()->toIso8601String();
 
-        Redis::publish(
+        Redis::connection('realtime')->publish(
             config('realtime.redis_prefix').$channel,
             json_encode($payload, JSON_THROW_ON_ERROR),
         );

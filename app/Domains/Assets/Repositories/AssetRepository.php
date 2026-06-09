@@ -25,6 +25,12 @@ class AssetRepository
             ->when($filters['status'] ?? null, fn ($query, $status) => $query->where('status', $status))
             ->when($filters['asset_type_id'] ?? null, fn ($query, $typeId) => $query->where('asset_type_id', $typeId))
             ->when($filters['contact_id'] ?? null, fn ($query, $contactId) => $query->where('contact_id', $contactId))
+            ->when($filters['organization_id'] ?? null, fn ($query, $organizationId) => $query->where('organization_id', $organizationId))
+            ->when(filter_var($filters['unassigned'] ?? false, FILTER_VALIDATE_BOOLEAN), fn ($query) => $query->whereNull('contact_id'))
+            ->when(filter_var($filters['warranty_expiring'] ?? false, FILTER_VALIDATE_BOOLEAN), function ($query) {
+                $query->whereNotNull('warranty_expires_at')
+                    ->whereBetween('warranty_expires_at', [now()->toDateString(), now()->addDays(30)->toDateString()]);
+            })
             ->orderByDesc('updated_at')
             ->paginate($perPage)
             ->withQueryString();
@@ -41,8 +47,64 @@ class AssetRepository
                 'children.type:id,name,slug',
                 'tickets:id,number,subject,ticket_status_id',
                 'tickets.status:id,name,slug',
+                'assignmentLogs.contact:id,name,email',
+                'assignmentLogs.organization:id,name',
+                'assignmentLogs.changedBy:id,name',
             ])
             ->findOrFail($id);
+    }
+
+    public function stats(): array
+    {
+        $warrantyExpiring = Asset::query()
+            ->whereNotNull('warranty_expires_at')
+            ->whereBetween('warranty_expires_at', [now()->toDateString(), now()->addDays(30)->toDateString()])
+            ->count();
+
+        $warrantyExpired = Asset::query()
+            ->whereNotNull('warranty_expires_at')
+            ->where('warranty_expires_at', '<', now()->toDateString())
+            ->count();
+
+        return [
+            'total' => Asset::query()->count(),
+            'in_use' => Asset::query()->where('status', Asset::STATUS_IN_USE)->count(),
+            'in_stock' => Asset::query()->where('status', Asset::STATUS_IN_STOCK)->count(),
+            'maintenance' => Asset::query()->where('status', Asset::STATUS_MAINTENANCE)->count(),
+            'unassigned' => Asset::query()->whereNull('contact_id')->where('status', '!=', Asset::STATUS_RETIRED)->count(),
+            'warranty_expiring' => $warrantyExpiring,
+            'warranty_expired' => $warrantyExpired,
+        ];
+    }
+
+    public function exportRows(array $filters, callable $writer): void
+    {
+        Asset::query()
+            ->with(['type:id,name,slug', 'contact:id,name,email', 'organization:id,name'])
+            ->when($filters['search'] ?? null, function ($query, $search) {
+                $query->where(function ($builder) use ($search) {
+                    $builder->where('name', 'like', "%{$search}%")
+                        ->orWhere('asset_tag', 'like', "%{$search}%")
+                        ->orWhere('serial_number', 'like', "%{$search}%")
+                        ->orWhere('ip_address', 'like', "%{$search}%")
+                        ->orWhere('hostname', 'like', "%{$search}%")
+                        ->orWhere('mac_address', 'like', "%{$search}%");
+                });
+            })
+            ->when($filters['status'] ?? null, fn ($query, $status) => $query->where('status', $status))
+            ->when($filters['asset_type_id'] ?? null, fn ($query, $typeId) => $query->where('asset_type_id', $typeId))
+            ->when($filters['organization_id'] ?? null, fn ($query, $organizationId) => $query->where('organization_id', $organizationId))
+            ->when(filter_var($filters['unassigned'] ?? false, FILTER_VALIDATE_BOOLEAN), fn ($query) => $query->whereNull('contact_id'))
+            ->when(filter_var($filters['warranty_expiring'] ?? false, FILTER_VALIDATE_BOOLEAN), function ($query) {
+                $query->whereNotNull('warranty_expires_at')
+                    ->whereBetween('warranty_expires_at', [now()->toDateString(), now()->addDays(30)->toDateString()]);
+            })
+            ->orderBy('asset_tag')
+            ->chunk(200, function ($assets) use ($writer) {
+                foreach ($assets as $asset) {
+                    $writer($asset);
+                }
+            });
     }
 
     public function forContact(int $contactId): Collection

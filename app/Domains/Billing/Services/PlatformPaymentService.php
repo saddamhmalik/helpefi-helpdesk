@@ -6,6 +6,7 @@ use App\Domains\Billing\Models\PlatformPayment;
 use App\Domains\Billing\Models\Subscription;
 use App\Domains\Billing\Repositories\PlanRepository;
 use App\Domains\Billing\Repositories\PlatformPaymentRepository;
+use App\Domains\Tenancy\Services\TenantDomainService;
 use App\Models\Tenant;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Carbon;
@@ -95,8 +96,8 @@ class PlatformPaymentService
     private function present(PlatformPayment $payment): array
     {
         $tenant = $payment->tenant;
-        $domain = $tenant?->domains->first()?->domain;
-        $scheme = parse_url((string) config('app.url'), PHP_URL_SCHEME) ?: 'http';
+        $domainService = app(TenantDomainService::class);
+        $domain = $tenant ? $domainService->primaryHost($tenant) : null;
         $plan = $payment->plan ? ($this->plans->all()[$payment->plan] ?? null) : null;
 
         return [
@@ -120,7 +121,7 @@ class PlatformPaymentService
                 'name' => $tenant->name,
                 'slug' => $tenant->slug,
                 'domain' => $domain,
-                'url' => $domain ? "{$scheme}://{$domain}" : null,
+                'url' => $tenant ? $domainService->primaryUrl($tenant) : null,
             ] : null,
         ];
     }

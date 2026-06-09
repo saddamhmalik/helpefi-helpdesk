@@ -18,6 +18,32 @@ export function useAgentNavigation() {
 
     const hasFeature = (feature) => billing.value?.features?.includes(feature) ?? true;
 
+    const prepareSettingsItems = (items) => items
+        .filter((item) => {
+            if (item.admin && !isAdmin.value) {
+                return false;
+            }
+
+            if (item.permission && !hasPermission(item.permission)) {
+                return false;
+            }
+
+            if (item.feature && !hasFeature(item.feature) && !item.showWhenLocked) {
+                return false;
+            }
+
+            if (item.requiresPaidPlan && billing.value?.on_trial) {
+                return false;
+            }
+
+            return true;
+        })
+        .map((item) => ({
+            ...item,
+            locked: Boolean(item.feature && !hasFeature(item.feature)),
+            lockedLabel: item.lockedLabel ?? 'Enterprise',
+        }));
+
     const filterItems = (items) => items.filter((item) => {
         if (item.admin && !isAdmin.value) {
             return false;
@@ -40,19 +66,31 @@ export function useAgentNavigation() {
 
     const settingsNavGroups = computed(() => [
         {
+            id: 'settings-workspace',
+            label: 'Workspace',
+            items: prepareSettingsItems([
+                { label: 'Overview', href: '/settings', admin: true, description: 'Settings home and search' },
+                { label: 'Custom domain', href: '/settings/custom-domain', admin: true, feature: 'custom_domain', showWhenLocked: true, description: 'Branded URL like support.yourcompany.com' },
+                { label: 'Brands', href: '/settings/brands', admin: true, description: 'Customer portals and mailboxes' },
+                { label: 'Usage & billing', href: settingsNavHref('/settings/billing', 'usage', 'usage'), admin: true, description: 'Plan usage and limits' },
+                { label: 'Change plan', href: settingsNavHref('/settings/billing', 'plans', 'usage'), admin: true, description: 'Upgrade or downgrade' },
+            ]),
+        },
+        {
             id: 'settings-personal',
             label: 'Personal',
-            items: filterItems([
+            items: prepareSettingsItems([
                 { label: 'Profile', href: '/settings/profile', description: 'Name and email' },
                 { label: 'Password', href: settingsNavHref('/settings/profile', 'password', 'profile'), description: 'Sign-in password' },
                 { label: 'Two-factor auth', href: settingsNavHref('/settings/profile', 'security', 'profile'), description: 'Authenticator app' },
                 { label: 'Macros', href: '/settings/macros', description: 'Canned responses' },
+                { label: 'Notifications', href: '/settings/notifications', admin: true, description: 'Agent alerts' },
             ]),
         },
         {
             id: 'settings-team',
             label: 'Team',
-            items: filterItems([
+            items: prepareSettingsItems([
                 { label: 'Agents', href: '/settings/members', admin: true, description: 'Team members and roles' },
                 { label: 'Invitations', href: settingsNavHref('/settings/members', 'invitations', 'members'), admin: true, description: 'Pending invites' },
                 { label: 'Teams & departments', href: '/settings/workforce', admin: true, description: 'Org structure' },
@@ -63,7 +101,7 @@ export function useAgentNavigation() {
         {
             id: 'settings-tickets',
             label: 'Tickets & SLA',
-            items: filterItems([
+            items: prepareSettingsItems([
                 { label: 'SLA & business hours', href: '/settings/sla', admin: true, description: 'Targets, timezone, and hours' },
                 { label: 'Auto-assignment', href: '/settings/assignment', admin: true, description: 'Routing rules' },
                 { label: 'CSAT surveys', href: '/settings/csat', admin: true, description: 'Satisfaction ratings' },
@@ -77,18 +115,17 @@ export function useAgentNavigation() {
         {
             id: 'settings-channels',
             label: 'Channels',
-            items: filterItems([
+            items: prepareSettingsItems([
                 { label: 'Incoming email', href: settingsNavHref('/settings/email', 'incoming', 'incoming'), admin: true, feature: 'channels', description: 'Support mailboxes' },
                 { label: 'Outgoing email', href: settingsNavHref('/settings/email', 'outgoing', 'incoming'), admin: true, feature: 'channels', description: 'SMTP and delivery' },
                 { label: 'Advanced email policies', href: settingsNavHref('/settings/email', 'advanced', 'incoming'), admin: true, feature: 'channels', description: 'Threading and auto-reply' },
-                { label: 'Brands', href: '/settings/brands', admin: true, description: 'Portals and mailboxes' },
                 { label: 'Ticket sources', href: '/settings/channels', admin: true, feature: 'channels', description: 'Web, email, chat' },
             ]),
         },
         {
             id: 'settings-workflow',
             label: 'Workflow',
-            items: filterItems([
+            items: prepareSettingsItems([
                 { label: 'Automation rules', href: '/settings/automation', admin: true, feature: 'automation', description: 'Triggers and actions' },
                 { label: 'Webhooks', href: settingsNavHref('/settings/integrations', 'webhooks', 'webhooks'), admin: true, feature: 'integrations', description: 'Outbound events' },
                 { label: 'Slack', href: settingsNavHref('/settings/integrations', 'slack', 'webhooks'), admin: true, feature: 'integrations', description: 'Channel notifications' },
@@ -97,23 +134,27 @@ export function useAgentNavigation() {
             ]),
         },
         {
-            id: 'settings-account',
-            label: 'Account',
-            items: filterItems([
-                { label: 'Overview', href: '/settings', admin: true, description: 'Settings home' },
-                { label: 'Usage & billing', href: settingsNavHref('/settings/billing', 'usage', 'usage'), admin: true, description: 'Plan and limits' },
-                { label: 'Change plan', href: settingsNavHref('/settings/billing', 'plans', 'usage'), admin: true, description: 'Subscription tiers' },
-                { label: 'Plan features', href: settingsNavHref('/settings/billing', 'features', 'usage'), admin: true, description: 'Included capabilities' },
+            id: 'settings-security',
+            label: 'Security',
+            items: prepareSettingsItems([
                 { label: 'Security overview', href: settingsNavHref('/settings/security', 'overview', 'overview'), admin: true, description: 'MFA adoption' },
                 { label: 'Security policy', href: settingsNavHref('/settings/security', 'policy', 'overview'), admin: true, description: 'MFA requirements' },
                 { label: 'Data retention', href: settingsNavHref('/settings/security', 'audit', 'overview'), admin: true, description: 'Purge policies' },
                 { label: 'Audit logs', href: '/settings/audit-logs', permission: 'audit.view', description: 'Activity history' },
-                { label: 'Notifications', href: '/settings/notifications', admin: true, description: 'Agent alerts' },
+            ]),
+        },
+        {
+            id: 'settings-product',
+            label: 'Product',
+            items: prepareSettingsItems([
+                { label: 'Plan features', href: settingsNavHref('/settings/billing', 'features', 'usage'), admin: true, description: 'Included capabilities' },
                 { label: 'AI assistant', href: '/settings/ai', admin: true, feature: 'ai', description: 'Model and features' },
                 { label: 'Service catalog', href: '/settings/service-catalog', admin: true, feature: 'service_catalog', description: 'Portal requests' },
             ]),
         },
     ].filter((group) => group.items.length > 0));
+
+    const flatSettingsNavItems = computed(() => settingsNavGroups.value.flatMap((group) => group.items));
 
     const navSections = computed(() => {
         const sections = [
@@ -157,7 +198,7 @@ export function useAgentNavigation() {
         ];
 
         const manageItems = filterItems([
-            { label: 'Assets', href: '/assets', icon: 'M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z', feature: 'assets', description: 'Hardware and CIs' },
+            { label: 'Assets', href: '/assets', icon: 'M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z', feature: 'assets', description: 'CMDB, discovery, and warranty' },
         ]);
 
         if (manageItems.length) {
@@ -200,7 +241,9 @@ export function useAgentNavigation() {
     return {
         user,
         isAdmin,
+        hasFeature,
         settingsNavGroups,
+        flatSettingsNavItems,
         navSections,
         flatNavItems,
         mainNav,

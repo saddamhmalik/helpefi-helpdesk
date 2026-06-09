@@ -3,7 +3,7 @@ import { Link, usePage } from '@inertiajs/vue3';
 import { computed, onMounted, ref } from 'vue';
 
 const page = usePage();
-const expanded = ref(true);
+const expanded = ref(false);
 
 const warnings = computed(() => page.props.setupWarnings ?? []);
 
@@ -20,8 +20,10 @@ const showBanner = computed(() => {
 const countLabel = computed(() => {
     const count = warnings.value.length;
 
-    return `${count} ${count === 1 ? 'item needs' : 'items need'} attention`;
+    return `${count} ${count === 1 ? 'item' : 'items'}`;
 });
+
+const summary = computed(() => warnings.value.map((warning) => warning.title).join(' · '));
 
 const icons = {
     business_hours: 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z',
@@ -35,55 +37,47 @@ const icons = {
 const iconPath = (key) => icons[key] ?? icons.sla_policies;
 
 onMounted(() => {
-    expanded.value = localStorage.getItem('setup-warnings-collapsed') !== '1';
+    expanded.value = localStorage.getItem('setup-warnings-expanded') === '1';
 });
 
 const toggleExpanded = () => {
     expanded.value = ! expanded.value;
-    localStorage.setItem('setup-warnings-collapsed', expanded.value ? '0' : '1');
+    localStorage.setItem('setup-warnings-expanded', expanded.value ? '1' : '0');
 };
 </script>
 
 <template>
     <div
         v-if="showBanner"
-        class="mb-5 overflow-hidden rounded-xl border border-amber-200/80 bg-gradient-to-br from-amber-50 to-orange-50/40 shadow-sm"
+        class="mb-3 overflow-hidden rounded-lg border border-amber-200/80 bg-amber-50"
         role="alert"
     >
-        <div class="flex items-center gap-3 px-4 py-3">
-            <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-amber-100 text-amber-700">
-                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                </svg>
-            </div>
+        <div class="flex items-center gap-2 px-3 py-2" :title="summary">
+            <svg class="h-4 w-4 shrink-0 text-amber-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
 
-            <div class="min-w-0 flex-1">
-                <div class="flex flex-wrap items-center gap-x-2 gap-y-1">
-                    <p class="text-sm font-semibold text-amber-950">Workspace setup incomplete</p>
-                    <span class="rounded-full bg-amber-200/60 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-amber-900">
-                        {{ countLabel }}
-                    </span>
-                </div>
-                <p v-if="!expanded" class="mt-0.5 truncate text-xs text-amber-800/90">
-                    {{ warnings.map((warning) => warning.title).join(' · ') }}
-                </p>
-            </div>
+            <span class="shrink-0 text-sm font-semibold text-amber-950">Setup incomplete</span>
+            <span class="shrink-0 rounded bg-amber-200/60 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-900">
+                {{ countLabel }}
+            </span>
+            <span class="min-w-0 flex-1 truncate text-xs text-amber-800">{{ summary }}</span>
 
-            <div class="flex shrink-0 items-center gap-1">
+            <div class="flex shrink-0 items-center gap-0.5">
                 <Link
                     href="/setup"
-                    class="hidden rounded-lg px-2.5 py-1.5 text-xs font-medium text-amber-900 transition hover:bg-amber-100/80 sm:inline-flex"
+                    class="rounded px-2 py-1 text-xs font-medium text-amber-900 hover:bg-amber-100/80"
                 >
                     Setup guide
                 </Link>
                 <button
                     type="button"
-                    class="inline-flex h-8 w-8 items-center justify-center rounded-lg text-amber-800 transition hover:bg-amber-100/80"
+                    class="inline-flex h-7 w-7 items-center justify-center rounded text-amber-800 hover:bg-amber-100/80"
                     :aria-expanded="expanded"
                     @click="toggleExpanded"
                 >
                     <svg
-                        class="h-4 w-4 transition-transform duration-200"
+                        class="h-3.5 w-3.5 transition-transform duration-200"
                         :class="expanded ? 'rotate-180' : ''"
                         fill="none"
                         stroke="currentColor"
@@ -103,37 +97,26 @@ const toggleExpanded = () => {
             leave-from-class="opacity-100 translate-y-0"
             leave-to-class="opacity-0 -translate-y-1"
         >
-            <div v-if="expanded" class="border-t border-amber-200/60 px-4 pb-4 pt-3">
-                <div class="grid gap-2 sm:grid-cols-2">
+            <div v-if="expanded" class="border-t border-amber-200/60 px-3 pb-3 pt-2">
+                <div class="grid gap-1.5 sm:grid-cols-2">
                     <Link
                         v-for="warning in warnings"
                         :key="warning.key"
                         :href="warning.url"
-                        class="group flex items-start gap-3 rounded-lg border border-white/80 bg-white/70 p-3.5 transition hover:border-amber-200 hover:bg-white hover:shadow-sm"
+                        class="group flex items-center gap-2 rounded-md border border-amber-100 bg-white/80 px-2.5 py-2 transition hover:border-amber-200 hover:bg-white"
                     >
-                        <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-amber-50 text-amber-700 ring-1 ring-amber-100 transition group-hover:bg-amber-100">
-                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" :d="iconPath(warning.key)" />
-                            </svg>
-                        </div>
-                        <div class="min-w-0 flex-1">
-                            <p class="text-sm font-medium text-slate-900">{{ warning.title }}</p>
-                            <p class="mt-0.5 line-clamp-2 text-xs leading-relaxed text-slate-600">{{ warning.message }}</p>
-                        </div>
+                        <svg class="h-3.5 w-3.5 shrink-0 text-amber-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" :d="iconPath(warning.key)" />
+                        </svg>
+                        <span class="min-w-0 flex-1 truncate text-xs font-medium text-slate-900">{{ warning.title }}</span>
                         <svg
-                            class="mt-0.5 h-4 w-4 shrink-0 text-slate-300 transition group-hover:translate-x-0.5 group-hover:text-amber-600"
+                            class="h-3 w-3 shrink-0 text-slate-300 transition group-hover:translate-x-0.5 group-hover:text-amber-600"
                             fill="none"
                             stroke="currentColor"
                             viewBox="0 0 24 24"
                         >
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                         </svg>
-                    </Link>
-                </div>
-
-                <div class="mt-3 flex items-center justify-between sm:hidden">
-                    <Link href="/setup" class="text-xs font-medium text-amber-900 underline decoration-amber-400 underline-offset-2">
-                        Open setup guide
                     </Link>
                 </div>
             </div>

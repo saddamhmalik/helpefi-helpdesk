@@ -33,6 +33,12 @@ class Asset extends Model
         'ip_address',
         'mac_address',
         'hostname',
+        'manufacturer',
+        'model',
+        'vendor',
+        'purchase_cost',
+        'last_seen_at',
+        'discovery_source',
         'purchased_at',
         'warranty_expires_at',
         'notes',
@@ -43,6 +49,8 @@ class Asset extends Model
         return [
             'purchased_at' => 'date',
             'warranty_expires_at' => 'date',
+            'last_seen_at' => 'datetime',
+            'purchase_cost' => 'decimal:2',
         ];
     }
 
@@ -74,5 +82,10 @@ class Asset extends Model
     public function tickets(): BelongsToMany
     {
         return $this->belongsToMany(Ticket::class)->withTimestamps();
+    }
+
+    public function assignmentLogs(): HasMany
+    {
+        return $this->hasMany(AssetAssignmentLog::class)->latest();
     }
 }

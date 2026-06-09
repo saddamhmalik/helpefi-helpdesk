@@ -29,6 +29,18 @@ class RealtimeTest extends TenantTestCase
         $this->seed([TicketLookupSeeder::class, ChannelSeeder::class, SlaSeeder::class]);
     }
 
+    private function mockRealtimeRedis(): \Mockery\MockInterface
+    {
+        $connection = \Mockery::mock(\Illuminate\Redis\Connections\Connection::class);
+
+        Redis::partialMock()
+            ->shouldReceive('connection')
+            ->with('realtime')
+            ->andReturn($connection);
+
+        return $connection;
+    }
+
     public function test_channel_token_verifies_for_matching_channel(): void
     {
         $service = app(RealtimeTokenService::class);
@@ -70,7 +82,23 @@ class RealtimeTest extends TenantTestCase
         $session = ChatSession::query()->where('uuid', $start['session_uuid'])->firstOrFail();
         $agent = User::factory()->create();
 
-        Redis::spy();
+        $realtimeRedis = $this->mockRealtimeRedis();
+        $ticketPublished = false;
+        $realtimeRedis->shouldReceive('publish')->zeroOrMoreTimes()->andReturnUsing(function (string $channel, string $payload) use (&$ticketPublished, $session) {
+            $laravelPrefix = config('database.redis.options.prefix');
+            $this->assertFalse(str_starts_with($channel, (string) $laravelPrefix));
+            $this->assertStringStartsWith(config('realtime.redis_prefix'), $channel);
+
+            if (! str_contains($channel, 'ticket.'.$session->ticket_id)) {
+                return 1;
+            }
+
+            $data = json_decode($payload, true);
+            $ticketPublished = ($data['event'] ?? null) === 'message.created'
+                && ($data['data']['message']['body'] ?? null) === 'On my way!';
+
+            return 1;
+        });
 
         app(\App\Domains\Tickets\Services\TicketService::class)->reply(
             $session->ticket_id,
@@ -78,16 +106,7 @@ class RealtimeTest extends TenantTestCase
             'On my way!',
         );
 
-        Redis::shouldHaveReceived('publish')
-            ->atLeast()
-            ->once()
-            ->withArgs(function (string $channel, string $payload) use ($session) {
-                $data = json_decode($payload, true);
-
-                return str_contains($channel, 'ticket.'.$session->ticket_id)
-                    && ($data['event'] ?? null) === 'message.created'
-                    && ($data['data']['message']['body'] ?? null) === 'On my way!';
-            });
+        $this->assertTrue($ticketPublished);
     }
 
     public function test_chat_session_includes_realtime_credentials(): void
@@ -123,21 +142,27 @@ class RealtimeTest extends TenantTestCase
             'ticket_priority_id' => $priority->id,
         ]);
 
-        Redis::spy();
+        $realtimeRedis = $this->mockRealtimeRedis();
+        $queuePublished = false;
+        $realtimeRedis->shouldReceive('publish')->zeroOrMoreTimes()->andReturnUsing(function (string $channel, string $payload) use (&$queuePublished) {
+            $laravelPrefix = config('database.redis.options.prefix');
+            $this->assertFalse(str_starts_with($channel, (string) $laravelPrefix));
+
+            if (! str_contains($channel, 'workspace')) {
+                return 1;
+            }
+
+            $data = json_decode($payload, true);
+            $queuePublished = ($data['event'] ?? null) === 'queue.updated';
+
+            return 1;
+        });
 
         app(RealtimePublisher::class)->ticketUpdated($ticket->id, [
             'id' => $ticket->id,
             'subject' => $ticket->subject,
         ]);
 
-        Redis::shouldHaveReceived('publish')
-            ->atLeast()
-            ->once()
-            ->withArgs(function (string $channel, string $payload) {
-                $data = json_decode($payload, true);
-
-                return str_contains($channel, 'workspace')
-                    && ($data['event'] ?? null) === 'queue.updated';
-            });
+        $this->assertTrue($queuePublished);
     }
 }

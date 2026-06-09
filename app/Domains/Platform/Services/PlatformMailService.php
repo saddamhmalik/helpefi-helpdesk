@@ -4,6 +4,7 @@ namespace App\Domains\Platform\Services;
 
 use App\Domains\Platform\Mail\PlatformTemplateMail;
 use App\Domains\Tenancy\Services\CentralSettingsService;
+use App\Domains\Tenancy\Services\TenantDomainService;
 use App\Models\Tenant;
 use Illuminate\Support\Facades\Mail;
 
@@ -53,16 +54,13 @@ class PlatformMailService
 
     private function variables(Tenant $tenant, string $adminName, string $adminEmail): array
     {
-        $domain = $tenant->domains()->value('domain');
-        $scheme = parse_url((string) config('app.url'), PHP_URL_SCHEME) ?: 'http';
-
         return [
             'brand' => config('app.name', 'Helpdesk'),
             'admin_name' => $adminName,
             'admin_email' => $adminEmail,
             'organization_name' => $tenant->name,
             'workspace_slug' => $tenant->slug,
-            'workspace_url' => $domain ? "{$scheme}://{$domain}" : '',
+            'workspace_url' => app(TenantDomainService::class)->primaryUrl($tenant) ?? '',
             'welcome_url' => '',
             'trial_days' => (string) $this->settings->trialDays(),
             'central_domain' => config('tenancy.central_app_domain'),

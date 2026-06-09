@@ -52,6 +52,11 @@ abstract class TenantTestCase extends TestCase
         return $this->post($this->tenantUrl($uri), $data, $headers);
     }
 
+    protected function tenantDelete(string $uri, array $data = [], array $headers = [])
+    {
+        return $this->delete($this->tenantUrl($uri), $data, $headers);
+    }
+
     protected function tenantPostJson(string $uri, array $data = [], array $headers = [])
     {
         return $this->postJson($this->tenantUrl($uri), $data, $headers);

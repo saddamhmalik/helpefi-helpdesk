@@ -32,8 +32,8 @@ const save = () => {
                         Mode:
                         <span class="font-medium">{{ settings.mode === 'openai' ? 'OpenAI' : 'Local fallback' }}</span>
                     </p>
-                    <p class="mt-1 text-xs text-slate-500">
-                        Set <code class="rounded bg-white px-1">OPENAI_API_KEY</code> in <code class="rounded bg-white px-1">.env</code> to use OpenAI.
+                    <p v-if="settings.mode !== 'openai'" class="mt-1 text-xs text-slate-500">
+                        OpenAI is not enabled for this workspace. AI features use a built-in fallback.
                     </p>
                 </div>
 

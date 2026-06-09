@@ -2,6 +2,7 @@
 
 namespace App\Domains\Tenancy\Controllers\Central;
 
+use App\Domains\Tenancy\Services\TenantDomainService;
 use App\Domains\Tenancy\Support\CentralMarketingPresenter;
 use App\Http\Controllers\Controller;
 use App\Models\Tenant;
@@ -36,9 +37,7 @@ class LoginController extends Controller
             ]);
         }
 
-        $scheme = parse_url((string) config('app.url'), PHP_URL_SCHEME) ?: 'http';
-        $domain = $tenant->domains()->value('domain');
-        $url = "{$scheme}://{$domain}/login";
+        $url = app(TenantDomainService::class)->primaryUrl($tenant).'/login';
 
         if ($request->filled('email')) {
             $url .= '?email='.urlencode($request->string('email')->toString());

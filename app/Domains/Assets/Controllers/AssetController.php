@@ -22,11 +22,20 @@ class AssetController extends Controller
 
     public function index(Request $request): Response
     {
-        $filters = $request->only(['search', 'status', 'asset_type_id']);
+        $filters = $request->only([
+            'search',
+            'status',
+            'asset_type_id',
+            'organization_id',
+            'unassigned',
+            'warranty_expiring',
+        ]);
 
         return Inertia::render('Assets/Index', [
             'assets' => $this->assetService->list($filters),
+            'stats' => $this->assetService->stats(),
             'meta' => $this->assetService->meta(),
+            'organizations' => $this->organizationService->options(),
             'filters' => $filters,
         ]);
     }
@@ -105,6 +114,10 @@ class AssetController extends Controller
             'ip_address' => ['nullable', 'ip'],
             'mac_address' => ['nullable', 'string', 'max:17'],
             'hostname' => ['nullable', 'string', 'max:255'],
+            'manufacturer' => ['nullable', 'string', 'max:255'],
+            'model' => ['nullable', 'string', 'max:255'],
+            'vendor' => ['nullable', 'string', 'max:255'],
+            'purchase_cost' => ['nullable', 'numeric', 'min:0'],
             'purchased_at' => ['nullable', 'date'],
             'warranty_expires_at' => ['nullable', 'date'],
             'notes' => ['nullable', 'string'],

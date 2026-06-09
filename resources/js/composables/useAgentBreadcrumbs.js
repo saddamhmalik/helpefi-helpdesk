@@ -129,6 +129,28 @@ export function useAgentBreadcrumbs() {
             return [{ label: navLabelFor('/assets') ?? 'Assets' }];
         }
 
+        if (path === '/assets/types') {
+            return [
+                { label: navLabelFor('/assets') ?? 'Assets', href: '/assets' },
+                { label: 'Types' },
+            ];
+        }
+
+        if (path === '/assets/discovery') {
+            return [
+                { label: navLabelFor('/assets') ?? 'Assets', href: '/assets' },
+                { label: 'Discovery' },
+            ];
+        }
+
+        if (/^\/assets\/discovery\/scans\/\d+$/.test(path)) {
+            return [
+                { label: navLabelFor('/assets') ?? 'Assets', href: '/assets' },
+                { label: 'Discovery', href: '/assets/discovery' },
+                { label: 'Scan results' },
+            ];
+        }
+
         if (path === '/assets/create') {
             return [
                 { label: navLabelFor('/assets') ?? 'Assets', href: '/assets' },

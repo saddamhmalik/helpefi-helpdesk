@@ -3,6 +3,7 @@
 namespace App\Domains\Tenancy\Services;
 
 use App\Domains\Billing\Models\Subscription;
+use App\Domains\Tenancy\Repositories\TenantDomainRepository;
 use App\Models\Tenant;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -40,7 +41,7 @@ class TenantProvisioningService
             'admin_password' => $adminPassword,
         ]);
 
-        $tenant->domains()->create(['domain' => $domain]);
+        app(TenantDomainRepository::class)->createPlatform($tenant, $domain);
 
         return $tenant;
     }
@@ -54,10 +55,8 @@ class TenantProvisioningService
 
     public function tenantUrl(Tenant $tenant): string
     {
-        $domain = $tenant->domains()->value('domain');
-        $scheme = parse_url((string) config('app.url'), PHP_URL_SCHEME) ?: 'http';
-
-        return "{$scheme}://{$domain}";
+        return app(TenantDomainService::class)->primaryUrl($tenant)
+            ?? 'http://'.app(TenantDomainRepository::class)->platformDomain($tenant)?->domain;
     }
 
     public function welcomeUrl(Tenant $tenant, string $email): string

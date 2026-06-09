@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 use App\Models\Tenant;
-use Stancl\Tenancy\Database\Models\Domain;
+use App\Models\TenantDomain;
 
 return [
     'tenant_model' => Tenant::class,
@@ -11,7 +11,12 @@ return [
     'central_admin_password' => env('CENTRAL_ADMIN_PASSWORD'),
     'id_generator' => Stancl\Tenancy\UUIDGenerator::class,
 
-    'domain_model' => Domain::class,
+    'domain_model' => TenantDomain::class,
+
+    'custom_domain' => [
+        'cname_target' => env('TENANCY_CUSTOM_DOMAIN_CNAME', 'tenants.'.env('CENTRAL_APP_DOMAIN', 'helpdesk.test')),
+        'verification_prefix' => '_helpdesk-verify',
+    ],
 
     /**
      * The list of domains hosting your central app.

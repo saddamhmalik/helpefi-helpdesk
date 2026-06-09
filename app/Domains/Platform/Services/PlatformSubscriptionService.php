@@ -6,6 +6,7 @@ use App\Domains\Billing\Models\Subscription;
 use App\Domains\Billing\Repositories\PlanRepository;
 use App\Domains\Billing\Services\SubscriptionLifecycleService;
 use App\Domains\Platform\Repositories\PlatformSubscriptionRepository;
+use App\Domains\Tenancy\Services\TenantDomainService;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 class PlatformSubscriptionService
@@ -33,8 +34,8 @@ class PlatformSubscriptionService
     private function present(Subscription $subscription): array
     {
         $tenant = $subscription->tenant;
-        $domain = $tenant?->domains->first()?->domain;
-        $scheme = parse_url((string) config('app.url'), PHP_URL_SCHEME) ?: 'http';
+        $domainService = app(TenantDomainService::class);
+        $domain = $tenant ? $domainService->primaryHost($tenant) : null;
         $planSlug = $subscription->plan;
         $plan = $planSlug ? ($this->plans->all()[$planSlug] ?? null) : null;
         $admin = $tenant ? $this->admins->resolve($tenant) : ['name' => null, 'email' => null];
@@ -66,7 +67,7 @@ class PlatformSubscriptionService
                 'admin_name' => $admin['name'],
                 'admin_email' => $admin['email'],
                 'domain' => $domain,
-                'url' => $domain ? "{$scheme}://{$domain}" : null,
+                'url' => $tenant ? $domainService->primaryUrl($tenant) : null,
                 'is_blocked' => (bool) $tenant->is_blocked,
                 'stripe_customer' => (bool) $tenant->stripe_id,
             ] : null,

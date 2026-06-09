@@ -79,8 +79,8 @@ class HandleInertiaRequests extends Middleware
                 'timezone' => $this->helpdeskTimezone(),
             ],
             'flash' => [
-                'success' => fn () => $request->session()->get('success'),
-                'error' => fn () => $request->session()->get('error'),
+                'success' => fn () => $request->session()->pull('success'),
+                'error' => fn () => $request->session()->pull('error'),
                 'invite_url' => fn () => $request->session()->get('invite_url'),
                 'webhook_secret' => fn () => $request->session()->get('webhook_secret'),
                 'two_factor_setup' => fn () => $request->session()->get('two_factor_setup'),

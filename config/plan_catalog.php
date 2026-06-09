@@ -26,5 +26,6 @@ return [
         'ai' => 'AI assist',
         'integrations' => 'Integrations & webhooks',
         'assets' => 'Asset management',
+        'custom_domain' => 'Custom workspace domain',
     ],
 ];

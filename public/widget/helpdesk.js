@@ -8,7 +8,7 @@
 
     const apiBase = (script.src || '').replace(/\/widget\/helpdesk\.js.*$/, '') + '/api/v1/chat';
     const deflectionApiBase = apiBase.replace('/chat', '/deflection');
-    const storageKey = 'helpdesk_chat_session';
+    const storageKey = `helpdesk_chat_session:${widgetKey}`;
 
     const state = {
         open: false,
@@ -135,18 +135,37 @@
             subheader.textContent = state.online ? state.greeting : state.offlineMessage;
 
             if (state.mode === 'chat' && state.sessionUuid && state.sessionToken) {
+                if (!state.online) {
+                    resetSessionState();
+                    renderIntroForm();
+                    return;
+                }
+
                 renderChatForm();
-                await refreshMessages(true);
-                connectRealtime(state.realtime);
-                startPolling();
-            } else if (state.deflectionEnabled && state.mode !== 'chat') {
+
+                try {
+                    await refreshMessages(true);
+                    connectRealtime(state.realtime);
+                    startPolling();
+                } catch (error) {
+                    if (handleSessionExpired(error)) {
+                        return;
+                    }
+
+                    throw error;
+                }
+
+                return;
+            }
+
+            if (state.deflectionEnabled && state.mode !== 'chat') {
                 state.mode = 'bot';
                 renderBotForm();
             } else {
                 renderIntroForm();
             }
         } catch (error) {
-            statusEl.textContent = error.message || 'Unable to load chat.';
+            statusEl.textContent = visitorErrorMessage(error.message) || 'Unable to load chat.';
         }
     }
 
@@ -347,7 +366,9 @@
             startPolling();
             statusEl.textContent = '';
         } catch (error) {
-            statusEl.textContent = error.message || 'Could not start chat.';
+            if (!handleSessionExpired(error)) {
+                statusEl.textContent = visitorErrorMessage(error.message) || 'Could not start chat.';
+            }
         }
     }
 
@@ -360,7 +381,9 @@
             await api('POST', `/sessions/${state.sessionUuid}/messages`, { body });
             await refreshMessages(true);
         } catch (error) {
-            statusEl.textContent = error.message || 'Could not send message.';
+            if (!handleSessionExpired(error)) {
+                statusEl.textContent = visitorErrorMessage(error.message) || 'Could not send message.';
+            }
         }
     }
 
@@ -374,7 +397,17 @@
         }
 
         const suffix = params.toString() ? `?${params.toString()}` : '';
-        const result = await api('GET', `/sessions/${state.sessionUuid}/poll${suffix}`);
+        let result;
+
+        try {
+            result = await api('GET', `/sessions/${state.sessionUuid}/poll${suffix}`);
+        } catch (error) {
+            if (handleSessionExpired(error)) {
+                return;
+            }
+
+            throw error;
+        }
 
         if (initial) {
             state.messages = result.messages || [];
@@ -558,8 +591,54 @@
 
     function clearStorage() {
         localStorage.removeItem(storageKey);
+        localStorage.removeItem('helpdesk_chat_session');
         state.sessionUuid = null;
         state.sessionToken = null;
+    }
+
+    function isSessionInvalidError(message) {
+        return /invalid chat session/i.test(String(message || ''));
+    }
+
+    function visitorErrorMessage(message) {
+        if (isSessionInvalidError(message)) {
+            return '';
+        }
+
+        if (/invalid widget key|live chat is not configured/i.test(String(message || ''))) {
+            return 'Chat is temporarily unavailable.';
+        }
+
+        return message || '';
+    }
+
+    function resetSessionState() {
+        clearStorage();
+        state.mode = state.deflectionEnabled ? 'bot' : 'intro';
+        state.messages = [];
+        state.lastPoll = null;
+        state.pulse = null;
+        disconnectRealtime();
+        stopPolling();
+        messagesEl.innerHTML = '';
+    }
+
+    function handleSessionExpired(error) {
+        if (!isSessionInvalidError(error?.message)) {
+            return false;
+        }
+
+        resetSessionState();
+        statusEl.textContent = '';
+
+        if (state.deflectionEnabled) {
+            state.mode = 'bot';
+            renderBotForm();
+        } else {
+            renderIntroForm();
+        }
+
+        return true;
     }
 
     function formatMessageBody(message) {

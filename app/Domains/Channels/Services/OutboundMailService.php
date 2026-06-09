@@ -444,7 +444,7 @@ class OutboundMailService
         try {
             Redis::connection()->ping();
         } catch (\Throwable $exception) {
-            throw new InvalidArgumentException('Redis is not available. Check REDIS_HOST and REDIS_PORT in .env, or choose Database/Sync.');
+            throw new InvalidArgumentException('Background email delivery is unavailable. Choose sync delivery or contact your administrator.');
         }
     }
 

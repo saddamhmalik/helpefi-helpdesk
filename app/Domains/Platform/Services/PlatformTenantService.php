@@ -4,6 +4,7 @@ namespace App\Domains\Platform\Services;
 
 use App\Domains\Billing\Models\Subscription;
 use App\Domains\Billing\Repositories\PlanRepository;
+use App\Domains\Tenancy\Services\TenantDomainService;
 use App\Domains\Platform\Repositories\PlatformTenantRepository;
 use App\Domains\Platform\Support\PlatformAuditRecorder;
 use App\Models\Tenant;
@@ -85,8 +86,10 @@ class PlatformTenantService
     private function present(Tenant $tenant): array
     {
         $subscription = $tenant->subscription;
-        $domain = $tenant->domains->first()?->domain;
-        $scheme = parse_url((string) config('app.url'), PHP_URL_SCHEME) ?: 'http';
+        $domainService = app(TenantDomainService::class);
+        $domain = $domainService->primaryHost($tenant);
+        $platformDomain = $domainService->platformHost($tenant);
+        $customDomain = $tenant->domains->firstWhere('type', 'custom')?->domain;
         $admin = $this->admins->resolve($tenant);
         $planSlug = $subscription?->plan;
         $plan = $planSlug ? ($this->plans->all()[$planSlug] ?? null) : null;
@@ -98,7 +101,9 @@ class PlatformTenantService
             'admin_email' => $admin['email'],
             'admin_name' => $admin['name'],
             'domain' => $domain,
-            'url' => $domain ? "{$scheme}://{$domain}" : null,
+            'platform_domain' => $platformDomain,
+            'custom_domain' => $customDomain,
+            'url' => $domainService->primaryUrl($tenant),
             'is_blocked' => (bool) $tenant->is_blocked,
             'created_at' => $tenant->created_at?->toIso8601String(),
             'stripe_customer' => (bool) $tenant->stripe_id,

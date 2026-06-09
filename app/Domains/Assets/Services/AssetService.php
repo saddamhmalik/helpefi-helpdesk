@@ -4,11 +4,14 @@ namespace App\Domains\Assets\Services;
 
 use App\Domains\Assets\Models\Asset;
 use App\Domains\Billing\Services\BillingService;
+use App\Domains\Assets\Models\AssetAssignmentLog;
+use App\Domains\Assets\Repositories\AssetAssignmentLogRepository;
 use App\Domains\Assets\Repositories\AssetRepository;
 use App\Domains\Assets\Repositories\AssetTypeRepository;
 use App\Domains\Security\Support\AuditRecorder;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\Auth;
 use InvalidArgumentException;
 
 class AssetService
@@ -16,6 +19,7 @@ class AssetService
     public function __construct(
         private AssetRepository $assets,
         private AssetTypeRepository $types,
+        private AssetAssignmentLogRepository $assignmentLogs,
         private BillingService $billing,
         private AuditRecorder $audit,
     ) {
@@ -41,6 +45,11 @@ class AssetService
         return $this->assets->options($search);
     }
 
+    public function stats(): array
+    {
+        return $this->assets->stats();
+    }
+
     public function meta(): array
     {
         return [
@@ -61,6 +70,10 @@ class AssetService
 
         $asset = $this->assets->create($this->normalizedAsset($data));
 
+        if ($asset->contact_id || $asset->organization_id) {
+            $this->assignmentLogs->record($asset, AssetAssignmentLog::ACTION_ASSIGNED, Auth::id());
+        }
+
         $this->audit->record('asset.created', $asset, [
             'asset_tag' => $asset->asset_tag,
             'name' => $asset->name,
@@ -79,7 +92,11 @@ class AssetService
 
         $asset = $this->assets->find($id);
         $before = $asset->only(array_keys($this->normalizedAsset($data)));
+        $previousContactId = $asset->contact_id;
+        $previousOrganizationId = $asset->organization_id;
         $asset = $this->assets->update($asset, $this->normalizedAsset($data));
+
+        $this->recordAssignmentChanges($asset, $previousContactId, $previousOrganizationId);
 
         $this->audit->recordChanges('asset.updated', $asset, $before, $asset->only(array_keys($before)), [
             'asset_tag' => $asset->asset_tag,
@@ -116,7 +133,22 @@ class AssetService
 
     private function normalizedAsset(array $data): array
     {
-        foreach (['contact_id', 'organization_id', 'parent_id', 'serial_number', 'location', 'notes', 'ip_address', 'mac_address', 'hostname'] as $field) {
+        foreach ([
+            'contact_id',
+            'organization_id',
+            'parent_id',
+            'serial_number',
+            'location',
+            'notes',
+            'ip_address',
+            'mac_address',
+            'hostname',
+            'manufacturer',
+            'model',
+            'vendor',
+            'purchase_cost',
+            'discovery_source',
+        ] as $field) {
             if (array_key_exists($field, $data) && $data[$field] === '') {
                 $data[$field] = null;
             }
@@ -136,6 +168,20 @@ class AssetService
 
         if (isset($data['status']) && ! in_array($data['status'], $validStatuses, true)) {
             throw new InvalidArgumentException('Invalid asset status.');
+        }
+    }
+
+    private function recordAssignmentChanges(Asset $asset, ?int $previousContactId, ?int $previousOrganizationId): void
+    {
+        $userId = Auth::id();
+
+        if ($previousContactId !== $asset->contact_id) {
+            $action = $asset->contact_id
+                ? AssetAssignmentLog::ACTION_ASSIGNED
+                : AssetAssignmentLog::ACTION_UNASSIGNED;
+            $this->assignmentLogs->record($asset, $action, $userId);
+        } elseif ($previousOrganizationId !== $asset->organization_id) {
+            $this->assignmentLogs->record($asset, AssetAssignmentLog::ACTION_ORGANIZATION_CHANGED, $userId);
         }
     }
 }

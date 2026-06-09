@@ -11,30 +11,35 @@ use App\Models\User;
 use Database\Seeders\AssetSeeder;
 use Database\Seeders\TicketLookupSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
+use Tests\TenantTestCase;
 
-class AssetTest extends TestCase
+class AssetTest extends TenantTestCase
 {
     use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->seed(TicketLookupSeeder::class);
+    }
 
     public function test_agent_can_view_assets_index(): void
     {
         $agent = User::factory()->create();
 
         $this->actingAs($agent)
-            ->get('/assets')
+            ->tenantGet('/assets')
             ->assertOk();
     }
 
     public function test_agent_can_create_asset(): void
     {
-        $this->seed(TicketLookupSeeder::class);
-
-        $type = AssetType::query()->create(['name' => 'Laptop', 'slug' => 'laptop']);
+        $type = AssetType::query()->firstOrCreate(['slug' => 'laptop'], ['name' => 'Laptop']);
         $agent = User::factory()->create();
 
         $this->actingAs($agent)
-            ->post('/assets', [
+            ->tenantPost('/assets', [
                 'asset_type_id' => $type->id,
                 'name' => 'Test Laptop',
                 'status' => Asset::STATUS_IN_STOCK,
@@ -49,12 +54,10 @@ class AssetTest extends TestCase
 
     public function test_asset_can_be_linked_to_ticket(): void
     {
-        $this->seed(TicketLookupSeeder::class);
-
-        $type = AssetType::query()->create(['name' => 'Laptop', 'slug' => 'laptop']);
+        $type = AssetType::query()->firstOrCreate(['slug' => 'laptop'], ['name' => 'Laptop']);
         $asset = Asset::query()->create([
             'asset_type_id' => $type->id,
-            'asset_tag' => 'AST-00001',
+            'asset_tag' => 'AST-99001',
             'name' => 'Linked laptop',
             'status' => Asset::STATUS_IN_USE,
         ]);
@@ -71,7 +74,7 @@ class AssetTest extends TestCase
         $agent = User::factory()->create();
 
         $this->actingAs($agent)
-            ->post("/tickets/{$ticket->id}/assets", ['asset_id' => $asset->id])
+            ->tenantPost("/tickets/{$ticket->id}/assets", ['asset_id' => $asset->id])
             ->assertRedirect();
 
         $this->assertDatabaseHas('asset_ticket', [
@@ -82,16 +85,16 @@ class AssetTest extends TestCase
 
     public function test_api_lists_assets(): void
     {
-        $this->seed([TicketLookupSeeder::class, AssetSeeder::class]);
+        $this->seed(AssetSeeder::class);
 
         $admin = User::factory()->admin()->create();
-        $login = $this->postJson('/api/v1/auth/login', [
+        $login = $this->tenantPostJson('/api/v1/auth/login', [
             'email' => $admin->email,
             'password' => 'password',
         ]);
 
         $this->withToken($login->json('token'))
-            ->getJson('/api/v1/assets')
+            ->tenantGetJson('/api/v1/assets')
             ->assertOk()
             ->assertJsonFragment(['asset_tag' => 'AST-00001']);
     }
