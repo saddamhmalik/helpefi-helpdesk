@@ -67,8 +67,9 @@ class TenantProvisioningService
     public function tenantUrl(Tenant $tenant): string
     {
         $domain = $tenant->domains()->value('domain');
+        $scheme = parse_url((string) config('app.url'), PHP_URL_SCHEME) ?: 'http';
 
-        return 'https://'.$domain;
+        return "{$scheme}://{$domain}";
     }
 
     public function createCentralSubscription(Tenant $tenant, string $plan): Subscription

@@ -1,14 +1,26 @@
 <script setup>
 import { Head, Link, router } from '@inertiajs/vue3';
-import { computed } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import AgentLayout from '../../Layouts/AgentLayout.vue';
 
 const props = defineProps({
     guide: Object,
+    welcome: Boolean,
 });
 
+const showWelcome = ref(props.welcome);
 const progress = computed(() => props.guide?.progress ?? { completed: 0, total: 0 });
 const canFinish = computed(() => progress.value.completed >= progress.value.total && progress.value.total > 0);
+
+onMounted(() => {
+    if (! props.welcome) {
+        return;
+    }
+
+    window.setTimeout(() => {
+        showWelcome.value = false;
+    }, 6000);
+});
 
 const completeStep = (key) => {
     router.post(`/setup/steps/${key}`, {}, { preserveScroll: true });
@@ -19,7 +31,7 @@ const finish = () => {
 };
 
 const copy = async (text) => {
-    if (!text) {
+    if (! text) {
         return;
     }
 
@@ -31,6 +43,31 @@ const copy = async (text) => {
     <Head title="Workspace setup" />
     <AgentLayout>
         <div class="mx-auto max-w-3xl px-4 py-8">
+            <Transition name="welcome-banner">
+                <div
+                    v-if="showWelcome"
+                    class="welcome-banner relative mb-8 overflow-hidden rounded-2xl border border-blue-200 bg-gradient-to-br from-blue-600 via-blue-600 to-indigo-600 p-6 text-white shadow-lg"
+                >
+                    <div class="welcome-confetti pointer-events-none absolute inset-0 overflow-hidden">
+                        <span v-for="n in 12" :key="n" class="welcome-particle" :style="{ '--i': n }" />
+                    </div>
+                    <div class="relative flex items-start gap-4">
+                        <div class="welcome-check flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-white/20 text-2xl font-bold backdrop-blur">
+                            ✓
+                        </div>
+                        <div>
+                            <p class="text-sm font-medium text-blue-100">Workspace ready</p>
+                            <h2 class="mt-1 text-xl font-semibold">Welcome to {{ guide.workspace?.name }}</h2>
+                            <p class="mt-2 text-sm text-blue-100">
+                                Your helpdesk is live at
+                                <span class="font-medium text-white">{{ guide.workspace?.domain }}</span>.
+                                Complete the steps below to start supporting customers.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </Transition>
+
             <div class="mb-8">
                 <p class="text-sm font-medium text-blue-600">Getting started</p>
                 <h1 class="mt-1 text-2xl font-semibold text-slate-900">Set up {{ guide.workspace?.name }}</h1>
@@ -40,7 +77,7 @@ const copy = async (text) => {
                 </p>
                 <div class="mt-4 h-2 overflow-hidden rounded-full bg-slate-100">
                     <div
-                        class="h-full rounded-full bg-blue-600 transition-all"
+                        class="h-full rounded-full bg-blue-600 transition-all duration-700 ease-out"
                         :style="{ width: `${progress.total ? (progress.completed / progress.total) * 100 : 0}%` }"
                     />
                 </div>
@@ -49,16 +86,17 @@ const copy = async (text) => {
 
             <div class="space-y-4">
                 <article
-                    v-for="step in guide.steps"
+                    v-for="(step, index) in guide.steps"
                     :key="step.key"
-                    class="rounded-xl border bg-white p-5 shadow-sm"
+                    class="setup-step rounded-xl border bg-white p-5 shadow-sm"
                     :class="step.complete ? 'border-emerald-200' : 'border-slate-200'"
+                    :style="{ animationDelay: `${index * 60}ms` }"
                 >
                     <div class="flex items-start justify-between gap-4">
                         <div class="min-w-0 flex-1">
                             <div class="flex items-center gap-2">
                                 <span
-                                    class="inline-flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold"
+                                    class="inline-flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold transition-colors"
                                     :class="step.complete ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500'"
                                 >
                                     {{ step.complete ? '✓' : '•' }}
@@ -120,7 +158,7 @@ const copy = async (text) => {
                 </div>
                 <button
                     type="button"
-                    class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+                    class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
                     :disabled="!canFinish"
                     @click="finish"
                 >
@@ -130,3 +168,89 @@ const copy = async (text) => {
         </div>
     </AgentLayout>
 </template>
+
+<style scoped>
+.welcome-banner-enter-active {
+    animation: welcome-in 0.65s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.welcome-banner-leave-active {
+    transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+.welcome-banner-leave-to {
+    opacity: 0;
+    transform: translateY(-8px);
+}
+
+.welcome-check {
+    animation: welcome-check 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s both;
+}
+
+.welcome-particle {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    border-radius: 9999px;
+    background: rgba(255, 255, 255, 0.7);
+    left: calc(8% + (var(--i) * 7%));
+    top: 50%;
+    animation: welcome-confetti 1.2s ease-out calc(var(--i) * 0.05s) both;
+}
+
+.setup-step {
+    animation: step-rise 0.45s ease both;
+}
+
+@keyframes welcome-in {
+    from {
+        opacity: 0;
+        transform: translateY(-16px) scale(0.98);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes welcome-check {
+    from {
+        opacity: 0;
+        transform: scale(0.5);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes welcome-confetti {
+    from {
+        opacity: 0;
+        transform: translateY(0) scale(0);
+    }
+
+    30% {
+        opacity: 1;
+    }
+
+    to {
+        opacity: 0;
+        transform: translateY(-48px) scale(1);
+    }
+}
+
+@keyframes step-rise {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+</style>

@@ -27,6 +27,7 @@ class SetupController extends Controller
 
         return Inertia::render('Setup/Index', [
             'guide' => $this->setup->snapshot(),
+            'welcome' => (bool) session('welcome'),
         ]);
     }
 

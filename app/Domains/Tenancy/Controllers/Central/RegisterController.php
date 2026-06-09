@@ -51,8 +51,22 @@ class RegisterController extends Controller
             plan: $data['plan'],
         );
 
-        $url = $this->provisioning->tenantUrl($tenant).'/login?email='.urlencode($data['email']);
+        tenancy()->initialize($tenant);
 
-        return redirect()->away($url)->with('success', 'Your helpdesk workspace is ready. Sign in to get started.');
+        $tenantBaseUrl = $this->provisioning->tenantUrl($tenant);
+        \Illuminate\Support\Facades\URL::forceRootUrl($tenantBaseUrl);
+
+        $welcomePath = \Illuminate\Support\Facades\URL::temporarySignedRoute(
+            'welcome',
+            now()->addMinutes(30),
+            ['email' => $data['email']],
+            absolute: false,
+        );
+
+        \Illuminate\Support\Facades\URL::forceRootUrl(config('app.url'));
+
+        tenancy()->end();
+
+        return redirect()->away($tenantBaseUrl.$welcomePath);
     }
 }
