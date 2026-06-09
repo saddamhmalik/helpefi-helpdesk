@@ -3,6 +3,7 @@
 namespace App\Domains\Tenancy\Controllers;
 
 use App\Domains\Security\Services\AuditLogService;
+use App\Domains\Tenancy\Services\TenantWelcomeTokenService;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
@@ -11,13 +12,21 @@ use Illuminate\Support\Facades\Auth;
 
 class WelcomeController extends Controller
 {
-    public function __construct(private AuditLogService $audit)
-    {
+    public function __construct(
+        private AuditLogService $audit,
+        private TenantWelcomeTokenService $tokens,
+    ) {
     }
 
     public function accept(Request $request): RedirectResponse
     {
-        $email = strtolower(trim((string) $request->query('email', '')));
+        $payload = $this->tokens->consume((string) $request->query('token', ''));
+
+        if (! $payload || ($payload['tenant_id'] ?? null) !== tenant('id')) {
+            abort(403, 'This welcome link is invalid or has expired.');
+        }
+
+        $email = $payload['email'] ?? '';
 
         if ($email === '') {
             abort(403);
@@ -26,7 +35,7 @@ class WelcomeController extends Controller
         $user = User::query()->where('email', $email)->first();
 
         if (! $user || ! $user->hasRole('admin')) {
-            abort(403);
+            abort(403, 'Unable to sign in to this workspace.');
         }
 
         Auth::login($user);

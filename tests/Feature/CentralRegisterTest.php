@@ -34,8 +34,6 @@ class CentralRegisterTest extends TestCase
 
         $location = $response->headers->get('X-Inertia-Location');
 
-        $this->assertStringStartsWith('http://'.$domain.'/welcome', $location);
-        $this->assertStringContainsString('email=jane%40acme.test', $location);
-        $this->assertStringContainsString('signature=', $location);
+        $this->assertStringStartsWith('http://'.$domain.'/welcome?token=', $location);
     }
 }

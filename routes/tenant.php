@@ -67,7 +67,6 @@ Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
     Route::post('/login', [AuthController::class, 'login']);
     Route::get('/welcome', [\App\Domains\Tenancy\Controllers\WelcomeController::class, 'accept'])
-        ->middleware('signed:relative')
         ->name('welcome');
 });
 
