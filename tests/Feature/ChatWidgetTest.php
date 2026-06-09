@@ -5,11 +5,6 @@ namespace Tests\Feature;
 use App\Domains\Channels\Models\Channel;
 use App\Domains\Chat\Models\ChatSession;
 use App\Domains\Chat\Services\ChatAvailabilityService;
-use App\Domains\Contacts\Models\Contact;
-use App\Domains\Tickets\Models\Ticket;
-use App\Domains\Tickets\Models\TicketMessage;
-use App\Domains\Tickets\Models\TicketPriority;
-use App\Domains\Tickets\Models\TicketStatus;
 use App\Models\User;
 use Database\Seeders\ChannelSeeder;
 use Database\Seeders\SlaSeeder;
@@ -17,9 +12,9 @@ use Database\Seeders\TicketLookupSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
 use Mockery;
-use Tests\TestCase;
+use Tests\TenantTestCase;
 
-class ChatWidgetTest extends TestCase
+class ChatWidgetTest extends TenantTestCase
 {
     use RefreshDatabase;
 
@@ -48,7 +43,7 @@ class ChatWidgetTest extends TestCase
             $mock->shouldReceive('isOnline')->andReturn(true);
         });
 
-        $this->getJson('/api/v1/chat/config', $this->widgetHeaders())
+        $this->tenantGetJson('/api/v1/chat/config', $this->widgetHeaders())
             ->assertOk()
             ->assertJsonPath('online', true)
             ->assertJsonStructure(['greeting', 'offline_message']);
@@ -60,7 +55,7 @@ class ChatWidgetTest extends TestCase
             $mock->shouldReceive('isOnline')->andReturn(true);
         });
 
-        $response = $this->postJson('/api/v1/chat/sessions', [
+        $response = $this->tenantPostJson('/api/v1/chat/sessions', [
             'name' => 'Alex',
             'email' => 'alex@example.com',
             'message' => 'Need help with billing',
@@ -87,7 +82,7 @@ class ChatWidgetTest extends TestCase
             $mock->shouldReceive('isOnline')->andReturn(true);
         });
 
-        $start = $this->postJson('/api/v1/chat/sessions', [
+        $start = $this->tenantPostJson('/api/v1/chat/sessions', [
             'name' => 'Alex',
             'email' => 'alex@example.com',
             'message' => 'Hello',
@@ -97,7 +92,7 @@ class ChatWidgetTest extends TestCase
             'X-Session-Token' => $start['session_token'],
         ]);
 
-        $this->postJson('/api/v1/chat/sessions/'.$start['session_uuid'].'/messages', [
+        $this->tenantPostJson('/api/v1/chat/sessions/'.$start['session_uuid'].'/messages', [
             'body' => 'Follow-up question',
         ], $headers)->assertOk();
 
@@ -110,7 +105,7 @@ class ChatWidgetTest extends TestCase
             'Happy to help!',
         );
 
-        $poll = $this->getJson('/api/v1/chat/sessions/'.$start['session_uuid'].'/poll', $headers)
+        $poll = $this->tenantGetJson('/api/v1/chat/sessions/'.$start['session_uuid'].'/poll', $headers)
             ->assertOk();
 
         $this->assertTrue(collect($poll->json('messages'))->contains(fn ($message) => $message['body'] === 'Happy to help!'));
@@ -122,7 +117,7 @@ class ChatWidgetTest extends TestCase
             $mock->shouldReceive('isOnline')->andReturn(true);
         });
 
-        $start = $this->postJson('/api/v1/chat/sessions', [
+        $start = $this->tenantPostJson('/api/v1/chat/sessions', [
             'name' => 'Alex',
             'email' => 'alex@example.com',
             'message' => 'Hello',
@@ -141,7 +136,7 @@ class ChatWidgetTest extends TestCase
             '<p>how are you</p><p><br></p>',
         );
 
-        $poll = $this->getJson('/api/v1/chat/sessions/'.$start['session_uuid'].'/poll', $headers)
+        $poll = $this->tenantGetJson('/api/v1/chat/sessions/'.$start['session_uuid'].'/poll', $headers)
             ->assertOk();
 
         $agentMessage = collect($poll->json('messages'))->firstWhere('author_type', 'agent');
@@ -157,7 +152,7 @@ class ChatWidgetTest extends TestCase
             $mock->shouldReceive('isOnline')->andReturn(true);
         });
 
-        $start = $this->postJson('/api/v1/chat/sessions', [
+        $start = $this->tenantPostJson('/api/v1/chat/sessions', [
             'name' => 'Alex',
             'email' => 'alex@example.com',
             'message' => 'Hello',
@@ -181,7 +176,7 @@ class ChatWidgetTest extends TestCase
             $mock->shouldReceive('isOnline')->andReturn(false);
         });
 
-        $this->postJson('/api/v1/chat/sessions', [
+        $this->tenantPostJson('/api/v1/chat/sessions', [
             'name' => 'Sam',
             'email' => 'sam@example.com',
             'message' => 'Please call me back',
@@ -201,7 +196,7 @@ class ChatWidgetTest extends TestCase
 
     public function test_invalid_widget_key_is_rejected(): void
     {
-        $this->getJson('/api/v1/chat/config', [
+        $this->tenantGetJson('/api/v1/chat/config', [
             'X-Widget-Key' => 'invalid-key',
             'Accept' => 'application/json',
         ])->assertForbidden();

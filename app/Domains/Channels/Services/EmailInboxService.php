@@ -5,6 +5,7 @@ namespace App\Domains\Channels\Services;
 use App\Domains\Channels\Models\EmailInbox;
 use App\Domains\Channels\Repositories\EmailInboxRepository;
 use App\Domains\Security\Support\AuditRecorder;
+use App\Domains\Tenancy\Services\TenantRouteRegistryService;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Validation\ValidationException;
 
@@ -13,6 +14,7 @@ class EmailInboxService
     public function __construct(
         private EmailInboxRepository $inboxes,
         private AuditRecorder $audit,
+        private TenantRouteRegistryService $tenantRoutes,
     ) {
     }
 
@@ -58,12 +60,15 @@ class EmailInboxService
             'name' => $inbox->name,
         ]);
 
+        $this->syncInboundRoutes($inbox);
+
         return $this->toArray($inbox, revealToken: true);
     }
 
     public function update(int $id, array $data): array
     {
         $inbox = $this->inboxes->find($id);
+        $previous = $this->routeSnapshot($inbox);
         $payload = array_merge(
             $this->buildBasicPayload($data),
             $this->buildInboundPayload($data, $inbox),
@@ -84,6 +89,8 @@ class EmailInboxService
             'name' => $inbox->name,
         ]);
 
+        $this->replaceInboundRoutes($previous, $inbox);
+
         return $this->toArray($inbox, revealToken: true);
     }
 
@@ -95,22 +102,32 @@ class EmailInboxService
     public function delete(int $id): void
     {
         $inbox = $this->inboxes->find($id);
+        $previous = $this->routeSnapshot($inbox);
         $this->inboxes->delete($inbox);
 
         $this->audit->record('email.inbox_deleted', $inbox, [
             'address' => $inbox->address,
         ]);
+
+        $this->removeInboundRoutes($previous);
     }
 
     public function regenerateToken(int $id): array
     {
-        $inbox = $this->inboxes->update($this->inboxes->find($id), [
+        $inbox = $this->inboxes->find($id);
+        $previousToken = $inbox->inbound_token;
+        $inbox = $this->inboxes->update($inbox, [
             'inbound_token' => $this->inboxes->generateToken(),
         ]);
 
         $this->audit->record('email.inbox_token_regenerated', $inbox, [
             'address' => $inbox->address,
         ]);
+
+        if (tenant('id')) {
+            $this->tenantRoutes->unregisterInboundToken($previousToken);
+            $this->tenantRoutes->registerInboundToken(tenant('id'), $inbox->inbound_token);
+        }
 
         return $this->toArray($inbox, revealToken: true);
     }
@@ -274,5 +291,52 @@ class EmailInboxService
             ->unique()
             ->values()
             ->all();
+    }
+
+    private function routeSnapshot(EmailInbox $inbox): array
+    {
+        return [
+            'token' => $inbox->inbound_token,
+            'emails' => $this->inboundEmails($inbox),
+        ];
+    }
+
+    private function inboundEmails(EmailInbox $inbox): array
+    {
+        return array_values(array_unique(array_filter([
+            strtolower(trim($inbox->address)),
+            ...array_map(fn ($alias) => strtolower(trim((string) $alias)), $inbox->aliases ?? []),
+        ])));
+    }
+
+    private function syncInboundRoutes(EmailInbox $inbox): void
+    {
+        if (! tenant('id')) {
+            return;
+        }
+
+        $tenantId = tenant('id');
+        $this->tenantRoutes->registerInboundToken($tenantId, $inbox->inbound_token);
+
+        foreach ($this->inboundEmails($inbox) as $email) {
+            $this->tenantRoutes->registerInboundEmail($tenantId, $email);
+        }
+    }
+
+    private function replaceInboundRoutes(array $previous, EmailInbox $inbox): void
+    {
+        $this->removeInboundRoutes($previous);
+        $this->syncInboundRoutes($inbox);
+    }
+
+    private function removeInboundRoutes(array $snapshot): void
+    {
+        if ($snapshot['token'] ?? null) {
+            $this->tenantRoutes->unregisterInboundToken($snapshot['token']);
+        }
+
+        foreach ($snapshot['emails'] ?? [] as $email) {
+            $this->tenantRoutes->unregisterInboundEmail($email);
+        }
     }
 }

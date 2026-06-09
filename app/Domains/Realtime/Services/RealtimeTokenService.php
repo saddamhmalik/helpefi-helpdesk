@@ -22,6 +22,7 @@ class RealtimeTokenService
     {
         return $this->sign([
             'scope' => 'agent',
+            'tenant_id' => tenant('id'),
             'user_id' => $user->id,
             'exp' => time() + config('realtime.token_ttl'),
         ]);
@@ -36,6 +37,16 @@ class RealtimeTokenService
         }
 
         if (($payload['scope'] ?? null) === 'agent') {
+            $tenantId = tenant('id');
+
+            if ($tenantId && ($payload['tenant_id'] ?? null) !== $tenantId) {
+                return false;
+            }
+
+            if ($tenantId && ! str_starts_with($channel, "{$tenantId}.")) {
+                return false;
+            }
+
             return true;
         }
 
@@ -88,7 +99,7 @@ class RealtimeTokenService
 
     private function assertChannel(string $channel): void
     {
-        if (! preg_match('/^(ticket\.\d+|chat\.[0-9a-f-]{36}|workspace)$/', $channel)) {
+        if (! preg_match('/^(?:[0-9a-f-]{36}\.)?(ticket\.\d+|chat\.[0-9a-f-]{36}|workspace)$/', $channel)) {
             throw new InvalidArgumentException('Invalid realtime channel.');
         }
     }

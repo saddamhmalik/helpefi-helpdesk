@@ -47,6 +47,7 @@ use App\Domains\ServiceCatalog\Controllers\ServiceCatalogController;
 use App\Domains\Sla\Controllers\SlaPolicyController;
 use App\Domains\Performance\Controllers\PerformanceController;
 use App\Domains\Workforce\Controllers\WorkforceController;
+use App\Domains\Tenancy\Controllers\SetupController;
 use App\Domains\Tickets\Controllers\TicketController;
 use App\Domains\Tickets\Controllers\TicketExportController;
 use App\Domains\Tickets\Controllers\TicketViewController;
@@ -115,6 +116,12 @@ Route::prefix('portal/{brand:slug}')->middleware('brand')->name('portal.')->grou
 
 Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+
+    Route::middleware('admin')->group(function () {
+        Route::get('/setup', [SetupController::class, 'index'])->name('setup');
+        Route::post('/setup/steps/{step}', [SetupController::class, 'completeStep'])->name('setup.steps.complete');
+        Route::post('/setup/finish', [SetupController::class, 'finish'])->name('setup.finish');
+    });
 
     Route::middleware('agent')->group(function () {
         Route::middleware('two-factor')->group(function () {

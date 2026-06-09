@@ -64,25 +64,10 @@ Route::middleware([
         Route::post('/kb-article-click', [ApiKbDeflectionController::class, 'articleClick']);
     });
 
-    Route::post('/channels/inbound/email', [ApiChannelController::class, 'inboundEmail']);
     Route::post('/integrations/inbound/jira', [InboundIntegrationController::class, 'jira']);
     Route::post('/integrations/inbound/linear', [InboundIntegrationController::class, 'linear']);
 
-    Route::middleware(['chat.widget.cors', 'throttle:120,1'])->prefix('chat')->group(function () {
-        Route::get('/config', [ApiChatWidgetController::class, 'config']);
-        Route::post('/sessions', [ApiChatWidgetController::class, 'start']);
-        Route::post('/sessions/{session}/messages', [ApiChatWidgetController::class, 'send']);
-        Route::get('/sessions/{session}/poll', [ApiChatWidgetController::class, 'poll']);
-    });
-
-    Route::middleware(['chat.widget.cors', 'throttle:120,1'])->prefix('deflection')->group(function () {
-        Route::get('/config', [ApiAiDeflectionController::class, 'config']);
-        Route::post('/ask', [ApiAiDeflectionController::class, 'ask']);
-        Route::post('/feedback', [ApiAiDeflectionController::class, 'feedback']);
-        Route::post('/escalate', [ApiAiDeflectionController::class, 'escalate']);
-    });
-
-    Route::middleware('api.token')->group(function () {
+    Route::middleware(['api.token'])->group(function () {
         Route::get('/portal/my-tickets', [ApiPortalAuthController::class, 'myTickets']);
         Route::get('/portal/my-tickets/{ticket}', [ApiPortalAuthController::class, 'myTicket']);
         Route::post('/auth/logout', [ApiAuthController::class, 'logout']);

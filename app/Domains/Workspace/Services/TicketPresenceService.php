@@ -2,6 +2,7 @@
 
 namespace App\Domains\Workspace\Services;
 
+use App\Support\TenantCacheKey;
 use Illuminate\Support\Facades\Cache;
 
 class TicketPresenceService
@@ -83,11 +84,11 @@ class TicketPresenceService
 
     private function cacheKey(int $ticketId): string
     {
-        return "ticket_presence:{$ticketId}";
+        return TenantCacheKey::scoped("ticket_presence:{$ticketId}");
     }
 
     private function pulseKey(int $ticketId): string
     {
-        return "ticket_pulse:{$ticketId}";
+        return TenantCacheKey::scoped("ticket_pulse:{$ticketId}");
     }
 }

@@ -118,6 +118,10 @@ class TenancyServiceProvider extends ServiceProvider
     protected function mapRoutes()
     {
         $this->app->booted(function () {
+            Route::domain(config('tenancy.central_app_domain'))
+                ->middleware('web')
+                ->group(base_path('routes/web.php'));
+
             if (file_exists(base_path('routes/tenant.php'))) {
                 Route::namespace(static::$controllerNamespace)
                     ->group(base_path('routes/tenant.php'));
@@ -143,6 +147,7 @@ class TenancyServiceProvider extends ServiceProvider
             Middleware\InitializeTenancyByDomainOrSubdomain::class,
             Middleware\InitializeTenancyByPath::class,
             Middleware\InitializeTenancyByRequestData::class,
+            \App\Http\Middleware\InitializeTenancyForPublicApi::class,
         ];
 
         foreach (array_reverse($tenancyMiddleware) as $middleware) {

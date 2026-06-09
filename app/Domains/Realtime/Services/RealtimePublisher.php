@@ -2,6 +2,7 @@
 
 namespace App\Domains\Realtime\Services;
 
+use App\Domains\Realtime\Support\RealtimeChannelNames;
 use Illuminate\Support\Facades\Redis;
 
 class RealtimePublisher
@@ -16,16 +17,16 @@ class RealtimePublisher
             ],
         ];
 
-        $this->publish("ticket.{$ticketId}", $payload);
+        $this->publish(RealtimeChannelNames::ticket($ticketId), $payload);
 
         if ($chatSessionUuid) {
-            $this->publish("chat.{$chatSessionUuid}", $payload);
+            $this->publish(RealtimeChannelNames::chat($chatSessionUuid), $payload);
         }
     }
 
     public function ticketUpdated(int $ticketId, array $ticket): void
     {
-        $this->publish("ticket.{$ticketId}", [
+        $this->publish(RealtimeChannelNames::ticket($ticketId), [
             'event' => 'ticket.updated',
             'data' => [
                 'ticket_id' => $ticketId,
@@ -33,7 +34,7 @@ class RealtimePublisher
             ],
         ]);
 
-        $this->publish('workspace', [
+        $this->publish(RealtimeChannelNames::workspace(), [
             'event' => 'queue.updated',
             'data' => [
                 'ticket' => $ticket,
@@ -43,7 +44,7 @@ class RealtimePublisher
 
     public function presenceUpdated(int $ticketId, array $viewers): void
     {
-        $this->publish("ticket.{$ticketId}", [
+        $this->publish(RealtimeChannelNames::ticket($ticketId), [
             'event' => 'presence.updated',
             'data' => [
                 'ticket_id' => $ticketId,

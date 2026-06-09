@@ -39,24 +39,16 @@ class HandleInertiaRequests extends Middleware
                     'contact_id' => $user->contact_id,
                 ] : null,
             ],
-            'ai' => fn () => $user && ! $user->hasRole('customer')
-                ? app(AiAssistService::class)->status()
-                : null,
-            'billing' => fn () => $user && ! $user->hasRole('customer')
-                ? app(BillingService::class)->snapshot()
-                : null,
-            'notifications' => fn () => $user && ! $user->hasRole('customer')
-                ? app(NotificationService::class)->inboxSummary($user)
-                : null,
-            'realtime' => fn () => $user && ! $user->hasRole('customer')
-                ? [
-                    'url' => config('realtime.ws_url'),
-                    'token' => app(RealtimeTokenService::class)->agentToken($user),
-                ]
-                : null,
+            'ai' => fn () => $this->tenantFeature($user, fn () => app(AiAssistService::class)->status()),
+            'billing' => fn () => $this->tenantFeature($user, fn () => app(BillingService::class)->snapshot()),
+            'notifications' => fn () => $this->tenantFeature($user, fn () => app(NotificationService::class)->inboxSummary($user)),
+            'realtime' => fn () => $this->tenantFeature($user, fn () => [
+                'url' => config('realtime.ws_url'),
+                'token' => app(RealtimeTokenService::class)->agentToken($user),
+            ]),
+            'tenantId' => fn () => tenant('id'),
             'helpdesk' => fn () => [
-                'timezone' => app(BusinessHoursRepository::class)->default()?->timezone
-                    ?? config('app.timezone'),
+                'timezone' => $this->helpdeskTimezone(),
             ],
             'flash' => [
                 'success' => fn () => $request->session()->get('success'),
@@ -67,5 +59,24 @@ class HandleInertiaRequests extends Middleware
                 'recovery_codes' => fn () => $request->session()->get('recovery_codes'),
             ],
         ]);
+    }
+
+    private function helpdeskTimezone(): string
+    {
+        if (! tenant('id')) {
+            return config('app.timezone');
+        }
+
+        return app(BusinessHoursRepository::class)->default()?->timezone
+            ?? config('app.timezone');
+    }
+
+    private function tenantFeature($user, callable $callback): mixed
+    {
+        if (! tenant('id') || ! $user || $user->hasRole('customer')) {
+            return null;
+        }
+
+        return $callback();
     }
 }

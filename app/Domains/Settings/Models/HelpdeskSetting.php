@@ -25,6 +25,8 @@ class HelpdeskSetting extends Model
         'email_create_ticket_on_subject_change',
         'email_detect_auto_replies',
         'kb_deflection_enabled',
+        'setup_completed_at',
+        'setup_steps_completed',
     ];
 
     protected function casts(): array
@@ -44,6 +46,8 @@ class HelpdeskSetting extends Model
             'email_create_ticket_on_subject_change' => 'boolean',
             'email_detect_auto_replies' => 'boolean',
             'kb_deflection_enabled' => 'boolean',
+            'setup_completed_at' => 'datetime',
+            'setup_steps_completed' => 'array',
         ];
     }
 }

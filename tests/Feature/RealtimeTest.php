@@ -7,6 +7,7 @@ use App\Domains\Chat\Models\ChatSession;
 use App\Domains\Chat\Services\ChatAvailabilityService;
 use App\Domains\Realtime\Services\RealtimePublisher;
 use App\Domains\Realtime\Services\RealtimeTokenService;
+use App\Domains\Realtime\Support\RealtimeChannelNames;
 use App\Domains\Tickets\Models\Ticket;
 use App\Domains\Tickets\Models\TicketPriority;
 use App\Domains\Tickets\Models\TicketStatus;
@@ -16,9 +17,9 @@ use Database\Seeders\SlaSeeder;
 use Database\Seeders\TicketLookupSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Redis;
-use Tests\TestCase;
+use Tests\TenantTestCase;
 
-class RealtimeTest extends TestCase
+class RealtimeTest extends TenantTestCase
 {
     use RefreshDatabase;
 
@@ -31,10 +32,11 @@ class RealtimeTest extends TestCase
     public function test_channel_token_verifies_for_matching_channel(): void
     {
         $service = app(RealtimeTokenService::class);
-        $token = $service->forChannel('ticket.42');
+        $channel = RealtimeChannelNames::ticket(42);
+        $token = $service->forChannel($channel);
 
-        $this->assertTrue($service->verify($token, 'ticket.42'));
-        $this->assertFalse($service->verify($token, 'ticket.99'));
+        $this->assertTrue($service->verify($token, $channel));
+        $this->assertFalse($service->verify($token, RealtimeChannelNames::ticket(99)));
     }
 
     public function test_agent_token_verifies_for_any_channel(): void
@@ -43,8 +45,8 @@ class RealtimeTest extends TestCase
         $service = app(RealtimeTokenService::class);
         $token = $service->agentToken($agent);
 
-        $this->assertTrue($service->verify($token, 'workspace'));
-        $this->assertTrue($service->verify($token, 'ticket.1'));
+        $this->assertTrue($service->verify($token, RealtimeChannelNames::workspace()));
+        $this->assertTrue($service->verify($token, RealtimeChannelNames::ticket(1)));
     }
 
     public function test_ticket_reply_publishes_realtime_message(): void
@@ -59,7 +61,7 @@ class RealtimeTest extends TestCase
             'Accept' => 'application/json',
         ];
 
-        $start = $this->postJson('/api/v1/chat/sessions', [
+        $start = $this->tenantPostJson('/api/v1/chat/sessions', [
             'name' => 'Alex',
             'email' => 'alex@example.com',
             'message' => 'Hello',
@@ -96,7 +98,7 @@ class RealtimeTest extends TestCase
 
         $channel = Channel::query()->where('slug', 'chat')->firstOrFail();
 
-        $this->postJson('/api/v1/chat/sessions', [
+        $this->tenantPostJson('/api/v1/chat/sessions', [
             'name' => 'Alex',
             'email' => 'alex@example.com',
             'message' => 'Need help',

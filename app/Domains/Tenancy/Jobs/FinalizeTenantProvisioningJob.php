@@ -3,6 +3,7 @@
 namespace App\Domains\Tenancy\Jobs;
 
 use App\Domains\Tenancy\Services\TenantProvisioningService;
+use App\Domains\Tenancy\Services\TenantRouteRegistryService;
 use App\Models\Tenant;
 use App\Models\User;
 use Database\Seeders\TenantBootstrapSeeder;
@@ -21,7 +22,10 @@ class FinalizeTenantProvisioningJob implements ShouldQueue
     {
     }
 
-    public function handle(TenantProvisioningService $provisioning): void
+    public function handle(
+        TenantProvisioningService $provisioning,
+        TenantRouteRegistryService $tenantRoutes,
+    ): void
     {
         $data = $this->tenant->data ?? [];
 
@@ -40,6 +44,8 @@ class FinalizeTenantProvisioningJob implements ShouldQueue
             ],
         );
         $admin->assignRole('admin');
+
+        $tenantRoutes->syncCurrentTenant();
 
         tenancy()->end();
 

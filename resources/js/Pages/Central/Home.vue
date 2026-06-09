@@ -8,9 +8,14 @@ import { Head, Link } from '@inertiajs/vue3';
         <div class="mx-auto flex max-w-5xl flex-col px-6 py-16">
             <header class="flex items-center justify-between">
                 <span class="text-lg font-semibold">Helpdesk</span>
-                <Link href="/register" class="rounded-lg bg-white px-4 py-2 text-sm font-semibold text-slate-900">
-                    Start free trial
-                </Link>
+                <div class="flex items-center gap-3">
+                    <Link href="/login" class="text-sm font-medium text-slate-300 hover:text-white">
+                        Sign in
+                    </Link>
+                    <Link href="/register" class="rounded-lg bg-white px-4 py-2 text-sm font-semibold text-slate-900">
+                        Start free trial
+                    </Link>
+                </div>
             </header>
 
             <main class="mt-24 max-w-2xl">

@@ -10,6 +10,10 @@ class SubscriptionRepository
     {
         $tenantId = tenant('id');
 
+        if (! $tenantId) {
+            throw new \RuntimeException('Billing subscription requires an initialized tenant context.');
+        }
+
         return Subscription::query()->firstOrCreate(
             ['tenant_id' => $tenantId],
             [

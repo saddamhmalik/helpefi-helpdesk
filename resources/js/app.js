@@ -10,13 +10,14 @@ function csrfToken() {
 router.on('before', (event) => {
     const token = csrfToken();
 
-    if (! token) {
+    if (! token || ! event.detail?.visit) {
         return;
     }
 
     event.detail.visit.headers = {
-        ...event.detail.visit.headers,
+        ...(event.detail.visit.headers ?? {}),
         'X-CSRF-TOKEN': token,
+        'X-Requested-With': 'XMLHttpRequest',
     };
 });
 

@@ -4,6 +4,7 @@ namespace App\Domains\Chat\Services;
 
 use App\Domains\Ai\Services\AiDeflectionService;
 use App\Domains\Realtime\Services\RealtimeTokenService;
+use App\Domains\Realtime\Support\RealtimeChannelNames;
 use App\Domains\Channels\Models\Channel;
 use App\Domains\Channels\Repositories\ChannelRepository;
 use App\Domains\Chat\Models\ChatSession;
@@ -196,8 +197,8 @@ class ChatService
             'pulse' => now()->timestamp,
             'realtime' => [
                 'url' => config('realtime.ws_url'),
-                'channel' => 'chat.'.$session->uuid,
-                'token' => $this->realtimeTokens->forChannel('chat.'.$session->uuid),
+                'channel' => RealtimeChannelNames::chat($session->uuid),
+                'token' => $this->realtimeTokens->forChannel(RealtimeChannelNames::chat($session->uuid)),
             ],
         ];
     }
@@ -276,8 +277,8 @@ class ChatService
             'messages' => $messages,
             'realtime' => [
                 'url' => config('realtime.ws_url'),
-                'channel' => 'chat.'.$session->uuid,
-                'token' => $this->realtimeTokens->forChannel('chat.'.$session->uuid),
+                'channel' => RealtimeChannelNames::chat($session->uuid),
+                'token' => $this->realtimeTokens->forChannel(RealtimeChannelNames::chat($session->uuid)),
             ],
         ];
     }

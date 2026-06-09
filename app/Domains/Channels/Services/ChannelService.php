@@ -13,6 +13,7 @@ use App\Domains\Tickets\Models\Ticket;
 use App\Domains\SideConversations\Services\SideConversationService;
 use App\Domains\Tickets\Services\TicketCcService;
 use App\Domains\Tickets\Services\TicketService;
+use App\Domains\Tenancy\Services\TenantRouteRegistryService;
 use App\Domains\Workspace\Services\TicketPresenceService;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Str;
@@ -33,6 +34,7 @@ class ChannelService
         private TicketPresenceService $presence,
         private SideConversationService $sideConversations,
         private InboundEmailPayloadNormalizer $inboundNormalizer,
+        private TenantRouteRegistryService $tenantRoutes,
     ) {
     }
 
@@ -44,6 +46,9 @@ class ChannelService
     public function update(int $id, array $data): Channel
     {
         $channel = $this->channels->find($id);
+        $previousWidgetKey = $channel->type === Channel::TYPE_CHAT
+            ? ($channel->settings['widget_key'] ?? null)
+            : null;
 
         if (isset($data['settings']) && is_array($data['settings'])) {
             $data['settings'] = $this->mergeChannelSettings($channel, $data['settings']);
@@ -55,6 +60,18 @@ class ChannelService
         $this->audit->recordChanges('channel.updated', $channel, $before, $channel->only(array_keys($data)), [
             'slug' => $channel->slug,
         ]);
+
+        if ($channel->type === Channel::TYPE_CHAT && tenant('id')) {
+            $nextWidgetKey = $channel->settings['widget_key'] ?? null;
+
+            if ($previousWidgetKey && $previousWidgetKey !== $nextWidgetKey) {
+                $this->tenantRoutes->unregisterWidgetKey($previousWidgetKey);
+            }
+
+            if ($nextWidgetKey) {
+                $this->tenantRoutes->registerWidgetKey(tenant('id'), $nextWidgetKey);
+            }
+        }
 
         return $channel;
     }

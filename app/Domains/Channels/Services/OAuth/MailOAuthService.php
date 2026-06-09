@@ -4,6 +4,7 @@ namespace App\Domains\Channels\Services\OAuth;
 
 use App\Domains\Channels\Models\EmailInbox;
 use App\Domains\Channels\Repositories\EmailInboxRepository;
+use App\Support\TenantCacheKey;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 use InvalidArgumentException;
@@ -136,6 +137,6 @@ class MailOAuthService
 
     private function stateKey(string $state): string
     {
-        return 'mail_oauth:'.$state;
+        return TenantCacheKey::scoped('mail_oauth:'.$state);
     }
 }

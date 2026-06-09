@@ -5,6 +5,7 @@ namespace App\Domains\Auth\Services;
 use App\Domains\Security\Exceptions\TwoFactorRequiredException;
 use App\Domains\Security\Services\AuditLogService;
 use App\Domains\Security\Services\TwoFactorService;
+use App\Domains\Tenancy\Services\TenantSetupService;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -15,6 +16,7 @@ class AuthService
     public function __construct(
         private AuditLogService $audit,
         private TwoFactorService $twoFactor,
+        private TenantSetupService $setup,
     ) {
     }
 
@@ -56,6 +58,10 @@ class AuthService
     public function homeRoute(): string
     {
         $user = Auth::user();
+
+        if ($user?->hasRole('admin') && tenant('id') && $this->setup->shouldRedirect()) {
+            return route('setup');
+        }
 
         if ($user?->hasRole('admin')) {
             return route('admin.hub');

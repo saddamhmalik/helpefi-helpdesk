@@ -13,6 +13,7 @@ import { useTicketPolling } from '../../composables/useTicketPolling.js';
 import { useTicketRealtimeMessages } from '../../composables/useTicketRealtimeMessages.js';
 import { applyUnreadCounts, bumpQueueUnread, clearQueueUnread, markTicketRead } from '../../composables/useTicketMarkRead.js';
 import { getSharedRealtimeClient } from '../../lib/realtimeClient.js';
+import { ticketChannel, workspaceChannel } from '../../lib/realtimeChannels.js';
 
 const props = defineProps({
     queue: Object,
@@ -262,7 +263,7 @@ const resubscribeTicketRealtime = () => {
         return;
     }
 
-    subscribedTicketChannel = `ticket.${ticketId}`;
+    subscribedTicketChannel = ticketChannel(page.props.tenantId, ticketId);
     ticketRealtimeHandler = handleRealtimeEvent;
     client.subscribe(subscribedTicketChannel, ticketRealtimeHandler);
 };
@@ -280,7 +281,7 @@ const setupWorkspaceRealtime = () => {
         }
     };
 
-    client.subscribe('workspace', workspaceRealtimeHandler);
+    client.subscribe(workspaceChannel(page.props.tenantId), workspaceRealtimeHandler);
     resubscribeTicketRealtime();
 };
 
@@ -290,7 +291,7 @@ const teardownWorkspaceRealtime = () => {
     unsubscribeTicketRealtime();
 
     if (client && workspaceRealtimeHandler) {
-        client.unsubscribe('workspace', workspaceRealtimeHandler);
+        client.unsubscribe(workspaceChannel(page.props.tenantId), workspaceRealtimeHandler);
     }
 
     workspaceRealtimeHandler = null;

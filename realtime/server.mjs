@@ -44,6 +44,10 @@ function verifyToken(token, channel) {
     }
 
     if (payload.scope === 'agent') {
+        if (payload.tenant_id && channel && !channel.startsWith(`${payload.tenant_id}.`)) {
+            return false;
+        }
+
         return true;
     }
 
