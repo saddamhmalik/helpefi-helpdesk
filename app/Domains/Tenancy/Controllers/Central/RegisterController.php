@@ -2,6 +2,8 @@
 
 namespace App\Domains\Tenancy\Controllers\Central;
 
+use App\Domains\Platform\Services\PlatformMailService;
+use App\Domains\Tenancy\Support\CentralMarketingPresenter;
 use App\Domains\Tenancy\Services\TenantProvisioningService;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
@@ -13,22 +15,13 @@ class RegisterController extends Controller
 {
     public function __construct(
         private TenantProvisioningService $provisioning,
+        private PlatformMailService $platformMail,
     ) {
     }
 
     public function create(): Response
     {
-        return Inertia::render('Central/Register', [
-            'plans' => collect(config('plans', []))
-                ->map(fn (array $plan, string $slug) => [
-                    'slug' => $slug,
-                    'name' => $plan['name'],
-                    'price' => $plan['price'],
-                ])
-                ->values()
-                ->all(),
-            'defaultPlan' => config('billing.default_plan', 'professional'),
-        ]);
+        return Inertia::render('Central/Register', CentralMarketingPresenter::shared());
     }
 
     public function store(Request $request): HttpResponse
@@ -39,7 +32,6 @@ class RegisterController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
-            'plan' => ['required', 'string', 'in:'.implode(',', array_keys(config('plans', [])))],
         ]);
 
         $tenant = $this->provisioning->provision(
@@ -48,8 +40,9 @@ class RegisterController extends Controller
             adminName: $data['name'],
             adminEmail: $data['email'],
             adminPassword: $data['password'],
-            plan: $data['plan'],
         );
+
+        $this->platformMail->sendRegistrationConfirmation($tenant, $data['name'], $data['email']);
 
         return Inertia::location($this->provisioning->welcomeUrl($tenant, $data['email']));
     }

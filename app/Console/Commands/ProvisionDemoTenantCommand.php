@@ -27,8 +27,9 @@ class ProvisionDemoTenantCommand extends Command
             adminName: 'Admin User',
             adminEmail: 'admin@helpdesk.test',
             adminPassword: 'password',
-            plan: config('billing.default_plan', 'enterprise'),
         );
+
+        $provisioning->createCentralSubscription($tenant);
 
         $this->info('Tenant provisioned: '.$provisioning->tenantUrl($tenant));
         $this->line('Admin: admin@helpdesk.test / password');

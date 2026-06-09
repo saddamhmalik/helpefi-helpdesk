@@ -15,6 +15,7 @@ defineProps({
     <AgentLayout>
         <PageHeader description="Companies and account groupings.">
             <template #actions>
+                <a href="/organizations/export" class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">Export CSV</a>
                 <Link href="/organizations/create" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">New organization</Link>
             </template>
         </PageHeader>

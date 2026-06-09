@@ -25,7 +25,6 @@ trait InitializesTenancy
             adminName: 'Admin User',
             adminEmail: 'admin@helpdesk.test',
             adminPassword: 'password',
-            plan: config('billing.default_plan', 'enterprise'),
         );
     }
 

@@ -19,7 +19,6 @@ class CentralRegisterTest extends TestCase
             'email' => 'jane@acme.test',
             'password' => 'password123',
             'password_confirmation' => 'password123',
-            'plan' => config('billing.default_plan', 'enterprise'),
         ], [
             'X-Inertia' => 'true',
             'X-Requested-With' => 'XMLHttpRequest',

@@ -2,6 +2,7 @@
 
 namespace App\Domains\Tenancy\Controllers\Central;
 
+use App\Domains\Tenancy\Support\CentralMarketingPresenter;
 use App\Http\Controllers\Controller;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -10,6 +11,6 @@ class HomeController extends Controller
 {
     public function index(): Response
     {
-        return Inertia::render('Central/Home');
+        return Inertia::render('Central/Home', CentralMarketingPresenter::shared());
     }
 }

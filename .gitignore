@@ -26,3 +26,5 @@ Homestead.json
 Homestead.yaml
 Thumbs.db
 /database/helpdesk_tenant_*
+/storage/tenant*/
+/storage/app/private/backups/

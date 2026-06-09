@@ -75,9 +75,13 @@ class TenancyServiceProvider extends ServiceProvider
             ],
 
             Events\BootstrappingTenancy::class => [],
-            Events\TenancyBootstrapped::class => [],
+            Events\TenancyBootstrapped::class => [
+                \App\Domains\Tenancy\Listeners\BootstrapTenantUrl::class.'@handleTenancyBootstrapped',
+            ],
             Events\RevertingToCentralContext::class => [],
-            Events\RevertedToCentralContext::class => [],
+            Events\RevertedToCentralContext::class => [
+                \App\Domains\Tenancy\Listeners\BootstrapTenantUrl::class.'@handleRevertedToCentralContext',
+            ],
 
             // Resource syncing
             Events\SyncedResourceSaved::class => [

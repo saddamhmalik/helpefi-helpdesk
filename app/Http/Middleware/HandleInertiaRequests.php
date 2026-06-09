@@ -24,6 +24,20 @@ class HandleInertiaRequests extends Middleware
         $user = $request->user();
 
         return array_merge(parent::share($request), [
+            'platformAuth' => function () {
+                $platformUser = auth('platform')->user();
+
+                return [
+                    'user' => $platformUser ? [
+                        'id' => $platformUser->id,
+                        'name' => $platformUser->name,
+                        'email' => $platformUser->email,
+                        'roles' => $platformUser->roles()->pluck('name')->values()->all(),
+                        'permissions' => $platformUser->permissionNames(),
+                    ] : null,
+                    'permissions' => $platformUser?->permissionNames() ?? [],
+                ];
+            },
             'portalBrand' => fn () => app(\App\Domains\Brands\Support\BrandContext::class)->hasBrand()
                 ? app(\App\Domains\Brands\Support\BrandContext::class)->toPortalArray()
                 : null,
@@ -47,6 +61,20 @@ class HandleInertiaRequests extends Middleware
                 'token' => app(RealtimeTokenService::class)->agentToken($user),
             ]),
             'tenantId' => fn () => tenant('id'),
+            'setupWarnings' => fn () => $this->tenantFeature($user, function () use ($user) {
+                if (! $user->hasRole('admin')) {
+                    return [];
+                }
+
+                return app(\App\Domains\Tenancy\Services\TenantSetupService::class)->incompleteRequiredWarnings();
+            }),
+            'setupGuideDismissed' => fn () => $this->tenantFeature($user, function () use ($user) {
+                if (! $user->hasRole('admin')) {
+                    return true;
+                }
+
+                return ! app(\App\Domains\Tenancy\Services\TenantSetupService::class)->shouldRedirect();
+            }),
             'helpdesk' => fn () => [
                 'timezone' => $this->helpdeskTimezone(),
             ],

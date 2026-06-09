@@ -3,18 +3,39 @@
 namespace App\Domains\Tickets\Controllers;
 
 use App\Domains\Tickets\Services\TicketExportService;
+use App\Domains\Tickets\Services\TicketListExportService;
 use App\Domains\Tickets\Services\TicketService;
+use App\Domains\Tickets\Services\TicketViewService;
+use App\Domains\Tickets\Support\TicketFilters;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class TicketExportController extends Controller
 {
     public function __construct(
         private TicketService $ticketService,
         private TicketExportService $exportService,
+        private TicketListExportService $listExportService,
+        private TicketViewService $ticketViewService,
     ) {
+    }
+
+    public function csv(Request $request): StreamedResponse
+    {
+        $filters = TicketFilters::normalize($request->validate(TicketFilters::rules()));
+
+        if ($request->filled('view_id')) {
+            $view = $this->ticketViewService->findAccessible(
+                $request->integer('view_id'),
+                $request->user()->id,
+            );
+            $filters = TicketFilters::normalize(array_merge($view->filters ?? [], $filters));
+        }
+
+        return $this->listExportService->csv($filters, $request->user()->id);
     }
 
     public function pdf(Request $request, int $ticket): Response

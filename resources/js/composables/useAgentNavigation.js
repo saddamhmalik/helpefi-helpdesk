@@ -31,6 +31,10 @@ export function useAgentNavigation() {
             return false;
         }
 
+        if (item.requiresPaidPlan && billing.value?.on_trial) {
+            return false;
+        }
+
         return true;
     });
 

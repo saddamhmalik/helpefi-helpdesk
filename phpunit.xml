@@ -31,10 +31,12 @@
         <env name="DB_URL" value=""/>
         <env name="MAIL_MAILER" value="array"/>
         <env name="QUEUE_CONNECTION" value="sync"/>
+        <env name="CENTRAL_QUEUE_DRIVER" value="sync"/>
         <env name="SESSION_DRIVER" value="array"/>
         <env name="PULSE_ENABLED" value="false"/>
         <env name="TELESCOPE_ENABLED" value="false"/>
         <env name="NIGHTWATCH_ENABLED" value="false"/>
         <env name="BILLING_DEFAULT_PLAN" value="enterprise"/>
+        <env name="STRIPE_ENABLED" value="false"/>
     </php>
 </phpunit>

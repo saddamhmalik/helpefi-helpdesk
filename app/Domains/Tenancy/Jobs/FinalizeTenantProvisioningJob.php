@@ -2,6 +2,7 @@
 
 namespace App\Domains\Tenancy\Jobs;
 
+use App\Domains\Platform\Services\PlatformMailService;
 use App\Domains\Tenancy\Services\TenantProvisioningService;
 use App\Domains\Tenancy\Services\TenantRouteRegistryService;
 use App\Models\Tenant;
@@ -25,6 +26,7 @@ class FinalizeTenantProvisioningJob implements ShouldQueue
     public function handle(
         TenantProvisioningService $provisioning,
         TenantRouteRegistryService $tenantRoutes,
+        PlatformMailService $platformMail,
     ): void
     {
         $data = $this->tenant->data ?? [];
@@ -36,11 +38,15 @@ class FinalizeTenantProvisioningJob implements ShouldQueue
             '--force' => true,
         ]);
 
+        $adminEmail = $this->tenant->admin_email ?? $data['admin_email'] ?? 'admin@helpdesk.test';
+        $adminName = $this->tenant->admin_name ?? $data['admin_name'] ?? 'Admin User';
+        $adminPassword = $this->tenant->admin_password ?? $data['admin_password'] ?? bcrypt('password');
+
         $admin = User::query()->updateOrCreate(
-            ['email' => $data['admin_email'] ?? 'admin@helpdesk.test'],
+            ['email' => $adminEmail],
             [
-                'name' => $data['admin_name'] ?? 'Admin User',
-                'password' => $data['admin_password'] ?? bcrypt('password'),
+                'name' => $adminName,
+                'password' => $adminPassword,
             ],
         );
         $admin->assignRole('admin');
@@ -49,9 +55,13 @@ class FinalizeTenantProvisioningJob implements ShouldQueue
 
         tenancy()->end();
 
-        $provisioning->createCentralSubscription(
+        $provisioning->createCentralSubscription($this->tenant);
+
+        $platformMail->sendWorkspaceWelcome(
             $this->tenant,
-            $data['plan'] ?? config('billing.default_plan', 'professional'),
+            $adminName,
+            $adminEmail,
+            $provisioning->welcomeUrl($this->tenant, $adminEmail),
         );
     }
 }

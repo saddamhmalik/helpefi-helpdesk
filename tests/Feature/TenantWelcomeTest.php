@@ -26,7 +26,7 @@ class TenantWelcomeTest extends TenantTestCase
         $token = app(TenantWelcomeTokenService::class)->issue(tenant('id'), $admin->email);
 
         $this->tenantGet('/welcome?token='.urlencode($token))
-            ->assertRedirect(route('setup'));
+            ->assertRedirect($this->tenantUrl('/setup'));
 
         $this->assertAuthenticatedAs($admin);
 
@@ -46,7 +46,7 @@ class TenantWelcomeTest extends TenantTestCase
         $admin = User::query()->where('email', 'admin@helpdesk.test')->firstOrFail();
         $token = app(TenantWelcomeTokenService::class)->issue(tenant('id'), $admin->email);
 
-        $this->tenantGet('/welcome?token='.urlencode($token))->assertRedirect(route('setup'));
+        $this->tenantGet('/welcome?token='.urlencode($token))->assertRedirect($this->tenantUrl('/setup'));
 
         auth()->logout();
 

@@ -114,6 +114,24 @@ const buildQuery = () => {
 
 const activeFilterCount = computed(() => Object.keys(buildQuery()).length);
 
+const exportUrl = computed(() => {
+    const params = new URLSearchParams();
+
+    Object.entries(buildQuery()).forEach(([key, value]) => {
+        if (value !== undefined && value !== false && value !== '') {
+            params.set(key, String(value));
+        }
+    });
+
+    if (props.activeViewId) {
+        params.set('view_id', String(props.activeViewId));
+    }
+
+    const query = params.toString();
+
+    return query ? `/tickets/export/csv?${query}` : '/tickets/export/csv';
+});
+
 const extraFilterCount = computed(() => {
     let count = 0;
 
@@ -300,6 +318,14 @@ const activeFilterLabels = computed(() => {
             <template #description>
                 {{ tickets.total }} ticket(s)
                 <span v-if="activeFilterCount"> with {{ activeFilterCount }} active filter(s)</span>
+            </template>
+            <template #actions>
+                <a
+                    :href="exportUrl"
+                    class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                >
+                    Export CSV
+                </a>
             </template>
         </PageHeader>
 

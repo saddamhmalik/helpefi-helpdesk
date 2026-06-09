@@ -25,6 +25,11 @@ return Application::configure(basePath: dirname(__DIR__))
             'chat.widget.cors' => \App\Http\Middleware\ChatWidgetCors::class,
             'tenancy.public-api' => \App\Http\Middleware\InitializeTenancyForPublicApi::class,
             'brand' => \App\Http\Middleware\ResolveBrand::class,
+            'workspace.setup' => \App\Http\Middleware\EnsureWorkspaceSetup::class,
+            'subscription.active' => \App\Http\Middleware\EnsureActiveSubscription::class,
+            'central.admin' => \App\Http\Middleware\EnsureCentralAdmin::class,
+            'platform.permission' => \App\Http\Middleware\EnsurePlatformPermission::class,
+            'tenant.not_blocked' => \App\Http\Middleware\EnsureTenantNotBlocked::class,
         ]);
 
         $middleware->web(prepend: [
@@ -33,6 +38,10 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->web(append: [
             \App\Http\Middleware\HandleInertiaRequests::class,
+        ]);
+
+        $middleware->validateCsrfTokens(except: [
+            'stripe/webhook',
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

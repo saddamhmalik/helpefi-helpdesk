@@ -17,9 +17,10 @@ class SubscriptionRepository
         return Subscription::query()->firstOrCreate(
             ['tenant_id' => $tenantId],
             [
-                'plan' => config('billing.default_plan', 'professional'),
-                'status' => Subscription::STATUS_ACTIVE,
-                'renews_at' => now()->addMonth(),
+                'plan' => null,
+                'status' => Subscription::STATUS_TRIAL,
+                'trial_ends_at' => now()->addDays(app(\App\Domains\Tenancy\Services\CentralSettingsService::class)->trialDays()),
+                'renews_at' => null,
             ],
         );
     }

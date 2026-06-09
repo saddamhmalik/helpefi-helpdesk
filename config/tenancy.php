@@ -8,6 +8,7 @@ use Stancl\Tenancy\Database\Models\Domain;
 return [
     'tenant_model' => Tenant::class,
     'central_app_domain' => env('CENTRAL_APP_DOMAIN', 'helpdesk.test'),
+    'central_admin_password' => env('CENTRAL_ADMIN_PASSWORD'),
     'id_generator' => Stancl\Tenancy\UUIDGenerator::class,
 
     'domain_model' => Domain::class,
@@ -42,6 +43,8 @@ return [
     /**
      * Database tenancy config. Used by DatabaseTenancyBootstrapper.
      */
+    'central_queue_connection' => env('TENANCY_CENTRAL_QUEUE_CONNECTION', 'central'),
+
     'database' => [
         'central_connection' => 'central',
 

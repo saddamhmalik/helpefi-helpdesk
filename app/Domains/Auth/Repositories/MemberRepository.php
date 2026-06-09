@@ -16,11 +16,25 @@ class MemberRepository
 
     public function paginateEmployees(int $perPage = 20): LengthAwarePaginator
     {
+        return $this->employeeQuery()->paginate($perPage);
+    }
+
+    public function exportEmployees(callable $callback): void
+    {
+        $this->employeeQuery()
+            ->chunkById(500, function ($members) use ($callback) {
+                foreach ($members as $member) {
+                    $callback($member);
+                }
+            });
+    }
+
+    private function employeeQuery()
+    {
         return User::query()
             ->whereHas('roles', fn ($query) => $query->where('name', '!=', 'customer'))
             ->with(['roles:id,name', 'teams:id,name,department_id'])
-            ->orderBy('name')
-            ->paginate($perPage);
+            ->orderBy('id');
     }
 
     public function paginateCustomers(int $perPage = 20): LengthAwarePaginator

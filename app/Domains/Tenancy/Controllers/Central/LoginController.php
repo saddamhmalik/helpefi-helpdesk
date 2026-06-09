@@ -2,6 +2,7 @@
 
 namespace App\Domains\Tenancy\Controllers\Central;
 
+use App\Domains\Tenancy\Support\CentralMarketingPresenter;
 use App\Http\Controllers\Controller;
 use App\Models\Tenant;
 use Illuminate\Http\RedirectResponse;
@@ -15,7 +16,7 @@ class LoginController extends Controller
     public function create(Request $request): Response
     {
         return Inertia::render('Central/Login', [
-            'centralDomain' => config('tenancy.central_app_domain'),
+            ...CentralMarketingPresenter::shared(),
             'prefillSlug' => $request->query('workspace'),
             'prefillEmail' => $request->query('email'),
         ]);

@@ -1,6 +1,9 @@
 <script setup>
 import AgentTopBar from '../Components/AgentTopBar.vue';
 import AppAvatar from '../Components/AppAvatar.vue';
+import SetupWarningBanner from '../Components/SetupWarningBanner.vue';
+import TrialBanner from '../Components/TrialBanner.vue';
+import CancellationGraceBanner from '../Components/CancellationGraceBanner.vue';
 import { Link, usePage } from '@inertiajs/vue3';
 import { computed, onMounted, ref } from 'vue';
 import { useAgentNavigation } from '../composables/useAgentNavigation.js';
@@ -195,6 +198,9 @@ const iconWrapClass = (href) => isActive(href)
                     <p class="font-medium">Invitation link</p>
                     <a :href="page.props.flash.invite_url" class="break-all underline">{{ page.props.flash.invite_url }}</a>
                 </div>
+                <TrialBanner />
+                <CancellationGraceBanner />
+                <SetupWarningBanner />
                 <slot />
             </main>
         </div>

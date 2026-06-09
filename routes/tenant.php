@@ -19,6 +19,7 @@ use App\Domains\SideConversations\Controllers\SideConversationController;
 use App\Domains\TimeTracking\Controllers\TicketTimeEntryController;
 use App\Domains\Auth\Controllers\InvitationAcceptController;
 use App\Domains\Auth\Controllers\MemberController;
+use App\Domains\Auth\Controllers\MemberExportController;
 use App\Domains\Auth\Controllers\PasswordResetController;
 use App\Domains\Auth\Controllers\CustomerAccountController;
 use App\Domains\Auth\Controllers\RoleController;
@@ -33,7 +34,9 @@ use App\Domains\Integrations\Controllers\InboundIntegrationController;
 use App\Domains\Integrations\Controllers\IntegrationController;
 use App\Domains\Integrations\Controllers\TicketExternalIssueController;
 use App\Domains\Contacts\Controllers\ContactController;
+use App\Domains\Contacts\Controllers\ContactExportController;
 use App\Domains\Contacts\Controllers\OrganizationController;
+use App\Domains\Contacts\Controllers\OrganizationExportController;
 use App\Domains\Dashboard\Controllers\DashboardController;
 use App\Domains\Knowledge\Controllers\KnowledgeArticleController;
 use App\Domains\Knowledge\Controllers\KnowledgeCollectionController;
@@ -60,8 +63,12 @@ Route::middleware([
     'web',
     InitializeTenancyByDomain::class,
     PreventAccessFromCentralDomains::class,
+    'tenant.not_blocked',
 ])->group(function () {
 Route::redirect('/', '/login');
+
+Route::get('/workspace-blocked', [\App\Domains\Tenancy\Controllers\TenantBlockedController::class, 'show'])
+    ->name('tenant.blocked');
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
@@ -119,6 +126,18 @@ Route::prefix('portal/{brand:slug}')->middleware('brand')->name('portal.')->grou
 Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
+    Route::get('/subscription-required', [\App\Domains\Billing\Controllers\SubscriptionRequiredController::class, 'show'])
+        ->name('subscription.required');
+
+    Route::middleware('admin')->group(function () {
+        Route::get('/settings/billing', [BillingController::class, 'index'])->name('settings.billing');
+        Route::get('/settings/billing/checkout', [BillingController::class, 'checkout'])->name('settings.billing.checkout');
+        Route::put('/settings/billing/plan', [BillingController::class, 'updatePlan'])->name('settings.billing.plan');
+        Route::get('/settings/billing/portal', [BillingController::class, 'portal'])->name('settings.billing.portal');
+    });
+
+    Route::middleware(['workspace.setup', 'subscription.active'])->group(function () {
+
     Route::middleware('admin')->group(function () {
         Route::get('/setup', [SetupController::class, 'index'])->name('setup');
         Route::post('/setup/steps/{step}', [SetupController::class, 'completeStep'])->name('setup.steps.complete');
@@ -140,10 +159,12 @@ Route::middleware('auth')->group(function () {
 
         Route::middleware('audit.view')->group(function () {
             Route::get('/settings/audit-logs', [\App\Domains\Security\Controllers\AuditLogController::class, 'index'])->name('settings.audit-logs');
+            Route::get('/settings/audit-logs/export', [\App\Domains\Security\Controllers\AuditLogController::class, 'export'])->name('settings.audit-logs.export');
         });
 
         Route::middleware('admin')->group(function () {
             Route::get('/settings/members', [MemberController::class, 'index'])->name('settings.members');
+            Route::get('/settings/members/export', [MemberExportController::class, 'csv'])->name('settings.members.export');
             Route::get('/settings/members/{member}', [MemberController::class, 'show'])->name('settings.members.show');
             Route::post('/settings/members', [MemberController::class, 'store'])->name('settings.members.store');
             Route::post('/settings/members/invite', [MemberController::class, 'invite'])->name('settings.members.invite');
@@ -224,8 +245,6 @@ Route::middleware('auth')->group(function () {
             Route::post('/settings/service-catalog/items', [ServiceCatalogController::class, 'storeItem'])->name('settings.service-catalog.items.store');
             Route::put('/settings/service-catalog/items/{item}', [ServiceCatalogController::class, 'updateItem'])->name('settings.service-catalog.items.update');
             Route::delete('/settings/service-catalog/items/{item}', [ServiceCatalogController::class, 'destroyItem'])->name('settings.service-catalog.items.destroy');
-            Route::get('/settings/billing', [BillingController::class, 'index'])->name('settings.billing');
-            Route::put('/settings/billing/plan', [BillingController::class, 'updatePlan'])->name('settings.billing.plan');
             Route::get('/settings/security', [SecuritySettingController::class, 'index'])->name('settings.security');
             Route::put('/settings/security', [SecuritySettingController::class, 'update'])->name('settings.security.update');
             Route::post('/settings/security/purge', [SecuritySettingController::class, 'purge'])->name('settings.security.purge');
@@ -249,8 +268,10 @@ Route::middleware('auth')->group(function () {
         Route::post('/notifications/read-all', [NotificationController::class, 'markAllRead'])->name('notifications.read-all');
 
         Route::get('/contacts/search', [ContactController::class, 'search'])->name('contacts.search');
+        Route::get('/contacts/export', [ContactExportController::class, 'csv'])->name('contacts.export');
         Route::resource('contacts', ContactController::class)->except(['edit']);
         Route::post('/contacts/{contact}/notes', [ContactController::class, 'storeNote'])->name('contacts.notes.store');
+        Route::get('/organizations/export', [OrganizationExportController::class, 'csv'])->name('organizations.export');
         Route::resource('organizations', OrganizationController::class)->except(['edit']);
 
         Route::resource('assets', AssetController::class)->except(['edit']);
@@ -277,6 +298,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/tickets/{ticket}/ai/summarize', [AiAssistController::class, 'summarize'])->name('tickets.ai.summarize');
         Route::get('/tickets/{ticket}/ai/kb-assist', [AiAssistController::class, 'kbAssist'])->name('tickets.ai.kb-assist');
 
+        Route::get('/tickets/export/csv', [TicketExportController::class, 'csv'])->name('tickets.export.csv');
         Route::resource('tickets', TicketController::class)->except(['edit', 'destroy']);
         Route::post('/tickets/{ticket}/reply', [TicketController::class, 'reply'])->name('tickets.reply');
         Route::post('/tickets/{ticket}/attachments', [TicketController::class, 'storeAttachment'])->name('tickets.attachments.store');
@@ -315,6 +337,7 @@ Route::middleware('auth')->group(function () {
         Route::delete('/reports/{report}/schedule', [ReportScheduleController::class, 'destroy'])->name('reports.schedule.destroy');
         Route::delete('/reports/{report}', [ReportController::class, 'destroy'])->name('reports.destroy');
         });
+    });
     });
 });
 });

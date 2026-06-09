@@ -129,6 +129,7 @@ const removeMember = (member) => {
 <template>
     <SettingsLayout title="Team members" description="Add members directly or send email invitations.">
         <template #actions>
+            <a href="/settings/members/export" class="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50">Export CSV</a>
             <Link href="/settings/profile" class="text-sm text-blue-600 transition hover:text-blue-700">Your profile</Link>
             <button type="button" class="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50" @click="showAdd = true">Add member</button>
             <button type="button" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700" @click="showInvite = true">Invite member</button>

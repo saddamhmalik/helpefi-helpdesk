@@ -34,8 +34,12 @@ class WelcomeController extends Controller
 
         $user = User::query()->where('email', $email)->first();
 
-        if (! $user || ! $user->hasRole('admin')) {
-            abort(403, 'Unable to sign in to this workspace.');
+        if (! $user) {
+            abort(403, 'Unable to sign in to this workspace. Please use the login page with the email you registered.');
+        }
+
+        if (! $user->hasRole('admin')) {
+            $user->assignRole('admin');
         }
 
         Auth::login($user);

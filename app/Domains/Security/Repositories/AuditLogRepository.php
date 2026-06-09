@@ -9,6 +9,23 @@ class AuditLogRepository
 {
     public function paginate(array $filters = [], int $perPage = 25): LengthAwarePaginator
     {
+        return $this->filteredQuery($filters)
+            ->paginate($perPage)
+            ->withQueryString();
+    }
+
+    public function exportRows(array $filters, callable $callback): void
+    {
+        $this->filteredQuery($filters)
+            ->chunkById(500, function ($logs) use ($callback) {
+                foreach ($logs as $log) {
+                    $callback($log);
+                }
+            });
+    }
+
+    private function filteredQuery(array $filters)
+    {
         return AuditLog::query()
             ->with('user:id,name,email')
             ->when($filters['event'] ?? null, fn ($query, $event) => $query->where('event', $event))
@@ -23,9 +40,7 @@ class AuditLogRepository
                     }
                 });
             })
-            ->orderByDesc('created_at')
-            ->paginate($perPage)
-            ->withQueryString();
+            ->orderByDesc('created_at');
     }
 
     public function create(array $data): AuditLog

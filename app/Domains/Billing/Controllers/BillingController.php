@@ -7,6 +7,7 @@ use App\Domains\Billing\Services\BillingService;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -31,8 +32,44 @@ class BillingController extends Controller
             'plan' => ['required', 'in:'.implode(',', $this->planRepository->slugs())],
         ]);
 
+        if ($this->billingService->usesStripeCheckout()) {
+            throw ValidationException::withMessages([
+                'plan' => 'Use the checkout button to change plans with Stripe.',
+            ]);
+        }
+
         $this->billingService->changePlan($data['plan']);
 
         return back()->with('success', 'Plan updated.');
+    }
+
+    public function checkout(Request $request): RedirectResponse
+    {
+        $data = $request->validate([
+            'plan' => ['required', 'in:'.implode(',', $this->planRepository->slugs())],
+        ]);
+
+        $url = $this->billingService->initiatePlanChange(
+            $data['plan'],
+            (string) $request->user()->email,
+            $request->getSchemeAndHttpHost().'/settings/billing?checkout=success',
+            $request->getSchemeAndHttpHost().'/settings/billing?checkout=cancelled',
+        );
+
+        if (! is_string($url)) {
+            return back()->with('success', 'Plan updated.');
+        }
+
+        return redirect()->away($url);
+    }
+
+    public function portal(Request $request): RedirectResponse
+    {
+        $url = $this->billingService->billingPortalUrl(
+            (string) $request->user()->email,
+            $request->getSchemeAndHttpHost().'/settings/billing',
+        );
+
+        return redirect()->away($url);
     }
 }

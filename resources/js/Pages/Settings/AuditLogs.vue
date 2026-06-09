@@ -1,5 +1,6 @@
 <script setup>
 import { Link, router, useForm } from '@inertiajs/vue3';
+import { computed } from 'vue';
 import SettingsLayout from '../../Layouts/SettingsLayout.vue';
 
 const props = defineProps({
@@ -12,6 +13,22 @@ const props = defineProps({
 const filterForm = useForm({
     event: props.filters.event ?? '',
     search: props.filters.search ?? '',
+});
+
+const exportUrl = computed(() => {
+    const params = new URLSearchParams();
+
+    if (filterForm.event) {
+        params.set('event', filterForm.event);
+    }
+
+    if (filterForm.search) {
+        params.set('search', filterForm.search);
+    }
+
+    const query = params.toString();
+
+    return query ? `/settings/audit-logs/export?${query}` : '/settings/audit-logs/export';
 });
 
 const applyFilters = () => {
@@ -80,6 +97,9 @@ const formatProperties = (properties) => {
                 <button type="button" class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50" @click="clearFilters">
                     Clear
                 </button>
+                <a :href="exportUrl" class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">
+                    Export CSV
+                </a>
             </div>
 
             <div class="overflow-x-auto">

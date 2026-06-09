@@ -3,25 +3,18 @@
 namespace App\Domains\Tenancy\Services;
 
 use App\Domains\Billing\Models\Subscription;
-use App\Domains\Billing\Repositories\PlanRepository;
 use App\Models\Tenant;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
 class TenantProvisioningService
 {
-    public function __construct(
-        private PlanRepository $plans,
-    ) {
-    }
-
     public function provision(
         string $organizationName,
         string $slug,
         string $adminName,
         string $adminEmail,
         string $adminPassword,
-        string $plan = 'professional',
     ): Tenant {
         $slug = Str::slug($slug);
 
@@ -30,8 +23,6 @@ class TenantProvisioningService
                 'slug' => 'This workspace URL is already taken.',
             ]);
         }
-
-        $this->plans->find($plan);
 
         $domain = $this->tenantDomain($slug);
 
@@ -44,12 +35,9 @@ class TenantProvisioningService
         $tenant = Tenant::query()->create([
             'name' => $organizationName,
             'slug' => $slug,
-            'data' => [
-                'admin_name' => $adminName,
-                'admin_email' => $adminEmail,
-                'admin_password' => bcrypt($adminPassword),
-                'plan' => $plan,
-            ],
+            'admin_name' => $adminName,
+            'admin_email' => $adminEmail,
+            'admin_password' => $adminPassword,
         ]);
 
         $tenant->domains()->create(['domain' => $domain]);
@@ -79,13 +67,16 @@ class TenantProvisioningService
         return $this->tenantUrl($tenant).'/welcome?token='.urlencode($token);
     }
 
-    public function createCentralSubscription(Tenant $tenant, string $plan): Subscription
+    public function createCentralSubscription(Tenant $tenant): Subscription
     {
+        $trialDays = app(CentralSettingsService::class)->trialDays();
+
         return Subscription::query()->create([
             'tenant_id' => $tenant->id,
-            'plan' => $plan,
-            'status' => Subscription::STATUS_ACTIVE,
-            'renews_at' => now()->addMonth(),
+            'plan' => null,
+            'status' => Subscription::STATUS_TRIAL,
+            'trial_ends_at' => now()->addDays($trialDays),
+            'renews_at' => null,
         ]);
     }
 }

@@ -22,6 +22,12 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
+        if ($this->shouldSeedCentral()) {
+            $this->call(CentralDatabaseSeeder::class);
+
+            return;
+        }
+
         $this->call([
             TicketLookupSeeder::class,
             KnowledgeCategorySeeder::class,
@@ -122,5 +128,14 @@ class DatabaseSeeder extends Seeder
         );
         $customerUser->syncRoles([]);
         $customerUser->assignRole('customer');
+    }
+
+    private function shouldSeedCentral(): bool
+    {
+        if (tenant('id')) {
+            return false;
+        }
+
+        return config('database.default') === 'central';
     }
 }

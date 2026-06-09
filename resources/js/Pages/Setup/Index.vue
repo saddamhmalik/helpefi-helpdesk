@@ -11,6 +11,7 @@ const props = defineProps({
 const showWelcome = ref(props.welcome);
 const progress = computed(() => props.guide?.progress ?? { completed: 0, total: 0 });
 const canFinish = computed(() => progress.value.completed >= progress.value.total && progress.value.total > 0);
+const isDismissed = computed(() => props.guide?.completed === true);
 
 onMounted(() => {
     if (! props.welcome) {
@@ -88,75 +89,86 @@ const copy = async (text) => {
                 <article
                     v-for="(step, index) in guide.steps"
                     :key="step.key"
-                    class="setup-step rounded-xl border bg-white p-5 shadow-sm"
+                    class="setup-step rounded-xl border bg-white shadow-sm"
                     :class="step.complete ? 'border-emerald-200' : 'border-slate-200'"
                     :style="{ animationDelay: `${index * 60}ms` }"
                 >
-                    <div class="flex items-start justify-between gap-4">
-                        <div class="min-w-0 flex-1">
-                            <div class="flex items-center gap-2">
-                                <span
-                                    class="inline-flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold transition-colors"
-                                    :class="step.complete ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500'"
-                                >
-                                    {{ step.complete ? '✓' : '•' }}
-                                </span>
-                                <h2 class="text-base font-semibold text-slate-900">{{ step.title }}</h2>
-                                <span v-if="!step.required" class="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-500">Optional</span>
-                            </div>
-                            <p class="mt-2 text-sm text-slate-600">{{ step.description }}</p>
+                    <div class="p-5">
+                        <div class="flex items-start gap-3">
+                            <span
+                                class="mt-0.5 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-bold transition-colors"
+                                :class="step.complete ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500'"
+                            >
+                                {{ step.complete ? '✓' : '•' }}
+                            </span>
+                            <div class="min-w-0 flex-1">
+                                <div class="flex flex-wrap items-center gap-2">
+                                    <h2 class="text-base font-semibold text-slate-900">{{ step.title }}</h2>
+                                    <span v-if="!step.required" class="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-500">Optional</span>
+                                    <span
+                                        v-if="step.complete"
+                                        class="rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-emerald-700"
+                                    >
+                                        Done
+                                    </span>
+                                </div>
+                                <p class="mt-2 text-sm text-slate-600">{{ step.description }}</p>
 
-                            <div v-if="step.key === 'chat_widget' && step.meta?.embed_snippet" class="mt-3">
-                                <p class="mb-1 text-xs font-medium uppercase tracking-wide text-slate-500">Embed snippet</p>
-                                <pre class="overflow-x-auto rounded-lg bg-slate-900 p-3 text-xs text-slate-100">{{ step.meta.embed_snippet }}</pre>
-                                <button type="button" class="mt-2 text-sm font-medium text-blue-600 hover:text-blue-700" @click="copy(step.meta.embed_snippet)">
-                                    Copy snippet
-                                </button>
-                            </div>
+                                <div v-if="step.key === 'chat_widget' && step.meta?.embed_snippet" class="mt-3">
+                                    <p class="mb-1 text-xs font-medium uppercase tracking-wide text-slate-500">Embed snippet</p>
+                                    <pre class="overflow-x-auto rounded-lg bg-slate-900 p-3 text-xs text-slate-100">{{ step.meta.embed_snippet }}</pre>
+                                    <button type="button" class="mt-2 text-sm font-medium text-blue-600 hover:text-blue-700" @click="copy(step.meta.embed_snippet)">
+                                        Copy snippet
+                                    </button>
+                                </div>
 
-                            <div v-if="step.key === 'realtime'" class="mt-3 rounded-lg bg-slate-50 p-3 text-sm text-slate-700">
-                                <p class="font-medium text-slate-900">Local development</p>
-                                <ol class="mt-2 list-decimal space-y-1 pl-5 text-slate-600">
-                                    <li v-for="command in guide.infrastructure?.realtime?.commands" :key="command">
-                                        <code class="rounded bg-white px-1.5 py-0.5 text-xs">{{ command }}</code>
-                                    </li>
-                                </ol>
-                                <p class="mt-3 font-medium text-slate-900">Production queue worker</p>
-                                <code class="mt-1 block rounded bg-white px-2 py-1 text-xs">{{ guide.infrastructure?.queue?.worker }}</code>
-                            </div>
-
-                            <div v-if="step.key === 'email_inbox'" class="mt-3 text-xs text-slate-500">
-                                Inbound webhook:
-                                <code class="rounded bg-slate-100 px-1.5 py-0.5">{{ guide.infrastructure?.inbound_webhook }}</code>
+                                <div v-if="step.key === 'email_inbox'" class="mt-3 text-xs text-slate-500">
+                                    Inbound webhook:
+                                    <code class="rounded bg-slate-100 px-1.5 py-0.5">{{ guide.infrastructure?.inbound_webhook }}</code>
+                                </div>
                             </div>
                         </div>
+                    </div>
 
-                        <div class="flex shrink-0 flex-col gap-2">
-                            <Link
-                                :href="step.url"
-                                class="rounded-lg border border-slate-200 px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-50"
-                            >
-                                Open
-                            </Link>
-                            <button
-                                v-if="!step.complete"
-                                type="button"
-                                class="rounded-lg bg-slate-900 px-3 py-1.5 text-sm font-medium text-white hover:bg-slate-800"
-                                @click="completeStep(step.key)"
-                            >
-                                Mark done
-                            </button>
-                        </div>
+                    <div class="flex flex-col-reverse gap-2 border-t border-slate-100 px-5 py-3 sm:flex-row sm:items-center sm:justify-end">
+                        <button
+                            v-if="!step.complete"
+                            type="button"
+                            class="inline-flex h-9 w-full items-center justify-center rounded-lg px-4 text-sm font-medium text-slate-600 transition hover:bg-slate-50 hover:text-slate-900 sm:w-auto"
+                            @click="completeStep(step.key)"
+                        >
+                            Mark done
+                        </button>
+                        <Link
+                            :href="step.url"
+                            class="inline-flex h-9 w-full items-center justify-center rounded-lg border border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 transition hover:bg-slate-50 sm:w-auto"
+                        >
+                            Open
+                        </Link>
                     </div>
                 </article>
             </div>
 
             <div class="mt-8 flex items-center justify-between rounded-xl border border-slate-200 bg-white p-5">
                 <div>
-                    <p class="text-sm font-medium text-slate-900">Ready to start supporting customers?</p>
-                    <p class="text-sm text-slate-500">Finish setup to open your workspace dashboard.</p>
+                    <template v-if="isDismissed">
+                        <p class="text-sm font-medium text-slate-900">Setup guide</p>
+                        <p class="text-sm text-slate-500">Return to your dashboard. Incomplete items will keep showing warnings until configured.</p>
+                    </template>
+                    <template v-else>
+                        <p class="text-sm font-medium text-slate-900">Ready to start supporting customers?</p>
+                        <p class="text-sm text-slate-500">Finish setup to open your workspace dashboard. Missing configuration will still show warnings.</p>
+                    </template>
                 </div>
+                <Link
+                    v-if="isDismissed"
+                    href="/dashboard"
+                    class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700"
+                >
+                    Go to dashboard
+                </Link>
                 <button
+                    v-else
                     type="button"
                     class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
                     :disabled="!canFinish"

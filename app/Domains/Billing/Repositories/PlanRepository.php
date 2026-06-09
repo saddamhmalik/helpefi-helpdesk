@@ -2,14 +2,18 @@
 
 namespace App\Domains\Billing\Repositories;
 
-use App\Domains\Billing\Models\Subscription;
+use App\Domains\Tenancy\Services\CentralSettingsService;
 use InvalidArgumentException;
 
 class PlanRepository
 {
+    public function __construct(private CentralSettingsService $centralSettings)
+    {
+    }
+
     public function all(): array
     {
-        return config('plans', []);
+        return $this->centralSettings->planCatalog();
     }
 
     public function find(string $slug): array

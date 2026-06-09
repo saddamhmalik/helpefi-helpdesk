@@ -21,10 +21,6 @@ class SetupController extends Controller
             abort(404);
         }
 
-        if ($this->setup->snapshot()['completed']) {
-            return redirect()->route('dashboard');
-        }
-
         return Inertia::render('Setup/Index', [
             'guide' => $this->setup->snapshot(),
             'welcome' => (bool) session('welcome'),

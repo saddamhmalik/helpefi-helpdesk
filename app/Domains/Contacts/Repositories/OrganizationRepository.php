@@ -10,11 +10,25 @@ class OrganizationRepository
 {
     public function paginate(int $perPage = 15): LengthAwarePaginator
     {
+        return $this->exportQuery()->paginate($perPage);
+    }
+
+    public function exportRows(callable $callback): void
+    {
+        $this->exportQuery()
+            ->chunkById(500, function ($organizations) use ($callback) {
+                foreach ($organizations as $organization) {
+                    $callback($organization);
+                }
+            });
+    }
+
+    private function exportQuery()
+    {
         return Organization::query()
             ->withCount('contacts')
             ->with('domains')
-            ->orderBy('name')
-            ->paginate($perPage);
+            ->orderBy('id');
     }
 
     public function allForSelect(): Collection

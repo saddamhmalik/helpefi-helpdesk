@@ -1,5 +1,6 @@
 <script setup>
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
+import { computed } from 'vue';
 import AgentLayout from '../../Layouts/AgentLayout.vue';
 import AppConfirmDialog from '../../Components/AppConfirmDialog.vue';
 import AppTabs from '../../Components/AppTabs.vue';
@@ -45,6 +46,22 @@ const setAccess = (access) => {
     applyFilters({ access });
 };
 
+const exportUrl = computed(() => {
+    const params = new URLSearchParams();
+
+    if (props.filters.search) {
+        params.set('search', props.filters.search);
+    }
+
+    if (props.filters.access && props.filters.access !== 'all') {
+        params.set('access', props.filters.access);
+    }
+
+    const query = params.toString();
+
+    return query ? `/contacts/export?${query}` : '/contacts/export';
+});
+
 const removePortalAccess = (contact) => {
     askConfirm({
         title: 'Revoke portal access',
@@ -61,6 +78,12 @@ const removePortalAccess = (contact) => {
     <AgentLayout>
         <PageHeader description="Everyone who interacts with support. Portal access means they can sign in to view tickets online.">
             <template #actions>
+                <a
+                    :href="exportUrl"
+                    class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                >
+                    Export CSV
+                </a>
                 <Link href="/contacts/create" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">New customer</Link>
             </template>
         </PageHeader>

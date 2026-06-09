@@ -129,6 +129,7 @@ class BillingTest extends TenantTestCase
             ->assertOk()
             ->assertJsonStructure([
                 'plan' => ['slug', 'name', 'price'],
+                'currency' => ['code', 'symbol', 'name'],
                 'usage' => ['agents', 'tickets_monthly'],
                 'limits',
                 'features',

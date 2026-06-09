@@ -24,6 +24,30 @@ class ContactRepository
             ->withQueryString();
     }
 
+    public function exportRows(?string $search = null, ?string $access = null, callable $callback): void
+    {
+        $this->exportQuery($search, $access)
+            ->chunkById(500, function ($contacts) use ($callback) {
+                foreach ($contacts as $contact) {
+                    $callback($contact);
+                }
+            });
+    }
+
+    private function exportQuery(?string $search, ?string $access)
+    {
+        return Contact::query()
+            ->with(['organization:id,name', 'tags:id,name', 'portalUser:id,contact_id'])
+            ->withCount('tickets')
+            ->when($search, fn ($q) => $q->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%");
+            }))
+            ->when($access === 'portal', fn ($q) => $q->whereHas('portalUser'))
+            ->when($access === 'guest', fn ($q) => $q->whereDoesntHave('portalUser'))
+            ->orderBy('id');
+    }
+
     public function stats(): array
     {
         $total = Contact::query()->count();

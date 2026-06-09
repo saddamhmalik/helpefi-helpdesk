@@ -33,6 +33,24 @@ class TicketRepository
 
     public function paginateFiltered(array $filters, int $perPage = 15, ?int $watchingUserId = null): LengthAwarePaginator
     {
+        return $this
+            ->filteredQuery($filters, $watchingUserId)
+            ->paginate($perPage)
+            ->withQueryString();
+    }
+
+    public function exportFiltered(array $filters, ?int $watchingUserId, callable $callback): void
+    {
+        $this->filteredQuery($filters, $watchingUserId)
+            ->chunkById(500, function ($tickets) use ($callback) {
+                foreach ($tickets as $ticket) {
+                    $callback($ticket);
+                }
+            });
+    }
+
+    private function filteredQuery(array $filters, ?int $watchingUserId = null)
+    {
         $filters = TicketFilters::normalize($filters);
 
         $query = Ticket::query()
@@ -41,9 +59,11 @@ class TicketRepository
                 'status:id,name,slug,color',
                 'priority:id,name,slug',
                 'assignee' => fn ($query) => $query
-                    ->select(['id', 'name'])
+                    ->select(['id', 'name', 'email'])
                     ->whereHas('roles', fn ($roles) => $roles->whereIn('name', ['admin', 'agent'])),
                 'channel:id,name,slug,type',
+                'department:id,name',
+                'team:id,name',
             ])
             ->whereNull('merged_into_ticket_id')
             ->orderByDesc('updated_at');
@@ -108,7 +128,7 @@ class TicketRepository
             $query->whereHas('watchers', fn ($q) => $q->where('user_id', $watchingUserId));
         }
 
-        return $query->paginate($perPage)->withQueryString();
+        return $query;
     }
 
     public function find(int $id): Ticket
