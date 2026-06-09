@@ -1,0 +1,36 @@
+<?php
+
+namespace App\Domains\Channels\Services\OAuth;
+
+use App\Domains\Channels\Contracts\MailOAuthProviderInterface;
+use InvalidArgumentException;
+
+class MailOAuthProviderFactory
+{
+    public function make(string $provider): MailOAuthProviderInterface
+    {
+        return match ($provider) {
+            'google' => app(GoogleMailOAuthProvider::class),
+            'microsoft' => app(MicrosoftMailOAuthProvider::class),
+            'zoho' => app(ZohoMailOAuthProvider::class),
+            default => throw new InvalidArgumentException('Unsupported OAuth provider.'),
+        };
+    }
+
+    public function configuredProviders(): array
+    {
+        $providers = [];
+
+        foreach (['google', 'microsoft', 'zoho'] as $provider) {
+            $instance = $this->make($provider);
+            $providers[$provider] = [
+                'key' => $provider,
+                'label' => config("helpdesk.mail_oauth.{$provider}.label"),
+                'help' => config("helpdesk.mail_oauth.{$provider}.help"),
+                'configured' => $instance->isConfigured(),
+            ];
+        }
+
+        return $providers;
+    }
+}

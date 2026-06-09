@@ -1,0 +1,1103 @@
+{
+  "info": {
+    "_postman_id": "helpdesk-api-v1",
+    "name": "Helpdesk API",
+    "description": "Helpdesk REST API v1. Login first to obtain a bearer token.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://helpdesk.test/api/v1" },
+    { "key": "token", "value": "" },
+    { "key": "ticketId", "value": "1" },
+    { "key": "viewId", "value": "1" },
+    { "key": "userId", "value": "1" },
+    { "key": "messageId", "value": "1" }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }]
+  },
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  const json = pm.response.json();",
+                  "  pm.collectionVariables.set('token', json.token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@helpdesk.test\",\n  \"password\": \"password\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/auth/login"
+          }
+        },
+        {
+          "name": "Me",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{baseUrl}}/auth/me"
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{baseUrl}}/auth/logout"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Tickets",
+      "item": [
+        {
+          "name": "Meta",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{baseUrl}}/tickets/meta"
+          }
+        },
+        {
+          "name": "List tickets",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{baseUrl}}/tickets?search=&status_id=&priority_id=&assigned_to=&watching=",
+              "host": ["{{baseUrl}}"],
+              "path": ["tickets"],
+              "query": [
+                { "key": "search", "value": "" },
+                { "key": "status_id", "value": "" },
+                { "key": "priority_id", "value": "" },
+                { "key": "assigned_to", "value": "" },
+                { "key": "watching", "value": "" },
+                { "key": "view_id", "value": "{{viewId}}", "disabled": true }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create ticket",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "  pm.collectionVariables.set('ticketId', pm.response.json().id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"subject\": \"API test ticket\",\n  \"description\": \"Created from Postman\",\n  \"ticket_status_id\": 1,\n  \"ticket_priority_id\": 1\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/tickets"
+          }
+        },
+        {
+          "name": "Show ticket",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{baseUrl}}/tickets/{{ticketId}}"
+          }
+        },
+        {
+          "name": "Update ticket",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"subject\": \"Updated subject\",\n  \"ticket_status_id\": 1,\n  \"ticket_priority_id\": 1\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/tickets/{{ticketId}}"
+          }
+        },
+        {
+          "name": "Reply",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"body\": \"Reply from Postman\",\n  \"is_internal\": false\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/tickets/{{ticketId}}/reply"
+          }
+        },
+        {
+          "name": "Upload attachment",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "body": {
+              "mode": "formdata",
+              "formdata": [{ "key": "file", "type": "file", "src": [] }]
+            },
+            "url": "{{baseUrl}}/tickets/{{ticketId}}/attachments"
+          }
+        },
+        {
+          "name": "Add watcher",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/tickets/{{ticketId}}/watchers"
+          }
+        },
+        {
+          "name": "Remove watcher",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{baseUrl}}/tickets/{{ticketId}}/watchers/{{userId}}"
+          }
+        },
+        {
+          "name": "Merge ticket",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"source_ticket_id\": 2\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/tickets/{{ticketId}}/merge"
+          }
+        },
+        {
+          "name": "Split ticket",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"from_message_id\": {{messageId}},\n  \"subject\": \"Split ticket\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/tickets/{{ticketId}}/split"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Ticket Views",
+      "item": [
+        {
+          "name": "List views",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{baseUrl}}/ticket-views"
+          }
+        },
+        {
+          "name": "Create view",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "  pm.collectionVariables.set('viewId', pm.response.json().id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Open tickets\",\n  \"filters\": { \"status_id\": 1 },\n  \"is_default\": false\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/ticket-views"
+          }
+        },
+        {
+          "name": "Delete view",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{baseUrl}}/ticket-views/{{viewId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Portal (public)",
+      "item": [
+        {
+          "name": "Portal home",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{baseUrl}}/portal"
+          }
+        },
+        {
+          "name": "Portal collection",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{baseUrl}}/portal/collections/getting-started"
+          }
+        },
+        {
+          "name": "Portal article",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{baseUrl}}/portal/articles/welcome-to-helpdesk"
+          }
+        },
+        {
+          "name": "Portal search",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{baseUrl}}/portal/search?q=password"
+          }
+        },
+        {
+          "name": "Submit ticket",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "  pm.collectionVariables.set('ticketId', pm.response.json().number);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Jane Customer\",\n  \"email\": \"customer@example.com\",\n  \"subject\": \"Portal request\",\n  \"description\": \"Need assistance\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/portal/tickets"
+          }
+        },
+        {
+          "name": "Track ticket",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"number\": \"{{ticketId}}\",\n  \"email\": \"customer@example.com\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/portal/tickets/track"
+          }
+        }
+      ]
+    },
+    },
+    {
+      "name": "Workspace",
+      "item": [
+        {
+          "name": "Meta",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{baseUrl}}/workspace/meta"
+          }
+        },
+        {
+          "name": "Queue",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{baseUrl}}/workspace/queue?search=&status_id=&priority_id=&assigned_to=&watching=",
+              "host": ["{{baseUrl}}"],
+              "path": ["workspace", "queue"],
+              "query": [
+                { "key": "search", "value": "" },
+                { "key": "status_id", "value": "" },
+                { "key": "priority_id", "value": "" },
+                { "key": "assigned_to", "value": "" },
+                { "key": "watching", "value": "" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Show ticket",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{baseUrl}}/workspace/tickets/{{ticketId}}"
+          }
+        },
+        {
+          "name": "Poll ticket",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{baseUrl}}/workspace/tickets/{{ticketId}}/poll?since=",
+              "host": ["{{baseUrl}}"],
+              "path": ["workspace", "tickets", "{{ticketId}}", "poll"],
+              "query": [{ "key": "since", "value": "" }]
+            }
+          }
+        },
+        {
+          "name": "Poll queue",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{baseUrl}}/workspace/queue/poll?since=",
+              "host": ["{{baseUrl}}"],
+              "path": ["workspace", "queue", "poll"],
+              "query": [{ "key": "since", "value": "" }]
+            }
+          }
+        },
+        {
+          "name": "Save draft",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"body\": \"Draft from Postman\",\n  \"is_internal\": false\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/workspace/tickets/{{ticketId}}/draft"
+          }
+        },
+        {
+          "name": "Reply",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"body\": \"Reply from workspace API\",\n  \"is_internal\": false\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/workspace/tickets/{{ticketId}}/reply"
+          }
+        },
+        {
+          "name": "Quick update",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ticket_status_id\": 1,\n  \"assigned_to\": 1\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/workspace/tickets/{{ticketId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Knowledge",
+      "item": [
+        {
+          "name": "List collections",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{baseUrl}}/knowledge/collections"
+          }
+        },
+        {
+          "name": "Create collection",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Troubleshooting\",\n  \"description\": \"Fix common issues\",\n  \"is_public\": true\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/knowledge/collections"
+          }
+        },
+        {
+          "name": "List articles",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{baseUrl}}/knowledge/articles"
+          }
+        },
+        {
+          "name": "Create article",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Reset your password\",\n  \"body\": \"Steps to reset...\",\n  \"is_published\": true,\n  \"knowledge_collection_id\": 1\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/knowledge/articles"
+          }
+        },
+        {
+          "name": "Article versions",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{baseUrl}}/knowledge/articles/1/versions"
+          }
+        },
+        {
+          "name": "Restore version",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{baseUrl}}/knowledge/articles/1/versions/1/restore"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Reports",
+      "item": [
+        {
+          "name": "Meta",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{baseUrl}}/reports/meta"
+          }
+        },
+        {
+          "name": "Dashboard widgets",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{baseUrl}}/reports/dashboard"
+          }
+        },
+        {
+          "name": "Run report",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{baseUrl}}/reports/run?type=tickets&date_from=&date_to=",
+              "host": ["{{baseUrl}}"],
+              "path": ["reports", "run"],
+              "query": [
+                { "key": "type", "value": "tickets" },
+                { "key": "date_from", "value": "" },
+                { "key": "date_to", "value": "" },
+                { "key": "status_id", "value": "", "disabled": true },
+                { "key": "priority_id", "value": "", "disabled": true },
+                { "key": "assigned_to", "value": "", "disabled": true }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Export CSV",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "text/csv" }],
+            "url": {
+              "raw": "{{baseUrl}}/reports/export?type=tickets",
+              "host": ["{{baseUrl}}"],
+              "path": ["reports", "export"],
+              "query": [{ "key": "type", "value": "tickets" }]
+            }
+          }
+        },
+        {
+          "name": "List saved reports",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{baseUrl}}/reports/saved"
+          }
+        },
+        {
+          "name": "Save report",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Open tickets\",\n  \"type\": \"tickets\",\n  \"filters\": {},\n  \"is_default\": false\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/reports/saved"
+          }
+        },
+        {
+          "name": "Delete saved report",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{baseUrl}}/reports/saved/1"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Channels",
+      "item": [
+        {
+          "name": "List channels",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{baseUrl}}/channels"
+          }
+        },
+        {
+          "name": "Inbound email",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "X-Channel-Token", "value": "dev-inbound-token" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"from_email\": \"customer@example.com\",\n  \"from_name\": \"Customer\",\n  \"subject\": \"Need help\",\n  \"body\": \"Please assist.\",\n  \"message_id\": \"postman-msg-1\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/channels/inbound/email"
+          }
+        },
+        {
+          "name": "Inbound email reply",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "X-Channel-Token", "value": "dev-inbound-token" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"from_email\": \"customer@example.com\",\n  \"subject\": \"Re: [{{ticketNumber}}] Need help\",\n  \"body\": \"Following up.\",\n  \"message_id\": \"postman-msg-2\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/channels/inbound/email"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Automation",
+      "item": [
+        {
+          "name": "Meta",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{baseUrl}}/automation/meta"
+          }
+        },
+        {
+          "name": "List rules",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{baseUrl}}/automation/rules"
+          }
+        },
+        {
+          "name": "Create rule",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Urgent assign\",\n  \"trigger\": \"ticket.created\",\n  \"conditions\": [\n    {\"field\": \"subject\", \"operator\": \"contains\", \"value\": \"urgent\"}\n  ],\n  \"actions\": [\n    {\"type\": \"assign_to\", \"value\": 1}\n  ],\n  \"is_active\": true\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/automation/rules"
+          }
+        },
+        {
+          "name": "Delete rule",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{baseUrl}}/automation/rules/1"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Integrations",
+      "item": [
+        {
+          "name": "Meta",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{baseUrl}}/integrations/meta"
+          }
+        },
+        {
+          "name": "List webhooks",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{baseUrl}}/integrations/webhooks"
+          }
+        },
+        {
+          "name": "Create webhook",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"CRM sync\",\n  \"url\": \"https://example.com/webhooks/helpdesk\",\n  \"events\": [\"ticket.created\", \"ticket.updated\"],\n  \"is_active\": true\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/integrations/webhooks"
+          }
+        },
+        {
+          "name": "Send test",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{baseUrl}}/integrations/webhooks/1/test"
+          }
+        },
+        {
+          "name": "Regenerate secret",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{baseUrl}}/integrations/webhooks/1/regenerate-secret"
+          }
+        },
+        {
+          "name": "Delete webhook",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{baseUrl}}/integrations/webhooks/1"
+          }
+        }
+      ]
+    },
+    {
+      "name": "AI",
+      "item": [
+        {
+          "name": "Settings",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{baseUrl}}/ai/settings"
+          }
+        },
+        {
+          "name": "Update settings",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"enabled\": true,\n  \"model\": \"gpt-4o-mini\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/ai/settings"
+          }
+        },
+        {
+          "name": "Suggest reply",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{baseUrl}}/ai/tickets/{{ticketId}}/suggest-reply"
+          }
+        },
+        {
+          "name": "Summarize ticket",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{baseUrl}}/ai/tickets/{{ticketId}}/summarize"
+          }
+        },
+        {
+          "name": "KB assist",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{baseUrl}}/ai/tickets/{{ticketId}}/kb-assist"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Service Catalog",
+      "item": [
+        {
+          "name": "Portal list",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{baseUrl}}/portal/services"
+          }
+        },
+        {
+          "name": "Portal service detail",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{baseUrl}}/portal/services/password-reset"
+          }
+        },
+        {
+          "name": "Submit service request",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Jane Customer\",\n  \"email\": \"customer@example.com\",\n  \"fields\": {\"account\": \"customer@example.com\"},\n  \"details\": \"Locked out after password change.\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/portal/services/password-reset"
+          }
+        },
+        {
+          "name": "Admin catalog",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{baseUrl}}/service-catalog"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Assets",
+      "item": [
+        {
+          "name": "Meta",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{baseUrl}}/assets/meta"
+          }
+        },
+        {
+          "name": "List assets",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{baseUrl}}/assets"
+          }
+        },
+        {
+          "name": "Create asset",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"asset_type_id\": 1,\n  \"name\": \"Loaner laptop\",\n  \"status\": \"in_stock\",\n  \"location\": \"IT storage\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/assets"
+          }
+        },
+        {
+          "name": "Link asset to ticket",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ticket_id\": {{ticketId}}\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/assets/1/tickets"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Billing",
+      "item": [
+        {
+          "name": "Snapshot",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{baseUrl}}/billing"
+          }
+        },
+        {
+          "name": "Change plan",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"plan\": \"enterprise\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/billing/plan"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Security",
+      "item": [
+        {
+          "name": "Snapshot",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{baseUrl}}/security"
+          }
+        },
+        {
+          "name": "Update settings",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"mfa_required_for_agents\": true,\n  \"audit_retention_days\": 90,\n  \"closed_ticket_retention_days\": 365\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/security"
+          }
+        },
+        {
+          "name": "Audit logs",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{baseUrl}}/security/audit-logs"
+          }
+        },
+        {
+          "name": "Two-factor status",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{baseUrl}}/security/two-factor"
+          }
+        },
+        {
+          "name": "Purge retention",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{baseUrl}}/security/purge-retention"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Notifications",
+      "item": [
+        {
+          "name": "Summary",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{baseUrl}}/notifications/summary"
+          }
+        },
+        {
+          "name": "List",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{baseUrl}}/notifications"
+          }
+        },
+        {
+          "name": "Settings",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{baseUrl}}/notifications/settings"
+          }
+        },
+        {
+          "name": "Update settings",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email_enabled\": false,\n  \"notify_ticket_assigned\": true,\n  \"notify_customer_reply\": true,\n  \"notify_sla_breach\": true\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/notifications/settings"
+          }
+        }
+      ]
+    },
+    {
+      "name": "CSAT",
+      "item": [
+        {
+          "name": "Settings",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{baseUrl}}/csat/settings"
+          }
+        },
+        {
+          "name": "Update settings",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"enabled\": true,\n  \"comment_required\": false\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/csat/settings"
+          }
+        },
+        {
+          "name": "Report",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{baseUrl}}/csat/report"
+          }
+        },
+        {
+          "name": "Submit (portal customer)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"rating\": 5,\n  \"comment\": \"Great support\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/portal/my-tickets/1/csat"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Email",
+      "item": [
+        {
+          "name": "List inboxes",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{baseUrl}}/email/inboxes"
+          }
+        },
+        {
+          "name": "Create inbox",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Billing\",\n  \"address\": \"billing@helpdesk.test\",\n  \"is_active\": true\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/email/inboxes"
+          }
+        },
+        {
+          "name": "Outbound settings",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{baseUrl}}/email/outbound"
+          }
+        },
+        {
+          "name": "Update outbound",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"enabled\": true,\n  \"reply_enabled\": true,\n  \"driver\": \"log\",\n  \"from_address\": \"support@helpdesk.test\",\n  \"from_name\": \"Support\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/email/outbound"
+          }
+        }
+      ]
+    }
+  ]
+}
