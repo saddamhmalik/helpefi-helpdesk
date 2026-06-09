@@ -32,7 +32,6 @@ class DatabaseSeeder extends Seeder
             EmailSeeder::class,
             ServiceCatalogSeeder::class,
             AssetSeeder::class,
-            BillingSeeder::class,
             SecuritySeeder::class,
             NotificationSeeder::class,
             CsatSeeder::class,

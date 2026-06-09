@@ -8,12 +8,24 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (Schema::hasTable('subscriptions') && ! Schema::hasColumn('subscriptions', 'tenant_id')) {
+            Schema::drop('subscriptions');
+        }
+
+        if (Schema::hasTable('subscriptions')) {
+            return;
+        }
+
         Schema::create('subscriptions', function (Blueprint $table) {
             $table->id();
+            $table->string('tenant_id');
             $table->string('plan');
             $table->string('status')->default('active');
             $table->timestamp('renews_at')->nullable();
             $table->timestamps();
+
+            $table->foreign('tenant_id')->references('id')->on('tenants')->cascadeOnDelete();
+            $table->unique('tenant_id');
         });
     }
 

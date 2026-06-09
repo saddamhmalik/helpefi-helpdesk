@@ -2,8 +2,8 @@
 
 use Illuminate\Support\Facades\Schedule;
 
-Schedule::command('sla:check-breaches')->everyFiveMinutes();
-Schedule::command('channels:poll-inboxes')->everyMinute();
-Schedule::command('security:purge-retention')->daily();
-Schedule::command('reports:dispatch-scheduled')->hourly();
-Schedule::command('automation:process-scheduled')->everyMinute();
+Schedule::command('tenants:run sla:check-breaches')->everyFiveMinutes();
+Schedule::command('tenants:run channels:poll-inboxes')->everyMinute();
+Schedule::command('tenants:run security:purge-retention')->daily();
+Schedule::command('tenants:run reports:dispatch-scheduled')->hourly();
+Schedule::command('tenants:run automation:process-scheduled')->everyMinute();

@@ -35,7 +35,7 @@ const hasFeature = (feature) => props.billing.features.includes(feature);
 <template>
     <SettingsLayout
         title="Billing & plan"
-        description="Current subscription, usage limits, and plan features."
+        description="Manage your workspace subscription. Billing is handled on the central platform while usage is measured in this workspace."
     >
         <div v-show="activeSection === 'usage'" class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
                     <h2 class="text-lg font-medium text-slate-900">Current plan</h2>

@@ -8,11 +8,16 @@ class SubscriptionRepository
 {
     public function current(): Subscription
     {
-        return Subscription::query()->firstOrCreate([], [
-            'plan' => config('billing.default_plan', 'professional'),
-            'status' => Subscription::STATUS_ACTIVE,
-            'renews_at' => now()->addMonth(),
-        ]);
+        $tenantId = tenant('id');
+
+        return Subscription::query()->firstOrCreate(
+            ['tenant_id' => $tenantId],
+            [
+                'plan' => config('billing.default_plan', 'professional'),
+                'status' => Subscription::STATUS_ACTIVE,
+                'renews_at' => now()->addMonth(),
+            ],
+        );
     }
 
     public function update(Subscription $subscription, array $data): Subscription

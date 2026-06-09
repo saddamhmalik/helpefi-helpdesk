@@ -17,7 +17,7 @@ return [
     |
     */
 
-    'default' => env('DB_CONNECTION', 'sqlite'),
+    'default' => env('DB_CONNECTION', 'central'),
 
     /*
     |--------------------------------------------------------------------------
@@ -31,6 +31,32 @@ return [
     */
 
     'connections' => [
+
+        'central' => array_merge([
+            'driver' => ($centralDriver = env('CENTRAL_DB_DRIVER', env('DB_DRIVER', in_array(env('DB_CONNECTION'), ['mysql', 'mariadb'], true) ? env('DB_CONNECTION') : 'sqlite'))),
+            'url' => env('CENTRAL_DB_URL', env('DB_URL')),
+            'host' => env('CENTRAL_DB_HOST', env('DB_HOST', '127.0.0.1')),
+            'port' => env('CENTRAL_DB_PORT', env('DB_PORT', '3306')),
+            'database' => env('CENTRAL_DB_DATABASE') ?? (
+                $centralDriver === 'sqlite'
+                    ? database_path('central.sqlite')
+                    : env('DB_DATABASE', 'helpdesk_central')
+            ),
+            'username' => env('CENTRAL_DB_USERNAME', env('DB_USERNAME', 'root')),
+            'password' => env('CENTRAL_DB_PASSWORD', env('DB_PASSWORD', '')),
+            'unix_socket' => env('CENTRAL_DB_SOCKET', env('DB_SOCKET', '')),
+            'charset' => env('DB_CHARSET', 'utf8mb4'),
+            'collation' => env('DB_COLLATION', 'utf8mb4_unicode_ci'),
+            'prefix' => '',
+            'prefix_indexes' => true,
+            'strict' => true,
+            'engine' => null,
+            'foreign_key_constraints' => env('DB_FOREIGN_KEYS', true),
+        ], in_array(env('CENTRAL_DB_DRIVER', env('DB_DRIVER', 'sqlite')), ['mysql', 'mariadb'], true) ? [
+            'options' => extension_loaded('pdo_mysql') ? array_filter([
+                Mysql::ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
+            ]) : [],
+        ] : []),
 
         'sqlite' => [
             'driver' => 'sqlite',

@@ -10,27 +10,30 @@ use App\Domains\Tickets\Models\TicketStatus;
 use App\Models\User;
 use Database\Seeders\TicketLookupSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
+use Tests\TenantTestCase;
 
-class BillingTest extends TestCase
+class BillingTest extends TenantTestCase
 {
     use RefreshDatabase;
 
     private function setPlan(string $plan): void
     {
-        Subscription::query()->updateOrCreate([], [
-            'plan' => $plan,
-            'status' => Subscription::STATUS_ACTIVE,
-            'renews_at' => now()->addMonth(),
-        ]);
+        Subscription::query()->updateOrCreate(
+            ['tenant_id' => tenant('id')],
+            [
+                'plan' => $plan,
+                'status' => Subscription::STATUS_ACTIVE,
+                'renews_at' => now()->addMonth(),
+            ],
+        );
     }
 
     public function test_admin_can_view_billing_settings(): void
     {
-        $admin = User::factory()->admin()->create();
+        $admin = User::query()->where('email', 'admin@helpdesk.test')->first();
 
         $this->actingAs($admin)
-            ->get('/settings/billing')
+            ->tenantGet('/settings/billing')
             ->assertOk();
     }
 
@@ -39,20 +42,23 @@ class BillingTest extends TestCase
         $agent = User::factory()->create();
 
         $this->actingAs($agent)
-            ->get('/settings/billing')
+            ->tenantGet('/settings/billing')
             ->assertForbidden();
     }
 
     public function test_admin_can_change_plan(): void
     {
-        $admin = User::factory()->admin()->create();
+        $admin = User::query()->where('email', 'admin@helpdesk.test')->first();
         $this->setPlan('starter');
 
         $this->actingAs($admin)
-            ->put('/settings/billing/plan', ['plan' => 'enterprise'])
+            ->tenantPut('/settings/billing/plan', ['plan' => 'enterprise'])
             ->assertRedirect();
 
-        $this->assertDatabaseHas('subscriptions', ['plan' => 'enterprise']);
+        $this->assertDatabaseHas('subscriptions', [
+            'tenant_id' => tenant('id'),
+            'plan' => 'enterprise',
+        ], 'central');
     }
 
     public function test_starter_plan_blocks_ai_suggest_reply(): void
@@ -72,7 +78,7 @@ class BillingTest extends TestCase
         ]);
 
         $this->actingAs($agent)
-            ->post("/tickets/{$ticket->id}/ai/suggest-reply")
+            ->tenantPost("/tickets/{$ticket->id}/ai/suggest-reply")
             ->assertForbidden();
     }
 
@@ -80,11 +86,11 @@ class BillingTest extends TestCase
     {
         $this->setPlan('starter');
 
-        $type = AssetType::query()->create(['name' => 'Laptop', 'slug' => 'laptop']);
+        $type = AssetType::query()->firstOrCreate(['slug' => 'laptop'], ['name' => 'Laptop']);
         $agent = User::factory()->create();
 
         $this->actingAs($agent)
-            ->post('/assets', [
+            ->tenantPost('/assets', [
                 'asset_type_id' => $type->id,
                 'name' => 'Blocked laptop',
                 'status' => 'in_stock',
@@ -103,7 +109,7 @@ class BillingTest extends TestCase
         $admin = User::factory()->admin()->create();
 
         $this->actingAs($admin)
-            ->post('/settings/members/invite', [
+            ->tenantPost('/settings/members/invite', [
                 'email' => 'fourth@test.com',
                 'role' => 'agent',
             ])
@@ -112,14 +118,14 @@ class BillingTest extends TestCase
 
     public function test_api_returns_billing_snapshot(): void
     {
-        $admin = User::factory()->admin()->create();
-        $login = $this->postJson('/api/v1/auth/login', [
+        $admin = User::query()->where('email', 'admin@helpdesk.test')->first();
+        $login = $this->tenantPostJson('/api/v1/auth/login', [
             'email' => $admin->email,
             'password' => 'password',
         ]);
 
         $this->withToken($login->json('token'))
-            ->getJson('/api/v1/billing')
+            ->tenantGetJson('/api/v1/billing')
             ->assertOk()
             ->assertJsonStructure([
                 'plan' => ['slug', 'name', 'price'],

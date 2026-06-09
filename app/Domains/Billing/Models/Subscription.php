@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class Subscription extends Model
 {
+    protected $connection = 'central';
+
     public const STATUS_ACTIVE = 'active';
 
     public const STATUS_PAST_DUE = 'past_due';
@@ -13,6 +15,7 @@ class Subscription extends Model
     public const STATUS_CANCELLED = 'cancelled';
 
     protected $fillable = [
+        'tenant_id',
         'plan',
         'status',
         'renews_at',
