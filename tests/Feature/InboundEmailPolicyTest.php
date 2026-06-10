@@ -182,7 +182,12 @@ class InboundEmailPolicyTest extends TestCase
         $ticket->refresh();
 
         Queue::assertPushed(SendAutoFirstResponseJob::class, function (SendAutoFirstResponseJob $job) use ($ticket) {
-            return $job->ticketId === $ticket->id;
+            $customerMessage = $ticket->messages()->whereNotNull('contact_id')->first();
+            $autoMessage = $ticket->messages()->whereNull('contact_id')->whereNull('user_id')->first();
+
+            return $job->ticketId === $ticket->id
+                && $job->customerMessageId === $customerMessage->id
+                && $job->messageId === $autoMessage->id;
         });
     }
 }

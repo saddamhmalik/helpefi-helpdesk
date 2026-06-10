@@ -14,6 +14,9 @@ import { useTicketRealtimeMessages } from '../../composables/useTicketRealtimeMe
 import { applyUnreadCounts, bumpQueueUnread, clearQueueUnread, markTicketRead } from '../../composables/useTicketMarkRead.js';
 import { getSharedRealtimeClient } from '../../lib/realtimeClient.js';
 import { ticketChannel, workspaceChannel } from '../../lib/realtimeChannels.js';
+import { csrfHeaders } from '../../support/csrf.js';
+import { useI18n } from 'vue-i18n';
+import { useDateTime } from '../../composables/useDateTime.js';
 
 const props = defineProps({
     queue: Object,
@@ -38,6 +41,10 @@ const props = defineProps({
     timeTracking: { type: Object, default: null },
     externalIssues: { type: Array, default: () => [] },
 });
+
+const { formatDateTime, formatDate } = useDateTime();
+
+const { t } = useI18n();
 
 const page = usePage();
 const aiEnabled = computed(() => page.props.ai?.enabled ?? false);
@@ -69,13 +76,10 @@ let subscribedTicketChannel = null;
 let ticketRealtimeHandler = null;
 let workspaceRealtimeHandler = null;
 
-const csrf = () => document.querySelector('meta[name="csrf-token"]')?.content;
-
 const jsonHeaders = () => ({
     Accept: 'application/json',
     'Content-Type': 'application/json',
-    'X-CSRF-TOKEN': csrf(),
-    'X-Requested-With': 'XMLHttpRequest',
+    ...csrfHeaders(),
 });
 
 const selectedId = computed(() => ticket.value?.id ?? null);
@@ -390,6 +394,51 @@ const quickUpdate = async (field, value) => {
     }
 };
 
+const snoozeOpen = ref(false);
+
+const snoozeTicket = async (minutes) => {
+    if (!selectedId.value) {
+        return;
+    }
+
+    snoozeOpen.value = false;
+
+    const res = await fetch(`/workspace/tickets/${selectedId.value}/snooze`, {
+        method: 'POST',
+        headers: jsonHeaders(),
+        body: JSON.stringify({ minutes }),
+    });
+
+    if (res.ok) {
+        ticket.value = await res.json();
+        mergeQueueUpdates([ticket.value]);
+    }
+};
+
+const unsnoozeTicket = async () => {
+    if (!selectedId.value) {
+        return;
+    }
+
+    const res = await fetch(`/workspace/tickets/${selectedId.value}/snooze`, {
+        method: 'DELETE',
+        headers: jsonHeaders(),
+    });
+
+    if (res.ok) {
+        ticket.value = await res.json();
+        mergeQueueUpdates([ticket.value]);
+    }
+};
+
+const snoozeLabel = computed(() => {
+    if (!ticket.value?.snoozed_until) {
+        return null;
+    }
+
+    return formatDateTime(ticket.value.snoozed_until);
+});
+
 const formatRelative = (value) => {
     const date = new Date(value);
     const diff = Date.now() - date.getTime();
@@ -401,7 +450,7 @@ const formatRelative = (value) => {
     const days = Math.floor(hours / 24);
     if (days < 7) return `${days}d ago`;
 
-    return date.toLocaleDateString();
+    return formatDate(date);
 };
 
 const statusBadgeClass = (name) => {
@@ -453,14 +502,14 @@ onUnmounted(() => {
 </script>
 
 <template>
-    <Head title="Workspace" />
+    <Head :title="$t('workspace.workspace')" />
     <AgentLayout>
-        <div class="-m-6 flex h-[calc(100dvh-4rem)] min-h-0 overflow-hidden bg-slate-100">
+        <div class="-mb-4 flex h-0 min-h-0 flex-1 basis-0 overflow-hidden bg-slate-100 sm:-mb-6">
             <aside class="flex w-[min(100%,20rem)] shrink-0 flex-col overflow-hidden border-r border-slate-200 bg-white lg:w-80">
                 <div class="shrink-0 border-b border-slate-100 bg-slate-50/80 px-3 py-2.5">
                     <div class="flex items-center justify-between gap-2">
                         <div class="flex items-center gap-2">
-                            <h2 class="text-sm font-semibold text-slate-900">Queue</h2>
+                            <h2 class="text-sm font-semibold text-slate-900">{{ $t('workspace.queue') }}</h2>
                             <span class="rounded-full bg-slate-200/80 px-2 py-0.5 text-xs font-semibold tabular-nums text-slate-600">{{ queueCount }}</span>
                         </div>
                         <button
@@ -482,9 +531,7 @@ onUnmounted(() => {
                                 class="rounded-full px-2.5 py-1 text-xs font-semibold transition"
                                 :class="!activeViewId ? 'bg-slate-900 text-white' : 'bg-white text-slate-600 ring-1 ring-slate-200 hover:bg-slate-50'"
                                 @click="clearFilters"
-                            >
-                                All
-                            </button>
+                            >{{ $t('workspace.all') }}</button>
                             <button
                                 v-for="view in ticketViews"
                                 :key="view.id"
@@ -505,35 +552,35 @@ onUnmounted(() => {
                                 <input
                                     v-model="filterForm.search"
                                     type="text"
-                                    placeholder="Search tickets…"
+                                    :placeholder="$t('workspace.search_tickets_ellipsis')"
                                     class="w-full rounded-lg border border-slate-200 bg-white py-2 pl-9 pr-3 text-sm placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                                 />
                             </div>
 
                             <div class="grid grid-cols-2 gap-2">
                                 <select v-model="filterForm.status_id" class="rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-xs focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20">
-                                    <option value="">All statuses</option>
+                                    <option value="">{{ $t('workspace.all_statuses') }}</option>
                                     <option v-for="status in statuses" :key="status.id" :value="status.id">{{ status.name }}</option>
                                 </select>
                                 <select v-model="filterForm.priority_id" class="rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-xs focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20">
-                                    <option value="">All priorities</option>
+                                    <option value="">{{ $t('workspace.all_priorities') }}</option>
                                     <option v-for="priority in priorities" :key="priority.id" :value="priority.id">{{ priority.name }}</option>
                                 </select>
                             </div>
 
                             <select v-model="filterForm.assigned_to" class="w-full rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-xs focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20">
-                                <option value="">All assignees</option>
+                                <option value="">{{ $t('workspace.all_assignees') }}</option>
                                 <option v-for="agent in agents" :key="agent.id" :value="agent.id">{{ agent.name }}</option>
                             </select>
 
                             <div class="flex items-center justify-between gap-2">
                                 <label class="flex cursor-pointer items-center gap-2 text-xs font-medium text-slate-600">
                                     <input v-model="filterForm.watching" type="checkbox" class="rounded border-slate-300 text-blue-600 focus:ring-blue-500/30" />
-                                    Watching only
+                                    {{ $t('workspace.watching_only') }}
                                 </label>
                                 <div class="flex items-center gap-2">
-                                    <button v-if="hasFilters" type="button" class="text-xs font-medium text-slate-500 hover:text-slate-700" @click="clearFilters">Clear</button>
-                                    <button type="submit" class="rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white hover:bg-slate-800">Apply</button>
+                                    <button v-if="hasFilters" type="button" class="text-xs font-medium text-slate-500 hover:text-slate-700" @click="clearFilters">{{ $t('workspace.clear') }}</button>
+                                    <button type="submit" class="rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white hover:bg-slate-800">{{ $t('workspace.apply') }}</button>
                                 </div>
                             </div>
                         </form>
@@ -570,14 +617,14 @@ onUnmounted(() => {
                         </div>
                     </li>
                     <li v-if="!queueItems.length" class="px-3 py-10 text-center">
-                        <p class="text-sm font-medium text-slate-700">Queue is empty</p>
-                        <p class="mt-1 text-xs text-slate-500">Adjust filters or create a ticket</p>
+                        <p class="text-sm font-medium text-slate-700">{{ $t('workspace.queue_is_empty') }}</p>
+                        <p class="mt-1 text-xs text-slate-500">{{ $t('workspace.adjust_filters_or_create_a_ticket') }}</p>
                     </li>
                 </ul>
             </aside>
 
             <div class="flex min-h-0 min-w-0 flex-1">
-                <section v-if="ticket" class="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-white">
+                <section v-if="ticket" class="flex min-h-0 min-w-0 flex-1 basis-0 flex-col overflow-hidden bg-white">
                     <div class="flex shrink-0 flex-wrap items-center gap-2 border-b border-slate-200 px-3 py-2">
                         <span class="shrink-0 font-mono text-xs font-semibold text-blue-600">{{ ticket.number }}</span>
                         <span class="hidden h-3.5 w-px bg-slate-200 sm:block" />
@@ -604,14 +651,39 @@ onUnmounted(() => {
                                 class="hidden rounded-lg border border-slate-200 px-2 py-1 text-xs font-medium focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 sm:block"
                                 @change="quickUpdate('assigned_to', $event.target.value ? Number($event.target.value) : '')"
                             >
-                                <option value="">Unassigned</option>
+                                <option value="">{{ $t('workspace.unassigned') }}</option>
                                 <option v-for="agent in agents" :key="agent.id" :value="agent.id">{{ agent.name }}</option>
                             </select>
+                            <div class="relative">
+                                <button
+                                    type="button"
+                                    class="rounded-lg border border-slate-200 px-2.5 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+                                    @click="snoozeOpen = !snoozeOpen"
+                                >
+                                    {{ ticket.snoozed_until ? 'Snoozed' : 'Snooze' }}
+                                </button>
+                                <div
+                                    v-if="snoozeOpen"
+                                    class="absolute right-0 z-20 mt-1 w-40 rounded-lg border border-slate-200 bg-white py-1 shadow-lg"
+                                >
+                                    <button type="button" class="block w-full px-3 py-1.5 text-left text-xs text-slate-700 hover:bg-slate-50" @click="snoozeTicket(60)">{{ $t('workspace.1_hour') }}</button>
+                                    <button type="button" class="block w-full px-3 py-1.5 text-left text-xs text-slate-700 hover:bg-slate-50" @click="snoozeTicket(240)">{{ $t('workspace.4_hours') }}</button>
+                                    <button type="button" class="block w-full px-3 py-1.5 text-left text-xs text-slate-700 hover:bg-slate-50" @click="snoozeTicket(1440)">{{ $t('workspace.tomorrow') }}</button>
+                                    <button type="button" class="block w-full px-3 py-1.5 text-left text-xs text-slate-700 hover:bg-slate-50" @click="snoozeTicket(10080)">{{ $t('workspace.1_week') }}</button>
+                                    <button
+                                        v-if="ticket.snoozed_until"
+                                        type="button"
+                                        class="block w-full border-t border-slate-100 px-3 py-1.5 text-left text-xs text-red-600 hover:bg-slate-50"
+                                        @click="unsnoozeTicket"
+                                    >{{ $t('workspace.unsnooze') }}</button>
+                                </div>
+                            </div>
+                            <span v-if="snoozeLabel" class="hidden text-[10px] text-amber-700 lg:inline">Until {{ snoozeLabel }}</span>
                             <Link
                                 :href="`/tickets/${ticket.id}`"
                                 class="rounded-lg border border-slate-200 px-2.5 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-50"
                             >
-                                Full view
+                                {{ $t('workspace.full_view') }}
                             </Link>
                         </div>
                     </div>
@@ -625,7 +697,7 @@ onUnmounted(() => {
                             <p v-if="ticket.contact.email && ticket.contact.name" class="truncate text-[11px] text-slate-500">{{ ticket.contact.email }}</p>
                         </div>
                         <div v-if="ticket.ccs?.length" class="ml-auto hidden items-center gap-1 sm:flex">
-                            <span class="text-[10px] font-medium uppercase tracking-wide text-slate-400">CC</span>
+                            <span class="text-[10px] font-medium uppercase tracking-wide text-slate-400">{{ $t('workspace.cc') }}</span>
                             <span class="truncate text-xs text-slate-600">{{ ticket.ccs.map((cc) => cc.email).join(', ') }}</span>
                         </div>
                     </div>
@@ -638,7 +710,7 @@ onUnmounted(() => {
                         />
                     </div>
 
-                    <form class="shrink-0 px-2 pb-2 pt-1" @submit.prevent="sendReply" @keydown="onComposerKeydown">
+                    <form class="shrink-0 border-t border-slate-200 bg-white px-2 pb-2 pt-1" @submit.prevent="sendReply" @keydown="onComposerKeydown">
                         <TicketComposerDock
                             v-model:body="composerBody"
                             v-model:attachments="composerAttachments"
@@ -651,7 +723,7 @@ onUnmounted(() => {
                             :on-suggest-reply="(reply) => { composerBody = plainReplyToHtml(reply); composerInternal = false; }"
                             @submit="sendReply"
                         />
-                        <p v-if="draftSaving" class="mt-1 px-1 text-[11px] text-slate-400">Saving draft…</p>
+                        <p v-if="draftSaving" class="mt-1 px-1 text-[11px] text-slate-400">{{ $t('workspace.saving_draft_ellipsis') }}</p>
                     </form>
                 </section>
 
@@ -661,8 +733,8 @@ onUnmounted(() => {
                             <path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                         </svg>
                     </div>
-                    <h3 class="mt-3 text-base font-semibold text-slate-900">Select a ticket</h3>
-                    <p class="mt-1 max-w-xs text-sm text-slate-500">Choose a conversation from the queue to read and reply.</p>
+                    <h3 class="mt-3 text-base font-semibold text-slate-900">{{ $t('workspace.select_a_ticket') }}</h3>
+                    <p class="mt-1 max-w-xs text-sm text-slate-500">{{ $t('workspace.choose_a_conversation_from_the_queue_to_read_and_reply') }}</p>
                 </div>
 
                 <aside v-if="ticket" class="hidden min-h-0 w-72 shrink-0 flex-col overflow-hidden border-l border-slate-200 bg-white xl:flex">

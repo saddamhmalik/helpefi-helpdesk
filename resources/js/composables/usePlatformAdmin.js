@@ -1,9 +1,11 @@
 import { computed } from 'vue';
 import { usePage } from '@inertiajs/vue3';
+import { useI18n } from 'vue-i18n';
 
 export const adminInputClass = 'w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20';
 
 export function usePlatformAdmin() {
+    const { t } = useI18n();
     const page = usePage();
 
     const user = computed(() => page.props.platformAuth?.user ?? null);
@@ -25,9 +27,9 @@ export function usePlatformAdmin() {
         const groups = [];
 
         groups.push({
-            label: 'Overview',
+            label: t('layouts.admin.nav_overview'),
             items: [
-                { label: 'Dashboard', href: '/admin/dashboard', permission: null, match: (url) => url === '/admin/dashboard' || url === '/admin' },
+                { label: t('layouts.admin.nav_dashboard'), href: '/admin/dashboard', permission: null, match: (url) => url === '/admin/dashboard' || url === '/admin' },
             ],
         });
 
@@ -35,7 +37,7 @@ export function usePlatformAdmin() {
 
         if (can('tenants.view')) {
             workspaceItems.push({
-                label: 'Workspaces',
+                label: t('layouts.admin.nav_workspaces'),
                 href: '/admin/tenants',
                 permission: 'tenants.view',
                 match: (url) => url.startsWith('/admin/tenants'),
@@ -44,7 +46,7 @@ export function usePlatformAdmin() {
 
         if (can('subscriptions.view')) {
             workspaceItems.push({
-                label: 'Subscriptions',
+                label: t('layouts.admin.nav_subscriptions'),
                 href: '/admin/subscriptions',
                 permission: 'subscriptions.view',
                 match: (url) => url.startsWith('/admin/subscriptions'),
@@ -53,7 +55,7 @@ export function usePlatformAdmin() {
 
         if (can('payments.view')) {
             workspaceItems.push({
-                label: 'Payments',
+                label: t('layouts.admin.nav_payments'),
                 href: '/admin/payments',
                 permission: 'payments.view',
                 match: (url) => url.startsWith('/admin/payments'),
@@ -61,14 +63,14 @@ export function usePlatformAdmin() {
         }
 
         if (workspaceItems.length) {
-            groups.push({ label: 'Workspaces', items: workspaceItems });
+            groups.push({ label: t('layouts.admin.nav_workspaces_group'), items: workspaceItems });
         }
 
         const platformItems = [];
 
         if (can('settings.view')) {
             platformItems.push({
-                label: 'Platform settings',
+                label: t('layouts.admin.nav_platform_settings'),
                 href: '/admin/settings',
                 permission: 'settings.view',
                 match: (url) => url.startsWith('/admin/settings'),
@@ -77,40 +79,68 @@ export function usePlatformAdmin() {
 
         if (can('emails.view')) {
             platformItems.push({
-                label: 'Email templates',
+                label: t('layouts.admin.nav_email_templates'),
                 href: '/admin/emails',
                 permission: 'emails.view',
                 match: (url) => url.startsWith('/admin/emails'),
             });
         }
 
+        if (can('notices.view')) {
+            platformItems.push({
+                label: t('layouts.admin.nav_notices'),
+                href: '/admin/notices',
+                permission: 'notices.view',
+                match: (url) => url.startsWith('/admin/notices'),
+            });
+        }
+
         if (can('backups.view')) {
             platformItems.push({
-                label: 'Backups',
+                label: t('layouts.admin.nav_backups'),
                 href: '/admin/backups',
                 permission: 'backups.view',
                 match: (url) => url.startsWith('/admin/backups'),
             });
         }
 
+        if (can('feedback.view')) {
+            platformItems.push({
+                label: t('layouts.admin.nav_feedback'),
+                href: '/admin/feedback',
+                permission: 'feedback.view',
+                match: (url) => url.startsWith('/admin/feedback'),
+            });
+        }
+
         if (can('audit.view')) {
             platformItems.push({
-                label: 'Audit logs',
+                label: t('layouts.admin.nav_audit_logs'),
                 href: '/admin/audit-logs',
                 permission: 'audit.view',
                 match: (url) => url.startsWith('/admin/audit-logs'),
             });
         }
 
+        if (can('observability.view')) {
+            platformItems.push({
+                label: t('layouts.admin.nav_observability'),
+                href: '/admin/observability',
+                permission: 'observability.view',
+                external: true,
+                match: (url) => url.startsWith('/admin/observability') || url.startsWith('/telescope'),
+            });
+        }
+
         if (platformItems.length) {
-            groups.push({ label: 'Platform', items: platformItems });
+            groups.push({ label: t('layouts.admin.nav_platform_group'), items: platformItems });
         }
 
         const accessItems = [];
 
         if (can('users.view')) {
             accessItems.push({
-                label: 'Users',
+                label: t('layouts.admin.nav_users'),
                 href: '/admin/users',
                 permission: 'users.view',
                 match: (url) => url.startsWith('/admin/users'),
@@ -119,7 +149,7 @@ export function usePlatformAdmin() {
 
         if (can('roles.view')) {
             accessItems.push({
-                label: 'Roles & permissions',
+                label: t('layouts.admin.nav_roles'),
                 href: '/admin/roles',
                 permission: 'roles.view',
                 match: (url) => url.startsWith('/admin/roles'),
@@ -127,7 +157,7 @@ export function usePlatformAdmin() {
         }
 
         if (accessItems.length) {
-            groups.push({ label: 'Access control', items: accessItems });
+            groups.push({ label: t('layouts.admin.nav_access_group'), items: accessItems });
         }
 
         return groups;

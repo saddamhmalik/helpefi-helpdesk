@@ -12,6 +12,10 @@ class AutomationRule extends Model
 
     public const TRIGGER_CUSTOMER_MESSAGE = 'ticket.customer_message';
 
+    public const TRIGGER_APPROVAL_APPROVED = 'approval.approved';
+
+    public const TRIGGER_APPROVAL_REJECTED = 'approval.rejected';
+
     protected $fillable = [
         'name',
         'trigger',

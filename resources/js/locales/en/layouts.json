@@ -1,0 +1,68 @@
+{
+    "layouts": {
+        "admin": {
+            "platform_admin": "Platform admin",
+            "close_menu": "Close menu",
+            "open_menu": "Open menu",
+            "profile_password": "Profile & password",
+            "nav_overview": "Overview",
+            "nav_dashboard": "Dashboard",
+            "nav_workspaces_group": "Workspaces",
+            "nav_workspaces": "Workspaces",
+            "nav_subscriptions": "Subscriptions",
+            "nav_payments": "Payments",
+            "nav_platform_group": "Platform",
+            "nav_platform_settings": "Platform settings",
+            "nav_email_templates": "Email templates",
+            "nav_notices": "Notices",
+            "nav_backups": "Backups",
+            "nav_feedback": "Feedback & requests",
+            "nav_audit_logs": "Audit logs",
+            "nav_observability": "Errors & exceptions",
+            "nav_access_group": "Access control",
+            "nav_users": "Users",
+            "nav_roles": "Roles & permissions"
+        },
+        "portal": {
+            "help_center": "Help Center",
+            "search": "Search",
+            "services": "Services",
+            "submit_request": "Submit request",
+            "my_tickets": "My tickets",
+            "logout": "Log out",
+            "track_request": "Track request",
+            "sign_in": "Sign in",
+            "register": "Register",
+            "agent_login": "Agent login"
+        },
+        "central": {
+            "product": "Product",
+            "features": "Features",
+            "how_it_works": "How it works",
+            "pricing": "Pricing",
+            "faq": "FAQ",
+            "sign_in": "Sign in",
+            "start_free_trial": "Start free trial",
+            "footer_tagline": "Modern customer support and ITSM software — tickets, chat, knowledge base, automation, and Service Desk workflows in one workspace built for growing teams.",
+            "footer_product": "Product",
+            "footer_platform_overview": "Platform overview",
+            "footer_get_started": "Get started",
+            "footer_sign_in_workspace": "Sign in to workspace",
+            "footer_platform_admin": "Platform admin",
+            "footer_setup_guide": "Setup guide",
+            "footer_capabilities": "Capabilities",
+            "footer_capability_inbox": "Shared inbox & agent workspace",
+            "footer_capability_channels": "Live chat, SMS & portal",
+            "footer_capability_kb": "Knowledge base & service catalog",
+            "footer_capability_sla": "SLA, automation & AI deflection",
+            "footer_capability_service_desk": "Service Desk ITSM (Enterprise)",
+            "footer_capability_integrations": "Integrations, SSO & asset CMDB",
+            "footer_rights": "All rights reserved.",
+            "footer_hosted": "Cloud-hosted · Dedicated workspace · Custom domain on Enterprise",
+            "why_us": "Why us"
+        },
+        "app": {
+            "helpdesk": "Helpdesk"
+        }
+    }
+}

@@ -3,15 +3,19 @@
 namespace App\Domains\Channels\Controllers\Api;
 
 use App\Domains\Channels\Services\ChannelService;
+use App\Domains\Channels\Services\MessagingInboundService;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use InvalidArgumentException;
 
 class ChannelController extends Controller
 {
-    public function __construct(private ChannelService $channelService)
-    {
+    public function __construct(
+        private ChannelService $channelService,
+        private MessagingInboundService $messaging,
+    ) {
     }
 
     public function index(): JsonResponse
@@ -51,5 +55,18 @@ class ChannelController extends Controller
         }
 
         return response()->json($result, $result['action'] === 'created' ? 201 : 200);
+    }
+
+    public function inboundTwilio(Request $request): Response
+    {
+        try {
+            $this->messaging->process($request->all(), $request->query('token'));
+        } catch (InvalidArgumentException $exception) {
+            return response($exception->getMessage(), 422);
+        }
+
+        return response('<?xml version="1.0" encoding="UTF-8"?><Response></Response>', 200, [
+            'Content-Type' => 'text/xml',
+        ]);
     }
 }

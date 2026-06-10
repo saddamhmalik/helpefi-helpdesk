@@ -38,10 +38,10 @@ const submit = () => {
 
 <template>
     <div v-if="csat?.enabled && (showForm || submitted)" class="mt-6 border-t border-slate-100 pt-6">
-        <h3 class="text-sm font-semibold text-slate-900">How was your support experience?</h3>
+        <h3 class="text-sm font-semibold text-slate-900">{{ $t('components.how_was_support_experience') }}</h3>
 
         <div v-if="submitted" class="mt-3 rounded-lg bg-emerald-50 px-4 py-3 text-sm text-emerald-900">
-            <p class="font-medium">Thank you for your feedback.</p>
+            <p class="font-medium">{{ $t('components.thank_you_for_your_feedback') }}</p>
             <div class="mt-2 flex items-center gap-1">
                 <span v-for="star in 5" :key="star" class="text-lg" :class="star <= submitted.rating ? 'text-amber-400' : 'text-slate-300'">★</span>
                 <span class="ml-2 text-slate-600">{{ submitted.rating }}/5</span>
@@ -67,15 +67,15 @@ const submit = () => {
 
             <div>
                 <label class="mb-1 block text-sm font-medium text-slate-700">
-                    Comment
-                    <span v-if="!csat.comment_required" class="font-normal text-slate-500">(optional)</span>
+                    {{ $t('components.comment') }}
+                    <span v-if="!csat.comment_required" class="font-normal text-slate-500">{{ $t('components.optional') }}</span>
                 </label>
                 <textarea
                     v-model="form.comment"
                     rows="3"
                     class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
                     :required="csat.comment_required"
-                    placeholder="Tell us more about your experience..."
+                    :placeholder="$t('components.tell_us_more_about_your_experience')"
                 />
                 <p v-if="form.errors.comment" class="mt-1 text-sm text-red-600">{{ form.errors.comment }}</p>
             </div>
@@ -87,7 +87,7 @@ const submit = () => {
                 class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
                 :disabled="form.processing || !selectedRating"
             >
-                Submit feedback
+                {{ $t('components.submit_feedback') }}
             </button>
         </form>
     </div>

@@ -9,6 +9,9 @@ Route::prefix('v1')->group(function () {
     Route::post('/channels/inbound/email', [ApiChannelController::class, 'inboundEmail'])
         ->middleware('tenancy.public-api:inbound');
 
+    Route::post('/channels/inbound/twilio', [ApiChannelController::class, 'inboundTwilio'])
+        ->middleware('tenancy.public-api:inbound');
+
     Route::middleware(['tenancy.public-api:widget', 'chat.widget.cors', 'throttle:120,1'])->prefix('chat')->group(function () {
         Route::get('/config', [ApiChatWidgetController::class, 'config']);
         Route::post('/sessions', [ApiChatWidgetController::class, 'start']);

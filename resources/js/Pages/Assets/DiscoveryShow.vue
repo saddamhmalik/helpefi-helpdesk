@@ -4,11 +4,14 @@ import { computed, onUnmounted, reactive, watch } from 'vue';
 import AgentLayout from '../../Layouts/AgentLayout.vue';
 import AssetsNav from '../../Components/AssetsNav.vue';
 import DataTable from '../../Components/DataTable.vue';
+import { useI18n } from 'vue-i18n';
 
 const props = defineProps({
     scan: Object,
     meta: Object,
 });
+
+const { t } = useI18n();
 
 const isRunning = computed(() => ['pending', 'running'].includes(props.scan.status));
 
@@ -118,9 +121,7 @@ const statusLabel = (status) => {
                 type="button"
                 class="rounded-lg border border-slate-300 px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-50"
                 @click="refresh"
-            >
-                Refresh
-            </button>
+            >{{ $t('assets.refresh') }}</button>
         </div>
 
         <AssetsNav />
@@ -138,13 +139,13 @@ const statusLabel = (status) => {
             </div>
             <p v-if="scan.error_message" class="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{{ scan.error_message }}</p>
             <p v-else class="mt-4 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">
-                Device names come from DNS, Bonjour, and MAC vendor lookup. Edit names before import if needed.
+                {{ $t('assets.device_names_come_from_dns_bonjour_and_mac_vendor_lookup_edit_names_be') }}
             </p>
         </div>
 
         <form v-if="importableDevices.length" class="mb-4 flex flex-wrap items-end gap-3" @submit.prevent="importDevices">
             <div>
-                <label class="mb-1 block text-sm font-medium text-slate-700">Import as type</label>
+                <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('assets.import_as_type') }}</label>
                 <select v-model="selected.asset_type_id" class="rounded-lg border border-slate-300 px-3 py-2 text-sm">
                     <option v-for="type in meta.types" :key="type.id" :value="type.id">{{ type.name }}</option>
                 </select>
@@ -170,12 +171,12 @@ const statusLabel = (status) => {
                             @change="toggleAll"
                         >
                     </th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">IP</th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Device name</th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">MAC</th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Vendor</th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Status</th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Matched asset</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('assets.ip') }}</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('assets.device_name') }}</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('assets.mac') }}</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('assets.vendor') }}</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('assets.status') }}</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('assets.matched_asset') }}</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-slate-100">
@@ -223,8 +224,8 @@ const statusLabel = (status) => {
                 </tr>
                 <tr v-if="!scan.devices?.length">
                     <td colspan="7" class="px-4 py-12 text-center text-sm text-slate-500">
-                        <span v-if="isRunning">Scan in progress…</span>
-                        <span v-else>No reachable devices found.</span>
+                        <span v-if="isRunning">{{ $t('assets.scan_in_progress_ellipsis') }}</span>
+                        <span v-else>{{ $t('assets.no_reachable_devices_found') }}</span>
                     </td>
                 </tr>
             </tbody>

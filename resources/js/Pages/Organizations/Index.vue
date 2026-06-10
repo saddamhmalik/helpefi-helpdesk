@@ -4,28 +4,31 @@ import AgentLayout from '../../Layouts/AgentLayout.vue';
 import PageHeader from '../../Components/PageHeader.vue';
 import DataTable from '../../Components/DataTable.vue';
 import PaginationLinks from '../../Components/PaginationLinks.vue';
+import { useI18n } from 'vue-i18n';
 
 defineProps({
     organizations: Object,
 });
+
+const { t } = useI18n();
 </script>
 
 <template>
-    <Head title="Organizations" />
+    <Head :title="$t('organizations.organizations')" />
     <AgentLayout>
-        <PageHeader description="Companies and account groupings.">
+        <PageHeader :description="$t('organizations.companies_and_account_groupings')">
             <template #actions>
-                <a href="/organizations/export" class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">Export CSV</a>
-                <Link href="/organizations/create" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">New organization</Link>
+                <a href="/organizations/export" class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">{{ $t('organizations.export_csv') }}</a>
+                <Link href="/organizations/create" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">{{ $t('organizations.new_organization') }}</Link>
             </template>
         </PageHeader>
 
         <DataTable>
             <thead class="bg-slate-50">
                 <tr>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Name</th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Domains</th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Contacts</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('organizations.name') }}</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('organizations.domains') }}</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('organizations.contacts') }}</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-slate-100">

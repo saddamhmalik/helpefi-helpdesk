@@ -30,6 +30,7 @@ class BillingController extends Controller
     {
         $data = $request->validate([
             'plan' => ['required', 'in:'.implode(',', $this->planRepository->slugs())],
+            'interval' => ['nullable', 'in:month,year'],
         ]);
 
         if ($this->billingService->usesStripeCheckout()) {
@@ -38,7 +39,7 @@ class BillingController extends Controller
             ]);
         }
 
-        $this->billingService->changePlan($data['plan']);
+        $this->billingService->changePlan($data['plan'], $data['interval'] ?? 'month');
 
         return back()->with('success', 'Plan updated.');
     }
@@ -47,13 +48,17 @@ class BillingController extends Controller
     {
         $data = $request->validate([
             'plan' => ['required', 'in:'.implode(',', $this->planRepository->slugs())],
+            'interval' => ['nullable', 'in:month,year'],
         ]);
+
+        $interval = $data['interval'] ?? 'month';
 
         $url = $this->billingService->initiatePlanChange(
             $data['plan'],
             (string) $request->user()->email,
             $request->getSchemeAndHttpHost().'/settings/billing?checkout=success',
             $request->getSchemeAndHttpHost().'/settings/billing?checkout=cancelled',
+            $interval,
         );
 
         if (! is_string($url)) {
@@ -71,5 +76,23 @@ class BillingController extends Controller
         );
 
         return redirect()->away($url);
+    }
+
+    public function purchaseAddon(Request $request, string $addon): RedirectResponse
+    {
+        $onTrial = $this->billingService->snapshot()['on_trial'];
+
+        $this->billingService->purchaseAddon($addon, (string) $request->user()->email);
+
+        return back()->with('success', $onTrial
+            ? 'Add-on enabled for your free trial.'
+            : 'Add-on activated.');
+    }
+
+    public function cancelAddon(string $addon): RedirectResponse
+    {
+        $this->billingService->cancelAddon($addon);
+
+        return back()->with('success', 'Add-on cancelled.');
     }
 }

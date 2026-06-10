@@ -1,6 +1,8 @@
 <script setup>
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { formInputClass } from '../composables/useFormControls.js';
+import { csrfHeaders } from '../support/csrf.js';
 
 const props = defineProps({
     contactId: { type: [Number, String], default: '' },
@@ -12,6 +14,8 @@ const props = defineProps({
 
 const emit = defineEmits(['update:contactId', 'update:requesterEmail', 'update:requesterName']);
 
+const { t } = useI18n();
+
 const query = ref('');
 const open = ref(false);
 const loading = ref(false);
@@ -21,8 +25,6 @@ const showNameField = ref(false);
 
 let debounceTimer = null;
 let abortController = null;
-
-const csrf = () => document.querySelector('meta[name="csrf-token"]')?.content;
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -76,10 +78,10 @@ const fetchResults = async (value) => {
 
     try {
         const response = await fetch(`/contacts/search?q=${encodeURIComponent(term)}`, {
+            credentials: 'same-origin',
             headers: {
                 Accept: 'application/json',
-                'X-Requested-With': 'XMLHttpRequest',
-                'X-CSRF-TOKEN': csrf(),
+                ...csrfHeaders(),
             },
             signal: abortController.signal,
         });
@@ -193,7 +195,7 @@ onUnmounted(() => {
                 <p v-if="selected.email" class="truncate text-xs text-slate-500">{{ selected.email }}</p>
             </div>
             <button type="button" class="shrink-0 text-xs text-slate-500 hover:text-slate-700" @click="clearSelection">
-                Clear
+                {{ $t('components.clear') }}
             </button>
         </div>
 
@@ -202,7 +204,7 @@ onUnmounted(() => {
                 v-model="query"
                 type="text"
                 :class="formInputClass"
-                placeholder="Search by name or email…"
+                :placeholder="$t('components.search_by_name_or_email_ellipsis')"
                 autocomplete="off"
                 @input="onInput"
                 @focus="onFocus"
@@ -213,7 +215,7 @@ onUnmounted(() => {
                 v-if="open && (loading || results.length || canUseNewEmail)"
                 class="absolute z-20 mt-1 w-full overflow-hidden rounded-lg border border-slate-200 bg-white shadow-lg"
             >
-                <p v-if="loading" class="px-3 py-2 text-xs text-slate-500">Searching…</p>
+                <p v-if="loading" class="px-3 py-2 text-xs text-slate-500">{{ $t('components.searching_ellipsis') }}</p>
                 <button
                     v-for="contact in results"
                     :key="contact.id"
@@ -230,18 +232,18 @@ onUnmounted(() => {
                     class="w-full border-t border-slate-100 px-3 py-2 text-left text-sm text-blue-600 hover:bg-blue-50"
                     @mousedown.prevent="selectNewEmail(trimmedQuery)"
                 >
-                    Use {{ trimmedQuery }}
+                    {{ $t('components.use_email', { email: trimmedQuery }) }}
                 </button>
             </div>
         </template>
 
         <div v-if="showNameField && selected?.email && !selected?.id" class="mt-2">
-            <label class="mb-1 block text-xs font-medium text-slate-600">Requester name</label>
+            <label class="mb-1 block text-xs font-medium text-slate-600">{{ $t('components.requester_name') }}</label>
             <input
                 :value="requesterName || selected.name"
                 type="text"
                 :class="formInputClass"
-                placeholder="Display name"
+                :placeholder="$t('components.display_name')"
                 @input="onNameInput"
             />
         </div>

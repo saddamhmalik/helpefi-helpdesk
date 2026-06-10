@@ -6,12 +6,15 @@ import FormField from '../../Components/FormField.vue';
 import FormPage from '../../Components/FormPage.vue';
 import FormSection from '../../Components/FormSection.vue';
 import { formInputClass, formSelectClass } from '../../composables/useFormControls.js';
+import { useI18n } from 'vue-i18n';
 
 defineProps({
     organizations: Array,
     tags: Array,
     customFieldDefinitions: Array,
 });
+
+const { t } = useI18n();
 
 const form = useForm({
     name: '',
@@ -36,40 +39,40 @@ const submit = () => form.post('/contacts');
 </script>
 
 <template>
-    <Head title="New customer" />
+    <Head :title="$t('contacts.new_customer')" />
     <AgentLayout>
         <FormPage
-            description="Add a customer profile. Portal access can be granted separately after creation."
+            :description="$t('contacts.add_a_customer_profile_portal_access_can_be_granted_separately_after_c')"
             cancel-href="/contacts"
-            submit-label="Create customer"
+            :submit-label="$t('contacts.create_customer')"
             :processing="form.processing"
             max-width="sm"
             @submit="submit"
         >
-            <FormSection title="Profile">
-                <FormField label="Name" required :error="form.errors.name">
-                    <input v-model="form.name" type="text" :class="formInputClass" placeholder="Full name" required />
+            <FormSection :title="$t('contacts.profile')">
+                <FormField :label="$t('contacts.name')" required :error="form.errors.name">
+                    <input v-model="form.name" type="text" :class="formInputClass" :placeholder="$t('contacts.full_name')" required />
                 </FormField>
                 <FormField
-                    label="Email"
+                    :label="$t('contacts.email')"
                     hint="Auto-links to an organization when the email domain matches."
                     :error="form.errors.email"
                 >
-                    <input v-model="form.email" type="email" :class="formInputClass" placeholder="name@company.com" />
+                    <input v-model="form.email" type="email" :class="formInputClass" :placeholder="$t('contacts.name_company_com')" />
                 </FormField>
-                <FormField label="Phone" :error="form.errors.phone">
+                <FormField :label="$t('contacts.phone')" :error="form.errors.phone">
                     <input v-model="form.phone" type="text" :class="formInputClass" placeholder="+1 555 000 0000" />
                 </FormField>
             </FormSection>
 
-            <FormSection title="Organization & tags">
-                <FormField label="Organization" :error="form.errors.organization_id">
+            <FormSection :title="$t('contacts.organization_tags')">
+                <FormField :label="$t('contacts.organization')" :error="form.errors.organization_id">
                     <select v-model="form.organization_id" :class="formSelectClass">
-                        <option value="">No organization</option>
+                        <option value="">{{ $t('contacts.no_organization') }}</option>
                         <option v-for="org in organizations" :key="org.id" :value="org.id">{{ org.name }}</option>
                     </select>
                 </FormField>
-                <FormField label="Tags" :error="form.errors.tag_ids">
+                <FormField :label="$t('contacts.tags')" :error="form.errors.tag_ids">
                     <div class="flex flex-wrap gap-2">
                         <button
                             v-for="tag in tags"

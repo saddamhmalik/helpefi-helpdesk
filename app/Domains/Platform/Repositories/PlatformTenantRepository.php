@@ -45,6 +45,7 @@ class PlatformTenantRepository
             'active' => $query
                 ->where('is_blocked', false)
                 ->whereHas('subscription', fn ($builder) => $builder->where('status', Subscription::STATUS_ACTIVE)),
+            'no_subscription' => $query->whereDoesntHave('subscription'),
             default => null,
         };
 
@@ -83,12 +84,15 @@ class PlatformTenantRepository
             ->where('trial_ends_at', '<=', now())
             ->count();
 
+        $missingSubscription = Tenant::query()->whereDoesntHave('subscription')->count();
+
         return [
             'total' => $total,
             'blocked' => $blocked,
             'on_trial' => $onTrial,
             'active' => $active,
             'expired_trial' => $expiredTrial,
+            'missing_subscription' => $missingSubscription,
         ];
     }
 
@@ -96,6 +100,28 @@ class PlatformTenantRepository
     {
         return Tenant::query()
             ->orderBy('name')
+            ->get(['id', 'name', 'slug']);
+    }
+
+    public function options(): array
+    {
+        return $this->allForSelect()
+            ->map(fn (Tenant $tenant) => [
+                'id' => $tenant->id,
+                'name' => $tenant->name,
+                'slug' => $tenant->slug,
+            ])
+            ->all();
+    }
+
+    public function findMany(array $ids): Collection
+    {
+        if ($ids === []) {
+            return new Collection();
+        }
+
+        return Tenant::query()
+            ->whereIn('id', $ids)
             ->get(['id', 'name', 'slug']);
     }
 

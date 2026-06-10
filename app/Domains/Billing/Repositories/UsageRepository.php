@@ -21,6 +21,7 @@ class UsageRepository
         return Invitation::query()
             ->whereNull('accepted_at')
             ->where('expires_at', '>', now())
+            ->whereIn('role', ['admin', 'agent'])
             ->count();
     }
 

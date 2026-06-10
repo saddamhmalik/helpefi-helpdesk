@@ -62,4 +62,15 @@ class InvitationMailService
 
         return config('mail.default');
     }
+
+    public function isDeliveryConfigured(): bool
+    {
+        $this->outbound->applyGlobalConfig();
+
+        if ($this->mailSettings->current()->enabled) {
+            return true;
+        }
+
+        return ! in_array(config('mail.default'), ['log', 'array'], true);
+    }
 }

@@ -7,6 +7,8 @@ use App\Domains\Billing\Repositories\PlanRepository;
 use App\Domains\Billing\Repositories\SubscriptionRepository;
 use App\Domains\Billing\Repositories\UsageRepository;
 use App\Domains\Tenancy\Services\CentralSettingsService;
+use App\Domains\Tenancy\Support\AddonCatalogDefinition;
+use App\Domains\Tenancy\Support\PlanCatalogDefinition;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Validation\ValidationException;
 
@@ -26,6 +28,7 @@ class BillingService
         $subscription = $this->subscriptions->current();
         $plan = $this->currentPlan($subscription);
         $usage = $this->usageStats();
+        $features = $this->effectiveFeatures($subscription, $plan);
 
         return [
             'plan' => $this->displayPlan($subscription, $plan),
@@ -44,17 +47,24 @@ class BillingService
             'cancellation_pending' => $subscription->cancelled_at !== null && $subscription->isActive(),
             'show_cancellation_banner' => $subscription->cancelled_at !== null
                 && $subscription->access_ends_at?->isFuture(),
-            'features' => $plan['features'],
+            'features' => $features,
+            'active_addons' => $subscription->active_addons ?? [],
+            'available_addons' => $this->availableAddons($subscription),
             'limits' => $this->formattedLimits($plan['limits']),
             'usage' => $usage,
             'available_plans' => collect($this->plans->all())
                 ->map(fn (array $item, string $slug) => [
                     'slug' => $slug,
                     'name' => $item['name'],
-                    'price' => $item['price'],
+                    'price' => $item['price_monthly'] ?? $item['price'],
+                    'price_monthly' => $item['price_monthly'] ?? $item['price'],
+                    'price_yearly' => $item['price_yearly'] ?? PlanCatalogDefinition::defaultYearlyPrice((int) ($item['price_monthly'] ?? $item['price'] ?? 0)),
                     'limits' => $this->formattedLimits($item['limits']),
                     'features' => $item['features'],
-                    'stripe_ready' => ! empty($item['stripe_price_id']),
+                    'stripe_ready' => ! empty(PlanCatalogDefinition::stripePriceIdForInterval($item, 'month'))
+                        || ! empty(PlanCatalogDefinition::stripePriceIdForInterval($item, 'year')),
+                    'stripe_ready_monthly' => ! empty(PlanCatalogDefinition::stripePriceIdForInterval($item, 'month')),
+                    'stripe_ready_yearly' => ! empty(PlanCatalogDefinition::stripePriceIdForInterval($item, 'year')),
                 ])
                 ->values()
                 ->all(),
@@ -83,9 +93,99 @@ class BillingService
             return false;
         }
 
-        $plan = $this->currentPlan();
+        $subscription = $this->subscriptions->current();
+        $plan = $this->currentPlan($subscription);
 
-        return in_array($feature, $plan['features'], true);
+        if (in_array($feature, $plan['features'], true)) {
+            return true;
+        }
+
+        return $this->hasActiveAddonFeature($subscription, $feature);
+    }
+
+    public function hasAddon(string $addonKey): bool
+    {
+        $subscription = $this->subscriptions->current();
+
+        return in_array($addonKey, $subscription->active_addons ?? [], true);
+    }
+
+    public function activateAddon(string $addonKey): Subscription
+    {
+        $addon = $this->centralSettings->findAddon($addonKey);
+
+        if (! ($addon['enabled'] ?? true)) {
+            throw ValidationException::withMessages([
+                'addon' => 'This add-on is not available.',
+            ]);
+        }
+
+        $subscription = $this->subscriptions->current();
+
+        if (! $subscription->isAccessible()) {
+            throw ValidationException::withMessages([
+                'addon' => 'Your workspace does not have an active subscription.',
+            ]);
+        }
+
+        if (! $subscription->isOnTrial() && ! $subscription->isActive()) {
+            throw ValidationException::withMessages([
+                'addon' => 'Activate a subscription plan before purchasing add-ons.',
+            ]);
+        }
+
+        $active = $subscription->active_addons ?? [];
+
+        if (in_array($addonKey, $active, true)) {
+            return $subscription;
+        }
+
+        return $this->subscriptions->update($subscription, [
+            'active_addons' => array_values(array_unique([...$active, $addonKey])),
+        ]);
+    }
+
+    public function deactivateAddon(string $addonKey): Subscription
+    {
+        $subscription = $this->subscriptions->current();
+        $active = array_values(array_filter(
+            $subscription->active_addons ?? [],
+            fn (string $key) => $key !== $addonKey,
+        ));
+
+        $stripeItems = $subscription->stripe_addon_items ?? [];
+        unset($stripeItems[$addonKey]);
+
+        return $this->subscriptions->update($subscription, [
+            'active_addons' => $active,
+            'stripe_addon_items' => $stripeItems,
+        ]);
+    }
+
+    public function purchaseAddon(string $addonKey, string $customerEmail): Subscription|string
+    {
+        $this->centralSettings->findAddon($addonKey);
+
+        $subscription = $this->subscriptions->current();
+
+        if ($subscription->isOnTrial()) {
+            return $this->activateAddon($addonKey);
+        }
+
+        if ($this->stripe->isEnabled()) {
+            return $this->stripe->purchaseAddon($addonKey, $customerEmail);
+        }
+
+        return $this->activateAddon($addonKey);
+    }
+
+    public function cancelAddon(string $addonKey): Subscription
+    {
+        if ($this->stripe->isEnabled()) {
+            return $this->stripe->cancelAddon($addonKey);
+        }
+
+        return $this->deactivateAddon($addonKey);
     }
 
     public function withinLimit(string $key, int $buffer = 0): bool
@@ -135,15 +235,20 @@ class BillingService
         return $this->stripe->isEnabled();
     }
 
-    public function initiatePlanChange(string $slug, string $customerEmail, string $successUrl, string $cancelUrl): string|Subscription
-    {
+    public function initiatePlanChange(
+        string $slug,
+        string $customerEmail,
+        string $successUrl,
+        string $cancelUrl,
+        string $interval = 'month',
+    ): string|Subscription {
         $this->plans->find($slug);
 
         if ($this->stripe->isEnabled()) {
-            return $this->stripe->checkoutUrl($slug, $customerEmail, $successUrl, $cancelUrl);
+            return $this->stripe->checkoutUrl($slug, $customerEmail, $successUrl, $cancelUrl, $interval);
         }
 
-        return $this->changePlan($slug);
+        return $this->changePlan($slug, $interval);
     }
 
     public function billingPortalUrl(string $customerEmail, string $returnUrl): string
@@ -151,7 +256,7 @@ class BillingService
         return $this->stripe->portalUrl($customerEmail, $returnUrl);
     }
 
-    public function changePlan(string $slug): Subscription
+    public function changePlan(string $slug, string $interval = 'month'): Subscription
     {
         $this->plans->find($slug);
         $subscription = $this->subscriptions->current();
@@ -170,9 +275,10 @@ class BillingService
 
         return $this->subscriptions->update($subscription, [
             'plan' => $slug,
+            'billing_interval' => $interval,
             'status' => Subscription::STATUS_ACTIVE,
             'trial_ends_at' => null,
-            'renews_at' => now()->addMonth(),
+            'renews_at' => $interval === 'year' ? now()->addYear() : now()->addMonth(),
         ]);
     }
 
@@ -198,10 +304,15 @@ class BillingService
         }
 
         if ($subscription->plan) {
+            $interval = $subscription->billing_interval ?? 'month';
+
             return [
                 'slug' => $subscription->plan,
                 'name' => $plan['name'],
-                'price' => $plan['price'],
+                'price' => PlanCatalogDefinition::priceForInterval($plan, $interval),
+                'price_monthly' => PlanCatalogDefinition::priceForInterval($plan, 'month'),
+                'price_yearly' => PlanCatalogDefinition::priceForInterval($plan, 'year'),
+                'billing_interval' => $interval,
             ];
         }
 
@@ -234,6 +345,62 @@ class BillingService
     {
         return collect($limits)
             ->map(fn ($value) => $value === null ? 'unlimited' : $value)
+            ->all();
+    }
+
+    private function effectiveFeatures(Subscription $subscription, array $plan): array
+    {
+        $features = $plan['features'] ?? [];
+
+        foreach ($subscription->active_addons ?? [] as $addonKey) {
+            $feature = AddonCatalogDefinition::featureForAddon($addonKey);
+
+            if ($feature) {
+                $features[] = $feature;
+            }
+        }
+
+        return array_values(array_unique($features));
+    }
+
+    private function hasActiveAddonFeature(Subscription $subscription, string $feature): bool
+    {
+        foreach ($subscription->active_addons ?? [] as $addonKey) {
+            if (AddonCatalogDefinition::featureForAddon($addonKey) !== $feature) {
+                continue;
+            }
+
+            if ($subscription->isOnTrial()) {
+                return true;
+            }
+
+            if ($this->stripe->isEnabled()) {
+                return isset(($subscription->stripe_addon_items ?? [])[$addonKey]);
+            }
+
+            return $subscription->isActive();
+        }
+
+        return false;
+    }
+
+    private function availableAddons(Subscription $subscription): array
+    {
+        return collect($this->centralSettings->addonCatalog())
+            ->filter(fn (array $addon) => $addon['enabled'] ?? true)
+            ->map(fn (array $addon, string $key) => [
+                'key' => $key,
+                'name' => $addon['name'],
+                'feature' => $addon['feature'],
+                'description' => $addon['description'],
+                'price_monthly' => $addon['price_monthly'],
+                'active' => in_array($key, $subscription->active_addons ?? [], true),
+                'trial_access' => $subscription->isOnTrial()
+                    && in_array($key, $subscription->active_addons ?? [], true),
+                'paid' => isset(($subscription->stripe_addon_items ?? [])[$key]),
+                'stripe_ready' => ! empty(AddonCatalogDefinition::stripePriceId($addon)),
+            ])
+            ->values()
             ->all();
     }
 }

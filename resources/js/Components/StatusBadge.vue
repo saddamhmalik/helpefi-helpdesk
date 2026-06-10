@@ -1,10 +1,17 @@
 <script setup>
+import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
+
 defineOptions({ inheritAttrs: false });
 
-defineProps({
-    label: { type: String, default: '—' },
+const props = defineProps({
+    label: { type: String, default: '' },
     color: { type: String, default: '#64748b' },
 });
+
+const { t } = useI18n();
+
+const resolvedLabel = computed(() => props.label || t('components.em_dash'));
 </script>
 
 <template>
@@ -16,6 +23,6 @@ defineProps({
             borderColor: `${color}33`,
         }"
     >
-        {{ label }}
+        {{ resolvedLabel }}
     </span>
 </template>

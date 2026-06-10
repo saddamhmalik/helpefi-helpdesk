@@ -1,15 +1,18 @@
 <script setup>
 import { Link, useForm, usePage } from '@inertiajs/vue3';
 import { ref } from 'vue';
-import SettingsLayout from '../../Layouts/SettingsLayout.vue';
+import SettingsPage from '../../Components/SettingsPage.vue';
 import AppConfirmDialog from '../../Components/AppConfirmDialog.vue';
 import { useConfirmDialog } from '../../composables/useConfirmDialog.js';
+import { useI18n } from 'vue-i18n';
 
 const props = defineProps({
     customDomain: Object,
     billingPlan: String,
     billingFeatures: Array,
 });
+
+const { t } = useI18n();
 
 const page = usePage();
 const copiedField = ref('');
@@ -44,7 +47,7 @@ const savePreferences = () => {
 
 const removeDomain = () => {
     askConfirm({
-        title: 'Remove custom domain',
+        title: t('settings_custom_domain.remove_custom_domain'),
         message: 'Visitors will only be able to use your default platform subdomain.',
         confirmLabel: 'Remove',
         variant: 'danger',
@@ -102,9 +105,9 @@ const cnameHost = () => {
 </script>
 
 <template>
-    <SettingsLayout
-        title="Custom domain"
-        description="Use your own hostname (for example support.anytrip.com) alongside your default workspace URL."
+    <SettingsPage
+        :title="$t('settings.custom_domain')"
+        :description="$t('settings_custom_domain.use_your_own_hostname_for_example_support_anytrip_com_alongside_your_d')"
     >
         <div
             v-if="page.props.flash?.success"
@@ -115,22 +118,22 @@ const cnameHost = () => {
 
         <div class="mb-6 grid gap-4 sm:grid-cols-3">
             <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-                <p class="text-xs font-semibold uppercase tracking-wide text-slate-400">Default URL</p>
+                <p class="text-xs font-semibold uppercase tracking-wide text-slate-400">{{ $t('settings_custom_domain.default_url') }}</p>
                 <p class="mt-2 break-all text-sm font-medium text-slate-900">{{ customDomain?.platform_url }}</p>
             </div>
             <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-                <p class="text-xs font-semibold uppercase tracking-wide text-slate-400">Primary URL</p>
+                <p class="text-xs font-semibold uppercase tracking-wide text-slate-400">{{ $t('settings_custom_domain.primary_url') }}</p>
                 <p class="mt-2 break-all text-sm font-medium text-slate-900">{{ customDomain?.primary_url }}</p>
             </div>
             <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-                <p class="text-xs font-semibold uppercase tracking-wide text-slate-400">Your plan</p>
+                <p class="text-xs font-semibold uppercase tracking-wide text-slate-400">{{ $t('settings_custom_domain.your_plan') }}</p>
                 <p class="mt-2 text-sm font-medium text-slate-900">{{ billingPlan }}</p>
             </div>
         </div>
 
         <div v-if="!customDomain?.can_manage" class="space-y-6">
             <div class="rounded-xl border border-amber-200 bg-amber-50 p-6">
-                <h2 class="text-base font-semibold text-amber-950">Upgrade to Enterprise to connect a custom domain</h2>
+                <h2 class="text-base font-semibold text-amber-950">{{ $t('settings_custom_domain.upgrade_to_enterprise_to_connect_a_custom_domain') }}</h2>
                 <p class="mt-2 text-sm text-amber-900/90">
                     You are on the <span class="font-medium">{{ billingPlan }}</span> plan. Enterprise lets you serve the helpdesk from a branded hostname while keeping
                     <span class="font-medium">{{ customDomain?.platform_url }}</span> working as a fallback.
@@ -144,7 +147,7 @@ const cnameHost = () => {
             </div>
 
             <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-                <h2 class="text-sm font-semibold text-slate-900">What you can configure on Enterprise</h2>
+                <h2 class="text-sm font-semibold text-slate-900">{{ $t('settings_custom_domain.what_you_can_configure_on_enterprise') }}</h2>
                 <ol class="mt-4 space-y-4 text-sm text-slate-700">
                     <li class="flex gap-3">
                         <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-slate-900 text-xs font-semibold text-white">1</span>
@@ -156,7 +159,7 @@ const cnameHost = () => {
                     </li>
                     <li class="flex gap-3">
                         <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-slate-900 text-xs font-semibold text-white">3</span>
-                        <span>Verify ownership with a TXT record, then optionally redirect the default platform URL</span>
+                        <span>{{ $t('settings_custom_domain.verify_ownership_with_a_txt_record_then_optionally_redirect_the_defaul') }}</span>
                     </li>
                 </ol>
             </div>
@@ -166,7 +169,7 @@ const cnameHost = () => {
             <div v-if="customDomain.custom_domain" class="mb-6 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
                 <div class="flex flex-wrap items-center justify-between gap-3">
                     <div>
-                        <p class="text-xs font-semibold uppercase tracking-wide text-slate-400">Custom domain</p>
+                        <p class="text-xs font-semibold uppercase tracking-wide text-slate-400">{{ $t('settings.custom_domain') }}</p>
                         <p class="mt-1 text-sm font-medium text-slate-900">{{ customDomain.custom_domain.url }}</p>
                     </div>
                     <span
@@ -179,7 +182,7 @@ const cnameHost = () => {
             </div>
 
             <div v-if="!customDomain.custom_domain" class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-                <h2 class="text-sm font-semibold text-slate-900">Add your custom domain</h2>
+                <h2 class="text-sm font-semibold text-slate-900">{{ $t('settings_custom_domain.add_your_custom_domain') }}</h2>
                 <p class="mt-2 text-sm text-slate-600">Use a subdomain you control, such as <span class="font-medium text-slate-900">support.anytrip.com</span>.</p>
                 <form class="mt-4 flex flex-col gap-3 sm:flex-row" @submit.prevent="addDomain">
                     <input
@@ -192,9 +195,7 @@ const cnameHost = () => {
                         type="submit"
                         class="rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-60"
                         :disabled="domainForm.processing"
-                    >
-                        Continue
-                    </button>
+                    >{{ $t('settings_custom_domain.continue') }}</button>
                 </form>
                 <p v-if="domainForm.errors.domain" class="mt-2 text-sm text-red-600">{{ domainForm.errors.domain }}</p>
             </div>
@@ -204,17 +205,17 @@ const cnameHost = () => {
                     <div class="flex items-center gap-3">
                         <span class="flex h-8 w-8 items-center justify-center rounded-full bg-slate-900 text-sm font-semibold text-white">1</span>
                         <div>
-                            <h2 class="text-sm font-semibold text-slate-900">Route traffic to Helpdesk</h2>
-                            <p class="text-sm text-slate-600">Add this CNAME record in your DNS provider.</p>
+                            <h2 class="text-sm font-semibold text-slate-900">{{ $t('settings_custom_domain.route_traffic_to_helpdesk') }}</h2>
+                            <p class="text-sm text-slate-600">{{ $t('settings_custom_domain.add_this_cname_record_in_your_dns_provider') }}</p>
                         </div>
                     </div>
                     <div class="mt-4 grid gap-3 sm:grid-cols-3">
                         <div class="rounded-lg border border-slate-200 bg-slate-50 p-3">
-                            <p class="text-xs font-semibold uppercase text-slate-500">Type</p>
-                            <p class="mt-1 font-mono text-sm text-slate-900">CNAME</p>
+                            <p class="text-xs font-semibold uppercase text-slate-500">{{ $t('settings_custom_domain.type') }}</p>
+                            <p class="mt-1 font-mono text-sm text-slate-900">{{ $t('settings_custom_domain.cname') }}</p>
                         </div>
                         <div class="rounded-lg border border-slate-200 bg-slate-50 p-3">
-                            <p class="text-xs font-semibold uppercase text-slate-500">Host</p>
+                            <p class="text-xs font-semibold uppercase text-slate-500">{{ $t('settings_custom_domain.host') }}</p>
                             <div class="mt-1 flex items-center justify-between gap-2">
                                 <p class="font-mono text-sm text-slate-900">{{ cnameHost() }}</p>
                                 <button type="button" class="text-xs font-medium text-blue-600 hover:text-blue-700" @click="copyValue('cname-host', cnameHost())">
@@ -223,7 +224,7 @@ const cnameHost = () => {
                             </div>
                         </div>
                         <div class="rounded-lg border border-slate-200 bg-slate-50 p-3">
-                            <p class="text-xs font-semibold uppercase text-slate-500">Target</p>
+                            <p class="text-xs font-semibold uppercase text-slate-500">{{ $t('settings_custom_domain.target') }}</p>
                             <div class="mt-1 flex items-center justify-between gap-2">
                                 <p class="break-all font-mono text-sm text-slate-900">{{ customDomain.instructions.cname_target }}</p>
                                 <button type="button" class="shrink-0 text-xs font-medium text-blue-600 hover:text-blue-700" @click="copyValue('cname-target', customDomain.instructions.cname_target)">
@@ -238,13 +239,13 @@ const cnameHost = () => {
                     <div class="flex items-center gap-3">
                         <span class="flex h-8 w-8 items-center justify-center rounded-full bg-slate-900 text-sm font-semibold text-white">2</span>
                         <div>
-                            <h2 class="text-sm font-semibold text-slate-900">Verify domain ownership</h2>
-                            <p class="text-sm text-slate-600">DNS updates may take up to an hour to propagate.</p>
+                            <h2 class="text-sm font-semibold text-slate-900">{{ $t('settings_custom_domain.verify_domain_ownership') }}</h2>
+                            <p class="text-sm text-slate-600">{{ $t('settings_custom_domain.dns_updates_may_take_up_to_an_hour_to_propagate') }}</p>
                         </div>
                     </div>
                     <div class="mt-4 space-y-3">
                         <div class="rounded-lg border border-slate-200 bg-slate-50 p-3">
-                            <p class="text-xs font-semibold uppercase text-slate-500">TXT host</p>
+                            <p class="text-xs font-semibold uppercase text-slate-500">{{ $t('settings_custom_domain.txt_host') }}</p>
                             <div class="mt-1 flex items-start justify-between gap-3">
                                 <p class="break-all font-mono text-sm text-slate-900">{{ customDomain.custom_domain.verification_host }}</p>
                                 <button type="button" class="shrink-0 text-xs font-medium text-blue-600 hover:text-blue-700" @click="copyValue('txt-host', customDomain.custom_domain.verification_host)">
@@ -253,7 +254,7 @@ const cnameHost = () => {
                             </div>
                         </div>
                         <div class="rounded-lg border border-slate-200 bg-slate-50 p-3">
-                            <p class="text-xs font-semibold uppercase text-slate-500">TXT value</p>
+                            <p class="text-xs font-semibold uppercase text-slate-500">{{ $t('settings_custom_domain.txt_value') }}</p>
                             <div class="mt-1 flex items-start justify-between gap-3">
                                 <p class="break-all font-mono text-sm text-slate-900">{{ customDomain.custom_domain.verification_token }}</p>
                                 <button type="button" class="shrink-0 text-xs font-medium text-blue-600 hover:text-blue-700" @click="copyValue('txt-value', customDomain.custom_domain.verification_token)">
@@ -268,22 +269,18 @@ const cnameHost = () => {
                             class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-60"
                             :disabled="domainForm.processing || customDomain.custom_domain.is_verified"
                             @click="verifyDomain"
-                        >
-                            Verify domain
-                        </button>
+                        >{{ $t('settings_custom_domain.verify_domain') }}</button>
                         <button
                             type="button"
                             class="rounded-lg border border-red-200 px-4 py-2 text-sm font-medium text-red-700 hover:bg-red-50"
                             @click="removeDomain"
-                        >
-                            Remove
-                        </button>
+                        >{{ $t('settings_custom_domain.remove') }}</button>
                     </div>
                     <p v-if="domainForm.errors.domain" class="mt-2 text-sm text-red-600">{{ domainForm.errors.domain }}</p>
                 </div>
 
                 <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-                    <h2 class="text-sm font-semibold text-slate-900">Redirect default URL (optional)</h2>
+                    <h2 class="text-sm font-semibold text-slate-900">{{ $t('settings_custom_domain.redirect_default_url_optional') }}</h2>
                     <p class="mt-2 text-sm text-slate-600">
                         Send visitors from <span class="font-medium text-slate-900">{{ customDomain.platform_domain }}</span> to your custom domain after verification.
                     </p>
@@ -295,23 +292,21 @@ const cnameHost = () => {
                                 class="mt-0.5 rounded border-slate-300"
                                 :disabled="!customDomain.custom_domain?.is_verified"
                             />
-                            <span>Enable redirect to custom domain</span>
+                            <span>{{ $t('settings_custom_domain.enable_redirect_to_custom_domain') }}</span>
                         </label>
                         <button
                             type="submit"
                             class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-60"
                             :disabled="preferencesForm.processing || !customDomain.custom_domain?.is_verified"
-                        >
-                            Save preference
-                        </button>
+                        >{{ $t('settings_custom_domain.save_preference') }}</button>
                     </form>
                 </div>
 
                 <div class="rounded-xl border border-slate-200 bg-slate-50 p-6">
-                    <h2 class="text-sm font-semibold text-slate-900">Platform operator checklist</h2>
+                    <h2 class="text-sm font-semibold text-slate-900">{{ $t('settings_custom_domain.platform_operator_checklist') }}</h2>
                     <ul class="mt-3 list-disc space-y-2 pl-5 text-sm text-slate-700">
                         <li v-for="note in customDomain.instructions.platform_operator_notes" :key="note">{{ note }}</li>
-                        <li>Issue HTTPS certificates for verified customer hostnames.</li>
+                        <li>{{ $t('settings_custom_domain.issue_https_certificates_for_verified_customer_hostnames') }}</li>
                     </ul>
                 </div>
             </div>
@@ -326,5 +321,5 @@ const cnameHost = () => {
             @close="closeConfirm"
             @confirm="onConfirm"
         />
-    </SettingsLayout>
+    </SettingsPage>
 </template>

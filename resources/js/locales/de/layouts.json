@@ -1,0 +1,68 @@
+{
+    "layouts": {
+        "admin": {
+            "platform_admin": "Plattform-Admin",
+            "close_menu": "Menü schließen",
+            "open_menu": "Menü öffnen",
+            "profile_password": "Profil und Passwort",
+            "nav_overview": "Übersicht",
+            "nav_dashboard": "Dashboard",
+            "nav_workspaces_group": "Arbeitsbereiche",
+            "nav_workspaces": "Arbeitsbereiche",
+            "nav_subscriptions": "Abonnements",
+            "nav_payments": "Zahlungen",
+            "nav_platform_group": "Plattform",
+            "nav_platform_settings": "Plattform-Einstellungen",
+            "nav_email_templates": "E-Mail-Vorlagen",
+            "nav_notices": "Hinweise",
+            "nav_backups": "Backups",
+            "nav_feedback": "Feedback und Anfragen",
+            "nav_audit_logs": "Audit-Protokolle",
+            "nav_observability": "Fehler und Ausnahmen",
+            "nav_access_group": "Zugriffskontrolle",
+            "nav_users": "Benutzer",
+            "nav_roles": "Rollen und Berechtigungen"
+        },
+        "portal": {
+            "help_center": "Hilfezentrum",
+            "search": "Suchen",
+            "services": "Dienste",
+            "submit_request": "Anfrage senden",
+            "my_tickets": "Meine Tickets",
+            "logout": "Abmelden",
+            "track_request": "Anfrage verfolgen",
+            "sign_in": "Anmelden",
+            "register": "Registrieren",
+            "agent_login": "Agenten-Anmeldung"
+        },
+        "central": {
+            "product": "Produkt",
+            "features": "Funktionen",
+            "how_it_works": "So funktioniert's",
+            "pricing": "Preise",
+            "faq": "FAQ",
+            "sign_in": "Anmelden",
+            "start_free_trial": "Kostenlos testen",
+            "footer_tagline": "Moderne Kundensupport- und ITSM-Software — Tickets, Chat, Wissensdatenbank, Automatisierung und Service-Desk-Workflows in einem Arbeitsbereich.",
+            "footer_product": "Produkt",
+            "footer_platform_overview": "Plattform-Übersicht",
+            "footer_get_started": "Loslegen",
+            "footer_sign_in_workspace": "Am Arbeitsbereich anmelden",
+            "footer_platform_admin": "Plattform-Admin",
+            "footer_setup_guide": "Einrichtungsanleitung",
+            "footer_capabilities": "Funktionen",
+            "footer_capability_inbox": "Gemeinsamer Posteingang und Agenten-Arbeitsbereich",
+            "footer_capability_channels": "Live-Chat, SMS und Portal",
+            "footer_capability_kb": "Wissensdatenbank und Servicekatalog",
+            "footer_capability_sla": "SLA, Automatisierung und KI-Ablenkung",
+            "footer_capability_service_desk": "Service Desk ITSM (Enterprise)",
+            "footer_capability_integrations": "Integrationen, SSO und Asset-CMDB",
+            "footer_rights": "Alle Rechte vorbehalten.",
+            "footer_hosted": "Cloud-gehostet · Eigener Arbeitsbereich · Eigene Domain in Enterprise",
+            "why_us": "Warum wir"
+        },
+        "app": {
+            "helpdesk": "Helpdesk"
+        }
+    }
+}

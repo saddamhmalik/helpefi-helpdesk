@@ -16,6 +16,8 @@ class CentralSettingRepository
 
         return CentralSetting::query()->create([
             'trial_days' => (int) config('billing.trial_days', 14),
+            'tenant_purge_grace_days' => 15,
+            'tenant_purge_enabled' => true,
             'currency' => strtoupper((string) config('billing.currency', 'USD')),
         ]);
     }

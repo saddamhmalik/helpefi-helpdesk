@@ -1,10 +1,13 @@
 <script setup>
 import { computed } from 'vue';
+import { useDateTime } from '../composables/useDateTime.js';
 
 const props = defineProps({
     lifecycle: { type: Array, default: () => [] },
     compact: { type: Boolean, default: false },
 });
+
+const { formatDateTime } = useDateTime();
 
 const entries = computed(() => [...props.lifecycle].reverse());
 </script>
@@ -17,16 +20,16 @@ const entries = computed(() => [...props.lifecycle].reverse());
                 <p class="text-xs font-medium text-slate-900">{{ entry.description }}</p>
                 <p class="mt-0.5 text-[11px] text-slate-500">
                     {{ entry.actor }}
-                    <span v-if="entry.created_at"> · {{ new Date(entry.created_at).toLocaleString() }}</span>
+                    <span v-if="entry.created_at"> · {{ formatDateTime(entry.created_at) }}</span>
                 </p>
             </li>
         </ol>
-        <p v-else class="text-xs text-slate-500">No activity yet.</p>
+        <p v-else class="text-xs text-slate-500">{{ $t('components.no_activity_yet') }}</p>
     </div>
 
     <div v-else class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h2 class="text-lg font-semibold text-slate-900">Lifecycle</h2>
-        <p class="mt-1 text-sm text-slate-500">Ticket activity excluding replies.</p>
+        <h2 class="text-lg font-semibold text-slate-900">{{ $t('components.lifecycle_title') }}</h2>
+        <p class="mt-1 text-sm text-slate-500">{{ $t('components.ticket_activity_excluding_replies') }}</p>
 
         <ol v-if="entries.length" class="mt-4 space-y-0">
             <li
@@ -42,12 +45,12 @@ const entries = computed(() => [...props.lifecycle].reverse());
                     <p class="text-sm font-medium text-slate-900">{{ entry.description }}</p>
                     <p class="mt-0.5 text-xs text-slate-500">
                         {{ entry.actor }}
-                        <span v-if="entry.created_at"> · {{ new Date(entry.created_at).toLocaleString() }}</span>
+                        <span v-if="entry.created_at"> · {{ formatDateTime(entry.created_at) }}</span>
                     </p>
                 </div>
             </li>
         </ol>
 
-        <p v-else class="mt-4 text-sm text-slate-500">No lifecycle events yet.</p>
+        <p v-else class="mt-4 text-sm text-slate-500">{{ $t('components.no_lifecycle_events_yet') }}</p>
     </div>
 </template>

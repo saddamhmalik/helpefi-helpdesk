@@ -10,6 +10,7 @@ import FilterField from '../../Components/FilterField.vue';
 import DataTable from '../../Components/DataTable.vue';
 import PaginationLinks from '../../Components/PaginationLinks.vue';
 import { useConfirmDialog } from '../../composables/useConfirmDialog.js';
+import { useI18n } from 'vue-i18n';
 
 const props = defineProps({
     contacts: Object,
@@ -17,15 +18,17 @@ const props = defineProps({
     stats: Object,
 });
 
+const { t } = useI18n();
+
 const page = usePage();
 const isAdmin = () => page.props.auth.user?.is_admin;
 
 const { state: confirm, ask: askConfirm, close: closeConfirm, confirm: onConfirm } = useConfirmDialog();
 
 const accessTabs = [
-    { id: 'all', label: 'All', count: props.stats?.total },
-    { id: 'portal', label: 'Portal access', count: props.stats?.portal },
-    { id: 'guest', label: 'Guest only', count: props.stats?.guest },
+    { id: 'all', label: t('contacts.all'), count: props.stats?.total },
+    { id: 'portal', label: t('contacts.portal_access'), count: props.stats?.portal },
+    { id: 'guest', label: t('contacts.guest_only'), count: props.stats?.guest },
 ];
 
 const inputClass = 'w-full max-w-md rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20';
@@ -64,7 +67,7 @@ const exportUrl = computed(() => {
 
 const removePortalAccess = (contact) => {
     askConfirm({
-        title: 'Revoke portal access',
+        title: t('contacts.revoke_portal_access'),
         message: `Remove portal login for ${contact.name}? They can still email support, but cannot sign in.`,
         confirmLabel: 'Revoke access',
         variant: 'danger',
@@ -74,17 +77,17 @@ const removePortalAccess = (contact) => {
 </script>
 
 <template>
-    <Head title="Customers" />
+    <Head :title="$t('contacts.customers')" />
     <AgentLayout>
-        <PageHeader description="Everyone who interacts with support. Portal access means they can sign in to view tickets online.">
+        <PageHeader :description="$t('contacts.everyone_who_interacts_with_support_portal_access_means_they_can_sign_')">
             <template #actions>
                 <a
                     :href="exportUrl"
                     class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
                 >
-                    Export CSV
+                    {{ $t('contacts.export_csv') }}
                 </a>
-                <Link href="/contacts/create" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">New customer</Link>
+                <Link href="/contacts/create" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">{{ $t('contacts.new_customer') }}</Link>
             </template>
         </PageHeader>
 
@@ -96,12 +99,12 @@ const removePortalAccess = (contact) => {
             @update:model-value="setAccess"
         />
 
-        <ListPanel class="mb-4" title="Find customers">
-            <FilterField label="Search">
+        <ListPanel class="mb-4" :title="$t('contacts.find_customers')">
+            <FilterField :label="$t('contacts.search')">
                 <input
                     type="search"
                     :value="filters.search || ''"
-                    placeholder="Search by name or email..."
+                    :placeholder="$t('contacts.search_by_name_or_email')"
                     :class="inputClass"
                     @input="search"
                 />
@@ -111,12 +114,12 @@ const removePortalAccess = (contact) => {
         <DataTable>
             <thead class="bg-slate-50">
                 <tr>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Customer</th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Access</th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Organization</th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Tags</th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Tickets</th>
-                    <th v-if="isAdmin()" class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Actions</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('contacts.customer') }}</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('contacts.access') }}</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('contacts.organization') }}</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('contacts.tags') }}</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('contacts.tickets') }}</th>
+                    <th v-if="isAdmin()" class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('contacts.actions') }}</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-slate-100">
@@ -130,10 +133,10 @@ const removePortalAccess = (contact) => {
                             v-if="contact.portal_user"
                             class="inline-flex items-center gap-1 rounded-full bg-indigo-50 px-2.5 py-0.5 text-xs font-medium text-indigo-700 ring-1 ring-inset ring-indigo-600/15"
                         >
-                            Portal
+                            {{ $t('contacts.portal') }}
                         </span>
                         <span v-else class="inline-flex rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-600">
-                            Guest
+                            {{ $t('contacts.guest') }}
                         </span>
                     </td>
                     <td class="px-4 py-3 text-sm text-slate-600">{{ contact.organization?.name || '—' }}</td>
@@ -148,9 +151,7 @@ const removePortalAccess = (contact) => {
                             type="button"
                             class="text-sm text-red-600 hover:text-red-700"
                             @click="removePortalAccess(contact)"
-                        >
-                            Revoke portal
-                        </button>
+                        >{{ $t('contacts.revoke_portal') }}</button>
                         <span v-else class="text-xs text-slate-400">—</span>
                     </td>
                 </tr>

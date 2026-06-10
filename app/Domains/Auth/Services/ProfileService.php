@@ -4,6 +4,7 @@ namespace App\Domains\Auth\Services;
 
 use App\Models\User;
 use App\Domains\Security\Support\AuditRecorder;
+use App\Support\LocaleSupport;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 
@@ -28,13 +29,25 @@ class ProfileService
             }
         }
 
-        $user->update([
+        $payload = [
             'name' => $data['name'],
             'email' => $data['email'],
-        ]);
+        ];
+
+        if (array_key_exists('locale', $data)) {
+            $payload['locale'] = LocaleSupport::resolve($data['locale']);
+        }
+
+        if (array_key_exists('timezone', $data)) {
+            $payload['timezone'] = $data['timezone'] ?: null;
+        }
+
+        $user->update($payload);
 
         $this->audit->record('profile.updated', $user, [
             'email' => $user->email,
+            'locale' => $user->locale,
+            'timezone' => $user->timezone,
         ], $user->id);
 
         return $user->fresh();

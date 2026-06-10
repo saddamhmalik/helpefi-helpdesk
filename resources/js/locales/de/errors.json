@@ -1,0 +1,25 @@
+{
+    "errors": {
+        "error_label": "Fehler",
+        "not_found_title": "Seite nicht gefunden",
+        "not_found_description": "Die gesuchte Seite existiert nicht, wurde verschoben oder ist nicht mehr verfügbar.",
+        "server_title": "Etwas ist schiefgelaufen",
+        "server_description": "Es ist ein unerwartetes Problem aufgetreten. Bitte versuchen Sie es in Kürze erneut.",
+        "generic_title": "Anfrage konnte nicht abgeschlossen werden",
+        "generic_description": "Diese Anfrage konnte nicht verarbeitet werden. Wenn das Problem bestehen bleibt, wenden Sie sich an Ihren Administrator.",
+        "status_403_title": "Zugriff verweigert",
+        "status_403_description": "Sie haben keine Berechtigung, diese Seite anzuzeigen.",
+        "status_419_title": "Seite abgelaufen",
+        "status_419_description": "Ihre Sitzung ist abgelaufen. Laden Sie die Seite neu und versuchen Sie es erneut.",
+        "status_429_title": "Zu viele Anfragen",
+        "status_429_description": "Sie senden Anfragen zu schnell. Bitte warten Sie einen Moment und versuchen Sie es erneut.",
+        "status_503_title": "Dienst nicht verfügbar",
+        "status_503_description": "Die Anwendung ist vorübergehend wegen Wartung oder Updates nicht verfügbar.",
+        "go_back": "Zurück",
+        "try_again": "Erneut versuchen",
+        "back_to_help_center": "Zurück zum Hilfecenter",
+        "back_to_dashboard": "Zurück zum Dashboard",
+        "back_to_sign_in": "Zurück zur Anmeldung",
+        "support_hint": "Wenn Sie glauben, dass dies ein Fehler ist, wenden Sie sich an Ihren Workspace-Administrator."
+    }
+}

@@ -5,6 +5,7 @@ namespace App\Domains\Security\Controllers\Api;
 use App\Domains\Security\Services\AuditLogService;
 use App\Domains\Security\Services\RetentionService;
 use App\Domains\Security\Services\SecuritySettingService;
+use App\Domains\Security\Services\SsoService;
 use App\Domains\Security\Services\TwoFactorService;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
@@ -14,6 +15,7 @@ class SecurityController extends Controller
 {
     public function __construct(
         private SecuritySettingService $security,
+        private SsoService $sso,
         private AuditLogService $audit,
         private TwoFactorService $twoFactor,
         private RetentionService $retention,
@@ -62,6 +64,26 @@ class SecurityController extends Controller
         $this->ensureAdmin($request);
 
         return response()->json($this->retention->purge());
+    }
+
+    public function sso(Request $request): JsonResponse
+    {
+        $this->ensureAdmin($request);
+
+        return response()->json($this->sso->snapshot());
+    }
+
+    public function updateSso(Request $request): JsonResponse
+    {
+        $this->ensureAdmin($request);
+
+        $data = $request->validate([
+            'sso_enabled' => ['required', 'boolean'],
+            'sso_protocol' => ['required', 'in:oidc,saml'],
+            'sso_config' => ['nullable', 'array'],
+        ]);
+
+        return response()->json($this->sso->update($data));
     }
 
     private function ensureAdmin(Request $request): void

@@ -3,6 +3,7 @@
 namespace App\Domains\Contacts\Controllers\Api;
 
 use App\Domains\Contacts\Services\ContactService;
+use App\Domains\Contacts\Services\ContactTimelineService;
 use App\Domains\Contacts\Services\OrganizationService;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
@@ -12,6 +13,7 @@ class ContactController extends Controller
 {
     public function __construct(
         private ContactService $contactService,
+        private ContactTimelineService $timelineService,
         private OrganizationService $organizationService,
     ) {
     }
@@ -54,6 +56,13 @@ class ContactController extends Controller
     public function show(int $contact): JsonResponse
     {
         return response()->json($this->contactService->show($contact));
+    }
+
+    public function timeline(int $contact): JsonResponse
+    {
+        return response()->json([
+            'timeline' => $this->timelineService->forContact($contact),
+        ]);
     }
 
     public function store(Request $request): JsonResponse

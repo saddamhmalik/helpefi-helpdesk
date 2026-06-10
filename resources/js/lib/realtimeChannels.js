@@ -9,3 +9,11 @@ export function ticketChannel(tenantId, ticketId) {
 export function workspaceChannel(tenantId) {
     return tenantId ? `${tenantId}.workspace` : 'workspace';
 }
+
+export function userChannel(tenantId, userId) {
+    if (!userId) {
+        return null;
+    }
+
+    return tenantId ? `${tenantId}.user.${userId}` : `user.${userId}`;
+}

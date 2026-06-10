@@ -42,8 +42,6 @@ class OutboundSmtpTest extends TestCase
             ->put('/settings/email/outbound', [
                 'enabled' => true,
                 'reply_enabled' => true,
-                'delivery_mode' => 'sync',
-                'queue_connection' => 'sync',
                 'use_inbox_smtp' => false,
                 'driver' => 'smtp',
                 'from_address' => '',
@@ -73,8 +71,6 @@ class OutboundSmtpTest extends TestCase
             ->put('/settings/email/outbound', [
                 'enabled' => true,
                 'reply_enabled' => true,
-                'delivery_mode' => 'sync',
-                'queue_connection' => 'sync',
                 'use_inbox_smtp' => true,
                 'email_inbox_id' => $inbox->id,
                 'driver' => 'smtp',
@@ -136,8 +132,6 @@ class OutboundSmtpTest extends TestCase
             ->put('/settings/email/outbound', [
                 'enabled' => true,
                 'reply_enabled' => true,
-                'delivery_mode' => 'sync',
-                'queue_connection' => 'sync',
                 'use_inbox_smtp' => false,
                 'driver' => 'smtp',
                 'from_address' => 'user@gmail.com',

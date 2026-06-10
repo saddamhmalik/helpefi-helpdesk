@@ -75,8 +75,6 @@ class EmailSettingController extends Controller
         $data = $request->validate([
             'enabled' => ['required', 'boolean'],
             'reply_enabled' => ['required', 'boolean'],
-            'delivery_mode' => ['required', 'in:sync,queue'],
-            'queue_connection' => ['required', 'in:sync,database,redis'],
             'use_inbox_smtp' => ['required', 'boolean'],
             'email_inbox_id' => ['nullable', 'integer', 'exists:email_inboxes,id'],
             'driver' => ['required', 'in:smtp,log'],

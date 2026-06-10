@@ -15,7 +15,12 @@ class NotificationController extends Controller
 
     public function index(Request $request): JsonResponse
     {
-        return response()->json($this->notifications->list($request->user()));
+        $filters = [
+            'unread' => $request->boolean('unread'),
+            'type' => $request->string('type')->toString() ?: null,
+        ];
+
+        return response()->json($this->notifications->list($request->user(), filters: $filters));
     }
 
     public function summary(Request $request): JsonResponse
@@ -37,6 +42,13 @@ class NotificationController extends Controller
         return response()->json(['message' => 'All notifications marked as read.']);
     }
 
+    public function clearRead(Request $request): JsonResponse
+    {
+        $deleted = $this->notifications->clearRead($request->user());
+
+        return response()->json(['message' => 'Read notifications cleared.', 'deleted' => $deleted]);
+    }
+
     public function settings(): JsonResponse
     {
         return response()->json($this->notifications->settingsSnapshot());
@@ -51,6 +63,7 @@ class NotificationController extends Controller
             'notify_ticket_assigned' => ['required', 'boolean'],
             'notify_customer_reply' => ['required', 'boolean'],
             'notify_sla_breach' => ['required', 'boolean'],
+            'notify_approval_pending' => ['required', 'boolean'],
         ]);
 
         return response()->json($this->notifications->updateSettings($data));

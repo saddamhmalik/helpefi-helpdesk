@@ -68,12 +68,12 @@ class PortalAuthController extends Controller
         return response()->json($this->portalService->ticketsForUser($request->user()));
     }
 
-    public function myTicket(Request $request, int $ticket): JsonResponse
+    public function myTicket(Request $request, string $ticket): JsonResponse
     {
         if (! $request->user()->hasRole('customer')) {
             return response()->json(['message' => 'Forbidden.'], 403);
         }
 
-        return response()->json($this->portalService->customerTicket($request->user(), $ticket));
+        return response()->json($this->portalService->customerTicket($request->user(), (int) $ticket));
     }
 }

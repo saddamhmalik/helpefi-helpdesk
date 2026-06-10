@@ -1,17 +1,23 @@
 <script setup>
 import { router, useForm } from '@inertiajs/vue3';
 import { computed, reactive, ref } from 'vue';
-import SettingsLayout from '../../Layouts/SettingsLayout.vue';
+import SettingsPage from '../../Components/SettingsPage.vue';
 import AppModal from '../../Components/AppModal.vue';
 import AppConfirmDialog from '../../Components/AppConfirmDialog.vue';
+import AppRowActions from '../../Components/AppRowActions.vue';
+import AppEditAction from '../../Components/AppEditAction.vue';
+import AppDeleteAction from '../../Components/AppDeleteAction.vue';
 import { avatarColor } from '../../Components/ticketMessage.js';
 import { useConfirmDialog } from '../../composables/useConfirmDialog.js';
+import { useI18n } from 'vue-i18n';
 
 const props = defineProps({
     roles: Array,
     catalog: Array,
     protectedRoles: Array,
 });
+
+const { t } = useI18n();
 
 const showCreate = ref(false);
 const editingRole = ref(null);
@@ -106,7 +112,7 @@ const saveRole = (role) => {
 
 const deleteRole = (role) => {
     askConfirm({
-        title: 'Delete role',
+        title: t('settings_roles.delete_role'),
         message: `Delete role "${formatRoleName(role.name)}"? Members with this role will need reassignment.`,
         confirmLabel: 'Delete',
         action: () => router.delete(`/settings/roles/${role.id}`, { preserveScroll: true }),
@@ -144,24 +150,22 @@ const isProtected = (role) => props.protectedRoles.includes(role.name);
 </script>
 
 <template>
-    <SettingsLayout title="Roles & permissions" description="Create roles and control what each role can access.">
+    <SettingsPage :title="$t('settings.roles_permissions')" :description="$t('settings_roles.create_roles_and_control_what_each_role_can_access')">
         <template #actions>
-            <button type="button" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700" @click="showCreate = true">
-                Create role
-            </button>
+            <button type="button" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700" @click="showCreate = true">{{ $t('settings_roles.create_role') }}</button>
         </template>
 
         <div class="mb-6 grid gap-4 sm:grid-cols-3">
             <div class="rounded-xl border border-slate-200 bg-white px-5 py-4 shadow-sm">
-                <p class="text-sm text-slate-500">Roles</p>
+                <p class="text-sm text-slate-500">{{ $t('settings_roles.roles') }}</p>
                 <p class="mt-1 text-2xl font-semibold text-slate-900">{{ roles.length }}</p>
             </div>
             <div class="rounded-xl border border-slate-200 bg-white px-5 py-4 shadow-sm">
-                <p class="text-sm text-slate-500">Available permissions</p>
+                <p class="text-sm text-slate-500">{{ $t('settings_roles.available_permissions') }}</p>
                 <p class="mt-1 text-2xl font-semibold text-slate-900">{{ totalPermissions }}</p>
             </div>
             <div class="rounded-xl border border-slate-200 bg-white px-5 py-4 shadow-sm">
-                <p class="text-sm text-slate-500">System roles</p>
+                <p class="text-sm text-slate-500">{{ $t('settings_roles.system_roles') }}</p>
                 <p class="mt-1 text-2xl font-semibold text-slate-900">{{ protectedRoles.length }}</p>
             </div>
         </div>
@@ -187,7 +191,7 @@ const isProtected = (role) => props.protectedRoles.includes(role.name);
                                 v-if="isProtected(role)"
                                 class="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-medium uppercase tracking-wide text-slate-600"
                             >
-                                System
+                                {{ $t('settings_roles.system') }}
                             </span>
                         </div>
                         <p class="mt-0.5 font-mono text-xs text-slate-400">{{ role.name }}</p>
@@ -203,7 +207,7 @@ const isProtected = (role) => props.protectedRoles.includes(role.name);
                 </div>
 
                 <div v-if="permissionGroupsForRole(role).length" class="border-t border-slate-100 px-5 py-4">
-                    <p class="text-[11px] font-semibold uppercase tracking-wide text-slate-400">Access areas</p>
+                    <p class="text-[11px] font-semibold uppercase tracking-wide text-slate-400">{{ $t('settings_roles.access_areas') }}</p>
                     <div class="mt-2 flex flex-wrap gap-1.5">
                         <span
                             v-for="group in permissionGroupsForRole(role)"
@@ -216,44 +220,35 @@ const isProtected = (role) => props.protectedRoles.includes(role.name);
                     </div>
                 </div>
 
-                <div class="mt-auto flex gap-2 border-t border-slate-100 bg-slate-50/60 px-4 py-3">
-                    <button
-                        type="button"
-                        class="flex-1 rounded-lg bg-white px-3 py-2 text-sm font-medium text-slate-700 ring-1 ring-inset ring-slate-200 transition hover:bg-slate-50"
-                        @click="openEdit(role)"
-                    >
-                        Edit permissions
-                    </button>
-                    <button
+                <div class="mt-auto flex justify-end gap-1 border-t border-slate-100 bg-slate-50/60 px-4 py-3">
+                    <AppEditAction :label="$t('settings_roles.edit_permissions')" @click="openEdit(role)" />
+                    <AppDeleteAction
                         v-if="!isProtected(role)"
-                        type="button"
-                        class="rounded-lg px-3 py-2 text-sm font-medium text-red-600 transition hover:bg-red-50"
+                        :label="$t('settings_roles.delete')"
                         @click="deleteRole(role)"
-                    >
-                        Delete
-                    </button>
+                    />
                 </div>
             </article>
         </div>
 
         <AppModal
             :open="showCreate"
-            title="Create role"
-            description="Define a new role and assign permissions."
+            :title="$t('settings_roles.create_role')"
+            :description="$t('settings_roles.define_a_new_role_and_assign_permissions')"
             variant="drawer"
             @close="closeCreate"
         >
             <form id="create-role-form" class="space-y-6" @submit.prevent="createRole">
                 <div class="max-w-md">
-                    <label class="mb-1 block text-sm font-medium text-slate-700">Role name</label>
+                    <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('settings_roles.role_name') }}</label>
                     <input
                         v-model="createForm.name"
                         type="text"
                         required
-                        placeholder="support_lead"
+                        :placeholder="$t('settings_roles.support_lead')"
                         class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm transition focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                     />
-                    <p class="mt-1 text-xs text-slate-500">Stored as a slug, e.g. support_lead</p>
+                    <p class="mt-1 text-xs text-slate-500">{{ $t('settings_roles.stored_as_a_slug_e_g_support_lead') }}</p>
                     <p v-if="createForm.errors.name" class="mt-1 text-sm text-red-600">{{ createForm.errors.name }}</p>
                 </div>
 
@@ -289,12 +284,8 @@ const isProtected = (role) => props.protectedRoles.includes(role.name);
 
             <template #footer>
                 <div class="flex justify-end gap-2">
-                    <button type="button" class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-white" @click="closeCreate">
-                        Cancel
-                    </button>
-                    <button type="submit" form="create-role-form" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700 disabled:opacity-60" :disabled="createForm.processing">
-                        Create role
-                    </button>
+                    <button type="button" class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-white" @click="closeCreate">{{ $t('common.cancel') }}</button>
+                    <button type="submit" form="create-role-form" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700 disabled:opacity-60" :disabled="createForm.processing">{{ $t('settings_roles.create_role') }}</button>
                 </div>
             </template>
         </AppModal>
@@ -302,13 +293,13 @@ const isProtected = (role) => props.protectedRoles.includes(role.name);
         <AppModal
             :open="!!editingRole"
             :title="editingRole ? `Edit ${formatRoleName(editingRole.name)}` : 'Edit role'"
-            description="Update permissions for this role."
+            :description="$t('settings_roles.update_permissions_for_this_role')"
             variant="drawer"
             @close="closeEdit"
         >
             <form v-if="editingRole && editForms[editingRole.id]" :id="`edit-role-${editingRole.id}`" class="space-y-6" @submit.prevent="saveRole(editingRole)">
                 <div v-if="!isProtected(editingRole)" class="max-w-md">
-                    <label class="mb-1 block text-sm font-medium text-slate-700">Role name</label>
+                    <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('settings_roles.role_name') }}</label>
                     <input v-model="editForms[editingRole.id].name" type="text" required class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
                 </div>
                 <div v-else class="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">
@@ -347,12 +338,8 @@ const isProtected = (role) => props.protectedRoles.includes(role.name);
 
             <template #footer>
                 <div v-if="editingRole" class="flex justify-end gap-2">
-                    <button type="button" class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-white" @click="closeEdit">
-                        Cancel
-                    </button>
-                    <button type="submit" :form="`edit-role-${editingRole.id}`" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700 disabled:opacity-60" :disabled="editForms[editingRole.id]?.processing">
-                        Save role
-                    </button>
+                    <button type="button" class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-white" @click="closeEdit">{{ $t('common.cancel') }}</button>
+                    <button type="submit" :form="`edit-role-${editingRole.id}`" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700 disabled:opacity-60" :disabled="editForms[editingRole.id]?.processing">{{ $t('settings_roles.save_role') }}</button>
                 </div>
             </template>
         </AppModal>
@@ -366,5 +353,5 @@ const isProtected = (role) => props.protectedRoles.includes(role.name);
             @close="closeConfirm"
             @confirm="onConfirm"
         />
-    </SettingsLayout>
+    </SettingsPage>
 </template>

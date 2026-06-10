@@ -1,26 +1,38 @@
 <?php
 
 use App\Domains\Billing\Controllers\StripeWebhookController;
+use App\Domains\Platform\Controllers\Central\AdminNoticeController;
+use App\Domains\Platform\Controllers\Central\AdminObservabilityController;
 use App\Domains\Platform\Controllers\Central\AdminAuditLogController;
 use App\Domains\Platform\Controllers\Central\AdminBackupController;
 use App\Domains\Platform\Controllers\Central\AdminDashboardController;
 use App\Domains\Platform\Controllers\Central\AdminPaymentController;
 use App\Domains\Platform\Controllers\Central\AdminSubscriptionController;
+use App\Domains\Platform\Controllers\Central\AdminFeedbackController;
 use App\Domains\Platform\Controllers\Central\AdminEmailTemplateController;
 use App\Domains\Platform\Controllers\Central\AdminLoginController;
 use App\Domains\Platform\Controllers\Central\AdminProfileController;
 use App\Domains\Platform\Controllers\Central\AdminRoleController;
 use App\Domains\Platform\Controllers\Central\AdminTenantController;
 use App\Domains\Platform\Controllers\Central\AdminUserController;
+use App\Domains\Platform\Controllers\Central\PlatformNoticeImageController;
 use App\Domains\Tenancy\Controllers\Central\AdminSettingsController;
 use App\Domains\Tenancy\Controllers\Central\HomeController;
 use App\Domains\Tenancy\Controllers\Central\LoginController;
 use App\Domains\Tenancy\Controllers\Central\RegisterController;
+use App\Domains\Tenancy\Controllers\Central\RobotsController;
+use App\Domains\Tenancy\Controllers\Central\SitemapController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
 Route::post('/stripe/webhook', StripeWebhookController::class)->name('stripe.webhook');
 
+Route::get('/platform-notices/{notice}/image', PlatformNoticeImageController::class)
+    ->middleware('signed')
+    ->name('central.notices.image');
+
+Route::get('/robots.txt', RobotsController::class)->name('central.robots');
+Route::get('/sitemap.xml', SitemapController::class)->name('central.sitemap');
 Route::get('/', [HomeController::class, 'index'])->name('central.home');
 
 Route::get('/dashboard', function () {
@@ -70,6 +82,7 @@ Route::prefix('admin')->name('central.admin.')->group(function () {
 
         Route::middleware('platform.permission:tenants.manage')->group(function () {
             Route::put('/tenants/{tenant}', [AdminTenantController::class, 'update'])->name('tenants.update');
+            Route::delete('/tenants/{tenant}', [AdminTenantController::class, 'destroy'])->name('tenants.destroy');
         });
 
         Route::middleware('platform.permission:payments.view')->group(function () {
@@ -86,6 +99,7 @@ Route::prefix('admin')->name('central.admin.')->group(function () {
 
         Route::middleware('platform.permission:settings.manage')->group(function () {
             Route::put('/settings', [AdminSettingsController::class, 'update'])->name('settings.update');
+            Route::post('/settings/purge-expired-tenants', [AdminSettingsController::class, 'purgeExpiredTenants'])->name('settings.purge-expired-tenants');
         });
 
         Route::middleware('platform.permission:emails.view')->group(function () {
@@ -98,6 +112,21 @@ Route::prefix('admin')->name('central.admin.')->group(function () {
             Route::get('/emails/{template}/edit', [AdminEmailTemplateController::class, 'edit'])->name('emails.edit');
             Route::put('/emails/{template}', [AdminEmailTemplateController::class, 'update'])->name('emails.update');
             Route::delete('/emails/{template}', [AdminEmailTemplateController::class, 'destroy'])->name('emails.destroy');
+        });
+
+        Route::middleware('platform.permission:notices.view')->group(function () {
+            Route::get('/notices', [AdminNoticeController::class, 'index'])->name('notices.index');
+        });
+
+        Route::middleware('platform.permission:notices.manage')->group(function () {
+            Route::get('/notices/create', [AdminNoticeController::class, 'create'])->name('notices.create');
+            Route::post('/notices', [AdminNoticeController::class, 'store'])->name('notices.store');
+            Route::get('/notices/{notice}/edit', [AdminNoticeController::class, 'edit'])->name('notices.edit');
+            Route::put('/notices/{notice}', [AdminNoticeController::class, 'update'])->name('notices.update');
+            Route::post('/notices/{notice}/publish', [AdminNoticeController::class, 'publish'])->name('notices.publish');
+            Route::post('/notices/{notice}/deactivate', [AdminNoticeController::class, 'deactivate'])->name('notices.deactivate');
+            Route::delete('/notices/{notice}', [AdminNoticeController::class, 'destroy'])->name('notices.destroy');
+            Route::get('/notices/{notice}/image', [AdminNoticeController::class, 'image'])->name('notices.image');
         });
 
         Route::middleware('platform.permission:users.view')->group(function () {
@@ -122,9 +151,22 @@ Route::prefix('admin')->name('central.admin.')->group(function () {
             Route::delete('/roles/{role}', [AdminRoleController::class, 'destroy'])->name('roles.destroy');
         });
 
+        Route::middleware('platform.permission:feedback.view')->group(function () {
+            Route::get('/feedback', [AdminFeedbackController::class, 'index'])->name('feedback.index');
+            Route::get('/feedback/{feedback}', [AdminFeedbackController::class, 'show'])->name('feedback.show');
+        });
+
+        Route::middleware('platform.permission:feedback.manage')->group(function () {
+            Route::put('/feedback/{feedback}/status', [AdminFeedbackController::class, 'updateStatus'])->name('feedback.status');
+        });
+
         Route::middleware('platform.permission:audit.view')->group(function () {
             Route::get('/audit-logs', [AdminAuditLogController::class, 'index'])->name('audit-logs.index');
             Route::get('/audit-logs/export', [AdminAuditLogController::class, 'export'])->name('audit-logs.export');
+        });
+
+        Route::middleware('platform.permission:observability.view')->group(function () {
+            Route::get('/observability', AdminObservabilityController::class)->name('observability.index');
         });
 
         Route::middleware('platform.permission:backups.view')->group(function () {

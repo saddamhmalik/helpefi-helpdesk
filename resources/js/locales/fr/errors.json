@@ -1,0 +1,25 @@
+{
+    "errors": {
+        "error_label": "Erreur",
+        "not_found_title": "Page introuvable",
+        "not_found_description": "La page que vous recherchez n'existe pas, a été déplacée ou n'est plus disponible.",
+        "server_title": "Une erreur s'est produite",
+        "server_description": "Nous avons rencontré un problème inattendu. Veuillez réessayer dans un instant.",
+        "generic_title": "Impossible de traiter la demande",
+        "generic_description": "Cette demande n'a pas pu être traitée. Si le problème persiste, contactez votre administrateur.",
+        "status_403_title": "Accès refusé",
+        "status_403_description": "Vous n'avez pas l'autorisation d'afficher cette page.",
+        "status_419_title": "Page expirée",
+        "status_419_description": "Votre session a expiré. Actualisez la page et réessayez.",
+        "status_429_title": "Trop de requêtes",
+        "status_429_description": "Vous envoyez des requêtes trop rapidement. Patientez un instant et réessayez.",
+        "status_503_title": "Service indisponible",
+        "status_503_description": "L'application est temporairement indisponible pour maintenance ou mise à jour.",
+        "go_back": "Retour",
+        "try_again": "Réessayer",
+        "back_to_help_center": "Retour au centre d'aide",
+        "back_to_dashboard": "Retour au tableau de bord",
+        "back_to_sign_in": "Retour à la connexion",
+        "support_hint": "Si vous pensez qu'il s'agit d'une erreur, contactez l'administrateur de votre espace de travail."
+    }
+}

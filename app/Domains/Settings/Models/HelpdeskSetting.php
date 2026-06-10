@@ -25,8 +25,13 @@ class HelpdeskSetting extends Model
         'email_create_ticket_on_subject_change',
         'email_detect_auto_replies',
         'kb_deflection_enabled',
+        'kb_locales',
+        'kb_default_locale',
         'setup_completed_at',
         'setup_steps_completed',
+        'dummy_data_active',
+        'dummy_data_choice_at',
+        'dummy_data_manifest',
     ];
 
     protected function casts(): array
@@ -46,8 +51,12 @@ class HelpdeskSetting extends Model
             'email_create_ticket_on_subject_change' => 'boolean',
             'email_detect_auto_replies' => 'boolean',
             'kb_deflection_enabled' => 'boolean',
+            'kb_locales' => 'array',
             'setup_completed_at' => 'datetime',
             'setup_steps_completed' => 'array',
+            'dummy_data_active' => 'boolean',
+            'dummy_data_choice_at' => 'datetime',
+            'dummy_data_manifest' => 'array',
         ];
     }
 }

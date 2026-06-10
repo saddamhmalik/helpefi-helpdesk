@@ -1,9 +1,11 @@
 <script setup>
 import { Link, useForm } from '@inertiajs/vue3';
 import { computed } from 'vue';
-import SettingsLayout from '../../../Layouts/SettingsLayout.vue';
+import SettingsPage from '../../../Components/SettingsPage.vue';
 import AppAvatar from '../../../Components/AppAvatar.vue';
 import MemberTicketTable from '../../../Components/MemberTicketTable.vue';
+import { useI18n } from 'vue-i18n';
+import { useDateTime } from '../../../composables/useDateTime.js';
 
 const props = defineProps({
     member: Object,
@@ -21,6 +23,10 @@ const props = defineProps({
     allSkills: { type: Array, default: () => [] },
     teams: { type: Array, default: () => [] },
 });
+
+const { formatDateTime, formatDate } = useDateTime();
+
+const { t } = useI18n();
 
 const skillsForm = useForm({
     skill_ids: props.member.skills?.map((skill) => skill.id) ?? [],
@@ -87,16 +93,15 @@ const priorityBadgeClass = (name) => {
 
 const customFieldLabel = (name) => props.customFieldDefinitions.find((field) => field.name === name)?.label ?? name;
 
-const formatDate = (value) => value ? new Date(value).toLocaleString() : '—';
 </script>
 
 <template>
-    <SettingsLayout :title="member.name" :description="member.email" :head-title="`${member.name} · Profile`">
+    <SettingsPage :title="member.name" :description="member.email" :head-title="`${member.name} · Profile`">
         <div class="relative -mx-4 pb-8 sm:-mx-6 lg:-mx-8">
             <div class="pointer-events-none absolute inset-x-0 top-0 h-56 bg-gradient-to-br from-blue-600/5 via-violet-500/5 to-transparent" />
 
             <div class="relative mb-8">
-                <Link href="/settings/members" class="text-sm font-medium text-blue-600 hover:text-blue-700">← Team members</Link>
+                <Link href="/settings/members" class="text-sm font-medium text-blue-600 hover:text-blue-700">{{ $t('settings_members_show.back_to_team_members') }}</Link>
 
                 <div class="mt-4 flex flex-wrap items-start justify-between gap-4">
                     <div class="flex items-start gap-4">
@@ -106,46 +111,46 @@ const formatDate = (value) => value ? new Date(value).toLocaleString() : '—';
                             <p class="mt-1 text-sm text-slate-600">{{ member.email }}</p>
                             <div class="mt-3 flex flex-wrap items-center gap-2">
                                 <span class="rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-semibold uppercase tracking-wide text-blue-700">{{ roleName }}</span>
-                                <span class="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-600">Joined {{ new Date(member.created_at).toLocaleDateString() }}</span>
+                                <span class="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-600">{{ $t('settings_members_show.joined') }} {{ formatDate(member.created_at) }}</span>
                             </div>
                         </div>
                     </div>
                     <div class="rounded-2xl border border-white/60 bg-white/90 px-5 py-4 text-center shadow-sm ring-1 ring-slate-100 backdrop-blur">
-                        <p class="text-xs font-medium uppercase tracking-wide text-slate-500">Performance</p>
+                        <p class="text-xs font-medium uppercase tracking-wide text-slate-500">{{ $t('settings_members_show.performance') }}</p>
                         <p class="mt-1 text-3xl font-bold tabular-nums" :class="scoreClass(performance.score)">{{ Number(performance.score).toFixed(1) }}</p>
-                        <Link :href="`/settings/performance/${member.id}`" class="mt-1 inline-block text-xs font-semibold text-blue-600 hover:text-blue-700">Full history →</Link>
+                        <Link :href="`/settings/performance/${member.id}`" class="mt-1 inline-block text-xs font-semibold text-blue-600 hover:text-blue-700">{{ $t('settings_members_show.full_history') }}</Link>
                     </div>
                 </div>
             </div>
 
             <div class="relative grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
                 <div class="rounded-2xl border border-white/60 bg-white/90 p-5 shadow-sm ring-1 ring-blue-100 backdrop-blur">
-                    <p class="text-xs font-medium uppercase tracking-wide text-slate-500">Assigned tickets</p>
+                    <p class="text-xs font-medium uppercase tracking-wide text-slate-500">{{ $t('settings_members_show.assigned_tickets') }}</p>
                     <p class="mt-2 text-3xl font-bold text-slate-900">{{ ticketStats.assigned.open }}</p>
-                    <p class="mt-1 text-sm text-slate-500">{{ ticketStats.assigned.closed }} closed · {{ ticketStats.assigned.total }} total</p>
+                    <p class="mt-1 text-sm text-slate-500">{{ $t('settings_members_show.closed_total', { closed: ticketStats.assigned.closed, total: ticketStats.assigned.total }) }}</p>
                 </div>
                 <div class="rounded-2xl border border-white/60 bg-white/90 p-5 shadow-sm ring-1 ring-violet-100 backdrop-blur">
-                    <p class="text-xs font-medium uppercase tracking-wide text-slate-500">Team queue</p>
+                    <p class="text-xs font-medium uppercase tracking-wide text-slate-500">{{ $t('settings_members_show.team_queue') }}</p>
                     <p class="mt-2 text-3xl font-bold text-slate-900">{{ ticketStats.team.open }}</p>
-                    <p class="mt-1 text-sm text-slate-500">{{ ticketStats.team.total }} tickets across teams</p>
+                    <p class="mt-1 text-sm text-slate-500">{{ $t('settings_members_show.tickets_across_teams', { total: ticketStats.team.total }) }}</p>
                 </div>
                 <div class="rounded-2xl border border-white/60 bg-white/90 p-5 shadow-sm ring-1 ring-cyan-100 backdrop-blur">
-                    <p class="text-xs font-medium uppercase tracking-wide text-slate-500">Department queue</p>
+                    <p class="text-xs font-medium uppercase tracking-wide text-slate-500">{{ $t('settings_members_show.department_queue') }}</p>
                     <p class="mt-2 text-3xl font-bold text-slate-900">{{ ticketStats.department.open }}</p>
-                    <p class="mt-1 text-sm text-slate-500">{{ ticketStats.department.total }} tickets in departments</p>
+                    <p class="mt-1 text-sm text-slate-500">{{ $t('settings_members_show.tickets_in_departments', { total: ticketStats.department.total }) }}</p>
                 </div>
                 <div class="rounded-2xl border border-white/60 bg-white/90 p-5 shadow-sm ring-1 ring-amber-100 backdrop-blur">
-                    <p class="text-xs font-medium uppercase tracking-wide text-slate-500">Watching</p>
+                    <p class="text-xs font-medium uppercase tracking-wide text-slate-500">{{ $t('settings_members_show.watching') }}</p>
                     <p class="mt-2 text-3xl font-bold text-slate-900">{{ ticketStats.watching }}</p>
-                    <p class="mt-1 text-sm text-slate-500">Tickets followed</p>
+                    <p class="mt-1 text-sm text-slate-500">{{ $t('settings_members_show.tickets_followed') }}</p>
                 </div>
             </div>
 
             <div class="relative mt-6 grid gap-6 xl:grid-cols-12">
                 <div class="space-y-6 xl:col-span-5">
                     <section v-if="allSkills.length" class="rounded-2xl border border-white/60 bg-white/90 p-6 shadow-sm ring-1 ring-slate-100 backdrop-blur">
-                        <h2 class="text-base font-semibold text-slate-900">Skills</h2>
-                        <p class="mt-0.5 text-sm text-slate-500">Used for skills-based auto-assignment rules.</p>
+                        <h2 class="text-base font-semibold text-slate-900">{{ $t('settings_members_show.skills') }}</h2>
+                        <p class="mt-0.5 text-sm text-slate-500">{{ $t('settings_members_show.used_for_skills-based_auto-assignment_rules') }}</p>
                         <form class="mt-4" @submit.prevent="saveSkills">
                             <div class="flex flex-wrap gap-2">
                                 <button
@@ -159,13 +164,13 @@ const formatDate = (value) => value ? new Date(value).toLocaleString() : '—';
                                     {{ skill.name }}
                                 </button>
                             </div>
-                            <button type="submit" class="mt-4 rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white" :disabled="skillsForm.processing">Save skills</button>
+                            <button type="submit" class="mt-4 rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white" :disabled="skillsForm.processing">{{ $t('settings_members_show.save_skills') }}</button>
                         </form>
                     </section>
 
                     <section v-if="teams.length" class="rounded-2xl border border-white/60 bg-white/90 p-6 shadow-sm ring-1 ring-slate-100 backdrop-blur">
-                        <h2 class="text-base font-semibold text-slate-900">Team membership</h2>
-                        <p class="mt-0.5 text-sm text-slate-500">Assign this member to one or more teams.</p>
+                        <h2 class="text-base font-semibold text-slate-900">{{ $t('settings_members_show.team_membership') }}</h2>
+                        <p class="mt-0.5 text-sm text-slate-500">{{ $t('settings_members_show.assign_this_member_to_one_or_more_teams') }}</p>
                         <form class="mt-4" @submit.prevent="saveTeams">
                             <div class="flex flex-wrap gap-2">
                                 <button
@@ -179,16 +184,16 @@ const formatDate = (value) => value ? new Date(value).toLocaleString() : '—';
                                     {{ team.name }}
                                 </button>
                             </div>
-                            <button type="submit" class="mt-4 rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white" :disabled="teamsForm.processing">Save teams</button>
+                            <button type="submit" class="mt-4 rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white" :disabled="teamsForm.processing">{{ $t('settings_members_show.save_teams') }}</button>
                         </form>
                     </section>
 
                     <section class="rounded-2xl border border-white/60 bg-white/90 p-6 shadow-sm ring-1 ring-slate-100 backdrop-blur">
-                        <h2 class="text-base font-semibold text-slate-900">Organization</h2>
-                        <p class="mt-0.5 text-sm text-slate-500">Departments, teams, and responsibilities</p>
+                        <h2 class="text-base font-semibold text-slate-900">{{ $t('settings_members_show.organization') }}</h2>
+                        <p class="mt-0.5 text-sm text-slate-500">{{ $t('settings_members_show.departments_teams_and_responsibilities') }}</p>
 
                         <div v-if="!departments.length" class="mt-4 rounded-xl border border-dashed border-slate-200 px-4 py-8 text-center text-sm text-slate-400">
-                            Not assigned to any department or team.
+                            {{ $t('settings_members_show.not_assigned') }}
                         </div>
 
                         <div v-else class="mt-4 space-y-4">
@@ -198,14 +203,14 @@ const formatDate = (value) => value ? new Date(value).toLocaleString() : '—';
                                         <p class="font-semibold text-slate-900">{{ department.name }}</p>
                                         <p v-if="department.description" class="mt-1 text-sm text-slate-500">{{ department.description }}</p>
                                     </div>
-                                    <span v-if="department.is_head" class="shrink-0 rounded-full bg-violet-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-violet-700">Head</span>
+                                    <span v-if="department.is_head" class="shrink-0 rounded-full bg-violet-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-violet-700">{{ $t('settings_members_show.head') }}</span>
                                 </div>
                                 <ul class="mt-3 space-y-2">
                                     <li v-for="team in department.teams" :key="team.id" class="flex items-center justify-between rounded-lg bg-white px-3 py-2 text-sm">
                                         <span class="font-medium text-slate-800">{{ team.name }}</span>
                                         <div class="flex items-center gap-2">
                                             <span class="rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-600">{{ team.org_role.replace('_', ' ') }}</span>
-                                            <span v-if="team.is_lead" class="rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700">Lead</span>
+                                            <span v-if="team.is_lead" class="rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700">{{ $t('settings_members_show.lead') }}</span>
                                         </div>
                                     </li>
                                 </ul>
@@ -214,7 +219,7 @@ const formatDate = (value) => value ? new Date(value).toLocaleString() : '—';
                     </section>
 
                     <section v-if="customFieldDefinitions.length && Object.keys(member.custom_fields ?? {}).length" class="rounded-2xl border border-white/60 bg-white/90 p-6 shadow-sm ring-1 ring-slate-100 backdrop-blur">
-                        <h2 class="text-base font-semibold text-slate-900">Custom fields</h2>
+                        <h2 class="text-base font-semibold text-slate-900">{{ $t('settings_members_show.custom_fields') }}</h2>
                         <dl class="mt-4 space-y-3">
                             <div v-for="(value, key) in member.custom_fields" :key="key" class="flex items-start justify-between gap-4 border-b border-slate-100 pb-3 last:border-0 last:pb-0">
                                 <dt class="text-sm text-slate-500">{{ customFieldLabel(key) }}</dt>
@@ -224,22 +229,22 @@ const formatDate = (value) => value ? new Date(value).toLocaleString() : '—';
                     </section>
 
                     <section class="rounded-2xl border border-white/60 bg-white/90 p-6 shadow-sm ring-1 ring-slate-100 backdrop-blur">
-                        <h2 class="text-base font-semibold text-slate-900">Performance (30 days)</h2>
+                        <h2 class="text-base font-semibold text-slate-900">{{ $t('settings_members_show.performance_30_days') }}</h2>
                         <dl class="mt-4 grid grid-cols-2 gap-3">
                             <div class="rounded-xl bg-slate-50 p-3">
-                                <dt class="text-xs text-slate-500">Points</dt>
+                                <dt class="text-xs text-slate-500">{{ $t('settings_members_show.points') }}</dt>
                                 <dd class="mt-1 text-xl font-bold text-slate-900">{{ performance.total_points }}</dd>
                             </div>
                             <div class="rounded-xl bg-emerald-50 p-3">
-                                <dt class="text-xs text-emerald-700">Positive</dt>
+                                <dt class="text-xs text-emerald-700">{{ $t('settings_members_show.positive') }}</dt>
                                 <dd class="mt-1 text-xl font-bold text-emerald-700">{{ performance.positive_events }}</dd>
                             </div>
                             <div class="rounded-xl bg-red-50 p-3">
-                                <dt class="text-xs text-red-700">SLA violations</dt>
+                                <dt class="text-xs text-red-700">{{ $t('settings_members_show.sla_violations') }}</dt>
                                 <dd class="mt-1 text-xl font-bold text-red-600">{{ performance.violations }}</dd>
                             </div>
                             <div class="rounded-xl bg-amber-50 p-3">
-                                <dt class="text-xs text-amber-700">Negative events</dt>
+                                <dt class="text-xs text-amber-700">{{ $t('settings_members_show.negative_events') }}</dt>
                                 <dd class="mt-1 text-xl font-bold text-amber-700">{{ performance.negative_events }}</dd>
                             </div>
                         </dl>
@@ -250,47 +255,47 @@ const formatDate = (value) => value ? new Date(value).toLocaleString() : '—';
                     <section class="rounded-2xl border border-white/60 bg-white/90 p-6 shadow-sm ring-1 ring-slate-100 backdrop-blur">
                         <div class="flex items-center justify-between gap-4">
                             <div>
-                                <h2 class="text-base font-semibold text-slate-900">Assigned workload</h2>
-                                <p class="mt-0.5 text-sm text-slate-500">Breakdown of tickets assigned to this member</p>
+                                <h2 class="text-base font-semibold text-slate-900">{{ $t('settings_members_show.assigned_workload') }}</h2>
+                                <p class="mt-0.5 text-sm text-slate-500">{{ $t('settings_members_show.breakdown_of_tickets_assigned_to_this_member') }}</p>
                             </div>
-                            <Link :href="`/tickets?assigned_to=${member.id}`" class="text-xs font-semibold text-blue-600 hover:text-blue-700">View all →</Link>
+                            <Link :href="`/tickets?assigned_to=${member.id}`" class="text-xs font-semibold text-blue-600 hover:text-blue-700">{{ $t('common.view_all') }}</Link>
                         </div>
 
                         <div class="mt-4 grid gap-3 sm:grid-cols-2">
                             <div>
-                                <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">By status</p>
+                                <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">{{ $t('settings_members_show.by_status') }}</p>
                                 <div class="space-y-2">
                                     <div v-for="item in assignedByStatus" :key="item.slug" class="flex items-center justify-between text-sm">
                                         <span class="rounded-full px-2 py-0.5 text-xs font-medium" :class="statusBadgeClass(item.label)">{{ item.label }}</span>
                                         <span class="font-semibold tabular-nums text-slate-900">{{ item.count }}</span>
                                     </div>
-                                    <p v-if="!assignedByStatus.length" class="text-sm text-slate-400">No assigned tickets.</p>
+                                    <p v-if="!assignedByStatus.length" class="text-sm text-slate-400">{{ $t('settings_members_show.no_assigned_tickets') }}</p>
                                 </div>
                             </div>
                             <div>
-                                <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">Open by priority</p>
+                                <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">{{ $t('settings_members_show.open_by_priority') }}</p>
                                 <div class="space-y-2">
                                     <div v-for="item in assignedByPriority" :key="item.slug" class="flex items-center justify-between text-sm">
                                         <span class="rounded-full px-2 py-0.5 text-xs font-medium" :class="priorityBadgeClass(item.label)">{{ item.label }}</span>
                                         <span class="font-semibold tabular-nums text-slate-900">{{ item.count }}</span>
                                     </div>
-                                    <p v-if="!assignedByPriority.length" class="text-sm text-slate-400">No open assigned tickets.</p>
+                                    <p v-if="!assignedByPriority.length" class="text-sm text-slate-400">{{ $t('settings_members_show.no_open_assigned_tickets') }}</p>
                                 </div>
                             </div>
                         </div>
                     </section>
 
-                    <MemberTicketTable title="Recent assigned tickets" :tickets="recentAssignedTickets" empty="No assigned tickets yet." />
-                    <MemberTicketTable title="Recent department tickets" :tickets="recentDepartmentTickets" empty="No tickets in this member's departments." />
-                    <MemberTicketTable title="Recent team tickets" :tickets="recentTeamTickets" empty="No tickets in this member's teams." />
+                    <MemberTicketTable :title="$t('settings_members_show.recent_assigned_tickets')" :tickets="recentAssignedTickets" :empty="$t('settings_members_show.no_assigned_tickets_yet')" />
+                    <MemberTicketTable :title="$t('settings_members_show.recent_department_tickets')" :tickets="recentDepartmentTickets" :empty="$t('settings_members_show.no_tickets_in_departments')" />
+                    <MemberTicketTable :title="$t('settings_members_show.recent_team_tickets')" :tickets="recentTeamTickets" :empty="$t('settings_members_show.no_tickets_in_teams')" />
 
                     <section class="rounded-2xl border border-white/60 bg-white/90 p-6 shadow-sm ring-1 ring-slate-100 backdrop-blur">
                         <div class="flex items-center justify-between gap-4">
                             <div>
-                                <h2 class="text-base font-semibold text-slate-900">Recent performance events</h2>
-                                <p class="mt-0.5 text-sm text-slate-500">Latest score changes</p>
+                                <h2 class="text-base font-semibold text-slate-900">{{ $t('settings_members_show.recent_performance_events') }}</h2>
+                                <p class="mt-0.5 text-sm text-slate-500">{{ $t('settings_members_show.latest_score_changes') }}</p>
                             </div>
-                            <Link :href="`/settings/performance/${member.id}`" class="text-xs font-semibold text-blue-600 hover:text-blue-700">View all →</Link>
+                            <Link :href="`/settings/performance/${member.id}`" class="text-xs font-semibold text-blue-600 hover:text-blue-700">{{ $t('common.view_all') }}</Link>
                         </div>
 
                         <ul class="mt-4 divide-y divide-slate-100">
@@ -304,11 +309,11 @@ const formatDate = (value) => value ? new Date(value).toLocaleString() : '—';
                                     <span class="text-sm font-semibold tabular-nums" :class="event.points >= 0 ? 'text-emerald-700' : 'text-red-600'">{{ event.points >= 0 ? '+' : '' }}{{ event.points }}</span>
                                 </div>
                             </li>
-                            <li v-if="!recentPerformanceEvents.data?.length" class="py-6 text-center text-sm text-slate-400">No performance events yet.</li>
+                            <li v-if="!recentPerformanceEvents.data?.length" class="py-6 text-center text-sm text-slate-400">{{ $t('settings_members_show.no_performance_events_yet') }}</li>
                         </ul>
                     </section>
                 </div>
             </div>
         </div>
-    </SettingsLayout>
+    </SettingsPage>
 </template>

@@ -65,32 +65,13 @@ class MemberController extends Controller
             $data['team_id'] ?? null,
         );
 
-        return back()->with([
-            'success' => 'Invitation sent.',
-            'invite_url' => $this->invitationService->acceptUrl($invitation),
-        ]);
-    }
+        $flash = ['success' => 'Invitation sent.'];
 
-    public function store(Request $request): RedirectResponse
-    {
-        $data = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', 'max:255'],
-            'role' => ['required', Rule::in($this->roleService->assignableRoles())],
-            'team_id' => ['nullable', 'exists:teams,id'],
-            'custom_fields' => ['nullable', 'array'],
-        ]);
+        if ($this->invitationService->shouldExposeAcceptUrl()) {
+            $flash['invite_url'] = $this->invitationService->acceptUrl($invitation);
+        }
 
-        $this->memberService->create(
-            $data['name'],
-            $data['email'],
-            $data['role'],
-            $request->user(),
-            $data['custom_fields'] ?? [],
-            $data['team_id'] ?? null,
-        );
-
-        return back()->with('success', 'Team member added. They will receive an email to set their password.');
+        return back()->with($flash);
     }
 
     public function updateRole(Request $request, int $member): RedirectResponse

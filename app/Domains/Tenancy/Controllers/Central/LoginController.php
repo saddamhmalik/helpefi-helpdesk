@@ -33,7 +33,7 @@ class LoginController extends Controller
 
         if (! $tenant) {
             return back()->withErrors([
-                'slug' => 'We could not find a workspace with that URL.',
+                'slug' => __('messages.workspace_not_found'),
             ]);
         }
 

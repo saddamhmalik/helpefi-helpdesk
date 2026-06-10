@@ -23,14 +23,14 @@ class PortalCsatController extends Controller
     ) {
     }
 
-    public function submitAuthenticated(Request $request, int $ticket): RedirectResponse
+    public function submitAuthenticated(Request $request, string $ticket): RedirectResponse
     {
         $data = $request->validate([
             'rating' => ['required', 'integer', 'min:1', 'max:5'],
             'comment' => ['nullable', 'string', 'max:2000'],
         ]);
 
-        $ticketModel = $this->portal->customerTicket($request->user(), $ticket);
+        $ticketModel = $this->portal->customerTicket($request->user(), (int) $ticket);
         $contact = $request->user()->contact;
 
         $this->csat->submit($ticketModel, $contact, $data['rating'], $data['comment'] ?? null);
@@ -62,9 +62,9 @@ class PortalCsatController extends Controller
         ])->with('success', 'Thank you for your feedback.');
     }
 
-    public function showEmailSurvey(Request $request, int $ticket): Response
+    public function showEmailSurvey(Request $request, string $ticket): Response
     {
-        $ticketModel = $this->resolveEmailSurveyTicket($request, $ticket);
+        $ticketModel = $this->resolveEmailSurveyTicket($request, (int) $ticket);
 
         return Inertia::render('Portal/CsatSurvey', [
             'ticket' => [
@@ -77,14 +77,14 @@ class PortalCsatController extends Controller
         ]);
     }
 
-    public function submitEmailSurvey(Request $request, int $ticket): RedirectResponse
+    public function submitEmailSurvey(Request $request, string $ticket): RedirectResponse
     {
         $data = $request->validate([
             'rating' => ['required', 'integer', 'min:1', 'max:5'],
             'comment' => ['nullable', 'string', 'max:2000'],
         ]);
 
-        $ticketModel = $this->resolveEmailSurveyTicket($request, $ticket);
+        $ticketModel = $this->resolveEmailSurveyTicket($request, (int) $ticket);
 
         $this->csat->submit(
             $ticketModel,
@@ -98,16 +98,17 @@ class PortalCsatController extends Controller
             ->with('success', 'Thank you for your feedback.');
     }
 
-    public function quickEmailRate(Request $request, int $ticket, int $rating): RedirectResponse
+    public function quickEmailRate(Request $request, string $ticket, string $rating): RedirectResponse
     {
-        abort_unless($rating >= 1 && $rating <= 5, 404);
+        $ratingValue = (int) $rating;
+        abort_unless($ratingValue >= 1 && $ratingValue <= 5, 404);
 
-        $ticketModel = $this->resolveEmailSurveyTicket($request, $ticket);
+        $ticketModel = $this->resolveEmailSurveyTicket($request, (int) $ticket);
 
         $this->csat->submit(
             $ticketModel,
             $ticketModel->contact,
-            $rating,
+            $ratingValue,
             null,
             CsatResponse::CHANNEL_EMAIL,
         );

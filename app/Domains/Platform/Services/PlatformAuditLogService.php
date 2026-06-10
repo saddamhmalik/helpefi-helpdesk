@@ -24,7 +24,7 @@ class PlatformAuditLogService
         ?string $actorEmail = null,
         ?string $tenantId = null,
         ?string $subjectType = null,
-        ?int $subjectId = null,
+        ?string $subjectId = null,
         array $properties = [],
         ?Request $request = null,
     ): void {

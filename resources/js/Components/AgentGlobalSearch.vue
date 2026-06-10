@@ -1,6 +1,7 @@
 <script setup>
 import { Link, router } from '@inertiajs/vue3';
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
+import { csrfHeaders } from '../support/csrf.js';
 
 const query = ref('');
 const open = ref(false);
@@ -18,8 +19,6 @@ const flatResults = computed(() => groups.value.flatMap((group) => group.items.m
 const hasResults = computed(() => flatResults.value.length > 0);
 const hasQuery = computed(() => query.value.trim().length >= 2);
 const showResults = computed(() => open.value && hasQuery.value);
-
-const csrf = () => document.querySelector('meta[name="csrf-token"]')?.content;
 
 const resetResults = () => {
     groups.value = [];
@@ -42,10 +41,10 @@ const fetchResults = async (value) => {
 
     try {
         const response = await fetch(`/global-search?q=${encodeURIComponent(value.trim())}`, {
+            credentials: 'same-origin',
             headers: {
                 Accept: 'application/json',
-                'X-Requested-With': 'XMLHttpRequest',
-                'X-CSRF-TOKEN': csrf(),
+                ...csrfHeaders(),
             },
             signal: abortController.signal,
         });
@@ -193,7 +192,7 @@ defineExpose({ openSearch });
         <svg class="h-4 w-4 shrink-0 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
         </svg>
-        <span class="truncate">Search tickets, customers, organizations…</span>
+        <span class="truncate">{{ $t('components.search_tickets_customers_organizations_ellipsis') }}</span>
         <kbd class="ml-auto hidden shrink-0 rounded-md border border-slate-200/80 bg-white/80 px-1.5 py-0.5 text-[10px] font-medium text-slate-400 sm:inline">⌘K</kbd>
     </button>
 
@@ -231,7 +230,7 @@ defineExpose({ openSearch });
                         class="relative w-full max-w-2xl"
                         role="dialog"
                         aria-modal="true"
-                        aria-label="Search"
+                        :aria-label="$t('components.search')"
                         @mousedown.stop
                     >
                         <div class="overflow-hidden rounded-[1.75rem] border border-white/60 bg-white/85 shadow-[0_24px_80px_rgba(15,23,42,0.22)] backdrop-blur-2xl">
@@ -243,7 +242,7 @@ defineExpose({ openSearch });
                                     ref="inputRef"
                                     v-model="query"
                                     type="search"
-                                    placeholder="Search tickets, customers, organizations…"
+                                    :placeholder="$t('components.search_tickets_customers_organizations_ellipsis')"
                                     class="min-w-0 flex-1 bg-transparent text-lg font-normal text-slate-900 placeholder:text-slate-400 focus:outline-none sm:text-[1.35rem]"
                                     @keydown="onInputKeydown"
                                 >
@@ -251,10 +250,10 @@ defineExpose({ openSearch });
 
                             <div v-if="showResults" class="max-h-[min(50vh,28rem)] overflow-y-auto">
                                 <div v-if="loading" class="px-6 py-8 text-center text-sm text-slate-500">
-                                    Searching…
+                                    {{ $t('components.searching_ellipsis') }}
                                 </div>
                                 <div v-else-if="!hasResults" class="px-6 py-8 text-center text-sm text-slate-500">
-                                    No results for “{{ query.trim() }}”
+                                    {{ $t('components.no_results_for_query', { query: query.trim() }) }}
                                 </div>
                                 <div v-else class="py-2">
                                     <div v-for="group in groups" :key="group.type">
@@ -283,19 +282,19 @@ defineExpose({ openSearch });
                                 v-else
                                 class="px-6 py-5 text-sm text-slate-400"
                             >
-                                Type at least 2 characters to search across tickets, customers, and organizations.
+                                {{ $t('components.search_min_chars_hint') }}
                             </div>
 
                             <div class="flex items-center justify-between border-t border-slate-200/70 px-5 py-3 text-xs text-slate-400">
-                                <span class="hidden sm:inline">↑↓ navigate · ↵ open · esc close</span>
-                                <span class="sm:hidden">↵ open · esc close</span>
+                                <span class="hidden sm:inline">{{ $t('components.navigate_open_esc_close') }}</span>
+                                <span class="sm:hidden">{{ $t('components.open_esc_close') }}</span>
                                 <Link
                                     v-if="hasQuery"
                                     :href="`/tickets?search=${encodeURIComponent(query.trim())}`"
                                     class="font-medium text-blue-600 hover:text-blue-700"
                                     @click="closeSearch"
                                 >
-                                    View all tickets
+                                    {{ $t('components.view_all_tickets') }}
                                 </Link>
                             </div>
                         </div>

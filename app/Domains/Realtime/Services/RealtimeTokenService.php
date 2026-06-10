@@ -99,7 +99,7 @@ class RealtimeTokenService
 
     private function assertChannel(string $channel): void
     {
-        if (! preg_match('/^(?:[0-9a-f-]{36}\.)?(ticket\.\d+|chat\.[0-9a-f-]{36}|workspace)$/', $channel)) {
+        if (! preg_match('/^(?:[0-9a-f-]{36}\.)?(ticket\.\d+|chat\.[0-9a-f-]{36}|workspace|user\.\d+)$/', $channel)) {
             throw new InvalidArgumentException('Invalid realtime channel.');
         }
     }

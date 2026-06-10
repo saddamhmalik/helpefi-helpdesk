@@ -20,7 +20,7 @@ class RecordPlatformAuditLogJob implements ShouldQueue
         public ?string $actorEmail,
         public ?string $tenantId,
         public ?string $subjectType,
-        public ?int $subjectId,
+        public ?string $subjectId,
         public ?string $ipAddress,
         public ?string $userAgent,
         public ?array $properties,

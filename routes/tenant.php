@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Domains\Admin\Controllers\AdminHubController;
+use App\Domains\Api\Controllers\OpenApiController;
 use App\Domains\Assets\Controllers\AssetController;
 use App\Domains\Assets\Controllers\AssetDiscoveryController;
 use App\Domains\Assets\Controllers\AssetExportController;
@@ -11,6 +12,7 @@ use App\Domains\Assets\Controllers\AssetTypeController;
 use App\Domains\Ai\Controllers\AiAssistController;
 use App\Domains\Ai\Controllers\AiSettingController;
 use App\Domains\Auth\Controllers\AuthController;
+use App\Domains\Security\Controllers\SsoController;
 use App\Domains\Brands\Controllers\BrandController;
 use App\Domains\Brands\Services\BrandService;
 use App\Domains\Csat\Controllers\CsatSettingController;
@@ -24,7 +26,6 @@ use App\Domains\TimeTracking\Controllers\TicketTimeEntryController;
 use App\Domains\Auth\Controllers\InvitationAcceptController;
 use App\Domains\Auth\Controllers\MemberController;
 use App\Domains\Auth\Controllers\MemberExportController;
-use App\Domains\Auth\Controllers\PasswordResetController;
 use App\Domains\Auth\Controllers\CustomerAccountController;
 use App\Domains\Auth\Controllers\RoleController;
 use App\Domains\Auth\Controllers\PortalAuthController;
@@ -34,16 +35,19 @@ use App\Domains\Automation\Controllers\AutomationController;
 use App\Domains\Billing\Controllers\BillingController;
 use App\Domains\Channels\Controllers\ChannelController;
 use App\Domains\Channels\Controllers\EmailSettingController;
+use App\Domains\Channels\Controllers\EmailTemplateController;
 use App\Domains\Integrations\Controllers\InboundIntegrationController;
 use App\Domains\Integrations\Controllers\IntegrationController;
 use App\Domains\Integrations\Controllers\TicketExternalIssueController;
 use App\Domains\Contacts\Controllers\ContactController;
 use App\Domains\Contacts\Controllers\ContactExportController;
+use App\Domains\Contacts\Controllers\CustomerContextController;
 use App\Domains\Contacts\Controllers\OrganizationController;
 use App\Domains\Contacts\Controllers\OrganizationExportController;
 use App\Domains\Dashboard\Controllers\DashboardController;
 use App\Domains\Knowledge\Controllers\KnowledgeArticleController;
 use App\Domains\Knowledge\Controllers\KnowledgeCollectionController;
+use App\Domains\Knowledge\Controllers\KnowledgeSettingController;
 use App\Domains\Knowledge\Controllers\PortalController;
 use App\Domains\Macros\Controllers\CannedResponseController;
 use App\Domains\Reports\Controllers\ReportController;
@@ -51,11 +55,20 @@ use App\Domains\Reports\Controllers\ReportScheduleController;
 use App\Domains\Search\Controllers\GlobalSearchController;
 use App\Domains\ServiceCatalog\Controllers\PortalServiceCatalogController;
 use App\Domains\ServiceCatalog\Controllers\ServiceCatalogController;
+use App\Domains\ServiceDesk\Controllers\ApprovalController;
+use App\Domains\ServiceDesk\Controllers\ApprovalEmailController;
+use App\Domains\ServiceDesk\Controllers\ChangeController;
+use App\Domains\ServiceDesk\Controllers\MajorIncidentController;
+use App\Domains\ServiceDesk\Controllers\ProblemController;
+use App\Domains\ServiceDesk\Controllers\ServiceDeskController;
 use App\Domains\Sla\Controllers\SlaPolicyController;
 use App\Domains\Performance\Controllers\PerformanceController;
+use App\Domains\Platform\Controllers\Tenant\PlatformFeedbackController;
+use App\Domains\Platform\Controllers\Tenant\PlatformNoticeController;
 use App\Domains\Workforce\Controllers\WorkforceController;
 use App\Domains\Tenancy\Controllers\CustomDomainController;
 use App\Domains\Tenancy\Controllers\SetupController;
+use App\Domains\Tickets\Controllers\TicketBulkController;
 use App\Domains\Tickets\Controllers\TicketController;
 use App\Domains\Tickets\Controllers\TicketExportController;
 use App\Domains\Tickets\Controllers\TicketViewController;
@@ -79,6 +92,11 @@ Route::get('/workspace-blocked', [\App\Domains\Tenancy\Controllers\TenantBlocked
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
     Route::post('/login', [AuthController::class, 'login']);
+    Route::get('/auth/sso/redirect', [SsoController::class, 'redirect'])->name('sso.redirect');
+    Route::get('/auth/sso/callback', [SsoController::class, 'callback'])->name('sso.callback');
+    Route::post('/auth/sso/acs', [SsoController::class, 'acs'])->name('sso.acs');
+    Route::get('/auth/sso/metadata', [SsoController::class, 'metadata'])->name('sso.metadata');
+    Route::get('/auth/sso/slo', [SsoController::class, 'slo'])->name('sso.slo');
     Route::get('/welcome', [\App\Domains\Tenancy\Controllers\WelcomeController::class, 'accept'])
         ->name('welcome');
 });
@@ -86,15 +104,20 @@ Route::middleware('guest')->group(function () {
 Route::get('/invitations/{token}', [InvitationAcceptController::class, 'show'])->name('invitations.show');
 Route::post('/invitations/{token}', [InvitationAcceptController::class, 'accept'])->name('invitations.accept');
 
-Route::get('/reset-password/{token}', [PasswordResetController::class, 'show'])->name('password.reset');
-Route::post('/reset-password', [PasswordResetController::class, 'update'])->name('password.update');
-
 Route::get('/two-factor-challenge', [TwoFactorController::class, 'showChallenge'])->name('two-factor.challenge');
 Route::post('/two-factor-challenge', [TwoFactorController::class, 'verifyChallenge'])->name('two-factor.verify');
 
+Route::get('/api/docs', [OpenApiController::class, 'docs'])->name('api.docs');
+
+Route::middleware('signed')->prefix('approvals/email')->name('approvals.email.')->group(function () {
+    Route::get('/{approval}', [ApprovalEmailController::class, 'review'])->name('review');
+    Route::post('/{approval}/approve', [ApprovalEmailController::class, 'approveSigned'])->name('approve');
+    Route::post('/{approval}/reject', [ApprovalEmailController::class, 'rejectSigned'])->name('reject');
+});
+
 Route::get('/portal', fn (BrandService $brands) => redirect()->route('portal.index', ['brand' => $brands->defaultSlug()]));
 
-Route::prefix('portal/{brand:slug}')->middleware('brand')->name('portal.')->group(function () {
+Route::prefix('portal/{brand:slug}')->middleware(['brand', 'portal.locale'])->name('portal.')->group(function () {
     Route::get('/', [PortalController::class, 'index'])->name('index');
     Route::get('/collections/{collectionSlug}', [PortalController::class, 'collection'])->name('collection');
     Route::get('/articles/{articleSlug}', [PortalController::class, 'article'])->name('article');
@@ -109,9 +132,9 @@ Route::prefix('portal/{brand:slug}')->middleware('brand')->name('portal.')->grou
     Route::post('/csat', [PortalCsatController::class, 'submitGuest'])->name('csat');
 
     Route::middleware('signed')->prefix('csat/email')->name('csat.email.')->group(function () {
-        Route::get('/{ticket}', [PortalCsatController::class, 'showEmailSurvey'])->name('survey');
-        Route::post('/{ticket}', [PortalCsatController::class, 'submitEmailSurvey'])->name('submit');
-        Route::get('/{ticket}/rate/{rating}', [PortalCsatController::class, 'quickEmailRate'])->name('rate');
+        Route::get('/{ticket}', [PortalCsatController::class, 'showEmailSurvey'])->whereNumber('ticket')->name('survey');
+        Route::post('/{ticket}', [PortalCsatController::class, 'submitEmailSurvey'])->whereNumber('ticket')->name('submit');
+        Route::get('/{ticket}/rate/{rating}', [PortalCsatController::class, 'quickEmailRate'])->whereNumber(['ticket', 'rating'])->name('rate');
     });
 
     Route::middleware('guest')->group(function () {
@@ -124,8 +147,8 @@ Route::prefix('portal/{brand:slug}')->middleware('brand')->name('portal.')->grou
     Route::middleware(['auth', 'customer'])->group(function () {
         Route::post('/logout', [PortalAuthController::class, 'logout'])->name('logout');
         Route::get('/my-tickets', [PortalController::class, 'myTickets'])->name('my-tickets');
-        Route::get('/my-tickets/{ticket}', [PortalController::class, 'myTicket'])->name('my-tickets.show');
-        Route::post('/my-tickets/{ticket}/csat', [PortalCsatController::class, 'submitAuthenticated'])->name('my-tickets.csat');
+        Route::get('/my-tickets/{ticket}', [PortalController::class, 'myTicket'])->whereNumber('ticket')->name('my-tickets.show');
+        Route::post('/my-tickets/{ticket}/csat', [PortalCsatController::class, 'submitAuthenticated'])->whereNumber('ticket')->name('my-tickets.csat');
     });
 });
 
@@ -140,6 +163,8 @@ Route::middleware('auth')->group(function () {
         Route::get('/settings/billing/checkout', [BillingController::class, 'checkout'])->name('settings.billing.checkout');
         Route::put('/settings/billing/plan', [BillingController::class, 'updatePlan'])->name('settings.billing.plan');
         Route::get('/settings/billing/portal', [BillingController::class, 'portal'])->name('settings.billing.portal');
+        Route::post('/settings/billing/addons/{addon}', [BillingController::class, 'purchaseAddon'])->name('settings.billing.addons.purchase');
+        Route::delete('/settings/billing/addons/{addon}', [BillingController::class, 'cancelAddon'])->name('settings.billing.addons.cancel');
     });
 
     Route::middleware(['workspace.setup', 'subscription.active'])->group(function () {
@@ -148,6 +173,9 @@ Route::middleware('auth')->group(function () {
         Route::get('/setup', [SetupController::class, 'index'])->name('setup');
         Route::post('/setup/steps/{step}', [SetupController::class, 'completeStep'])->name('setup.steps.complete');
         Route::post('/setup/finish', [SetupController::class, 'finish'])->name('setup.finish');
+        Route::post('/setup/dummy-data', [\App\Domains\Tenancy\Controllers\TenantDummyDataController::class, 'store'])->name('setup.dummy-data.store');
+        Route::post('/setup/dummy-data/skip', [\App\Domains\Tenancy\Controllers\TenantDummyDataController::class, 'skip'])->name('setup.dummy-data.skip');
+        Route::delete('/setup/dummy-data', [\App\Domains\Tenancy\Controllers\TenantDummyDataController::class, 'destroy'])->name('setup.dummy-data.destroy');
     });
 
     Route::middleware('agent')->group(function () {
@@ -172,7 +200,6 @@ Route::middleware('auth')->group(function () {
             Route::get('/settings/members', [MemberController::class, 'index'])->name('settings.members');
             Route::get('/settings/members/export', [MemberExportController::class, 'csv'])->name('settings.members.export');
             Route::get('/settings/members/{member}', [MemberController::class, 'show'])->name('settings.members.show');
-            Route::post('/settings/members', [MemberController::class, 'store'])->name('settings.members.store');
             Route::post('/settings/members/invite', [MemberController::class, 'invite'])->name('settings.members.invite');
             Route::put('/settings/members/{member}', [MemberController::class, 'updateRole'])->name('settings.members.update');
             Route::patch('/settings/members/{member}/custom-fields', [MemberController::class, 'updateCustomFields'])->name('settings.members.custom-fields');
@@ -202,6 +229,8 @@ Route::middleware('auth')->group(function () {
             Route::get('/settings/performance/{user}', [PerformanceController::class, 'show'])->name('settings.performance.show');
             Route::get('/settings/channels', [ChannelController::class, 'index'])->name('settings.channels');
             Route::put('/settings/channels/{channel}', [ChannelController::class, 'update'])->name('settings.channels.update');
+            Route::get('/settings/messaging', [\App\Domains\Channels\Controllers\MessagingSettingController::class, 'index'])->name('settings.messaging');
+            Route::put('/settings/messaging', [\App\Domains\Channels\Controllers\MessagingSettingController::class, 'update'])->name('settings.messaging.update');
             Route::get('/settings/brands', [BrandController::class, 'index'])->name('settings.brands');
             Route::post('/settings/brands', [BrandController::class, 'store'])->name('settings.brands.store');
             Route::put('/settings/brands/{brand}', [BrandController::class, 'update'])->name('settings.brands.update');
@@ -220,6 +249,10 @@ Route::middleware('auth')->group(function () {
             Route::put('/settings/email/advanced', [EmailSettingController::class, 'updateAdvanced'])->name('settings.email.advanced');
             Route::post('/settings/email/outbound/test', [EmailSettingController::class, 'testOutbound'])->name('settings.email.outbound.test');
             Route::post('/settings/email/outbound/test-inbox', [EmailSettingController::class, 'testInboxOutbound'])->name('settings.email.outbound.test-inbox');
+            Route::get('/settings/email-templates', [EmailTemplateController::class, 'index'])->name('settings.email-templates.index');
+            Route::get('/settings/email-templates/{template}/edit', [EmailTemplateController::class, 'edit'])->name('settings.email-templates.edit');
+            Route::put('/settings/email-templates/{template}', [EmailTemplateController::class, 'update'])->name('settings.email-templates.update');
+            Route::post('/settings/email-templates/{template}/reset', [EmailTemplateController::class, 'reset'])->name('settings.email-templates.reset');
             Route::get('/settings/automation', [AutomationController::class, 'index'])->name('settings.automation');
             Route::post('/settings/automation', [AutomationController::class, 'store'])->name('settings.automation.store');
             Route::put('/settings/automation/{rule}', [AutomationController::class, 'update'])->name('settings.automation.update');
@@ -242,6 +275,15 @@ Route::middleware('auth')->group(function () {
             Route::put('/settings/integrations/jira', [IntegrationController::class, 'updateJira'])->name('settings.integrations.jira.update');
             Route::put('/settings/integrations/linear', [IntegrationController::class, 'updateLinear'])->name('settings.integrations.linear.update');
             Route::post('/settings/integrations/slack/test', [IntegrationController::class, 'testSlack'])->name('settings.integrations.slack.test');
+            Route::put('/settings/integrations/shopify', [IntegrationController::class, 'updateShopify'])->name('settings.integrations.shopify.update');
+            Route::put('/settings/integrations/hubspot', [IntegrationController::class, 'updateHubspot'])->name('settings.integrations.hubspot.update');
+            Route::put('/settings/integrations/salesforce', [IntegrationController::class, 'updateSalesforce'])->name('settings.integrations.salesforce.update');
+            Route::put('/settings/integrations/teams', [IntegrationController::class, 'updateTeams'])->name('settings.integrations.teams.update');
+            Route::put('/settings/integrations/zapier', [IntegrationController::class, 'updateZapier'])->name('settings.integrations.zapier.update');
+            Route::post('/settings/integrations/shopify/test', [IntegrationController::class, 'testShopify'])->name('settings.integrations.shopify.test');
+            Route::post('/settings/integrations/hubspot/test', [IntegrationController::class, 'testHubspot'])->name('settings.integrations.hubspot.test');
+            Route::post('/settings/integrations/salesforce/test', [IntegrationController::class, 'testSalesforce'])->name('settings.integrations.salesforce.test');
+            Route::post('/settings/integrations/teams/test', [IntegrationController::class, 'testTeams'])->name('settings.integrations.teams.test');
             Route::get('/settings/ai', [AiSettingController::class, 'edit'])->name('settings.ai');
             Route::put('/settings/ai', [AiSettingController::class, 'update'])->name('settings.ai.update');
             Route::get('/settings/service-catalog', [ServiceCatalogController::class, 'index'])->name('settings.service-catalog');
@@ -258,13 +300,20 @@ Route::middleware('auth')->group(function () {
             Route::delete('/settings/custom-domain', [CustomDomainController::class, 'destroy'])->name('settings.custom-domain.destroy');
             Route::get('/settings/security', [SecuritySettingController::class, 'index'])->name('settings.security');
             Route::put('/settings/security', [SecuritySettingController::class, 'update'])->name('settings.security.update');
+            Route::put('/settings/security/sso', [SsoController::class, 'update'])->name('settings.security.sso.update');
             Route::post('/settings/security/purge', [SecuritySettingController::class, 'purge'])->name('settings.security.purge');
             Route::get('/settings/notifications', [NotificationSettingController::class, 'edit'])->name('settings.notifications');
             Route::put('/settings/notifications', [NotificationSettingController::class, 'update'])->name('settings.notifications.update');
             Route::get('/settings/csat', [CsatSettingController::class, 'edit'])->name('settings.csat');
             Route::put('/settings/csat', [CsatSettingController::class, 'update'])->name('settings.csat.update');
+            Route::get('/settings/platform-feedback', [PlatformFeedbackController::class, 'create'])->name('settings.platform-feedback');
+            Route::post('/settings/platform-feedback', [PlatformFeedbackController::class, 'store'])->name('settings.platform-feedback.store');
             Route::get('/settings/tickets', [\App\Domains\Settings\Controllers\TicketSettingController::class, 'edit'])->name('settings.tickets');
             Route::put('/settings/tickets', [\App\Domains\Settings\Controllers\TicketSettingController::class, 'update'])->name('settings.tickets.update');
+            Route::get('/settings/ticket-statuses', [\App\Domains\Tickets\Controllers\TicketStatusController::class, 'index'])->name('settings.ticket-statuses');
+            Route::post('/settings/ticket-statuses', [\App\Domains\Tickets\Controllers\TicketStatusController::class, 'store'])->name('settings.ticket-statuses.store');
+            Route::put('/settings/ticket-statuses/{status}', [\App\Domains\Tickets\Controllers\TicketStatusController::class, 'update'])->name('settings.ticket-statuses.update');
+            Route::delete('/settings/ticket-statuses/{status}', [\App\Domains\Tickets\Controllers\TicketStatusController::class, 'destroy'])->name('settings.ticket-statuses.destroy');
         });
 
         Route::get('/settings/macros', [CannedResponseController::class, 'index'])->name('settings.macros');
@@ -275,8 +324,12 @@ Route::middleware('auth')->group(function () {
         Route::get('/global-search', GlobalSearchController::class)->name('global-search');
 
         Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
+        Route::get('/notifications/summary', [NotificationController::class, 'summary'])->name('notifications.summary');
         Route::post('/notifications/{notification}/read', [NotificationController::class, 'markRead'])->name('notifications.read');
         Route::post('/notifications/read-all', [NotificationController::class, 'markAllRead'])->name('notifications.read-all');
+        Route::post('/notifications/clear-read', [NotificationController::class, 'clearRead'])->name('notifications.clear-read');
+
+        Route::post('/platform-notices/{notice}/dismiss', [PlatformNoticeController::class, 'dismiss'])->name('platform-notices.dismiss');
 
         Route::get('/contacts/search', [ContactController::class, 'search'])->name('contacts.search');
         Route::get('/contacts/export', [ContactExportController::class, 'csv'])->name('contacts.export');
@@ -308,6 +361,8 @@ Route::middleware('auth')->group(function () {
         Route::put('/workspace/tickets/{ticket}/draft', [WorkspaceController::class, 'saveDraft'])->name('workspace.draft.save');
         Route::post('/workspace/tickets/{ticket}/reply', [WorkspaceController::class, 'reply'])->name('workspace.reply');
         Route::patch('/workspace/tickets/{ticket}', [WorkspaceController::class, 'quickUpdate'])->name('workspace.quick-update');
+        Route::post('/workspace/tickets/{ticket}/snooze', [WorkspaceController::class, 'snooze'])->name('workspace.snooze');
+        Route::delete('/workspace/tickets/{ticket}/snooze', [WorkspaceController::class, 'unsnooze'])->name('workspace.unsnooze');
         Route::post('/workspace/tickets/{ticket}/presence', [WorkspaceController::class, 'presence'])->name('workspace.presence');
         Route::delete('/workspace/tickets/{ticket}/presence', [WorkspaceController::class, 'leave'])->name('workspace.presence.leave');
         Route::get('/canned-responses/search', [CannedResponseController::class, 'search'])->name('canned-responses.search');
@@ -315,11 +370,32 @@ Route::middleware('auth')->group(function () {
         Route::post('/workspace/tickets/{ticket}/ai/suggest-reply', [AiAssistController::class, 'suggestReply'])->name('workspace.ai.suggest-reply');
         Route::post('/workspace/tickets/{ticket}/ai/summarize', [AiAssistController::class, 'summarize'])->name('workspace.ai.summarize');
         Route::get('/workspace/tickets/{ticket}/ai/kb-assist', [AiAssistController::class, 'kbAssist'])->name('workspace.ai.kb-assist');
+        Route::get('/tickets/{ticket}/customer-context', [CustomerContextController::class, 'show'])->name('tickets.customer-context');
+        Route::post('/tickets/{ticket}/customer-context/refresh', [CustomerContextController::class, 'refresh'])->name('tickets.customer-context.refresh');
         Route::post('/tickets/{ticket}/ai/suggest-reply', [AiAssistController::class, 'suggestReply'])->name('tickets.ai.suggest-reply');
         Route::post('/tickets/{ticket}/ai/summarize', [AiAssistController::class, 'summarize'])->name('tickets.ai.summarize');
         Route::get('/tickets/{ticket}/ai/kb-assist', [AiAssistController::class, 'kbAssist'])->name('tickets.ai.kb-assist');
 
         Route::get('/tickets/export/csv', [TicketExportController::class, 'csv'])->name('tickets.export.csv');
+        Route::post('/tickets/bulk', [TicketBulkController::class, 'store'])->name('tickets.bulk');
+        Route::get('/service-desk', [ServiceDeskController::class, 'index'])->name('service-desk.index');
+        Route::get('/service-desk/approvals', [ApprovalController::class, 'index'])->name('service-desk.approvals.index');
+        Route::post('/service-desk/approvals/{approval}/approve', [ApprovalController::class, 'approve'])->name('service-desk.approvals.approve');
+        Route::post('/service-desk/approvals/{approval}/reject', [ApprovalController::class, 'reject'])->name('service-desk.approvals.reject');
+        Route::get('/settings/service-desk/approvals', [ApprovalController::class, 'settings'])->name('settings.service-desk.approvals');
+        Route::put('/settings/service-desk/approvals', [ApprovalController::class, 'updateSettings'])->name('settings.service-desk.approvals.update');
+        Route::get('/service-desk/changes/calendar', [ChangeController::class, 'calendar'])->name('service-desk.changes.calendar');
+        Route::get('/service-desk/major-incidents', [MajorIncidentController::class, 'index'])->name('service-desk.major-incidents.index');
+        Route::get('/service-desk/major-incidents/{ticket}/war-room', [MajorIncidentController::class, 'warRoom'])->name('service-desk.major-incidents.war-room');
+        Route::post('/tickets/{ticket}/major-incident', [MajorIncidentController::class, 'declare'])->name('tickets.major-incident.declare');
+        Route::put('/tickets/{ticket}/major-incident', [MajorIncidentController::class, 'update'])->name('tickets.major-incident.update');
+        Route::post('/tickets/{ticket}/major-incident/resolve', [MajorIncidentController::class, 'resolve'])->name('tickets.major-incident.resolve');
+        Route::post('/tickets/{ticket}/major-incident/complete-review', [MajorIncidentController::class, 'completeReview'])->name('tickets.major-incident.complete-review');
+        Route::put('/tickets/{ticket}/change-record', [ChangeController::class, 'update'])->name('tickets.change-record.update');
+        Route::put('/tickets/{ticket}/problem-record', [ProblemController::class, 'update'])->name('tickets.problem-record.update');
+        Route::post('/tickets/{ticket}/problem-incidents', [ProblemController::class, 'linkIncident'])->name('tickets.problem-incidents.store');
+        Route::delete('/tickets/{ticket}/problem-incidents/{incident}', [ProblemController::class, 'unlinkIncident'])->name('tickets.problem-incidents.destroy');
+        Route::get('/service-desk/queues/{type}', [ServiceDeskController::class, 'queue'])->name('service-desk.queue');
         Route::resource('tickets', TicketController::class)->except(['edit', 'destroy']);
         Route::post('/tickets/{ticket}/reply', [TicketController::class, 'reply'])->name('tickets.reply');
         Route::post('/tickets/{ticket}/attachments', [TicketController::class, 'storeAttachment'])->name('tickets.attachments.store');
@@ -341,14 +417,18 @@ Route::middleware('auth')->group(function () {
         Route::delete('/ticket-views/{view}', [TicketViewController::class, 'destroy'])->name('ticket-views.destroy');
 
         Route::get('/knowledge', [KnowledgeArticleController::class, 'index'])->name('knowledge.index');
+        Route::get('/knowledge/settings', [KnowledgeSettingController::class, 'edit'])->name('knowledge.settings');
+        Route::put('/knowledge/settings', [KnowledgeSettingController::class, 'update'])->name('knowledge.settings.update');
         Route::get('/knowledge/collections', [KnowledgeCollectionController::class, 'index'])->name('knowledge.collections.index');
         Route::post('/knowledge/collections', [KnowledgeCollectionController::class, 'store'])->name('knowledge.collections.store');
         Route::put('/knowledge/collections/{collection}', [KnowledgeCollectionController::class, 'update'])->name('knowledge.collections.update');
         Route::delete('/knowledge/collections/{collection}', [KnowledgeCollectionController::class, 'destroy'])->name('knowledge.collections.destroy');
         Route::get('/knowledge/create', [KnowledgeArticleController::class, 'create'])->name('knowledge.create');
         Route::post('/knowledge', [KnowledgeArticleController::class, 'store'])->name('knowledge.store');
-        Route::get('/knowledge/{article}', [KnowledgeArticleController::class, 'show'])->name('knowledge.show');
+        Route::get('/knowledge/{article}/edit', [KnowledgeArticleController::class, 'edit'])->name('knowledge.edit')->whereNumber('article');
+        Route::get('/knowledge/{article}', [KnowledgeArticleController::class, 'show'])->name('knowledge.show')->whereNumber('article');
         Route::put('/knowledge/{article}', [KnowledgeArticleController::class, 'update'])->name('knowledge.update');
+        Route::post('/knowledge/{article}/translations', [KnowledgeArticleController::class, 'storeTranslation'])->name('knowledge.translations.store');
         Route::post('/knowledge/{article}/versions/{version}/restore', [KnowledgeArticleController::class, 'restoreVersion'])->name('knowledge.versions.restore');
 
         Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');

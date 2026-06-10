@@ -3,6 +3,8 @@
 namespace App\Domains\Auth\Mail;
 
 use App\Domains\Auth\Models\Invitation;
+use App\Domains\Channels\Models\EmailTemplate;
+use App\Domains\Channels\Services\EmailTemplateService;
 use App\Models\User;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
@@ -23,13 +25,30 @@ class TeamInvitationMail extends Mailable
 
     public function envelope(): Envelope
     {
+        $fallback = 'You have been invited to '.config('app.name');
+
         return new Envelope(
-            subject: 'You have been invited to '.config('app.name'),
+            subject: app(EmailTemplateService::class)->renderSubject(
+                EmailTemplate::SLUG_TEAM_INVITATION,
+                $this->templateVariables(),
+                $fallback,
+            ),
         );
     }
 
     public function content(): Content
     {
+        $rendered = app(EmailTemplateService::class)->render(
+            EmailTemplate::SLUG_TEAM_INVITATION,
+            $this->templateVariables(),
+        );
+
+        if ($rendered !== null) {
+            return new Content(
+                htmlString: app(EmailTemplateService::class)->wrapHtml($rendered['body_html']),
+            );
+        }
+
         return new Content(
             text: 'mail.team-invitation',
             with: [
@@ -40,5 +59,16 @@ class TeamInvitationMail extends Mailable
                 'appName' => config('app.name'),
             ],
         );
+    }
+
+    private function templateVariables(): array
+    {
+        return [
+            'app_name' => config('app.name'),
+            'inviter_name' => $this->inviter->name,
+            'role' => ucfirst($this->invitation->role),
+            'accept_url' => $this->acceptUrl,
+            'expires_at' => $this->invitation->expires_at?->format('F j, Y g:i A T') ?? '',
+        ];
     }
 }

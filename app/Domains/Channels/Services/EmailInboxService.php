@@ -2,6 +2,7 @@
 
 namespace App\Domains\Channels\Services;
 
+use App\Domains\Billing\Services\BillingService;
 use App\Domains\Channels\Models\EmailInbox;
 use App\Domains\Channels\Repositories\EmailInboxRepository;
 use App\Domains\Security\Support\AuditRecorder;
@@ -13,6 +14,7 @@ class EmailInboxService
 {
     public function __construct(
         private EmailInboxRepository $inboxes,
+        private BillingService $billing,
         private AuditRecorder $audit,
         private TenantRouteRegistryService $tenantRoutes,
     ) {
@@ -44,6 +46,8 @@ class EmailInboxService
 
     public function create(array $data): array
     {
+        $this->billing->assertFeature('channels');
+
         $inbox = $this->inboxes->create([
             'name' => $data['name'],
             'address' => $data['address'],
@@ -54,6 +58,18 @@ class EmailInboxService
             'is_active' => $data['is_active'] ?? true,
             'inbound_method' => $data['inbound_method'] ?? 'webhook',
         ]);
+
+        $payload = $this->buildInboundPayload($data, $inbox);
+
+        if (($payload['mailbox_encryption'] ?? null) === 'none') {
+            $payload['mailbox_encryption'] = null;
+        }
+
+        if (array_key_exists('mailbox_password', $data) && ($data['mailbox_password'] === null || $data['mailbox_password'] === '')) {
+            unset($payload['mailbox_password']);
+        }
+
+        $inbox = $this->inboxes->update($inbox, $payload);
 
         $this->audit->record('email.inbox_created', $inbox, [
             'address' => $inbox->address,
@@ -67,6 +83,8 @@ class EmailInboxService
 
     public function update(int $id, array $data): array
     {
+        $this->billing->assertFeature('channels');
+
         $inbox = $this->inboxes->find($id);
         $previous = $this->routeSnapshot($inbox);
         $payload = array_merge(
@@ -160,7 +178,7 @@ class EmailInboxService
 
         if ($query->exists()) {
             throw ValidationException::withMessages([
-                'address' => 'This email address is already configured as an inbox.',
+                'address' => 'This email address is already connected. Edit the existing inbox below instead of creating a new one.',
             ]);
         }
     }

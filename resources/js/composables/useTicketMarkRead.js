@@ -1,4 +1,4 @@
-const csrf = () => document.querySelector('meta[name="csrf-token"]')?.content;
+import { appFetch } from '../support/http.js';
 
 export async function markTicketRead(ticketId, messageId = null) {
     if (!ticketId) {
@@ -7,13 +7,10 @@ export async function markTicketRead(ticketId, messageId = null) {
 
     const body = messageId ? JSON.stringify({ message_id: messageId }) : '{}';
 
-    await fetch(`/workspace/tickets/${ticketId}/read`, {
+    await appFetch(`/workspace/tickets/${ticketId}/read`, {
         method: 'POST',
         headers: {
-            Accept: 'application/json',
             'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': csrf(),
-            'X-Requested-With': 'XMLHttpRequest',
         },
         body,
     }).catch(() => {});

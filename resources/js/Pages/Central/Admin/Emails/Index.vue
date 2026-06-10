@@ -2,12 +2,18 @@
 import { Head, Link, router } from '@inertiajs/vue3';
 import AdminLayout from '../../../../Layouts/AdminLayout.vue';
 import PageHeader from '../../../../Components/PageHeader.vue';
+import AppRowActions from '../../../../Components/AppRowActions.vue';
+import AppEditAction from '../../../../Components/AppEditAction.vue';
+import AppDeleteAction from '../../../../Components/AppDeleteAction.vue';
 import { usePlatformAdmin } from '../../../../composables/usePlatformAdmin.js';
+import { useI18n } from 'vue-i18n';
 
 defineProps({
     templates: { type: Array, default: () => [] },
     placeholders: { type: Array, default: () => [] },
 });
+
+const { t } = useI18n();
 
 const { can } = usePlatformAdmin();
 const canManage = can('emails.manage');
@@ -38,19 +44,19 @@ const placeholderTag = (key) => `{{${key}}}`;
 </script>
 
 <template>
-    <Head title="Email templates" />
+    <Head :title="$t('central.email_templates')" />
     <AdminLayout>
         <div class="mx-auto max-w-5xl px-4 py-8 sm:px-6">
-            <PageHeader title="Email templates" description="Manage registration and welcome emails sent from the central platform.">
+            <PageHeader :title="$t('central.email_templates')" description="Manage registration and welcome emails sent from the central platform.">
                 <template v-if="canManage" #actions>
                     <Link href="/admin/emails/create" class="rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-700">
-                        Add template
+                        {{ $t('central.add_template') }}
                     </Link>
                 </template>
             </PageHeader>
 
             <div class="mb-6 rounded-2xl border border-blue-200 bg-blue-50 p-5">
-                <p class="text-sm font-semibold text-blue-900">Available placeholders</p>
+                <p class="text-sm font-semibold text-blue-900">{{ $t('central.available_placeholders') }}</p>
                 <div class="mt-3 flex flex-wrap gap-2">
                     <code v-for="item in placeholders" :key="item.key" class="rounded-lg bg-white px-2.5 py-1 text-xs text-blue-800 ring-1 ring-blue-200">{{ placeholderTag(item.key) }}</code>
                 </div>
@@ -60,11 +66,11 @@ const placeholderTag = (key) => `{{${key}}}`;
                 <table class="min-w-full divide-y divide-slate-200 text-sm">
                     <thead class="bg-slate-50">
                         <tr>
-                            <th class="px-5 py-3.5 text-left font-medium text-slate-600">Template</th>
-                            <th class="px-5 py-3.5 text-left font-medium text-slate-600">Subject</th>
-                            <th class="px-5 py-3.5 text-left font-medium text-slate-600">Trigger</th>
-                            <th class="px-5 py-3.5 text-left font-medium text-slate-600">Status</th>
-                            <th class="px-5 py-3.5 text-right font-medium text-slate-600">Actions</th>
+                            <th class="px-5 py-3.5 text-left font-medium text-slate-600">{{ $t('central.template') }}</th>
+                            <th class="px-5 py-3.5 text-left font-medium text-slate-600">{{ $t('central.subject') }}</th>
+                            <th class="px-5 py-3.5 text-left font-medium text-slate-600">{{ $t('central.trigger') }}</th>
+                            <th class="px-5 py-3.5 text-left font-medium text-slate-600">{{ $t('central.status') }}</th>
+                            <th class="px-5 py-3.5 text-right font-medium text-slate-600">{{ $t('central.actions') }}</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-100">
@@ -72,7 +78,7 @@ const placeholderTag = (key) => `{{${key}}}`;
                             <td class="px-5 py-4 align-top">
                                 <p class="font-medium text-slate-900">{{ template.name }}</p>
                                 <p class="mt-0.5 font-mono text-xs text-slate-500">{{ template.slug }}</p>
-                                <span v-if="template.is_system" class="mt-2 inline-flex rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-600">System</span>
+                                <span v-if="template.is_system" class="mt-2 inline-flex rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-600">{{ $t('central.system') }}</span>
                             </td>
                             <td class="max-w-xs px-5 py-4 align-top text-slate-600">{{ template.subject }}</td>
                             <td class="px-5 py-4 align-top text-slate-600">{{ eventLabel(template.slug) }}</td>
@@ -82,19 +88,14 @@ const placeholderTag = (key) => `{{${key}}}`;
                                 </span>
                             </td>
                             <td class="px-5 py-4 align-top text-right">
-                                <div class="flex justify-end gap-2">
-                                    <Link :href="`/admin/emails/${template.id}/edit`" class="rounded-lg px-3 py-1.5 text-xs font-medium text-blue-600 hover:bg-blue-50">
-                                        Edit
-                                    </Link>
-                                    <button
+                                <AppRowActions>
+                                    <AppEditAction :label="$t('common.edit')" :href="`/admin/emails/${template.id}/edit`" />
+                                    <AppDeleteAction
                                         v-if="canManage && !template.is_system"
-                                        type="button"
-                                        class="rounded-lg px-3 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50"
+                                        :label="$t('central.delete')"
                                         @click="destroy(template)"
-                                    >
-                                        Delete
-                                    </button>
-                                </div>
+                                    />
+                                </AppRowActions>
                             </td>
                         </tr>
                     </tbody>

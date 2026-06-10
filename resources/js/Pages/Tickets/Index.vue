@@ -10,6 +10,8 @@ import PaginationLinks from '../../Components/PaginationLinks.vue';
 import StatusBadge from '../../Components/StatusBadge.vue';
 import UnreadBadge from '../../Components/UnreadBadge.vue';
 import ActiveFilterChips from '../../Components/ActiveFilterChips.vue';
+import { useI18n } from 'vue-i18n';
+import { useDateTime } from '../../composables/useDateTime.js';
 
 const props = defineProps({
     tickets: Object,
@@ -25,10 +27,72 @@ const props = defineProps({
     activeViewId: Number,
 });
 
+const { formatDateTime, formatDate } = useDateTime();
+
+const { t } = useI18n();
+
 const page = usePage();
 const currentUserId = computed(() => page.props.auth.user?.id);
 const showMoreFilters = ref(hasMoreFiltersActive());
 const showSaveView = ref(false);
+const showBulkModal = ref(false);
+const selectedIds = ref([]);
+
+const bulkForm = useForm({
+    action: 'assign',
+    assigned_to: '',
+    ticket_status_id: '',
+    ticket_priority_id: '',
+    minutes: 60,
+});
+
+const allVisibleSelected = computed(() =>
+    props.tickets.data?.length > 0
+    && props.tickets.data.every((ticket) => selectedIds.value.includes(ticket.id)),
+);
+
+const toggleSelectAll = () => {
+    if (allVisibleSelected.value) {
+        selectedIds.value = [];
+        return;
+    }
+
+    selectedIds.value = props.tickets.data.map((ticket) => ticket.id);
+};
+
+const toggleTicket = (ticketId) => {
+    if (selectedIds.value.includes(ticketId)) {
+        selectedIds.value = selectedIds.value.filter((id) => id !== ticketId);
+        return;
+    }
+
+    selectedIds.value = [...selectedIds.value, ticketId];
+};
+
+const openBulkModal = (action) => {
+    bulkForm.action = action;
+    bulkForm.assigned_to = '';
+    bulkForm.ticket_status_id = props.statuses[0]?.id ?? '';
+    bulkForm.ticket_priority_id = props.priorities[0]?.id ?? '';
+    bulkForm.minutes = 60;
+    showBulkModal.value = true;
+};
+
+const submitBulk = () => {
+    bulkForm.transform((data) => ({
+        ...data,
+        ticket_ids: selectedIds.value,
+        assigned_to: data.action === 'assign' ? (data.assigned_to || null) : undefined,
+        ticket_status_id: data.action === 'status' ? data.ticket_status_id : undefined,
+        ticket_priority_id: data.action === 'priority' ? data.ticket_priority_id : undefined,
+        minutes: data.action === 'snooze' ? data.minutes : undefined,
+    })).post('/tickets/bulk', {
+        onSuccess: () => {
+            selectedIds.value = [];
+            showBulkModal.value = false;
+        },
+    });
+};
 
 const filterForm = useForm({
     status_id: props.filters?.status_id ?? '',
@@ -273,9 +337,9 @@ const activeFilterLabels = computed(() => {
     }
 
     if (props.filters?.mine) {
-        chips.push({ key: 'mine', label: 'Assigned to me' });
+        chips.push({ key: 'mine', label: t('tickets.assigned_to_me') });
     } else if (props.filters?.unassigned) {
-        chips.push({ key: 'unassigned', label: 'Unassigned' });
+        chips.push({ key: 'unassigned', label: t('tickets.unassigned') });
     } else if (props.filters?.assigned_to) {
         chips.push({ key: 'agent', label: `Assignee: ${labelFor('agent', props.filters.assigned_to)}` });
     }
@@ -304,7 +368,7 @@ const activeFilterLabels = computed(() => {
     }
 
     if (props.filters?.watching) {
-        chips.push({ key: 'watching', label: 'Watching' });
+        chips.push({ key: 'watching', label: t('tickets.watching') });
     }
 
     return chips;
@@ -312,7 +376,7 @@ const activeFilterLabels = computed(() => {
 </script>
 
 <template>
-    <Head title="Tickets" />
+    <Head :title="$t('tickets.tickets')" />
     <AgentLayout>
         <PageHeader>
             <template #description>
@@ -324,7 +388,7 @@ const activeFilterLabels = computed(() => {
                     :href="exportUrl"
                     class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
                 >
-                    Export CSV
+                    {{ $t('tickets.export_csv') }}
                 </a>
             </template>
         </PageHeader>
@@ -335,13 +399,11 @@ const activeFilterLabels = computed(() => {
                 class="rounded-lg px-3 py-1.5 text-sm font-medium transition"
                 :class="!activeViewId ? 'bg-slate-900 text-white' : 'bg-white text-slate-600 ring-1 ring-slate-200 hover:bg-slate-50'"
                 @click="clearFilters"
-            >
-                All tickets
-            </button>
+            >{{ $t('tickets.all_tickets') }}</button>
 
             <template v-if="personalViews.length">
                 <span class="text-xs font-medium text-slate-400">|</span>
-                <span class="text-xs text-slate-500">My views</span>
+                <span class="text-xs text-slate-500">{{ $t('tickets.my_views') }}</span>
                 <div
                     v-for="view in personalViews"
                     :key="view.id"
@@ -364,7 +426,7 @@ const activeFilterLabels = computed(() => {
 
             <template v-if="sharedViews.length">
                 <span class="text-xs font-medium text-slate-400">|</span>
-                <span class="text-xs text-slate-500">Team views</span>
+                <span class="text-xs text-slate-500">{{ $t('tickets.team_views') }}</span>
                 <div
                     v-for="view in sharedViews"
                     :key="view.id"
@@ -403,28 +465,28 @@ const activeFilterLabels = computed(() => {
                         <input
                             v-model="filterForm.search"
                             type="search"
-                            placeholder="Search tickets…"
-                            aria-label="Search tickets"
+                            :placeholder="$t('tickets.search_tickets_ellipsis')"
+                            :aria-label="$t('tickets.search_tickets')"
                             class="w-full rounded-lg border border-slate-200 bg-white py-1.5 pl-9 pr-3 text-sm text-slate-800 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                         />
                     </div>
 
                     <div class="grid grid-cols-2 gap-2 sm:grid-cols-3 xl:flex xl:min-w-0 xl:flex-1 xl:items-center xl:gap-2">
-                        <select v-model="filterForm.status_id" aria-label="Status" :class="selectClass">
-                            <option value="">All statuses</option>
+                        <select v-model="filterForm.status_id" :aria-label="$t('tickets.status')" :class="selectClass">
+                            <option value="">{{ $t('tickets.all_statuses') }}</option>
                             <option v-for="status in statuses" :key="status.id" :value="status.id">{{ status.name }}</option>
                         </select>
 
-                        <select v-model="filterForm.priority_id" aria-label="Priority" :class="selectClass">
-                            <option value="">All priorities</option>
+                        <select v-model="filterForm.priority_id" :aria-label="$t('tickets.priority')" :class="selectClass">
+                            <option value="">{{ $t('tickets.all_priorities') }}</option>
                             <option v-for="priority in priorities" :key="priority.id" :value="priority.id">{{ priority.name }}</option>
                         </select>
 
-                        <select v-model="assigneeFilter" aria-label="Assignee" class="col-span-2 sm:col-span-1" :class="selectClass">
-                            <option value="">All assignees</option>
-                            <option value="mine">Assigned to me</option>
-                            <option value="unassigned">Unassigned</option>
-                            <optgroup label="Agents">
+                        <select v-model="assigneeFilter" :aria-label="$t('tickets.assignee')" class="col-span-2 sm:col-span-1" :class="selectClass">
+                            <option value="">{{ $t('tickets.all_assignees') }}</option>
+                            <option value="mine">{{ $t('tickets.assigned_to_me') }}</option>
+                            <option value="unassigned">{{ $t('tickets.unassigned') }}</option>
+                            <optgroup :label="$t('tickets.agents')">
                                 <option v-for="agent in agents" :key="agent.id" :value="String(agent.id)">{{ agent.name }}</option>
                             </optgroup>
                         </select>
@@ -434,9 +496,7 @@ const activeFilterLabels = computed(() => {
                         <button
                             type="submit"
                             class="rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-slate-800"
-                        >
-                            Apply
-                        </button>
+                        >{{ $t('tickets.apply') }}</button>
                         <button
                             type="button"
                             class="inline-flex items-center gap-1 rounded-lg border border-slate-200 px-2.5 py-1.5 text-xs font-medium text-slate-600 transition hover:bg-slate-50"
@@ -445,7 +505,7 @@ const activeFilterLabels = computed(() => {
                             <svg class="h-3.5 w-3.5 transition" :class="showMoreFilters ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
                             </svg>
-                            More
+                            {{ $t('tickets.more') }}
                             <span
                                 v-if="extraFilterCount"
                                 class="rounded-full bg-blue-100 px-1.5 py-0.5 text-[10px] font-semibold text-blue-700"
@@ -457,39 +517,37 @@ const activeFilterLabels = computed(() => {
                             type="button"
                             class="rounded-lg border border-slate-200 px-2.5 py-1.5 text-xs font-medium text-slate-600 transition hover:bg-slate-50"
                             @click="openSaveView"
-                        >
-                            Save view
-                        </button>
+                        >{{ $t('tickets.save_view') }}</button>
                     </div>
                 </div>
 
                 <div v-if="showMoreFilters" class="mt-3 border-t border-slate-100 pt-3">
                     <div class="grid gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
-                        <select v-model="filterForm.channel_id" aria-label="Channel" :class="selectClass">
-                            <option value="">All channels</option>
+                        <select v-model="filterForm.channel_id" :aria-label="$t('tickets.channel')" :class="selectClass">
+                            <option value="">{{ $t('tickets.all_channels') }}</option>
                             <option v-for="channel in channels" :key="channel.id" :value="channel.id">{{ channel.name }}</option>
                         </select>
 
-                        <select v-model="filterForm.department_id" aria-label="Department" :class="selectClass" @change="filterForm.team_id = ''">
-                            <option value="">All departments</option>
+                        <select v-model="filterForm.department_id" :aria-label="$t('tickets.department')" :class="selectClass" @change="filterForm.team_id = ''">
+                            <option value="">{{ $t('tickets.all_departments') }}</option>
                             <option v-for="department in departments" :key="department.id" :value="department.id">{{ department.name }}</option>
                         </select>
 
-                        <select v-model="filterForm.team_id" aria-label="Team" :class="selectClass">
-                            <option value="">All teams</option>
+                        <select v-model="filterForm.team_id" :aria-label="$t('tickets.team')" :class="selectClass">
+                            <option value="">{{ $t('tickets.all_teams') }}</option>
                             <option v-for="team in filteredTeams" :key="team.id" :value="team.id">{{ team.name }}</option>
                         </select>
 
-                        <input v-model="filterForm.contact" type="text" placeholder="Customer" aria-label="Customer" :class="inputClass" />
+                        <input v-model="filterForm.contact" type="text" :placeholder="$t('tickets.customer')" :aria-label="$t('tickets.customer')" :class="inputClass" />
 
-                        <input v-model="filterForm.created_from" type="date" aria-label="Created from" :class="inputClass" />
+                        <input v-model="filterForm.created_from" type="date" :aria-label="$t('tickets.created_from')" :class="inputClass" />
 
-                        <input v-model="filterForm.created_to" type="date" aria-label="Created to" :class="inputClass" />
+                        <input v-model="filterForm.created_to" type="date" :aria-label="$t('tickets.created_to')" :class="inputClass" />
                     </div>
 
                     <label class="mt-2 flex cursor-pointer items-center gap-2 text-xs font-medium text-slate-600">
                         <input v-model="filterForm.watching" type="checkbox" class="rounded border-slate-300 text-blue-600 focus:ring-blue-500/30" />
-                        Watching only
+                        {{ $t('tickets.watching_only') }}
                     </label>
                 </div>
 
@@ -503,20 +561,49 @@ const activeFilterLabels = computed(() => {
             </form>
         </div>
 
+        <div
+            v-if="selectedIds.length"
+            class="mb-4 flex flex-wrap items-center gap-2 rounded-xl border border-blue-200 bg-blue-50 px-4 py-3"
+        >
+            <span class="text-sm font-medium text-blue-900">{{ selectedIds.length }} selected</span>
+            <button type="button" class="rounded-lg bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 ring-1 ring-slate-200" @click="openBulkModal('assign')">{{ $t('tickets.assign') }}</button>
+            <button type="button" class="rounded-lg bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 ring-1 ring-slate-200" @click="openBulkModal('status')">{{ $t('tickets.status') }}</button>
+            <button type="button" class="rounded-lg bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 ring-1 ring-slate-200" @click="openBulkModal('priority')">{{ $t('tickets.priority') }}</button>
+            <button type="button" class="rounded-lg bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 ring-1 ring-slate-200" @click="openBulkModal('snooze')">{{ $t('tickets.snooze') }}</button>
+            <button type="button" class="rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white" @click="bulkForm.action = 'close'; submitBulk()">{{ $t('tickets.close') }}</button>
+            <button type="button" class="ml-auto text-xs font-medium text-blue-700" @click="selectedIds = []">{{ $t('tickets.clear') }}</button>
+        </div>
+
         <DataTable>
             <thead class="bg-slate-50">
                 <tr>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Ticket</th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Customer</th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Status</th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Priority</th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Channel</th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Assignee</th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Updated</th>
+                    <th class="px-4 py-3">
+                        <input
+                            type="checkbox"
+                            class="rounded border-slate-300"
+                            :checked="allVisibleSelected"
+                            @change="toggleSelectAll"
+                        >
+                    </th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('tickets.ticket') }}</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('tickets.customer') }}</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('tickets.status') }}</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('tickets.priority') }}</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('tickets.channel') }}</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('tickets.assignee') }}</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('tickets.updated') }}</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-slate-100">
                 <tr v-for="ticket in tickets.data" :key="ticket.id" class="hover:bg-slate-50">
+                    <td class="px-4 py-3">
+                        <input
+                            type="checkbox"
+                            class="rounded border-slate-300"
+                            :checked="selectedIds.includes(ticket.id)"
+                            @change="toggleTicket(ticket.id)"
+                        >
+                    </td>
                     <td class="px-4 py-3">
                         <Link :href="`/tickets/${ticket.id}`" class="block">
                             <div class="flex items-center gap-2">
@@ -536,14 +623,12 @@ const activeFilterLabels = computed(() => {
                     <td class="px-4 py-3 text-sm text-slate-600">{{ ticket.priority?.name }}</td>
                     <td class="px-4 py-3 text-sm text-slate-600">{{ ticket.channel?.name || '—' }}</td>
                     <td class="px-4 py-3 text-sm text-slate-600">{{ ticket.assignee?.name || 'Unassigned' }}</td>
-                    <td class="px-4 py-3 text-sm text-slate-500">{{ new Date(ticket.updated_at).toLocaleDateString() }}</td>
+                    <td class="px-4 py-3 text-sm text-slate-500">{{ formatDate(ticket.updated_at) }}</td>
                 </tr>
                 <tr v-if="!tickets.data?.length">
-                    <td colspan="7" class="px-4 py-12 text-center">
-                        <p class="text-sm font-medium text-slate-700">No tickets match these filters</p>
-                        <button type="button" class="mt-3 text-sm font-medium text-blue-600 hover:text-blue-700" @click="clearFilters">
-                            Clear all filters
-                        </button>
+                    <td colspan="8" class="px-4 py-12 text-center">
+                        <p class="text-sm font-medium text-slate-700">{{ $t('tickets.no_tickets_match_these_filters') }}</p>
+                        <button type="button" class="mt-3 text-sm font-medium text-blue-600 hover:text-blue-700" @click="clearFilters">{{ $t('tickets.clear_all_filters') }}</button>
                     </td>
                 </tr>
             </tbody>
@@ -559,29 +644,29 @@ const activeFilterLabels = computed(() => {
 
         <AppModal
             :open="showSaveView"
-            title="Save ticket view"
-            description="Save the current filters for yourself or share them with your team."
+            :title="$t('tickets.save_ticket_view')"
+            :description="$t('tickets.save_the_current_filters_for_yourself_or_share_them_with_your_team')"
             @close="showSaveView = false"
         >
             <form id="save-ticket-view-form" class="space-y-4" @submit.prevent="saveView">
-                <FilterField label="View name">
-                    <input v-model="saveViewForm.name" type="text" required placeholder="My open tickets" class="max-w-md" :class="inputClass" />
+                <FilterField :label="$t('tickets.view_name')">
+                    <input v-model="saveViewForm.name" type="text" required :placeholder="$t('tickets.my_open_tickets')" class="max-w-md" :class="inputClass" />
                 </FilterField>
 
                 <FilterField label="Who can use this view?">
                     <div class="flex flex-wrap gap-3">
                         <label class="flex cursor-pointer items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 text-sm">
                             <input v-model="saveViewForm.visibility" type="radio" value="private" />
-                            Only me
+                            {{ $t('tickets.only_me') }}
                         </label>
                         <label class="flex cursor-pointer items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 text-sm" :class="!userTeams.length ? 'opacity-50' : ''">
                             <input v-model="saveViewForm.visibility" type="radio" value="team" :disabled="!userTeams.length" />
-                            Share with team
+                            {{ $t('tickets.share_with_team') }}
                         </label>
                     </div>
                 </FilterField>
 
-                <FilterField v-if="saveViewForm.visibility === 'team'" label="Team">
+                <FilterField v-if="saveViewForm.visibility === 'team'" :label="$t('tickets.team')">
                     <select v-model="saveViewForm.team_id" required class="max-w-md" :class="inputClass">
                         <option v-for="team in userTeams" :key="team.id" :value="team.id">{{ team.name }}</option>
                     </select>
@@ -589,11 +674,11 @@ const activeFilterLabels = computed(() => {
 
                 <label v-if="saveViewForm.visibility === 'private'" class="flex items-center gap-2 text-sm text-slate-700">
                     <input v-model="saveViewForm.is_default" type="checkbox" class="rounded border-slate-300" />
-                    Set as my default view
+                    {{ $t('tickets.set_as_my_default_view') }}
                 </label>
 
                 <div v-if="activeFilterLabels.length" class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-3">
-                    <p class="text-sm font-medium text-slate-700">Filters to save</p>
+                    <p class="text-sm font-medium text-slate-700">{{ $t('tickets.filters_to_save') }}</p>
                     <div class="mt-2 flex flex-wrap gap-1.5">
                         <span
                             v-for="chip in activeFilterLabels"
@@ -608,12 +693,53 @@ const activeFilterLabels = computed(() => {
 
             <template #footer>
                 <div class="flex justify-end gap-2">
-                    <button type="button" class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700" @click="showSaveView = false">
-                        Cancel
-                    </button>
-                    <button type="submit" form="save-ticket-view-form" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700" :disabled="saveViewForm.processing">
-                        Save view
-                    </button>
+                    <button type="button" class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700" @click="showSaveView = false">{{ $t('tickets.cancel') }}</button>
+                    <button type="submit" form="save-ticket-view-form" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700" :disabled="saveViewForm.processing">{{ $t('tickets.save_view') }}</button>
+                </div>
+            </template>
+        </AppModal>
+
+        <AppModal
+            :open="showBulkModal"
+            :title="`Bulk ${bulkForm.action}`"
+            :description="`Apply to ${selectedIds.length} ticket(s).`"
+            @close="showBulkModal = false"
+        >
+            <form id="bulk-ticket-form" class="space-y-4" @submit.prevent="submitBulk">
+                <div v-if="bulkForm.action === 'assign'">
+                    <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('tickets.assignee') }}</label>
+                    <select v-model="bulkForm.assigned_to" :class="selectClass">
+                        <option value="">{{ $t('tickets.unassigned') }}</option>
+                        <option v-for="agent in agents" :key="agent.id" :value="agent.id">{{ agent.name }}</option>
+                    </select>
+                </div>
+
+                <div v-if="bulkForm.action === 'status'">
+                    <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('tickets.status') }}</label>
+                    <select v-model="bulkForm.ticket_status_id" :class="selectClass" required>
+                        <option v-for="status in statuses" :key="status.id" :value="status.id">{{ status.name }}</option>
+                    </select>
+                </div>
+
+                <div v-if="bulkForm.action === 'priority'">
+                    <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('tickets.priority') }}</label>
+                    <select v-model="bulkForm.ticket_priority_id" :class="selectClass" required>
+                        <option v-for="priority in priorities" :key="priority.id" :value="priority.id">{{ priority.name }}</option>
+                    </select>
+                </div>
+
+                <div v-if="bulkForm.action === 'snooze'">
+                    <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('tickets.snooze_for_minutes') }}</label>
+                    <input v-model.number="bulkForm.minutes" type="number" min="15" max="10080" :class="inputClass" required />
+                </div>
+
+                <p v-if="bulkForm.action === 'close'" class="text-sm text-slate-600">{{ $t('tickets.close_all_selected_tickets') }}</p>
+            </form>
+
+            <template #footer>
+                <div class="flex justify-end gap-2">
+                    <button type="button" class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700" @click="showBulkModal = false">{{ $t('tickets.cancel') }}</button>
+                    <button type="submit" form="bulk-ticket-form" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700" :disabled="bulkForm.processing">{{ $t('tickets.apply') }}</button>
                 </div>
             </template>
         </AppModal>

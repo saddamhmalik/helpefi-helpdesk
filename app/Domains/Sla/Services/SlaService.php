@@ -2,6 +2,7 @@
 
 namespace App\Domains\Sla\Services;
 
+use App\Domains\Billing\Services\BillingService;
 use App\Domains\Notifications\Services\NotificationService;
 use App\Domains\Performance\Services\PerformanceService;
 use App\Domains\Sla\Models\SlaPolicy;
@@ -18,6 +19,7 @@ class SlaService
     public function __construct(
         private SlaRepository $sla,
         private SlaClockService $clock,
+        private BillingService $billing,
         private NotificationService $notifications,
         private AuditRecorder $audit,
         private PerformanceService $performance,
@@ -36,6 +38,10 @@ class SlaService
 
     public function applyToTicket(Ticket $ticket): ?TicketSlaTimer
     {
+        if (! $this->billing->canUseFeature('sla')) {
+            return null;
+        }
+
         if ($this->sla->timerForTicket($ticket->id)) {
             return null;
         }
@@ -144,6 +150,8 @@ class SlaService
 
     public function updateTarget(int $targetId, array $data): SlaTarget
     {
+        $this->billing->assertFeature('sla');
+
         $target = SlaTarget::query()->findOrFail($targetId);
         $before = $target->only(array_keys($data));
         $target = $this->sla->updateTarget($target, $data);
@@ -279,6 +287,8 @@ class SlaService
 
     public function createScopedPolicy(string $name, ?int $teamId, ?string $customerTier): SlaPolicy
     {
+        $this->billing->assertFeature('sla');
+
         $default = $this->sla->defaultPolicy();
 
         if (! $default) {
@@ -314,6 +324,8 @@ class SlaService
 
     public function deletePolicy(int $id): void
     {
+        $this->billing->assertFeature('sla');
+
         $policy = $this->sla->findPolicy($id);
 
         if ($policy->is_default) {

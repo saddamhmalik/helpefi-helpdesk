@@ -21,7 +21,6 @@ use App\Domains\Tickets\Services\TicketCcService;
 use App\Models\User;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Schema;
 use InvalidArgumentException;
 use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
@@ -158,7 +157,7 @@ class OutboundMailService
         }
     }
 
-    public function sendAutoFirstResponse(Ticket $ticket, TicketMessage $message): void
+    public function sendAutoFirstResponse(Ticket $ticket, TicketMessage $message, TicketMessage $customerMessage): void
     {
         $setting = $this->settings->current()->loadMissing('emailInbox');
 
@@ -172,10 +171,10 @@ class OutboundMailService
             return;
         }
 
-        SendAutoFirstResponseJob::dispatch($ticket->id, $message->id);
+        SendAutoFirstResponseJob::dispatch($ticket->id, $message->id, $customerMessage->id);
     }
 
-    public function deliverAutoFirstResponse(Ticket $ticket, TicketMessage $message): void
+    public function deliverAutoFirstResponse(Ticket $ticket, TicketMessage $message, TicketMessage $customerMessage): void
     {
         $setting = $this->settings->current()->loadMissing('emailInbox');
 
@@ -205,7 +204,7 @@ class OutboundMailService
             }
 
             $mail->send(
-                new AutoFirstResponseMail($ticket, $message, $fromAddress, $fromName, $replyMessageId),
+                new AutoFirstResponseMail($ticket, $message, $customerMessage, $fromAddress, $fromName, $replyMessageId),
             );
         } catch (TransportExceptionInterface $exception) {
             throw new InvalidArgumentException($this->formatTransportError('Failed to send auto first response email', $exception));
@@ -348,10 +347,6 @@ class OutboundMailService
         return [
             'enabled' => $setting->enabled,
             'reply_enabled' => $setting->reply_enabled,
-            'delivery_mode' => $setting->delivery_mode ?? MailSetting::DELIVERY_SYNC,
-            'queue_connection' => $setting->queue_connection ?? MailSetting::QUEUE_SYNC,
-            'queue_options' => $this->queueOptions(),
-            'env_queue_connection' => env('QUEUE_CONNECTION', 'database'),
             'use_inbox_smtp' => (bool) $setting->use_inbox_smtp,
             'email_inbox_id' => $setting->email_inbox_id,
             'driver' => $setting->driver,
@@ -374,12 +369,11 @@ class OutboundMailService
     {
         $setting = $this->settings->current();
 
+        $data['delivery_mode'] = MailSetting::DELIVERY_QUEUE;
+        $data['queue_connection'] = MailSetting::QUEUE_REDIS;
+
         if ($data['enabled'] ?? false) {
             $this->validateEnabledSettings($data, $setting);
-        }
-
-        if (isset($data['queue_connection'])) {
-            $this->validateQueueConnection($data['queue_connection']);
         }
 
         if (array_key_exists('password', $data) && ($data['password'] === null || $data['password'] === '')) {
@@ -411,41 +405,7 @@ class OutboundMailService
 
     private function applyQueueConfig(): void
     {
-        if (! Schema::hasColumn('mail_settings', 'queue_connection')) {
-            return;
-        }
-
-        $connection = $this->settings->current()->queue_connection;
-
-        if ($connection) {
-            Config::set('queue.default', $connection);
-        }
-    }
-
-    private function queueOptions(): array
-    {
-        return [
-            ['value' => MailSetting::QUEUE_SYNC, 'label' => 'Sync (inline, no worker)'],
-            ['value' => MailSetting::QUEUE_DATABASE, 'label' => 'Database'],
-            ['value' => MailSetting::QUEUE_REDIS, 'label' => 'Redis'],
-        ];
-    }
-
-    private function validateQueueConnection(string $connection): void
-    {
-        if (! in_array($connection, [MailSetting::QUEUE_SYNC, MailSetting::QUEUE_DATABASE, MailSetting::QUEUE_REDIS], true)) {
-            throw new InvalidArgumentException('Invalid queue connection.');
-        }
-
-        if ($connection !== MailSetting::QUEUE_REDIS) {
-            return;
-        }
-
-        try {
-            Redis::connection()->ping();
-        } catch (\Throwable $exception) {
-            throw new InvalidArgumentException('Background email delivery is unavailable. Choose sync delivery or contact your administrator.');
-        }
+        Config::set('queue.default', MailSetting::QUEUE_REDIS);
     }
 
     private function inboxSmtpOptions(): array
@@ -583,7 +543,7 @@ class OutboundMailService
         $preview->exists = $setting->exists;
         $preview->setRelation('emailInbox', $setting->emailInbox);
 
-        foreach (['enabled', 'reply_enabled', 'delivery_mode', 'use_inbox_smtp', 'email_inbox_id', 'driver', 'from_address', 'from_name', 'host', 'port', 'encryption', 'username'] as $field) {
+        foreach (['enabled', 'reply_enabled', 'use_inbox_smtp', 'email_inbox_id', 'driver', 'from_address', 'from_name', 'host', 'port', 'encryption', 'username'] as $field) {
             if (array_key_exists($field, $overrides) && $overrides[$field] !== null && $overrides[$field] !== '') {
                 $preview->{$field} = $overrides[$field];
             }

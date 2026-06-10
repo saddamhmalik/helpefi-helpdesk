@@ -4,12 +4,18 @@ import AdminLayout from '../../../../Layouts/AdminLayout.vue';
 import AppAvatar from '../../../../Components/AppAvatar.vue';
 import PageHeader from '../../../../Components/PageHeader.vue';
 import PaginationLinks from '../../../../Components/PaginationLinks.vue';
+import AppRowActions from '../../../../Components/AppRowActions.vue';
+import AppEditAction from '../../../../Components/AppEditAction.vue';
+import AppDeleteAction from '../../../../Components/AppDeleteAction.vue';
 import { usePlatformAdmin } from '../../../../composables/usePlatformAdmin.js';
+import { useI18n } from 'vue-i18n';
 
 defineProps({
     users: Object,
     roles: Array,
 });
+
+const { t } = useI18n();
 
 const { can } = usePlatformAdmin();
 const canManage = can('users.manage');
@@ -26,13 +32,13 @@ const formatRole = (name) => name.split('_').map((part) => part.charAt(0).toUppe
 </script>
 
 <template>
-    <Head title="Platform users" />
+    <Head :title="$t('central.platform_users')" />
     <AdminLayout>
         <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6">
-            <PageHeader title="Platform users" description="Manage central admin accounts and role assignments.">
+            <PageHeader :title="$t('central.platform_users')" :description="$t('central.manage_central_admin_accounts_and_role_assignments')">
                 <template v-if="canManage" #actions>
                     <Link href="/admin/users/create" class="rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-700">
-                        Add user
+                        {{ $t('central.add_user') }}
                     </Link>
                 </template>
             </PageHeader>
@@ -41,10 +47,10 @@ const formatRole = (name) => name.split('_').map((part) => part.charAt(0).toUppe
                 <table class="min-w-full divide-y divide-slate-200 text-sm">
                     <thead class="bg-slate-50">
                         <tr>
-                            <th class="px-5 py-3.5 text-left font-medium text-slate-600">User</th>
-                            <th class="px-5 py-3.5 text-left font-medium text-slate-600">Roles</th>
-                            <th class="px-5 py-3.5 text-left font-medium text-slate-600">Status</th>
-                            <th v-if="canManage" class="px-5 py-3.5 text-right font-medium text-slate-600">Actions</th>
+                            <th class="px-5 py-3.5 text-left font-medium text-slate-600">{{ $t('central.user') }}</th>
+                            <th class="px-5 py-3.5 text-left font-medium text-slate-600">{{ $t('central.roles') }}</th>
+                            <th class="px-5 py-3.5 text-left font-medium text-slate-600">{{ $t('central.status') }}</th>
+                            <th v-if="canManage" class="px-5 py-3.5 text-right font-medium text-slate-600">{{ $t('central.actions') }}</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-100">
@@ -76,8 +82,10 @@ const formatRole = (name) => name.split('_').map((part) => part.charAt(0).toUppe
                                 </span>
                             </td>
                             <td v-if="canManage" class="px-5 py-4 text-right">
-                                <Link :href="`/admin/users/${user.id}/edit`" class="font-medium text-blue-600 hover:text-blue-700">Edit</Link>
-                                <button type="button" class="ml-4 font-medium text-red-600 hover:text-red-700" @click="destroyUser(user)">Delete</button>
+                                <AppRowActions>
+                                    <AppEditAction :label="$t('common.edit')" :href="`/admin/users/${user.id}/edit`" />
+                                    <AppDeleteAction :label="$t('central.delete')" @click="destroyUser(user)" />
+                                </AppRowActions>
                             </td>
                         </tr>
                         <tr v-if="!users.data.length">

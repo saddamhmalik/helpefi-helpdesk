@@ -1,5 +1,6 @@
 import { router, usePage } from '@inertiajs/vue3';
 import { collectErrorMessages, useToast } from '../composables/useToast.js';
+import { getAppI18n } from './i18n.js';
 
 const skipFlashKeys = new Set([
     'two_factor_setup',
@@ -20,7 +21,8 @@ function showFromProps(props) {
     }
 
     if (flash.invite_url) {
-        toast.info('Invitation created. Copy the link shown on the page.');
+        const i18n = getAppI18n();
+        toast.info(i18n.global.t('components.invitation_created_toast'));
     }
 
     collectErrorMessages(props?.errors).forEach((message) => {
@@ -41,7 +43,11 @@ export function registerFlashToasts() {
         showFromProps(event.detail.page.props);
     });
 
-    router.on('invalid', () => {
+    router.on('httpException', (event) => {
+        if (event.detail?.response?.status === 419) {
+            return;
+        }
+
         setTimeout(() => {
             showFromProps(usePage().props);
         }, 0);

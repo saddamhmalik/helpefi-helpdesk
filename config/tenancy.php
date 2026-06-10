@@ -8,6 +8,7 @@ use App\Models\TenantDomain;
 return [
     'tenant_model' => Tenant::class,
     'central_app_domain' => env('CENTRAL_APP_DOMAIN', 'helpdesk.test'),
+    'central_og_image' => env('CENTRAL_OG_IMAGE_URL'),
     'central_admin_password' => env('CENTRAL_ADMIN_PASSWORD'),
     'id_generator' => Stancl\Tenancy\UUIDGenerator::class,
 
@@ -63,7 +64,7 @@ return [
          * Tenant database names are created like this:
          * prefix + tenant_id + suffix.
          */
-        'prefix' => env('TENANCY_DATABASE_PREFIX', 'helpdesk_tenant_'),
+        'prefix' => env('TENANCY_DATABASE_PREFIX', 'tenant_'),
         'suffix' => '',
 
         /**
@@ -181,7 +182,8 @@ return [
         // Stancl\Tenancy\Features\UniversalRoutes::class,
         // Stancl\Tenancy\Features\TenantConfig::class, // https://tenancyforlaravel.com/docs/v3/features/tenant-config
         // Stancl\Tenancy\Features\CrossDomainRedirect::class, // https://tenancyforlaravel.com/docs/v3/features/cross-domain-redirect
-        // Stancl\Tenancy\Features\ViteBundler::class,
+        Stancl\Tenancy\Features\ViteBundler::class,
+        Stancl\Tenancy\Features\TelescopeTags::class,
     ],
 
     /**

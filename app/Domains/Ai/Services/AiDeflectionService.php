@@ -8,6 +8,7 @@ use App\Domains\Ai\Repositories\AiDeflectionRepository;
 use App\Domains\Ai\Repositories\AiSettingRepository;
 use App\Domains\Ai\Repositories\KnowledgeAiRepository;
 use App\Domains\Billing\Services\BillingService;
+use App\Domains\Brands\Services\BrandService;
 use App\Domains\Knowledge\Services\PortalService;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Str;
@@ -22,6 +23,7 @@ class AiDeflectionService
         private AiCompletionClient $client,
         private BillingService $billing,
         private PortalService $portal,
+        private BrandService $brands,
     ) {
     }
 
@@ -187,7 +189,10 @@ class AiDeflectionService
             'title' => $article->title,
             'slug' => $article->slug,
             'excerpt' => $article->excerpt,
-            'url' => '/portal/articles/'.$article->slug,
+            'url' => route('portal.article', [
+                'brand' => $this->brands->defaultSlug(),
+                'articleSlug' => $article->slug,
+            ]),
         ])->values()->all();
     }
 

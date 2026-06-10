@@ -15,6 +15,7 @@ class WorkspaceRepository
         $query = Ticket::query()
             ->with(['contact:id,name,email', 'status:id,name,slug,color', 'priority:id,name,slug', 'assignee:id,name'])
             ->whereNull('merged_into_ticket_id')
+            ->visibleInQueue()
             ->orderByDesc('updated_at');
 
         if (! empty($filters['status_id'])) {
@@ -49,6 +50,7 @@ class WorkspaceRepository
         return Ticket::query()
             ->with(['status:id,name,slug,color', 'priority:id,name,slug'])
             ->whereNull('merged_into_ticket_id')
+            ->visibleInQueue()
             ->where('updated_at', '>', $since)
             ->orderByDesc('updated_at')
             ->limit($limit)

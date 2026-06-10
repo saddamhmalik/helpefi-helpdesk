@@ -24,6 +24,12 @@ return [
         'Reports' => [
             'reports.view' => 'View reports and dashboard',
         ],
+        'Service Desk' => [
+            'service-desk.view' => 'View Service Desk hub and queues',
+            'service-desk.manage' => 'Manage incidents, changes, problems, and major incidents',
+            'service-desk.approve' => 'Approve or reject approval requests',
+            'settings.service-desk' => 'Configure Service Desk settings',
+        ],
         'Settings' => [
             'settings.team' => 'Manage team members',
             'settings.roles' => 'Manage roles and permissions',
@@ -58,6 +64,9 @@ return [
             'assets.view',
             'knowledge.manage',
             'reports.view',
+            'service-desk.view',
+            'service-desk.manage',
+            'service-desk.approve',
         ],
         'customer' => [],
     ],

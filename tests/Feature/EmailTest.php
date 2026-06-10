@@ -160,8 +160,6 @@ class EmailTest extends TestCase
             ->put('/settings/email/outbound', [
                 'enabled' => true,
                 'reply_enabled' => true,
-                'delivery_mode' => 'sync',
-                'queue_connection' => 'database',
                 'use_inbox_smtp' => false,
                 'driver' => 'smtp',
                 'from_address' => 'noreply@helpdesk.test',
@@ -177,10 +175,11 @@ class EmailTest extends TestCase
         $setting = MailSetting::query()->first();
         $this->assertTrue($setting->enabled);
         $this->assertSame('noreply@helpdesk.test', $setting->from_address);
-        $this->assertSame('database', $setting->queue_connection);
+        $this->assertSame(MailSetting::DELIVERY_QUEUE, $setting->delivery_mode);
+        $this->assertSame(MailSetting::QUEUE_REDIS, $setting->queue_connection);
     }
 
-    public function test_queue_connection_from_settings_overrides_config(): void
+    public function test_outbound_mail_always_uses_redis_queue(): void
     {
         $this->seed(EmailSeeder::class);
 
@@ -190,6 +189,6 @@ class EmailTest extends TestCase
 
         app(\App\Domains\Channels\Services\OutboundMailService::class)->applyGlobalConfig();
 
-        $this->assertSame('database', config('queue.default'));
+        $this->assertSame(MailSetting::QUEUE_REDIS, config('queue.default'));
     }
 }

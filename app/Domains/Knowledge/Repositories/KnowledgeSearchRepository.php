@@ -3,6 +3,8 @@
 namespace App\Domains\Knowledge\Repositories;
 
 use App\Domains\Knowledge\Models\KnowledgeArticle;
+use App\Domains\Knowledge\Services\KnowledgeEmbeddingService;
+use App\Domains\Ai\Contracts\AiEmbeddingClient;
 use Illuminate\Database\Eloquent\Collection;
 
 class KnowledgeSearchRepository
@@ -16,7 +18,14 @@ class KnowledgeSearchRepository
         'help', 'please', 'about', 'into', 'through', 'during', 'before', 'after', 'above', 'below',
     ];
 
-    public function searchPublished(string $query, int $limit = 5, ?int $brandId = null): Collection
+    public function __construct(
+        private AiEmbeddingClient $embeddingClient,
+        private KnowledgeEmbeddingRepository $embeddings,
+        private KnowledgeEmbeddingService $embeddingService,
+    ) {
+    }
+
+    public function searchPublished(string $query, int $limit = 5, ?int $brandId = null, ?string $locale = null): Collection
     {
         $normalized = $this->normalizeQuery($query);
 
@@ -24,6 +33,45 @@ class KnowledgeSearchRepository
             return new Collection;
         }
 
+        if ($this->embeddingClient->available()) {
+            $vectorResults = $this->vectorSearch($normalized, $limit, $brandId, $locale);
+
+            if ($vectorResults->isNotEmpty()) {
+                return $vectorResults;
+            }
+        }
+
+        return $this->keywordSearch($normalized, $limit, $brandId, $locale);
+    }
+
+    private function vectorSearch(string $query, int $limit, ?int $brandId, ?string $locale): Collection
+    {
+        try {
+            $queryVector = $this->embeddingClient->embed($query);
+        } catch (\Throwable) {
+            return new Collection;
+        }
+
+        $articles = $this->embeddings->publishedWithEmbeddings($brandId, $locale);
+
+        $scored = $articles->map(function (KnowledgeArticle $article) use ($queryVector) {
+            $embedding = $article->embedding?->embedding ?? [];
+
+            return [
+                'article' => $article,
+                'score' => $this->embeddingService->cosineSimilarity($queryVector, $embedding),
+            ];
+        })
+            ->filter(fn (array $row) => $row['score'] > 0.65)
+            ->sortByDesc('score')
+            ->take($limit)
+            ->values();
+
+        return new Collection($scored->map(fn (array $row) => $row['article'])->all());
+    }
+
+    private function keywordSearch(string $normalized, int $limit, ?int $brandId, ?string $locale): Collection
+    {
         $terms = $this->extractTerms($normalized);
 
         if ($terms->isEmpty()) {
@@ -32,8 +80,9 @@ class KnowledgeSearchRepository
 
         $articles = KnowledgeArticle::query()
             ->where('is_published', true)
+            ->when($locale, fn ($q) => $q->where('locale', $locale))
             ->when($brandId, fn ($q) => $q->whereHas('collection', fn ($c) => $c->where('brand_id', $brandId)))
-            ->get(['id', 'title', 'slug', 'excerpt', 'body']);
+            ->get(['id', 'title', 'slug', 'excerpt', 'body', 'locale']);
 
         $scored = $articles->map(function (KnowledgeArticle $article) use ($normalized, $terms) {
             return [

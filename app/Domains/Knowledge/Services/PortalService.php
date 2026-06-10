@@ -18,6 +18,8 @@ class PortalService
 {
     public function __construct(
         private KnowledgeService $knowledgeService,
+        private KnowledgeLocaleService $localeService,
+        private KnowledgeSettingService $knowledgeSettings,
         private ContactService $contactService,
         private TicketService $ticketService,
         private ChannelService $channelService,
@@ -30,16 +32,20 @@ class PortalService
     public function home(): array
     {
         $brandId = $this->brandContext->id();
+        $locale = $this->localeService->current();
 
         return [
             'collections' => $this->knowledgeService->publicCollections($brandId),
-            'featured' => $this->knowledgeService->featuredPublished(6, $brandId),
+            'featured' => $this->knowledgeService->featuredPublished(6, $brandId, $locale),
+            'locale' => $locale,
+            'locales' => $this->knowledgeSettings->localeOptions(),
         ];
     }
 
     public function collection(string $slug): array
     {
         $brandId = $this->brandContext->id();
+        $locale = $this->localeService->current();
         $collection = $this->knowledgeService->collectionBySlugForBrand($slug, $brandId);
 
         if (! $collection->is_public) {
@@ -48,20 +54,35 @@ class PortalService
 
         return [
             'collection' => $collection,
-            'articles' => $this->knowledgeService->publishedArticles($collection->id, null, 15, $brandId),
+            'articles' => $this->knowledgeService->publishedArticles($collection->id, null, 15, $brandId, $locale),
+            'locale' => $locale,
+            'locales' => $this->knowledgeSettings->localeOptions(),
         ];
     }
 
-    public function article(string $slug): KnowledgeArticle
+    public function article(string $slug): array
     {
-        return $this->knowledgeService->publishedArticleBySlug($slug, $this->brandContext->id());
+        $brandId = $this->brandContext->id();
+        $locale = $this->localeService->current();
+        $article = $this->knowledgeService->publishedArticleBySlug($slug, $brandId, $locale);
+
+        return [
+            'article' => $article,
+            'translations' => $this->knowledgeService->translations($article->id),
+            'locale' => $locale,
+            'locales' => $this->knowledgeSettings->localeOptions(),
+        ];
     }
 
     public function search(?string $query): array
     {
+        $locale = $this->localeService->current();
+
         return [
             'query' => $query,
-            'articles' => $this->knowledgeService->publishedArticles(null, $query, 15, $this->brandContext->id()),
+            'articles' => $this->knowledgeService->publishedArticles(null, $query, 15, $this->brandContext->id(), $locale),
+            'locale' => $locale,
+            'locales' => $this->knowledgeSettings->localeOptions(),
         ];
     }
 

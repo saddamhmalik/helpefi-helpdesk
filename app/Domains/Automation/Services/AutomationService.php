@@ -113,6 +113,8 @@ class AutomationService
                 ['value' => AutomationRule::TRIGGER_TICKET_CREATED, 'label' => 'Ticket created'],
                 ['value' => AutomationRule::TRIGGER_TICKET_UPDATED, 'label' => 'Ticket updated'],
                 ['value' => AutomationRule::TRIGGER_CUSTOMER_MESSAGE, 'label' => 'Customer message received'],
+                ['value' => AutomationRule::TRIGGER_APPROVAL_APPROVED, 'label' => 'Approval approved'],
+                ['value' => AutomationRule::TRIGGER_APPROVAL_REJECTED, 'label' => 'Approval rejected'],
             ],
             'condition_fields' => [
                 ['value' => 'ticket_priority_id', 'label' => 'Priority', 'operators' => ['equals', 'not_equals']],
@@ -207,6 +209,8 @@ class AutomationService
             AutomationRule::TRIGGER_TICKET_CREATED,
             AutomationRule::TRIGGER_TICKET_UPDATED,
             AutomationRule::TRIGGER_CUSTOMER_MESSAGE,
+            AutomationRule::TRIGGER_APPROVAL_APPROVED,
+            AutomationRule::TRIGGER_APPROVAL_REJECTED,
         ];
 
         if (! in_array($data['trigger'] ?? '', $validTriggers, true)) {

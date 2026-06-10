@@ -1,11 +1,16 @@
 <script setup>
 import { router, useForm } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
-import SettingsLayout from '../../Layouts/SettingsLayout.vue';
+import SettingsPage from '../../Components/SettingsPage.vue';
+import PlanFeatureBanner from '../../Components/PlanFeatureBanner.vue';
 import AppModal from '../../Components/AppModal.vue';
 import AppToggle from '../../Components/AppToggle.vue';
 import AppConfirmDialog from '../../Components/AppConfirmDialog.vue';
+import AppRowActions from '../../Components/AppRowActions.vue';
+import AppEditAction from '../../Components/AppEditAction.vue';
+import AppDeleteAction from '../../Components/AppDeleteAction.vue';
 import { useConfirmDialog } from '../../composables/useConfirmDialog.js';
+import { useI18n } from 'vue-i18n';
 
 const props = defineProps({
     rules: Array,
@@ -17,6 +22,8 @@ const props = defineProps({
     webhooks: Array,
     tags: Array,
 });
+
+const { t } = useI18n();
 
 const showForm = ref(false);
 const editingRule = ref(null);
@@ -113,7 +120,7 @@ const save = () => {
 
 const destroyRule = (rule) => {
     askConfirm({
-        title: 'Delete rule',
+        title: t('settings_automation.delete_rule'),
         message: `Delete "${rule.name}"? This cannot be undone.`,
         confirmLabel: 'Delete',
         action: () => router.delete(`/settings/automation/${rule.id}`, { preserveScroll: true }),
@@ -131,9 +138,11 @@ const needsValue = (condition) => !['is_empty', 'is_not_empty'].includes(conditi
 </script>
 
 <template>
-    <SettingsLayout title="Automation" description="Rules that run automatically on ticket events.">
+    <SettingsPage :title="$t('settings_automation.automation')" :description="$t('settings_automation.rules_that_run_automatically_on_ticket_events')">
+        <PlanFeatureBanner feature="automation" />
+
         <template #actions>
-            <button type="button" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700" @click="openCreate">New rule</button>
+            <button type="button" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700" @click="openCreate">{{ $t('settings_automation.new_rule') }}</button>
         </template>
 
         <div class="space-y-4">
@@ -149,23 +158,25 @@ const needsValue = (condition) => !['is_empty', 'is_not_empty'].includes(conditi
                         <p class="mt-1 text-sm text-slate-500">When {{ triggerLabel(rule.trigger).toLowerCase() }}</p>
                     </div>
                     <div class="flex gap-2">
-                        <button type="button" class="rounded-lg border border-slate-300 px-3 py-1.5 text-sm text-slate-700 transition hover:bg-slate-50" @click="openEdit(rule)">Edit</button>
-                        <button type="button" class="rounded-lg border border-red-200 px-3 py-1.5 text-sm text-red-700 transition hover:bg-red-50" @click="destroyRule(rule)">Delete</button>
+                        <AppRowActions>
+                            <AppEditAction :label="$t('settings_automation.edit')" @click="openEdit(rule)" />
+                            <AppDeleteAction :label="$t('settings_automation.delete')" @click="destroyRule(rule)" />
+                        </AppRowActions>
                     </div>
                 </div>
 
                 <div class="mt-4 grid gap-4 md:grid-cols-2">
                     <div>
-                        <p class="text-xs font-medium uppercase text-slate-500">Conditions</p>
+                        <p class="text-xs font-medium uppercase text-slate-500">{{ $t('settings_automation.conditions') }}</p>
                         <ul class="mt-2 space-y-1 text-sm text-slate-700">
                             <li v-for="(condition, index) in rule.conditions" :key="index">
                                 {{ condition.field }} {{ condition.operator }} {{ condition.value ?? '—' }}
                             </li>
-                            <li v-if="!rule.conditions?.length" class="text-slate-500">Always run</li>
+                            <li v-if="!rule.conditions?.length" class="text-slate-500">{{ $t('settings_automation.always_run') }}</li>
                         </ul>
                     </div>
                     <div>
-                        <p class="text-xs font-medium uppercase text-slate-500">Actions</p>
+                        <p class="text-xs font-medium uppercase text-slate-500">{{ $t('settings_automation.actions') }}</p>
                         <ul class="mt-2 space-y-1 text-sm text-slate-700">
                             <li v-for="(action, index) in rule.actions" :key="index">
                                 {{ actionSummary(action) }}
@@ -183,42 +194,42 @@ const needsValue = (condition) => !['is_empty', 'is_not_empty'].includes(conditi
         <AppModal
             :open="showForm"
             :title="editingRule ? 'Edit rule' : 'New rule'"
-            description="Define when this rule runs and what it should do."
+            :description="$t('settings_automation.define_when_this_rule_runs_and_what_it_should_do')"
             variant="drawer"
             @close="closeForm"
         >
             <form id="automation-form" class="space-y-5" @submit.prevent="save">
                 <div>
-                    <label class="mb-1 block text-sm font-medium text-slate-700">Name</label>
+                    <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('profile.name') }}</label>
                     <input v-model="form.name" type="text" required class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm transition focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20" />
                 </div>
 
                 <div class="grid gap-4 sm:grid-cols-2">
                     <div>
-                        <label class="mb-1 block text-sm font-medium text-slate-700">Trigger</label>
+                        <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('settings_automation.trigger') }}</label>
                         <select v-model="form.trigger" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm transition focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20">
                             <option v-for="trigger in meta.triggers" :key="trigger.value" :value="trigger.value">{{ trigger.label }}</option>
                         </select>
                     </div>
                     <div>
-                        <label class="mb-1 block text-sm font-medium text-slate-700">Sort order</label>
+                        <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('settings_automation.sort_order') }}</label>
                         <input v-model.number="form.sort_order" type="number" min="0" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm transition focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20" />
                     </div>
                 </div>
 
-                <AppToggle v-model="form.is_active" label="Active" description="Paused rules are skipped when events fire." />
+                <AppToggle v-model="form.is_active" :label="$t('common.active')" :description="$t('settings_automation.paused_rules_are_skipped_when_events_fire')" />
 
                 <div>
                     <div class="mb-3 flex items-center justify-between">
                         <div>
-                            <p class="text-sm font-medium text-slate-700">Conditions</p>
-                            <p class="text-xs text-slate-500">Leave empty to run on every matching trigger.</p>
+                            <p class="text-sm font-medium text-slate-700">{{ $t('settings_automation.conditions') }}</p>
+                            <p class="text-xs text-slate-500">{{ $t('settings_automation.leave_empty_to_run_on_every_matching_trigger') }}</p>
                         </div>
-                        <button type="button" class="rounded-lg border border-blue-200 bg-blue-50 px-3 py-1.5 text-sm font-medium text-blue-700 transition hover:bg-blue-100" @click="addCondition">Add condition</button>
+                        <button type="button" class="rounded-lg border border-blue-200 bg-blue-50 px-3 py-1.5 text-sm font-medium text-blue-700 transition hover:bg-blue-100" @click="addCondition">{{ $t('settings_automation.add_condition') }}</button>
                     </div>
 
                     <p v-if="!form.conditions.length" class="rounded-lg border border-dashed border-slate-200 bg-slate-50 px-4 py-6 text-center text-sm text-slate-500">
-                        No conditions — rule runs for all matching tickets.
+                        {{ $t('settings_automation.no_conditions_rule_runs_for_all_matching_tickets') }}
                     </p>
 
                     <TransitionGroup name="list" tag="div" class="space-y-2">
@@ -228,11 +239,11 @@ const needsValue = (condition) => !['is_empty', 'is_not_empty'].includes(conditi
                                     <option v-for="field in meta.condition_fields" :key="field.value" :value="field.value">{{ field.label }}</option>
                                 </select>
                                 <select v-model="condition.operator" class="rounded-lg border border-slate-300 bg-white px-2 py-2 text-sm">
-                                    <option value="equals">equals</option>
-                                    <option value="not_equals">not equals</option>
-                                    <option value="contains">contains</option>
-                                    <option value="is_empty">is empty</option>
-                                    <option value="is_not_empty">is not empty</option>
+                                    <option value="equals">{{ $t('settings_automation.equals') }}</option>
+                                    <option value="not_equals">{{ $t('settings_automation.not_equals') }}</option>
+                                    <option value="contains">{{ $t('settings_automation.contains') }}</option>
+                                    <option value="is_empty">{{ $t('settings_automation.is_empty') }}</option>
+                                    <option value="is_not_empty">{{ $t('settings_automation.is_not_empty') }}</option>
                                 </select>
                                 <select
                                     v-if="valueOptions[condition.field]"
@@ -240,7 +251,7 @@ const needsValue = (condition) => !['is_empty', 'is_not_empty'].includes(conditi
                                     class="rounded-lg border border-slate-300 bg-white px-2 py-2 text-sm"
                                     :disabled="!needsValue(condition)"
                                 >
-                                    <option value="">Select...</option>
+                                    <option value="">{{ $t('settings_automation.select') }}</option>
                                     <option v-for="option in valueOptions[condition.field]" :key="option.id" :value="option.id">
                                         {{ option.name }}
                                     </option>
@@ -255,7 +266,7 @@ const needsValue = (condition) => !['is_empty', 'is_not_empty'].includes(conditi
                                 <button
                                     type="button"
                                     class="rounded-lg p-2 text-slate-400 transition hover:bg-red-50 hover:text-red-600"
-                                    aria-label="Remove condition"
+                                    :aria-label="$t('settings_automation.remove_condition')"
                                     @click="removeCondition(index)"
                                 >
                                     <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -269,8 +280,8 @@ const needsValue = (condition) => !['is_empty', 'is_not_empty'].includes(conditi
 
                 <div>
                     <div class="mb-3 flex items-center justify-between">
-                        <p class="text-sm font-medium text-slate-700">Actions</p>
-                        <button type="button" class="rounded-lg border border-blue-200 bg-blue-50 px-3 py-1.5 text-sm font-medium text-blue-700 transition hover:bg-blue-100" @click="addAction">Add action</button>
+                        <p class="text-sm font-medium text-slate-700">{{ $t('settings_automation.actions') }}</p>
+                        <button type="button" class="rounded-lg border border-blue-200 bg-blue-50 px-3 py-1.5 text-sm font-medium text-blue-700 transition hover:bg-blue-100" @click="addAction">{{ $t('settings_automation.add_action') }}</button>
                     </div>
 
                     <TransitionGroup name="list" tag="div" class="space-y-2">
@@ -284,7 +295,7 @@ const needsValue = (condition) => !['is_empty', 'is_not_empty'].includes(conditi
                                     v-model="action.value"
                                     class="rounded-lg border border-slate-300 bg-white px-2 py-2 text-sm"
                                 >
-                                    <option value="">Select status</option>
+                                    <option value="">{{ $t('settings_automation.select_status') }}</option>
                                     <option v-for="status in statuses" :key="status.id" :value="status.id">{{ status.name }}</option>
                                 </select>
                                 <select
@@ -292,7 +303,7 @@ const needsValue = (condition) => !['is_empty', 'is_not_empty'].includes(conditi
                                     v-model="action.value"
                                     class="rounded-lg border border-slate-300 bg-white px-2 py-2 text-sm"
                                 >
-                                    <option value="">Select priority</option>
+                                    <option value="">{{ $t('settings_automation.select_priority') }}</option>
                                     <option v-for="priority in priorities" :key="priority.id" :value="priority.id">{{ priority.name }}</option>
                                 </select>
                                 <select
@@ -300,7 +311,7 @@ const needsValue = (condition) => !['is_empty', 'is_not_empty'].includes(conditi
                                     v-model="action.value"
                                     class="rounded-lg border border-slate-300 bg-white px-2 py-2 text-sm"
                                 >
-                                    <option value="">Select agent</option>
+                                    <option value="">{{ $t('settings_automation.select_agent') }}</option>
                                     <option v-for="agent in agents" :key="agent.id" :value="agent.id">{{ agent.name }}</option>
                                 </select>
                                 <select
@@ -308,7 +319,7 @@ const needsValue = (condition) => !['is_empty', 'is_not_empty'].includes(conditi
                                     v-model="action.value"
                                     class="rounded-lg border border-slate-300 bg-white px-2 py-2 text-sm"
                                 >
-                                    <option value="">Select webhook</option>
+                                    <option value="">{{ $t('settings_automation.select_webhook') }}</option>
                                     <option v-for="webhook in webhooks" :key="webhook.id" :value="webhook.id">{{ webhook.name }}</option>
                                 </select>
                                 <input
@@ -317,7 +328,7 @@ const needsValue = (condition) => !['is_empty', 'is_not_empty'].includes(conditi
                                     type="text"
                                     list="automation-tag-suggestions"
                                     class="rounded-lg border border-slate-300 bg-white px-2 py-2 text-sm"
-                                    placeholder="Tag name"
+                                    :placeholder="$t('settings_automation.tag_name')"
                                 />
                                 <input
                                     v-else-if="action.type === 'delay'"
@@ -325,19 +336,19 @@ const needsValue = (condition) => !['is_empty', 'is_not_empty'].includes(conditi
                                     type="number"
                                     min="1"
                                     class="rounded-lg border border-slate-300 bg-white px-2 py-2 text-sm"
-                                    placeholder="Minutes"
+                                    :placeholder="$t('settings_automation.minutes')"
                                 />
                                 <input
                                     v-else
                                     v-model="action.value"
                                     type="text"
                                     class="rounded-lg border border-slate-300 bg-white px-2 py-2 text-sm"
-                                    placeholder="Note text"
+                                    :placeholder="$t('settings_automation.note_text')"
                                 />
                                 <button
                                     type="button"
                                     class="rounded-lg p-2 text-slate-400 transition hover:bg-red-50 hover:text-red-600"
-                                    aria-label="Remove action"
+                                    :aria-label="$t('settings_automation.remove_action')"
                                     :disabled="form.actions.length === 1"
                                     @click="removeAction(index)"
                                 >
@@ -353,8 +364,8 @@ const needsValue = (condition) => !['is_empty', 'is_not_empty'].includes(conditi
 
             <template #footer>
                 <div class="flex justify-end gap-2">
-                    <button type="button" class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-white" @click="closeForm">Cancel</button>
-                    <button type="submit" form="automation-form" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700 disabled:opacity-60" :disabled="form.processing">Save rule</button>
+                    <button type="button" class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-white" @click="closeForm">{{ $t('common.cancel') }}</button>
+                    <button type="submit" form="automation-form" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700 disabled:opacity-60" :disabled="form.processing">{{ $t('settings_automation.save_rule') }}</button>
                 </div>
             </template>
         </AppModal>
@@ -372,5 +383,5 @@ const needsValue = (condition) => !['is_empty', 'is_not_empty'].includes(conditi
             @close="closeConfirm"
             @confirm="onConfirm"
         />
-    </SettingsLayout>
+    </SettingsPage>
 </template>

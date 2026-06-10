@@ -29,6 +29,7 @@ class NotificationSettingController extends Controller
             'notify_ticket_assigned' => ['required', 'boolean'],
             'notify_customer_reply' => ['required', 'boolean'],
             'notify_sla_breach' => ['required', 'boolean'],
+            'notify_approval_pending' => ['required', 'boolean'],
         ]);
 
         $this->notifications->updateSettings($data);

@@ -2,6 +2,8 @@
 
 namespace App\Domains\Notifications\Notifications;
 
+use App\Domains\Channels\Models\EmailTemplate;
+use App\Domains\Channels\Services\EmailTemplateService;
 use App\Domains\Notifications\Repositories\NotificationSettingRepository;
 use App\Domains\Tickets\Models\Ticket;
 use Illuminate\Bus\Queueable;
@@ -36,10 +38,18 @@ class TicketAssignedNotification extends Notification implements ShouldQueue
 
     public function toMail(object $notifiable): MailMessage
     {
-        return (new MailMessage)
-            ->subject("Assigned: {$this->ticket->number}")
-            ->line("You were assigned to ticket {$this->ticket->number}.")
-            ->line($this->ticket->subject)
-            ->action('View ticket', url('/tickets/'.$this->ticket->id));
+        return app(EmailTemplateService::class)->mailMessage(
+            EmailTemplate::SLUG_TICKET_ASSIGNED,
+            [
+                'ticket_number' => $this->ticket->number,
+                'ticket_subject' => $this->ticket->subject,
+                'action_url' => url('/tickets/'.$this->ticket->id),
+            ],
+            fn () => (new MailMessage)
+                ->subject("Assigned: {$this->ticket->number}")
+                ->line("You were assigned to ticket {$this->ticket->number}.")
+                ->line($this->ticket->subject)
+                ->action('View ticket', url('/tickets/'.$this->ticket->id)),
+        );
     }
 }

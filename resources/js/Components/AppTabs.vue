@@ -42,7 +42,7 @@ const hasPanels = computed(() => props.items.some((item) => Boolean(slots[item.i
             <nav
                 class="flex gap-1 overflow-x-auto"
                 :class="variant === 'pills' ? '' : '-mb-px'"
-                aria-label="Tabs"
+                :aria-label="$t('components.tabs')"
             >
                 <button
                     v-for="item in items"

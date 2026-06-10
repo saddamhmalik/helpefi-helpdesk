@@ -36,11 +36,13 @@ class AiSettingController extends Controller
             'deflection_enabled' => ['required', 'boolean'],
             'deflection_portal_enabled' => ['required', 'boolean'],
             'deflection_widget_enabled' => ['required', 'boolean'],
+            'triage_enabled' => ['required', 'boolean'],
         ]);
 
         $this->aiAssistService->updateSettings([
             'enabled' => $data['enabled'],
             'model' => $data['model'] ?? null,
+            'triage_enabled' => $data['triage_enabled'],
         ]);
 
         $this->deflection->updateSettings([

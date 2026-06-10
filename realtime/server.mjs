@@ -3,6 +3,7 @@ import { WebSocketServer } from 'ws';
 import Redis from 'ioredis';
 
 const port = Number(process.env.REALTIME_WS_PORT || 8080);
+const host = process.env.REALTIME_WS_HOST || '127.0.0.1';
 const redisPrefix = process.env.REALTIME_REDIS_PREFIX || 'helpdesk:realtime:';
 const appKey = (process.env.APP_KEY || '').replace(/^base64:/, '');
 const appKeyBuffer = appKey ? Buffer.from(appKey, 'base64') : Buffer.from(process.env.REALTIME_APP_KEY || 'local-dev-key');
@@ -86,7 +87,7 @@ function broadcast(channel, payload) {
     }
 }
 
-const wss = new WebSocketServer({ host: '127.0.0.1', port });
+const wss = new WebSocketServer({ host, port });
 
 wss.on('error', (error) => {
     if (error.code === 'EADDRINUSE') {
@@ -101,7 +102,7 @@ wss.on('error', (error) => {
 });
 
 wss.on('listening', () => {
-    console.log(`Helpdesk realtime server listening on ws://127.0.0.1:${port}`);
+    console.log(`Helpdesk realtime server listening on ws://${host}:${port}`);
 });
 
 wss.on('connection', (ws, request) => {

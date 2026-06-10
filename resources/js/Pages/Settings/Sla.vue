@@ -1,9 +1,14 @@
 <script setup>
 import { router, useForm } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
-import SettingsLayout from '../../Layouts/SettingsLayout.vue';
+import SettingsPage from '../../Components/SettingsPage.vue';
+import PlanFeatureBanner from '../../Components/PlanFeatureBanner.vue';
 import AppModal from '../../Components/AppModal.vue';
 import AppToggle from '../../Components/AppToggle.vue';
+import AppRowActions from '../../Components/AppRowActions.vue';
+import AppEditAction from '../../Components/AppEditAction.vue';
+import AppDeleteAction from '../../Components/AppDeleteAction.vue';
+import { useI18n } from 'vue-i18n';
 
 const props = defineProps({
     policies: Array,
@@ -16,6 +21,8 @@ const props = defineProps({
     timezoneOptions: Array,
     weekdays: Array,
 });
+
+const { t } = useI18n();
 
 const buildScheduleState = (schedule = {}) => {
     const result = {};
@@ -176,26 +183,28 @@ const saveBusinessHours = () => {
 </script>
 
 <template>
-    <SettingsLayout :title="`SLA & business hours`" :description="`${breachedCount} ticket(s) currently breached.`">
+    <SettingsPage :title="`SLA & business hours`" :description="`${breachedCount} ticket(s) currently breached.`">
+        <PlanFeatureBanner feature="sla" />
+
         <template #actions>
-            <button type="button" class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50" @click="showPolicyForm = true">Add group policy</button>
-            <button type="button" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700" @click="openCreateEscalation()">Add escalation rule</button>
+            <button type="button" class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50" @click="showPolicyForm = true">{{ $t('settings_sla.add_group_policy') }}</button>
+            <button type="button" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700" @click="openCreateEscalation()">{{ $t('settings_sla.add_escalation_rule') }}</button>
         </template>
 
         <section v-if="businessHours" class="mb-6 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
             <div class="mb-4">
-                <h2 class="text-lg font-semibold text-slate-900">Business hours & timezone</h2>
-                <p class="mt-1 text-sm text-slate-500">Controls SLA timers, live chat availability, and when agents are considered on duty.</p>
+                <h2 class="text-lg font-semibold text-slate-900">{{ $t('settings_sla.business_hours_timezone') }}</h2>
+                <p class="mt-1 text-sm text-slate-500">{{ $t('settings_sla.controls_sla_timers_live_chat_availability_and_when_agents_are_conside') }}</p>
             </div>
 
             <form class="space-y-4" @submit.prevent="saveBusinessHours">
                 <div class="grid gap-4 md:grid-cols-2">
                     <div>
-                        <label class="mb-1 block text-sm font-medium text-slate-700">Schedule name</label>
+                        <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('settings_sla.schedule_name') }}</label>
                         <input v-model="businessHoursForm.name" type="text" required class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
                     </div>
                     <div>
-                        <label class="mb-1 block text-sm font-medium text-slate-700">Timezone</label>
+                        <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('profile.timezone') }}</label>
                         <select v-model="businessHoursForm.timezone" required class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm">
                             <optgroup v-for="group in timezoneOptions" :key="group.region" :label="group.region">
                                 <option v-for="option in group.options" :key="option.value" :value="option.value">
@@ -208,10 +217,10 @@ const saveBusinessHours = () => {
 
                 <div class="overflow-hidden rounded-lg border border-slate-200">
                     <div class="grid grid-cols-[1fr_auto_auto_auto] gap-3 border-b border-slate-200 bg-slate-50 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
-                        <span>Day</span>
-                        <span class="text-center">Open</span>
-                        <span>Start</span>
-                        <span>End</span>
+                        <span>{{ $t('settings_sla.day') }}</span>
+                        <span class="text-center">{{ $t('settings_sla.open') }}</span>
+                        <span>{{ $t('settings_sla.start') }}</span>
+                        <span>{{ $t('settings_sla.end') }}</span>
                     </div>
                     <div
                         v-for="day in weekdays"
@@ -241,37 +250,35 @@ const saveBusinessHours = () => {
                     </div>
                 </div>
 
-                <button type="submit" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700" :disabled="businessHoursForm.processing">
-                    Save business hours
-                </button>
+                <button type="submit" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700" :disabled="businessHoursForm.processing">{{ $t('settings_sla.save_business_hours') }}</button>
             </form>
         </section>
 
         <div v-if="showPolicyForm" class="mb-6 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-            <h2 class="text-lg font-semibold text-slate-900">New group SLA policy</h2>
-            <p class="mt-1 text-sm text-slate-500">Targets are copied from the default policy. Team policies take precedence over customer tier policies.</p>
+            <h2 class="text-lg font-semibold text-slate-900">{{ $t('settings_sla.new_group_sla_policy') }}</h2>
+            <p class="mt-1 text-sm text-slate-500">{{ $t('settings_sla.targets_are_copied_from_the_default_policy_team_policies_take_preceden') }}</p>
             <form class="mt-4 grid gap-4 md:grid-cols-3" @submit.prevent="savePolicy">
                 <div>
-                    <label class="mb-1 block text-sm font-medium text-slate-700">Name</label>
+                    <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('profile.name') }}</label>
                     <input v-model="policyForm.name" type="text" required class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
                 </div>
                 <div>
-                    <label class="mb-1 block text-sm font-medium text-slate-700">Team</label>
+                    <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('settings.groups.team') }}</label>
                     <select v-model="policyForm.team_id" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm">
-                        <option value="">None</option>
+                        <option value="">{{ $t('settings_sla.none') }}</option>
                         <option v-for="team in teams" :key="team.id" :value="team.id">{{ team.name }}</option>
                     </select>
                 </div>
                 <div>
-                    <label class="mb-1 block text-sm font-medium text-slate-700">Customer tier</label>
+                    <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('settings_sla.customer_tier') }}</label>
                     <select v-model="policyForm.customer_tier" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm">
-                        <option value="">None</option>
+                        <option value="">{{ $t('settings_sla.none') }}</option>
                         <option v-for="tier in slaMeta?.customer_tiers ?? []" :key="tier.value" :value="tier.value">{{ tier.label }}</option>
                     </select>
                 </div>
                 <div class="md:col-span-3 flex gap-2">
-                    <button type="submit" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white" :disabled="policyForm.processing">Create policy</button>
-                    <button type="button" class="rounded-lg border border-slate-300 px-4 py-2 text-sm text-slate-700" @click="showPolicyForm = false">Cancel</button>
+                    <button type="submit" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white" :disabled="policyForm.processing">{{ $t('settings_sla.create_policy') }}</button>
+                    <button type="button" class="rounded-lg border border-slate-300 px-4 py-2 text-sm text-slate-700" @click="showPolicyForm = false">{{ $t('common.cancel') }}</button>
                 </div>
             </form>
         </div>
@@ -284,8 +291,12 @@ const saveBusinessHours = () => {
                 </div>
                 <div class="flex items-center gap-2">
                     <span class="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700">{{ policyScopeLabel(policy) }}</span>
-                    <span v-if="policy.is_default" class="rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-blue-800">Default</span>
-                    <button v-if="!policy.is_default" type="button" class="text-sm text-red-600" @click="deletePolicy(policy)">Delete</button>
+                    <span v-if="policy.is_default" class="rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-blue-800">{{ $t('settings_sla.default') }}</span>
+                    <AppDeleteAction
+                        v-if="!policy.is_default"
+                        :label="$t('settings_sla.delete')"
+                        @click="deletePolicy(policy)"
+                    />
                 </div>
             </div>
 
@@ -294,15 +305,15 @@ const saveBusinessHours = () => {
                     <p class="mb-3 font-medium text-slate-900">{{ target.priority?.name }} priority</p>
                     <form class="grid gap-3 sm:grid-cols-3" @submit.prevent="saveTarget(target)">
                         <div>
-                            <label class="mb-1 block text-xs font-medium text-slate-600">First response (min)</label>
+                            <label class="mb-1 block text-xs font-medium text-slate-600">{{ $t('settings_sla.first_response_min') }}</label>
                             <input v-model.number="target.first_response_minutes" type="number" min="1" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
                         </div>
                         <div>
-                            <label class="mb-1 block text-xs font-medium text-slate-600">Resolution (min)</label>
+                            <label class="mb-1 block text-xs font-medium text-slate-600">{{ $t('settings_sla.resolution_min') }}</label>
                             <input v-model.number="target.resolution_minutes" type="number" min="1" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
                         </div>
                         <div class="flex items-end">
-                            <button type="submit" class="rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-700 hover:bg-slate-50">Save</button>
+                            <button type="submit" class="rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-700 hover:bg-slate-50">{{ $t('common.save') }}</button>
                         </div>
                     </form>
                 </div>
@@ -310,8 +321,8 @@ const saveBusinessHours = () => {
 
             <div class="mt-6 border-t border-slate-100 pt-6">
                 <div class="mb-3 flex items-center justify-between">
-                    <h3 class="text-sm font-semibold uppercase tracking-wide text-slate-500">Violation escalation criteria</h3>
-                    <button type="button" class="text-sm text-blue-600" @click="openCreateEscalation(policy.id)">Add rule</button>
+                    <h3 class="text-sm font-semibold uppercase tracking-wide text-slate-500">{{ $t('settings_sla.violation_escalation_criteria') }}</h3>
+                    <button type="button" class="text-sm text-blue-600" @click="openCreateEscalation(policy.id)">{{ $t('settings_sla.add_rule') }}</button>
                 </div>
                 <div v-if="rulesByPolicy[policy.id]?.length" class="space-y-3">
                     <div v-for="rule in rulesByPolicy[policy.id]" :key="rule.id" class="rounded-lg border border-slate-100 bg-slate-50/70 p-4">
@@ -326,65 +337,67 @@ const saveBusinessHours = () => {
                                 </ul>
                             </div>
                             <div class="flex gap-2">
-                                <button type="button" class="text-sm text-blue-600" @click="openEditEscalation(rule)">Edit</button>
-                                <button type="button" class="text-sm text-red-600" @click="destroyEscalation(rule)">Delete</button>
+                                <AppRowActions>
+                                    <AppEditAction :label="$t('settings_sla.edit')" @click="openEditEscalation(rule)" />
+                                    <AppDeleteAction :label="$t('settings_sla.delete')" @click="destroyEscalation(rule)" />
+                                </AppRowActions>
                             </div>
                         </div>
                     </div>
                 </div>
-                <p v-else class="text-sm text-slate-500">No escalation rules configured for this policy.</p>
+                <p v-else class="text-sm text-slate-500">{{ $t('settings_sla.no_escalation_rules_configured_for_this_policy') }}</p>
             </div>
         </div>
 
-        <AppModal :open="showEscalationForm" title="Escalation rule" variant="drawer" @close="showEscalationForm = false">
+        <AppModal :open="showEscalationForm" :title="$t('settings_sla.escalation_rule')" variant="drawer" @close="showEscalationForm = false">
             <form id="escalation-form" class="space-y-4" @submit.prevent="saveEscalation">
                 <div class="grid gap-4 sm:grid-cols-2">
                     <div>
-                        <label class="mb-1 block text-sm font-medium text-slate-700">Policy</label>
+                        <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('settings_sla.policy') }}</label>
                         <select v-model="escalationForm.sla_policy_id" required class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm">
                             <option v-for="policy in policies" :key="policy.id" :value="policy.id">{{ policy.name }}</option>
                         </select>
                     </div>
                     <div>
-                        <label class="mb-1 block text-sm font-medium text-slate-700">Level</label>
+                        <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('settings_sla.level') }}</label>
                         <select v-model.number="escalationForm.level" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm">
                             <option v-for="level in escalationMeta.levels" :key="level.value" :value="level.value">{{ level.label }}</option>
                         </select>
                     </div>
                     <div>
-                        <label class="mb-1 block text-sm font-medium text-slate-700">Violation type</label>
+                        <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('settings_sla.violation_type') }}</label>
                         <select v-model="escalationForm.breach_type" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm">
                             <option v-for="type in escalationMeta.breach_types" :key="type.value" :value="type.value">{{ type.label }}</option>
                         </select>
                     </div>
                     <div>
-                        <label class="mb-1 block text-sm font-medium text-slate-700">Delay after breach (min)</label>
+                        <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('settings_sla.delay_after_breach_min') }}</label>
                         <input v-model.number="escalationForm.delay_minutes_after_breach" type="number" min="0" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
                     </div>
                 </div>
 
                 <div>
                     <div class="mb-2 flex items-center justify-between">
-                        <p class="text-sm font-medium text-slate-700">Actions</p>
-                        <button type="button" class="text-sm text-blue-600" @click="addAction">Add action</button>
+                        <p class="text-sm font-medium text-slate-700">{{ $t('settings_sla.actions') }}</p>
+                        <button type="button" class="text-sm text-blue-600" @click="addAction">{{ $t('settings_sla.add_action') }}</button>
                     </div>
                     <div v-for="(action, index) in escalationForm.actions" :key="index" class="mb-2 grid gap-2 sm:grid-cols-[1fr_1fr_auto]">
                         <select v-model="action.type" class="rounded-lg border border-slate-300 px-2 py-2 text-sm">
                             <option v-for="type in escalationMeta.action_types" :key="type.value" :value="type.value">{{ type.label }}</option>
                         </select>
-                        <input v-model="action.value" type="text" placeholder="Note or value" class="rounded-lg border border-slate-300 px-2 py-2 text-sm" />
-                        <button type="button" class="text-sm text-red-600" @click="removeAction(index)">Remove</button>
+                        <input v-model="action.value" type="text" :placeholder="$t('settings_sla.note_or_value')" class="rounded-lg border border-slate-300 px-2 py-2 text-sm" />
+                        <button type="button" class="text-sm text-red-600" @click="removeAction(index)">{{ $t('settings_sla.remove') }}</button>
                     </div>
                 </div>
 
-                <AppToggle v-model="escalationForm.is_active" label="Active" />
+                <AppToggle v-model="escalationForm.is_active" :label="$t('common.active')" />
             </form>
             <template #footer>
                 <div class="flex justify-end gap-2">
-                    <button type="button" class="rounded-lg border border-slate-300 px-4 py-2 text-sm" @click="showEscalationForm = false">Cancel</button>
-                    <button type="submit" form="escalation-form" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white" :disabled="escalationForm.processing">Save rule</button>
+                    <button type="button" class="rounded-lg border border-slate-300 px-4 py-2 text-sm" @click="showEscalationForm = false">{{ $t('common.cancel') }}</button>
+                    <button type="submit" form="escalation-form" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white" :disabled="escalationForm.processing">{{ $t('settings_sla.save_rule') }}</button>
                 </div>
             </template>
         </AppModal>
-    </SettingsLayout>
+    </SettingsPage>
 </template>

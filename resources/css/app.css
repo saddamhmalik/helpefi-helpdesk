@@ -9,7 +9,100 @@
         'Segoe UI Symbol', 'Noto Color Emoji';
 }
 
+[dir='rtl'] .sidebar-edge-toggle {
+    right: auto;
+    left: -0.75rem;
+}
+
+[dir='rtl'] .sidebar-edge-toggle svg {
+    transform: rotate(180deg);
+}
+
+[dir='rtl'] .group\/sidebar:hover .sidebar-edge-toggle:not(:focus-visible) svg,
+[dir='rtl'] .sidebar-edge-toggle:focus-visible svg {
+    transform: rotate(0deg);
+}
+
+@layer base {
+    html {
+        scroll-behavior: smooth;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        html {
+            scroll-behavior: auto;
+        }
+
+        *,
+        *::before,
+        *::after {
+            animation-duration: 0.01ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: 0.01ms !important;
+        }
+    }
+}
+
 @layer utilities {
+    .transition-ui {
+        transition-property: color, background-color, border-color, opacity, box-shadow, transform;
+        transition-duration: 200ms;
+        transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .transition-sidebar {
+        transition-property: width, box-shadow, padding, opacity, max-width, max-height, margin, transform;
+        transition-duration: 300ms;
+        transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .sidebar-label {
+        max-width: 0;
+        opacity: 0;
+        overflow: hidden;
+        white-space: nowrap;
+        transition:
+            opacity 300ms cubic-bezier(0.4, 0, 0.2, 1),
+            max-width 300ms cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .sidebar-label--open {
+        max-width: 12rem;
+        opacity: 1;
+    }
+
+    .sidebar-section-label {
+        max-height: 0;
+        margin-bottom: 0;
+        opacity: 0;
+        overflow: hidden;
+        transition:
+            opacity 300ms cubic-bezier(0.4, 0, 0.2, 1),
+            max-height 300ms cubic-bezier(0.4, 0, 0.2, 1),
+            margin 300ms cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .sidebar-section-label--open {
+        max-height: 2rem;
+        margin-bottom: 0.375rem;
+        opacity: 1;
+    }
+
+    .collapse-grid {
+        display: grid;
+        grid-template-rows: 0fr;
+        transition: grid-template-rows 300ms cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .collapse-grid--open {
+        grid-template-rows: 1fr;
+    }
+
+    .collapse-grid-inner {
+        overflow: hidden;
+        min-height: 0;
+    }
+
     .list-enter-active,
     .list-leave-active {
         transition: opacity 0.2s ease, transform 0.2s ease;
@@ -23,5 +116,69 @@
 
     .list-move {
         transition: transform 0.2s ease;
+    }
+
+    .fade-enter-active,
+    .fade-leave-active {
+        transition: opacity 200ms cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .fade-enter-from,
+    .fade-leave-to {
+        opacity: 0;
+    }
+
+    .dropdown-enter-active,
+    .dropdown-leave-active {
+        transition:
+            opacity 200ms cubic-bezier(0.4, 0, 0.2, 1),
+            transform 200ms cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .dropdown-enter-from,
+    .dropdown-leave-to {
+        opacity: 0;
+        transform: translateY(-4px) scale(0.98);
+    }
+
+    .slide-over-enter-active,
+    .slide-over-leave-active {
+        transition: opacity 300ms cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .slide-over-enter-active .slide-over-panel,
+    .slide-over-leave-active .slide-over-panel {
+        transition: transform 300ms cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .slide-over-enter-from,
+    .slide-over-leave-to {
+        opacity: 0;
+    }
+
+    .slide-over-enter-from .slide-over-panel,
+    .slide-over-leave-to .slide-over-panel {
+        transform: translateX(-100%);
+    }
+
+    .page-enter-active,
+    .page-leave-active {
+        transition:
+            opacity 200ms cubic-bezier(0.4, 0, 0.2, 1),
+            transform 200ms cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .page-enter-from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+
+    .page-leave-to {
+        opacity: 0;
+        transform: translateY(-4px);
+    }
+
+    .scrollbar-gutter-stable {
+        scrollbar-gutter: stable;
     }
 }

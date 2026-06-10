@@ -2,6 +2,7 @@
 
 namespace App\Domains\Channels\Services;
 
+use App\Domains\Billing\Services\BillingService;
 use App\Domains\Channels\Models\Channel;
 use App\Domains\Channels\Models\EmailInbox;
 use App\Domains\Channels\Services\Mailbox\EmailQuoteStripper;
@@ -35,6 +36,7 @@ class ChannelService
         private SideConversationService $sideConversations,
         private InboundEmailPayloadNormalizer $inboundNormalizer,
         private TenantRouteRegistryService $tenantRoutes,
+        private BillingService $billing,
     ) {
     }
 
@@ -46,6 +48,11 @@ class ChannelService
     public function update(int $id, array $data): Channel
     {
         $channel = $this->channels->find($id);
+
+        if (in_array($channel->type, [Channel::TYPE_CHAT, Channel::TYPE_WHATSAPP, Channel::TYPE_SMS], true)) {
+            $this->billing->assertFeature('channels');
+        }
+
         $previousWidgetKey = $channel->type === Channel::TYPE_CHAT
             ? ($channel->settings['widget_key'] ?? null)
             : null;
@@ -98,8 +105,15 @@ class ChannelService
         return $this->channels->findActiveBySlug('chat');
     }
 
+    public function channelByType(string $type): ?Channel
+    {
+        return $this->channels->all()->first(fn (Channel $channel) => $channel->type === $type && $channel->is_active);
+    }
+
     public function processInboundEmail(array $payload, ?string $token = null, bool $fromPoll = false): array
     {
+        $this->billing->assertFeature('channels');
+
         $inbox = $this->inboxes->resolveForInbound($token, $payload['to_email'] ?? null);
 
         if (! $inbox) {

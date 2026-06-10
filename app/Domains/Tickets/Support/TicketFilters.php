@@ -18,6 +18,7 @@ class TicketFilters
         'created_from',
         'created_to',
         'watching',
+        'type',
     ];
 
     public static function normalize(array $filters): array
@@ -39,6 +40,7 @@ class TicketFilters
                 'status_id', 'priority_id', 'assigned_to', 'channel_id', 'department_id', 'team_id' => (int) $value,
                 'unassigned', 'mine', 'watching' => filter_var($value, FILTER_VALIDATE_BOOLEAN),
                 'search', 'contact', 'created_from', 'created_to' => trim((string) $value),
+                'type' => (string) $value,
                 default => $value,
             };
         }
@@ -70,6 +72,7 @@ class TicketFilters
             'created_from' => ['nullable', 'date'],
             'created_to' => ['nullable', 'date'],
             'watching' => ['nullable', 'boolean'],
+            'type' => ['nullable', 'string', 'in:incident,service_request,change,problem'],
         ];
     }
 }

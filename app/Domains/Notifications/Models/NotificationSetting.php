@@ -11,6 +11,7 @@ class NotificationSetting extends Model
         'notify_ticket_assigned',
         'notify_customer_reply',
         'notify_sla_breach',
+        'notify_approval_pending',
     ];
 
     protected function casts(): array
@@ -20,6 +21,7 @@ class NotificationSetting extends Model
             'notify_ticket_assigned' => 'boolean',
             'notify_customer_reply' => 'boolean',
             'notify_sla_breach' => 'boolean',
+            'notify_approval_pending' => 'boolean',
         ];
     }
 }

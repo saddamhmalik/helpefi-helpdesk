@@ -13,13 +13,15 @@ use Inertia\Response;
 
 class AuthController extends Controller
 {
-    public function __construct(private AuthService $authService)
+    public function __construct(private AuthService $authService, private \App\Domains\Security\Services\SsoService $sso)
     {
     }
 
     public function showLogin(): Response
     {
-        return Inertia::render('Auth/Login');
+        return Inertia::render('Auth/Login', [
+            'sso' => $this->sso->loginOptions(),
+        ]);
     }
 
     public function login(LoginRequest $request): RedirectResponse

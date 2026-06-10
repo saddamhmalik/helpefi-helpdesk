@@ -4,6 +4,7 @@ namespace App\Domains\Brands\Services;
 
 use App\Domains\Brands\Models\Brand;
 use App\Domains\Brands\Repositories\BrandRepository;
+use App\Domains\Billing\Services\BillingService;
 use App\Domains\Security\Support\AuditRecorder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Str;
@@ -13,6 +14,7 @@ class BrandService
 {
     public function __construct(
         private BrandRepository $brands,
+        private BillingService $billing,
         private AuditRecorder $audit,
     ) {
     }
@@ -39,6 +41,10 @@ class BrandService
 
     public function create(array $data, ?int $userId = null): Brand
     {
+        if ($this->brands->all()->count() >= 1) {
+            $this->billing->assertFeature('workspace');
+        }
+
         $validated = $this->validate($data);
         $brand = $this->brands->create($validated);
 

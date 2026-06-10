@@ -18,9 +18,24 @@ class AgentNotificationRepository
         return $user->notifications()->limit($limit)->get();
     }
 
-    public function paginate(User $user, int $perPage = 20): LengthAwarePaginator
+    public function paginate(User $user, int $perPage = 20, array $filters = []): LengthAwarePaginator
     {
-        return $user->notifications()->paginate($perPage);
+        $query = $user->notifications()->latest();
+
+        if (! empty($filters['unread'])) {
+            $query->whereNull('read_at');
+        }
+
+        if (! empty($filters['type'])) {
+            $query->where('data->type', $filters['type']);
+        }
+
+        return $query->paginate($perPage)->withQueryString();
+    }
+
+    public function deleteRead(User $user): int
+    {
+        return $user->notifications()->whereNotNull('read_at')->delete();
     }
 
     public function markRead(User $user, string $id): void

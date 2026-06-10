@@ -7,6 +7,12 @@ use App\Domains\Assets\Services\AssetService;
 use App\Domains\Csat\Services\CsatService;
 use App\Domains\Integrations\Services\TicketExternalIssueService;
 use App\Domains\SideConversations\Services\SideConversationService;
+use App\Domains\ServiceCatalog\Models\ServiceCatalogItem;
+use App\Domains\ServiceDesk\Services\ApprovalService;
+use App\Domains\ServiceDesk\Services\ChangeRecordService;
+use App\Domains\ServiceDesk\Services\MajorIncidentService;
+use App\Domains\ServiceDesk\Services\ProblemRecordService;
+use App\Domains\ServiceDesk\Services\ServiceDeskService;
 use App\Domains\TimeTracking\Services\TimeTrackingService;
 use App\Domains\Sla\Services\SlaService;
 use App\Domains\Workforce\Services\WorkforceService;
@@ -40,6 +46,11 @@ class TicketController extends Controller
         private TimeTrackingService $timeTracking,
         private TicketExternalIssueService $externalIssues,
         private TicketReadService $ticketReads,
+        private ApprovalService $approvals,
+        private ChangeRecordService $changeRecords,
+        private ProblemRecordService $problemRecords,
+        private MajorIncidentService $majorIncidents,
+        private ServiceDeskService $serviceDesk,
     ) {
     }
 
@@ -95,6 +106,7 @@ class TicketController extends Controller
             'team_id' => ['nullable', 'exists:teams,id'],
             'ticket_status_id' => ['required', 'exists:ticket_statuses,id'],
             'ticket_priority_id' => ['required', 'exists:ticket_priorities,id'],
+            'type' => ['nullable', 'string', 'in:incident,service_request,change,problem'],
             'custom_fields' => ['nullable', 'array'],
         ], $this->peopleRules()));
 
@@ -107,6 +119,7 @@ class TicketController extends Controller
     {
         $ticketModel = $this->ticketService->show($ticket);
         $this->ticketReads->markAsRead($request->user()->id, $ticketModel->id);
+        $majorIncident = $this->majorIncidents->snapshotForTicket($ticketModel->id);
 
         return Inertia::render('Tickets/Show', [
             'ticket' => $ticketModel,
@@ -128,7 +141,33 @@ class TicketController extends Controller
             'sideConversations' => $this->sideConversationService->listForTicket($ticketModel->id),
             'timeTracking' => $this->timeTracking->snapshotForTicket($ticketModel->id),
             'externalIssues' => $this->externalIssues->listForTicket($ticketModel->id),
+            'approval' => $this->approvals->snapshotForTicket($ticketModel->id),
+            'canDecideApproval' => $this->canDecideApproval($ticketModel->id, $request->user()->id),
+            'changeRecord' => $this->changeRecords->snapshotForTicket($ticketModel->id),
+            'problemRecord' => $this->problemRecords->snapshotForTicket($ticketModel->id),
+            'incidentCandidates' => $ticketModel->type === ServiceCatalogItem::TYPE_PROBLEM
+                ? $this->problemRecords->incidentCandidates($ticketModel->id)->values()
+                : [],
+            'changeRiskOptions' => $this->changeRecords->riskOptions(),
+            'majorIncident' => $majorIncident,
+            'canDeclareMajorIncident' => $this->serviceDesk->isAvailable()
+                && $ticketModel->type === ServiceCatalogItem::TYPE_INCIDENT
+                && $majorIncident === null,
         ]);
+    }
+
+    private function canDecideApproval(int $ticketId, int $userId): bool
+    {
+        $snapshot = $this->approvals->snapshotForTicket($ticketId);
+
+        if (! $snapshot || ($snapshot['status'] ?? '') !== 'pending') {
+            return false;
+        }
+
+        $currentStep = collect($snapshot['steps'] ?? [])->firstWhere('step_order', $snapshot['current_step'] ?? 0);
+
+        return (int) ($currentStep['approver']['id'] ?? 0) === $userId
+            && ($currentStep['status'] ?? '') === 'pending';
     }
 
     public function update(Request $request, int $ticket): RedirectResponse

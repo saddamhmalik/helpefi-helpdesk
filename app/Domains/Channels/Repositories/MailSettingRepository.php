@@ -12,7 +12,7 @@ class MailSettingRepository
             'enabled' => false,
             'reply_enabled' => true,
             'delivery_mode' => MailSetting::DELIVERY_QUEUE,
-            'queue_connection' => config('queue.default', MailSetting::QUEUE_DATABASE),
+            'queue_connection' => MailSetting::QUEUE_REDIS,
             'driver' => 'smtp',
             'from_address' => config('mail.from.address'),
             'from_name' => config('mail.from.name'),

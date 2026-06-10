@@ -55,7 +55,7 @@ class FinalizeTenantProvisioningJob implements ShouldQueue
 
         tenancy()->end();
 
-        $provisioning->createCentralSubscription($this->tenant);
+        $provisioning->ensureCentralSubscription($this->tenant);
 
         $platformMail->sendWorkspaceWelcome(
             $this->tenant,

@@ -1,15 +1,21 @@
 <script setup>
 import { router, useForm } from '@inertiajs/vue3';
 import { ref } from 'vue';
-import SettingsLayout from '../../Layouts/SettingsLayout.vue';
+import SettingsPage from '../../Components/SettingsPage.vue';
 import AppModal from '../../Components/AppModal.vue';
 import AppConfirmDialog from '../../Components/AppConfirmDialog.vue';
+import AppRowActions from '../../Components/AppRowActions.vue';
+import AppEditAction from '../../Components/AppEditAction.vue';
+import AppDeleteAction from '../../Components/AppDeleteAction.vue';
 import { useConfirmDialog } from '../../composables/useConfirmDialog.js';
 import { formInputClass } from '../../composables/useFormControls.js';
+import { useI18n } from 'vue-i18n';
 
 const props = defineProps({
     skills: Array,
 });
+
+const { t } = useI18n();
 
 const showForm = ref(false);
 const editingSkill = ref(null);
@@ -47,7 +53,7 @@ const save = () => {
 
 const destroySkill = (skill) => {
     askConfirm({
-        title: 'Delete skill',
+        title: t('settings_skills.delete_skill'),
         message: `Remove "${skill.name}" from all agents and assignment rules?`,
         confirmLabel: 'Delete',
         action: () => router.delete(`/settings/skills/${skill.id}`, { preserveScroll: true }),
@@ -56,9 +62,9 @@ const destroySkill = (skill) => {
 </script>
 
 <template>
-    <SettingsLayout title="Agent skills" description="Tag agents with skills for priority-aware auto-assignment.">
+    <SettingsPage :title="$t('settings_skills.agent_skills')" :description="$t('settings_skills.tag_agents_with_skills_for_priority-aware_auto-assignment')">
         <template #actions>
-            <button type="button" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700" @click="openCreate">Add skill</button>
+            <button type="button" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700" @click="openCreate">{{ $t('settings_skills.add_skill') }}</button>
         </template>
 
         <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -68,8 +74,10 @@ const destroySkill = (skill) => {
                     <p class="text-xs text-slate-500">{{ skill.slug }}</p>
                 </div>
                 <div class="flex gap-2">
-                    <button type="button" class="text-sm text-slate-600 hover:text-slate-900" @click="openEdit(skill)">Edit</button>
-                    <button type="button" class="text-sm text-red-600 hover:text-red-700" @click="destroySkill(skill)">Delete</button>
+                    <AppRowActions>
+                        <AppEditAction :label="$t('settings_skills.edit')" @click="openEdit(skill)" />
+                        <AppDeleteAction :label="$t('settings_skills.delete')" @click="destroySkill(skill)" />
+                    </AppRowActions>
                 </div>
             </div>
         </div>
@@ -80,15 +88,15 @@ const destroySkill = (skill) => {
 
         <AppModal :open="showForm" :title="editingSkill ? 'Edit skill' : 'Add skill'" size="sm" @close="showForm = false">
             <form id="skill-form" @submit.prevent="save">
-                <label class="mb-1 block text-sm font-medium text-slate-700">Name</label>
+                <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('profile.name') }}</label>
                 <input v-model="form.name" type="text" required :class="formInputClass" />
             </form>
             <template #footer>
-                <button type="button" class="rounded-lg border border-slate-300 px-4 py-2 text-sm text-slate-700" @click="showForm = false">Cancel</button>
-                <button type="submit" form="skill-form" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white" :disabled="form.processing">Save</button>
+                <button type="button" class="rounded-lg border border-slate-300 px-4 py-2 text-sm text-slate-700" @click="showForm = false">{{ $t('common.cancel') }}</button>
+                <button type="submit" form="skill-form" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white" :disabled="form.processing">{{ $t('common.save') }}</button>
             </template>
         </AppModal>
 
         <AppConfirmDialog :state="confirm" @close="closeConfirm" @confirm="onConfirm" />
-    </SettingsLayout>
+    </SettingsPage>
 </template>

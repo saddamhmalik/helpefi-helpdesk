@@ -16,6 +16,10 @@ class Channel extends Model
 
     public const TYPE_CHAT = 'chat';
 
+    public const TYPE_WHATSAPP = 'whatsapp';
+
+    public const TYPE_SMS = 'sms';
+
     protected $fillable = [
         'name',
         'slug',

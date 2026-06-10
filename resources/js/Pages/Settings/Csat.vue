@@ -1,10 +1,13 @@
 <script setup>
 import { useForm } from '@inertiajs/vue3';
-import SettingsLayout from '../../Layouts/SettingsLayout.vue';
+import SettingsPage from '../../Components/SettingsPage.vue';
+import { useI18n } from 'vue-i18n';
 
 const props = defineProps({
     settings: Object,
 });
+
+const { t } = useI18n();
 
 const form = useForm({
     enabled: props.settings.enabled,
@@ -18,9 +21,9 @@ const save = () => {
 </script>
 
 <template>
-    <SettingsLayout
-        title="Customer satisfaction"
-        description="Configure post-resolution surveys on the customer portal and by email."
+    <SettingsPage
+        :title="$t('settings_csat.customer_satisfaction')"
+        :description="$t('settings_csat.configure_post-resolution_surveys_on_the_customer_portal_and_by_email')"
     >
         <div class="max-w-2xl rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
             <form class="space-y-4" @submit.prevent="save">
@@ -39,10 +42,8 @@ const save = () => {
                     Send CSAT survey email when a ticket is resolved or closed
                 </label>
 
-                <button type="submit" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700" :disabled="form.processing">
-                    Save settings
-                </button>
+                <button type="submit" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700" :disabled="form.processing">{{ $t('settings_csat.save_settings') }}</button>
             </form>
         </div>
-    </SettingsLayout>
+    </SettingsPage>
 </template>

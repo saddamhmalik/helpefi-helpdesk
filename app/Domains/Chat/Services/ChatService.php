@@ -3,6 +3,7 @@
 namespace App\Domains\Chat\Services;
 
 use App\Domains\Ai\Services\AiDeflectionService;
+use App\Domains\Billing\Services\BillingService;
 use App\Domains\Realtime\Services\RealtimeTokenService;
 use App\Domains\Realtime\Support\RealtimeChannelNames;
 use App\Domains\Channels\Models\Channel;
@@ -30,6 +31,7 @@ class ChatService
         private TicketPresenceService $presence,
         private AiDeflectionService $deflection,
         private RealtimeTokenService $realtimeTokens,
+        private BillingService $billing,
     ) {
     }
 
@@ -65,6 +67,8 @@ class ChatService
 
     public function startSession(Channel $channel, array $data, ?string $userAgent = null): array
     {
+        $this->billing->assertFeature('channels');
+
         $online = $this->availability->isOnline($channel);
 
         if (! $online) {

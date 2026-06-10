@@ -1,0 +1,68 @@
+{
+    "layouts": {
+        "admin": {
+            "platform_admin": "Administrador de plataforma",
+            "close_menu": "Cerrar menú",
+            "open_menu": "Abrir menú",
+            "profile_password": "Perfil y contraseña",
+            "nav_overview": "Resumen",
+            "nav_dashboard": "Panel",
+            "nav_workspaces_group": "Espacios de trabajo",
+            "nav_workspaces": "Espacios de trabajo",
+            "nav_subscriptions": "Suscripciones",
+            "nav_payments": "Pagos",
+            "nav_platform_group": "Plataforma",
+            "nav_platform_settings": "Configuración de plataforma",
+            "nav_email_templates": "Plantillas de email",
+            "nav_notices": "Avisos",
+            "nav_backups": "Copias de seguridad",
+            "nav_feedback": "Comentarios y solicitudes",
+            "nav_audit_logs": "Registros de auditoría",
+            "nav_observability": "Errores y excepciones",
+            "nav_access_group": "Control de acceso",
+            "nav_users": "Usuarios",
+            "nav_roles": "Roles y permisos"
+        },
+        "portal": {
+            "help_center": "Centro de ayuda",
+            "search": "Buscar",
+            "services": "Servicios",
+            "submit_request": "Enviar solicitud",
+            "my_tickets": "Mis tickets",
+            "logout": "Cerrar sesión",
+            "track_request": "Rastrear solicitud",
+            "sign_in": "Iniciar sesión",
+            "register": "Registrarse",
+            "agent_login": "Acceso de agente"
+        },
+        "central": {
+            "product": "Producto",
+            "features": "Funciones",
+            "how_it_works": "Cómo funciona",
+            "pricing": "Precios",
+            "faq": "Preguntas frecuentes",
+            "sign_in": "Iniciar sesión",
+            "start_free_trial": "Comenzar prueba gratuita",
+            "footer_tagline": "Software moderno de soporte al cliente e ITSM — tickets, chat, base de conocimiento, automatización y flujos de Service Desk en un solo espacio de trabajo.",
+            "footer_product": "Producto",
+            "footer_platform_overview": "Resumen de la plataforma",
+            "footer_get_started": "Comenzar",
+            "footer_sign_in_workspace": "Iniciar sesión en el espacio de trabajo",
+            "footer_platform_admin": "Administrador de plataforma",
+            "footer_setup_guide": "Guía de configuración",
+            "footer_capabilities": "Capacidades",
+            "footer_capability_inbox": "Bandeja compartida y espacio de agentes",
+            "footer_capability_channels": "Chat en vivo, SMS y portal",
+            "footer_capability_kb": "Base de conocimiento y catálogo de servicios",
+            "footer_capability_sla": "SLA, automatización y desvío con IA",
+            "footer_capability_service_desk": "Service Desk ITSM (Enterprise)",
+            "footer_capability_integrations": "Integraciones, SSO y CMDB de activos",
+            "footer_rights": "Todos los derechos reservados.",
+            "footer_hosted": "Alojamiento en la nube · Espacio dedicado · Dominio personalizado en Enterprise",
+            "why_us": "Por qué nosotros"
+        },
+        "app": {
+            "helpdesk": "Helpdesk"
+        }
+    }
+}

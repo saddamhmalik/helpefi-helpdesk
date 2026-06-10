@@ -2,6 +2,15 @@ let socket = null;
 let reconnectTimer = null;
 let config = null;
 const subscriptions = new Map();
+const connectionListeners = new Set();
+
+function notifyConnection(connected) {
+    connectionListeners.forEach((handler) => handler(connected));
+}
+
+function isConnected() {
+    return socket?.readyState === WebSocket.OPEN;
+}
 
 function connect(nextConfig) {
     config = nextConfig;
@@ -18,6 +27,8 @@ function connect(nextConfig) {
     socket = new WebSocket(url);
 
     socket.addEventListener('open', () => {
+        notifyConnection(true);
+
         for (const channel of subscriptions.keys()) {
             subscribe(channel);
         }
@@ -43,6 +54,8 @@ function connect(nextConfig) {
     });
 
     socket.addEventListener('close', () => {
+        notifyConnection(false);
+
         if (reconnectTimer) {
             clearTimeout(reconnectTimer);
         }
@@ -91,6 +104,7 @@ function disconnect() {
         reconnectTimer = null;
     }
 
+    notifyConnection(false);
     subscriptions.clear();
     socket?.close();
     socket = null;
@@ -126,4 +140,19 @@ export function getSharedRealtimeClient(nextConfig) {
     }
 
     return sharedClient;
+}
+
+export function isRealtimeConfigured(nextConfig) {
+    return Boolean(nextConfig?.url && nextConfig?.token);
+}
+
+export function isRealtimeConnected() {
+    return isConnected();
+}
+
+export function onRealtimeConnectionChange(handler) {
+    connectionListeners.add(handler);
+    handler(isConnected());
+
+    return () => connectionListeners.delete(handler);
 }

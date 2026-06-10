@@ -1,33 +1,52 @@
 <script setup>
 import { useForm, usePage } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
-import SettingsLayout from '../../Layouts/SettingsLayout.vue';
+import { useI18n } from 'vue-i18n';
+import SettingsPage from '../../Components/SettingsPage.vue';
+import SettingsSectionNav from '../../Components/SettingsSectionNav.vue';
 import { useSettingsSection } from '../../composables/useSettingsSection.js';
 
 const props = defineProps({
     twoFactor: Object,
     mfaRequired: Boolean,
+    locale: { type: String, default: 'en' },
+    storedTimezone: { type: String, default: null },
+    localeOptions: { type: Array, default: () => [] },
+    timezoneOptions: { type: Array, default: () => [] },
 });
+
+const { t } = useI18n();
 
 const { activeSection } = useSettingsSection({
     defaultSection: 'profile',
     sections: ['profile', 'password', 'security'],
 });
 
-const pageTitles = {
-    profile: { title: 'Profile', description: 'Update your name and email address.' },
-    password: { title: 'Password', description: 'Change the password you use to sign in.' },
-    security: { title: 'Two-factor authentication', description: 'Add an extra layer of security with an authenticator app.' },
-};
+const pageTitles = computed(() => ({
+    profile: { title: t('profile.title'), description: t('profile.description') },
+    password: { title: t('profile.password_title'), description: t('profile.password_description') },
+    security: { title: t('profile.security_title'), description: t('profile.security_description') },
+}));
+
+const sectionTabs = computed(() => [
+    { id: 'profile', label: t('settings.profile') },
+    { id: 'password', label: t('settings.password') },
+    { id: 'security', label: t('settings.two_factor') },
+]);
 
 const page = usePage();
 const user = computed(() => page.props.auth.user);
+const helpdeskTimezone = computed(() => page.props.helpdesk?.timezone ?? 'UTC');
 const setup = computed(() => page.props.flash?.two_factor_setup);
 const recoveryCodes = computed(() => page.props.flash?.recovery_codes);
+
+const timezoneHint = computed(() => t('profile.timezone_hint', { timezone: helpdeskTimezone.value }));
 
 const profileForm = useForm({
     name: user.value.name,
     email: user.value.email,
+    locale: props.locale,
+    timezone: props.storedTimezone ?? '',
 });
 
 const passwordForm = useForm({
@@ -72,117 +91,147 @@ const disableTwoFactor = () => {
 </script>
 
 <template>
-    <SettingsLayout
-        :title="pageTitles[activeSection]?.title ?? 'Profile'"
+    <SettingsPage
+        :title="pageTitles[activeSection]?.title ?? t('profile.title')"
         :description="pageTitles[activeSection]?.description ?? ''"
     >
+        <SettingsSectionNav
+            path="/settings/profile"
+            default-section="profile"
+            :sections="sectionTabs"
+            :active-section="activeSection"
+        />
+
         <div
             v-if="mfaRequired && !twoFactor.enabled"
             class="mb-6 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900"
         >
-            Two-factor authentication is required for your account. Enable it below to continue using the helpdesk.
+            {{ t('profile.mfa_required') }}
         </div>
 
         <div v-show="activeSection === 'profile'" class="max-w-2xl rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-                    <form class="space-y-4" @submit.prevent="updateProfile">
-                        <div>
-                            <label class="mb-1 block text-sm font-medium text-slate-700">Name</label>
-                            <input v-model="profileForm.name" type="text" class="w-full rounded-lg border border-slate-300 px-3 py-2" required />
-                            <p v-if="profileForm.errors.name" class="mt-1 text-sm text-red-600">{{ profileForm.errors.name }}</p>
-                        </div>
-                        <div>
-                            <label class="mb-1 block text-sm font-medium text-slate-700">Email</label>
-                            <input v-model="profileForm.email" type="email" class="w-full rounded-lg border border-slate-300 px-3 py-2" required />
-                            <p v-if="profileForm.errors.email" class="mt-1 text-sm text-red-600">{{ profileForm.errors.email }}</p>
-                        </div>
-                        <button type="submit" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700" :disabled="profileForm.processing">
-                            Save profile
-                        </button>
-                    </form>
+            <form class="space-y-4" @submit.prevent="updateProfile">
+                <div>
+                    <label class="mb-1 block text-sm font-medium text-slate-700">{{ t('profile.name') }}</label>
+                    <input v-model="profileForm.name" type="text" class="w-full rounded-lg border border-slate-300 px-3 py-2" required />
+                    <p v-if="profileForm.errors.name" class="mt-1 text-sm text-red-600">{{ profileForm.errors.name }}</p>
                 </div>
+                <div>
+                    <label class="mb-1 block text-sm font-medium text-slate-700">{{ t('profile.email') }}</label>
+                    <input v-model="profileForm.email" type="email" class="w-full rounded-lg border border-slate-300 px-3 py-2" required />
+                    <p v-if="profileForm.errors.email" class="mt-1 text-sm text-red-600">{{ profileForm.errors.email }}</p>
+                </div>
+                <div>
+                    <label class="mb-1 block text-sm font-medium text-slate-700">{{ t('profile.language') }}</label>
+                    <select v-model="profileForm.locale" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" required>
+                        <option v-for="option in localeOptions" :key="option.code" :value="option.code">
+                            {{ option.label }}
+                        </option>
+                    </select>
+                    <p class="mt-1 text-xs text-slate-500">{{ t('profile.language_hint') }}</p>
+                    <p v-if="profileForm.errors.locale" class="mt-1 text-sm text-red-600">{{ profileForm.errors.locale }}</p>
+                </div>
+                <div>
+                    <label class="mb-1 block text-sm font-medium text-slate-700">{{ t('profile.timezone') }}</label>
+                    <select v-model="profileForm.timezone" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm">
+                        <option value="">{{ helpdeskTimezone }} — {{ t('profile.workspace_default') }}</option>
+                        <optgroup v-for="group in timezoneOptions" :key="group.region" :label="group.region">
+                            <option v-for="tz in group.options" :key="tz.value" :value="tz.value">
+                                {{ tz.label }}
+                            </option>
+                        </optgroup>
+                    </select>
+                    <p class="mt-1 text-xs text-slate-500">{{ timezoneHint }}</p>
+                    <p v-if="profileForm.errors.timezone" class="mt-1 text-sm text-red-600">{{ profileForm.errors.timezone }}</p>
+                </div>
+                <button type="submit" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700" :disabled="profileForm.processing">
+                    {{ t('profile.save_profile') }}
+                </button>
+            </form>
+        </div>
 
         <div v-show="activeSection === 'password'" class="max-w-2xl rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-                    <form class="space-y-4" @submit.prevent="updatePassword">
-                        <div>
-                            <label class="mb-1 block text-sm font-medium text-slate-700">Current password</label>
-                            <input v-model="passwordForm.current_password" type="password" class="w-full rounded-lg border border-slate-300 px-3 py-2" required />
-                            <p v-if="passwordForm.errors.current_password" class="mt-1 text-sm text-red-600">{{ passwordForm.errors.current_password }}</p>
-                        </div>
-                        <div>
-                            <label class="mb-1 block text-sm font-medium text-slate-700">New password</label>
-                            <input v-model="passwordForm.password" type="password" class="w-full rounded-lg border border-slate-300 px-3 py-2" required />
-                            <p v-if="passwordForm.errors.password" class="mt-1 text-sm text-red-600">{{ passwordForm.errors.password }}</p>
-                        </div>
-                        <div>
-                            <label class="mb-1 block text-sm font-medium text-slate-700">Confirm password</label>
-                            <input v-model="passwordForm.password_confirmation" type="password" class="w-full rounded-lg border border-slate-300 px-3 py-2" required />
-                        </div>
-                        <button type="submit" class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50" :disabled="passwordForm.processing">
-                            Update password
-                        </button>
-                    </form>
+            <form class="space-y-4" @submit.prevent="updatePassword">
+                <div>
+                    <label class="mb-1 block text-sm font-medium text-slate-700">{{ t('profile.current_password') }}</label>
+                    <input v-model="passwordForm.current_password" type="password" class="w-full rounded-lg border border-slate-300 px-3 py-2" required />
+                    <p v-if="passwordForm.errors.current_password" class="mt-1 text-sm text-red-600">{{ passwordForm.errors.current_password }}</p>
                 </div>
+                <div>
+                    <label class="mb-1 block text-sm font-medium text-slate-700">{{ t('profile.new_password') }}</label>
+                    <input v-model="passwordForm.password" type="password" class="w-full rounded-lg border border-slate-300 px-3 py-2" required />
+                    <p v-if="passwordForm.errors.password" class="mt-1 text-sm text-red-600">{{ passwordForm.errors.password }}</p>
+                </div>
+                <div>
+                    <label class="mb-1 block text-sm font-medium text-slate-700">{{ t('profile.confirm_password') }}</label>
+                    <input v-model="passwordForm.password_confirmation" type="password" class="w-full rounded-lg border border-slate-300 px-3 py-2" required />
+                </div>
+                <button type="submit" class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50" :disabled="passwordForm.processing">
+                    {{ t('profile.update_password') }}
+                </button>
+            </form>
+        </div>
 
         <div v-show="activeSection === 'security'" class="max-w-2xl rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-                    <div class="flex items-start justify-between gap-4">
-                        <div>
-                            <h2 class="text-lg font-semibold text-slate-900">Two-factor authentication</h2>
-                            <p class="mt-1 text-sm text-slate-600">
-                                {{ twoFactor.enabled ? 'Enabled on your account.' : 'Add an extra layer of security with an authenticator app.' }}
-                            </p>
-                        </div>
-                        <span
-                            class="rounded-full px-3 py-1 text-xs font-medium"
-                            :class="twoFactor.enabled ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-600'"
-                        >
-                            {{ twoFactor.enabled ? 'Active' : 'Off' }}
-                        </span>
-                    </div>
-
-                    <div v-if="recoveryCodes?.length" class="mt-4 rounded-lg border border-emerald-200 bg-emerald-50 p-4">
-                        <p class="text-sm font-medium text-emerald-900">Save these recovery codes in a safe place:</p>
-                        <ul class="mt-2 grid gap-1 sm:grid-cols-2">
-                            <li v-for="code in recoveryCodes" :key="code" class="font-mono text-sm text-emerald-800">{{ code }}</li>
-                        </ul>
-                    </div>
-
-                    <div v-if="setup && !twoFactor.enabled" class="mt-4 rounded-lg border border-blue-200 bg-blue-50 p-4">
-                        <p class="text-sm text-blue-900">Add this secret to your authenticator app:</p>
-                        <p class="mt-2 break-all font-mono text-sm text-blue-950">{{ setup.secret }}</p>
-                        <p class="mt-2 break-all text-xs text-blue-800">{{ setup.otpauth_url }}</p>
-                        <form class="mt-4 flex flex-wrap items-end gap-3" @submit.prevent="confirmSetup">
-                            <div>
-                                <label class="mb-1 block text-sm font-medium text-slate-700">Verification code</label>
-                                <input v-model="confirmForm.code" type="text" class="rounded-lg border border-slate-300 px-3 py-2 text-sm" required />
-                                <p v-if="confirmForm.errors.code" class="mt-1 text-sm text-red-600">{{ confirmForm.errors.code }}</p>
-                            </div>
-                            <button type="submit" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700" :disabled="confirmForm.processing">
-                                Confirm and enable
-                            </button>
-                        </form>
-                    </div>
-
-                    <div v-else-if="!twoFactor.enabled" class="mt-4">
-                        <button type="button" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700" @click="beginSetup">
-                            Set up authenticator
-                        </button>
-                    </div>
-
-                    <div v-else class="mt-4">
-                        <button v-if="!showDisable" type="button" class="text-sm text-red-600 hover:text-red-700" @click="showDisable = true">
-                            Disable two-factor authentication
-                        </button>
-                        <form v-else class="mt-2 flex flex-wrap items-end gap-3" @submit.prevent="disableTwoFactor">
-                            <div>
-                                <label class="mb-1 block text-sm font-medium text-slate-700">Confirm password</label>
-                                <input v-model="disableForm.password" type="password" class="rounded-lg border border-slate-300 px-3 py-2 text-sm" required />
-                                <p v-if="disableForm.errors.password" class="mt-1 text-sm text-red-600">{{ disableForm.errors.password }}</p>
-                            </div>
-                            <button type="submit" class="rounded-lg border border-red-300 px-4 py-2 text-sm font-medium text-red-700 hover:bg-red-50" :disabled="disableForm.processing">
-                                Disable
-                            </button>
-                        </form>
-                    </div>
+            <div class="flex items-start justify-between gap-4">
+                <div>
+                    <h2 class="text-lg font-semibold text-slate-900">{{ t('profile.security_title') }}</h2>
+                    <p class="mt-1 text-sm text-slate-600">
+                        {{ twoFactor.enabled ? t('profile.two_factor_enabled') : t('profile.two_factor_disabled') }}
+                    </p>
                 </div>
-    </SettingsLayout>
+                <span
+                    class="rounded-full px-3 py-1 text-xs font-medium"
+                    :class="twoFactor.enabled ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-600'"
+                >
+                    {{ twoFactor.enabled ? t('common.active') : t('common.off') }}
+                </span>
+            </div>
+
+            <div v-if="recoveryCodes?.length" class="mt-4 rounded-lg border border-emerald-200 bg-emerald-50 p-4">
+                <p class="text-sm font-medium text-emerald-900">{{ t('profile.recovery_codes_title') }}</p>
+                <ul class="mt-2 grid gap-1 sm:grid-cols-2">
+                    <li v-for="code in recoveryCodes" :key="code" class="font-mono text-sm text-emerald-800">{{ code }}</li>
+                </ul>
+            </div>
+
+            <div v-if="setup && !twoFactor.enabled" class="mt-4 rounded-lg border border-blue-200 bg-blue-50 p-4">
+                <p class="text-sm text-blue-900">{{ t('profile.authenticator_secret') }}</p>
+                <p class="mt-2 break-all font-mono text-sm text-blue-950">{{ setup.secret }}</p>
+                <p class="mt-2 break-all text-xs text-blue-800">{{ setup.otpauth_url }}</p>
+                <form class="mt-4 flex flex-wrap items-end gap-3" @submit.prevent="confirmSetup">
+                    <div>
+                        <label class="mb-1 block text-sm font-medium text-slate-700">{{ t('profile.verification_code') }}</label>
+                        <input v-model="confirmForm.code" type="text" class="rounded-lg border border-slate-300 px-3 py-2 text-sm" required />
+                        <p v-if="confirmForm.errors.code" class="mt-1 text-sm text-red-600">{{ confirmForm.errors.code }}</p>
+                    </div>
+                    <button type="submit" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700" :disabled="confirmForm.processing">
+                        {{ t('profile.confirm_enable') }}
+                    </button>
+                </form>
+            </div>
+
+            <div v-else-if="!twoFactor.enabled" class="mt-4">
+                <button type="button" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700" @click="beginSetup">
+                    {{ t('profile.setup_authenticator') }}
+                </button>
+            </div>
+
+            <div v-else class="mt-4">
+                <button v-if="!showDisable" type="button" class="text-sm text-red-600 hover:text-red-700" @click="showDisable = true">
+                    {{ t('profile.disable_two_factor') }}
+                </button>
+                <form v-else class="mt-2 flex flex-wrap items-end gap-3" @submit.prevent="disableTwoFactor">
+                    <div>
+                        <label class="mb-1 block text-sm font-medium text-slate-700">{{ t('profile.confirm_password_disable') }}</label>
+                        <input v-model="disableForm.password" type="password" class="rounded-lg border border-slate-300 px-3 py-2 text-sm" required />
+                        <p v-if="disableForm.errors.password" class="mt-1 text-sm text-red-600">{{ disableForm.errors.password }}</p>
+                    </div>
+                    <button type="submit" class="rounded-lg border border-red-300 px-4 py-2 text-sm font-medium text-red-700 hover:bg-red-50" :disabled="disableForm.processing">
+                        {{ t('common.disable') }}
+                    </button>
+                </form>
+            </div>
+        </div>
+    </SettingsPage>
 </template>

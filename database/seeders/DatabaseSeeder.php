@@ -36,6 +36,7 @@ class DatabaseSeeder extends Seeder
             ContactLookupSeeder::class,
             ChannelSeeder::class,
             EmailSeeder::class,
+            EmailTemplateSeeder::class,
             ServiceCatalogSeeder::class,
             AssetSeeder::class,
             SecuritySeeder::class,

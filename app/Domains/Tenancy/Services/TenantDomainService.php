@@ -34,13 +34,7 @@ class TenantDomainService
     {
         $host = $this->primaryHost($tenant);
 
-        if (! $host) {
-            return null;
-        }
-
-        $scheme = parse_url((string) config('app.url'), PHP_URL_SCHEME) ?: 'https';
-
-        return "{$scheme}://{$host}";
+        return $host ? $this->urlForHost($host) : null;
     }
 
     public function platformHost(?Tenant $tenant = null): ?string
@@ -183,9 +177,14 @@ class TenantDomainService
             return null;
         }
 
-        $scheme = request()->getScheme();
+        if (! app()->runningInConsole() && request()->getHost()) {
+            $scheme = request()->getScheme();
+            $portSuffix = $this->nonDefaultPortSuffix($scheme, request()->getPort());
 
-        return "{$scheme}://{$primary}{$requestUri}";
+            return "{$scheme}://{$primary}{$portSuffix}{$requestUri}";
+        }
+
+        return $this->urlForHost($primary).$requestUri;
     }
 
     private function presentCustom(?TenantDomain $custom): ?array
@@ -281,8 +280,22 @@ class TenantDomainService
 
     private function urlForHost(string $host): string
     {
-        $scheme = parse_url((string) config('app.url'), PHP_URL_SCHEME) ?: 'https';
+        $appUrl = (string) config('app.url');
+        $scheme = parse_url($appUrl, PHP_URL_SCHEME) ?: 'https';
+        $port = parse_url($appUrl, PHP_URL_PORT);
+        $portSuffix = $this->nonDefaultPortSuffix($scheme, $port ? (int) $port : null);
 
-        return "{$scheme}://{$host}";
+        return "{$scheme}://{$host}{$portSuffix}";
+    }
+
+    private function nonDefaultPortSuffix(string $scheme, ?int $port): string
+    {
+        if (! $port) {
+            return '';
+        }
+
+        $defaultPort = $scheme === 'https' ? 443 : 80;
+
+        return $port === $defaultPort ? '' : ":{$port}";
     }
 }

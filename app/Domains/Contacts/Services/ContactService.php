@@ -83,6 +83,11 @@ class ContactService
         return $contact;
     }
 
+    public function findOrCreateByPhone(string $phone, string $name): Contact
+    {
+        return $this->contacts->findOrCreateByPhone($phone, $name);
+    }
+
     public function create(array $data, ?int $userId = null): Contact
     {
         if (empty($data['organization_id']) && ! empty($data['email'])) {

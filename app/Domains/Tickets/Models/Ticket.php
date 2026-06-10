@@ -34,6 +34,7 @@ class Ticket extends Model
         'ticket_status_id',
         'ticket_priority_id',
         'closed_at',
+        'snoozed_until',
         'merged_into_ticket_id',
         'csat_email_sent_at',
     ];
@@ -42,6 +43,7 @@ class Ticket extends Model
     {
         return [
             'closed_at' => 'datetime',
+            'snoozed_until' => 'datetime',
             'csat_email_sent_at' => 'datetime',
             'custom_fields' => 'array',
         ];
@@ -160,5 +162,18 @@ class Ticket extends Model
     public function tags(): BelongsToMany
     {
         return $this->belongsToMany(\App\Domains\Contacts\Models\Tag::class, 'ticket_tag');
+    }
+
+    public function scopeVisibleInQueue($query)
+    {
+        return $query->where(function ($q) {
+            $q->whereNull('snoozed_until')
+                ->orWhere('snoozed_until', '<=', now());
+        });
+    }
+
+    public function isSnoozed(): bool
+    {
+        return $this->snoozed_until !== null && $this->snoozed_until->isFuture();
     }
 }

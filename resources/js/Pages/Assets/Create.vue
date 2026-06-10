@@ -6,6 +6,7 @@ import FormField from '../../Components/FormField.vue';
 import FormPage from '../../Components/FormPage.vue';
 import FormSection from '../../Components/FormSection.vue';
 import { formInputClass, formSelectClass, formTextareaClass } from '../../composables/useFormControls.js';
+import { useI18n } from 'vue-i18n';
 
 const props = defineProps({
     meta: Object,
@@ -13,6 +14,8 @@ const props = defineProps({
     organizations: Array,
     parentOptions: Array,
 });
+
+const { t } = useI18n();
 
 const form = useForm({
     asset_type_id: props.meta.types[0]?.id ?? '',
@@ -39,109 +42,109 @@ const submit = () => form.post('/assets');
 </script>
 
 <template>
-    <Head title="New asset" />
+    <Head :title="$t('assets.new_asset')" />
     <AgentLayout>
         <AssetsNav />
         <FormPage
-            description="Track hardware or configuration items in your CMDB."
+            :description="$t('assets.track_hardware_or_configuration_items_in_your_cmdb')"
             cancel-href="/assets"
-            submit-label="Create asset"
+            :submit-label="$t('assets.create_asset')"
             :processing="form.processing"
             max-width="md"
             @submit="submit"
         >
-            <FormSection title="Asset identity">
+            <FormSection :title="$t('assets.asset_identity')">
                 <div class="grid gap-5 sm:grid-cols-2">
-                    <FormField label="Type" required :error="form.errors.asset_type_id">
+                    <FormField :label="$t('assets.type')" required :error="form.errors.asset_type_id">
                         <select v-model="form.asset_type_id" required :class="formSelectClass">
                             <option v-for="type in meta.types" :key="type.id" :value="type.id">{{ type.name }}</option>
                         </select>
                         <p class="mt-1.5 text-xs text-slate-500">
-                            <a href="/assets/types" class="text-blue-600 hover:text-blue-700">Manage asset types</a>
+                            <a href="/assets/types" class="text-blue-600 hover:text-blue-700">{{ $t('assets.manage_asset_types') }}</a>
                             to add Printer, Router, and other categories.
                         </p>
                     </FormField>
-                    <FormField label="Status" :error="form.errors.status">
+                    <FormField :label="$t('assets.status')" :error="form.errors.status">
                         <select v-model="form.status" :class="formSelectClass">
                             <option v-for="status in meta.statuses" :key="status.value" :value="status.value">{{ status.label }}</option>
                         </select>
                     </FormField>
                 </div>
-                <FormField label="Name" required :error="form.errors.name">
+                <FormField :label="$t('assets.name')" required :error="form.errors.name">
                     <input v-model="form.name" type="text" required :class="formInputClass" placeholder="MacBook Pro 14&quot;" />
                 </FormField>
                 <div class="grid gap-5 sm:grid-cols-2">
-                    <FormField label="Serial number" :error="form.errors.serial_number">
-                        <input v-model="form.serial_number" type="text" :class="formInputClass" placeholder="SN-000000" />
+                    <FormField :label="$t('assets.serial_number')" :error="form.errors.serial_number">
+                        <input v-model="form.serial_number" type="text" :class="formInputClass" :placeholder="$t('assets.sn-000000')" />
                     </FormField>
-                    <FormField label="Location" :error="form.errors.location">
-                        <input v-model="form.location" type="text" :class="formInputClass" placeholder="Office, rack, or desk" />
+                    <FormField :label="$t('assets.location')" :error="form.errors.location">
+                        <input v-model="form.location" type="text" :class="formInputClass" :placeholder="$t('assets.office_rack_or_desk')" />
                     </FormField>
                 </div>
             </FormSection>
 
-            <FormSection title="Network">
+            <FormSection :title="$t('assets.network')">
                 <div class="grid gap-5 sm:grid-cols-3">
-                    <FormField label="IP address" :error="form.errors.ip_address">
+                    <FormField :label="$t('assets.ip_address')" :error="form.errors.ip_address">
                         <input v-model="form.ip_address" type="text" :class="formInputClass" placeholder="10.0.0.12" />
                     </FormField>
-                    <FormField label="MAC address" :error="form.errors.mac_address">
-                        <input v-model="form.mac_address" type="text" :class="formInputClass" placeholder="AA:BB:CC:DD:EE:FF" />
+                    <FormField :label="$t('assets.mac_address')" :error="form.errors.mac_address">
+                        <input v-model="form.mac_address" type="text" :class="formInputClass" :placeholder="$t('assets.aa_bb_cc_dd_ee_ff')" />
                     </FormField>
-                    <FormField label="Hostname" :error="form.errors.hostname">
-                        <input v-model="form.hostname" type="text" :class="formInputClass" placeholder="laptop-01" />
+                    <FormField :label="$t('assets.hostname')" :error="form.errors.hostname">
+                        <input v-model="form.hostname" type="text" :class="formInputClass" :placeholder="$t('assets.laptop-01')" />
                     </FormField>
                 </div>
             </FormSection>
 
-            <FormSection title="Assignment">
+            <FormSection :title="$t('assets.assignment')">
                 <div class="grid gap-5 sm:grid-cols-2">
-                    <FormField label="Assigned contact" :error="form.errors.contact_id">
+                    <FormField :label="$t('assets.assigned_contact')" :error="form.errors.contact_id">
                         <select v-model="form.contact_id" :class="formSelectClass">
-                            <option value="">Unassigned</option>
+                            <option value="">{{ $t('assets.unassigned') }}</option>
                             <option v-for="contact in contacts" :key="contact.id" :value="contact.id">{{ contact.name }}</option>
                         </select>
                     </FormField>
-                    <FormField label="Organization" :error="form.errors.organization_id">
+                    <FormField :label="$t('assets.organization')" :error="form.errors.organization_id">
                         <select v-model="form.organization_id" :class="formSelectClass">
-                            <option value="">No organization</option>
+                            <option value="">{{ $t('assets.no_organization') }}</option>
                             <option v-for="org in organizations" :key="org.id" :value="org.id">{{ org.name }}</option>
                         </select>
                     </FormField>
                 </div>
-                <FormField label="Parent asset" :error="form.errors.parent_id">
+                <FormField :label="$t('assets.parent_asset')" :error="form.errors.parent_id">
                     <select v-model="form.parent_id" :class="formSelectClass">
-                        <option value="">No parent</option>
+                        <option value="">{{ $t('assets.no_parent') }}</option>
                         <option v-for="parent in parentOptions" :key="parent.id" :value="parent.id">{{ parent.asset_tag }} — {{ parent.name }}</option>
                     </select>
                 </FormField>
             </FormSection>
 
-            <FormSection title="Procurement">
+            <FormSection :title="$t('assets.procurement')">
                 <div class="grid gap-5 sm:grid-cols-3">
-                    <FormField label="Manufacturer" :error="form.errors.manufacturer">
-                        <input v-model="form.manufacturer" type="text" :class="formInputClass" placeholder="Dell" />
+                    <FormField :label="$t('assets.manufacturer')" :error="form.errors.manufacturer">
+                        <input v-model="form.manufacturer" type="text" :class="formInputClass" :placeholder="$t('assets.dell')" />
                     </FormField>
-                    <FormField label="Model" :error="form.errors.model">
-                        <input v-model="form.model" type="text" :class="formInputClass" placeholder="Latitude 7440" />
+                    <FormField :label="$t('assets.model')" :error="form.errors.model">
+                        <input v-model="form.model" type="text" :class="formInputClass" :placeholder="$t('assets.latitude_7440')" />
                     </FormField>
-                    <FormField label="Vendor" :error="form.errors.vendor">
-                        <input v-model="form.vendor" type="text" :class="formInputClass" placeholder="CDW" />
+                    <FormField :label="$t('assets.vendor')" :error="form.errors.vendor">
+                        <input v-model="form.vendor" type="text" :class="formInputClass" :placeholder="$t('assets.cdw')" />
                     </FormField>
                 </div>
                 <div class="grid gap-5 sm:grid-cols-3">
-                    <FormField label="Purchase cost" :error="form.errors.purchase_cost">
+                    <FormField :label="$t('assets.purchase_cost')" :error="form.errors.purchase_cost">
                         <input v-model="form.purchase_cost" type="number" min="0" step="0.01" :class="formInputClass" placeholder="1299.00" />
                     </FormField>
-                    <FormField label="Purchased" :error="form.errors.purchased_at">
+                    <FormField :label="$t('assets.purchased')" :error="form.errors.purchased_at">
                         <input v-model="form.purchased_at" type="date" :class="formInputClass" />
                     </FormField>
-                    <FormField label="Warranty expires" :error="form.errors.warranty_expires_at">
+                    <FormField :label="$t('assets.warranty_expires')" :error="form.errors.warranty_expires_at">
                         <input v-model="form.warranty_expires_at" type="date" :class="formInputClass" />
                     </FormField>
                 </div>
-                <FormField label="Notes" :error="form.errors.notes">
-                    <textarea v-model="form.notes" rows="4" :class="formTextareaClass" placeholder="Optional maintenance or configuration notes" />
+                <FormField :label="$t('assets.notes')" :error="form.errors.notes">
+                    <textarea v-model="form.notes" rows="4" :class="formTextareaClass" :placeholder="$t('assets.optional_maintenance_or_configuration_notes')" />
                 </FormField>
             </FormSection>
         </FormPage>

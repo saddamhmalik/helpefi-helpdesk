@@ -2,13 +2,16 @@
 import AppAvatar from './AppAvatar.vue';
 import { Link, router } from '@inertiajs/vue3';
 import { computed, onMounted, onUnmounted, ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useAgentNavigation } from '../composables/useAgentNavigation.js';
+
+const { t } = useI18n();
 
 const { user } = useAgentNavigation();
 const open = ref(false);
 const root = ref(null);
 
-const initials = computed(() => user.value?.name ?? 'User');
+const initials = computed(() => user.value?.name ?? t('components.user_fallback'));
 
 const logout = () => {
     open.value = false;
@@ -49,11 +52,12 @@ onUnmounted(() => document.removeEventListener('click', onDocumentClick));
             </svg>
         </button>
 
-        <div
-            v-if="open"
-            class="absolute right-0 z-50 mt-2 w-56 overflow-hidden rounded-xl border border-slate-200 bg-white py-1 shadow-lg"
-            role="menu"
-        >
+        <Transition name="dropdown">
+            <div
+                v-if="open"
+                class="absolute right-0 z-50 mt-2 w-56 overflow-hidden rounded-xl border border-slate-200 bg-white py-1 shadow-lg"
+                role="menu"
+            >
             <div class="border-b border-slate-100 px-4 py-3">
                 <p class="truncate text-sm font-semibold text-slate-900">{{ user?.name }}</p>
                 <p class="truncate text-xs text-slate-500">{{ user?.email }}</p>
@@ -64,7 +68,7 @@ onUnmounted(() => document.removeEventListener('click', onDocumentClick));
                 role="menuitem"
                 @click="close"
             >
-                Profile settings
+                {{ $t('components.profile_and_password') }}
             </Link>
             <Link
                 href="/notifications"
@@ -72,7 +76,7 @@ onUnmounted(() => document.removeEventListener('click', onDocumentClick));
                 role="menuitem"
                 @click="close"
             >
-                Notifications
+                {{ $t('components.notifications') }}
             </Link>
             <button
                 type="button"
@@ -80,8 +84,9 @@ onUnmounted(() => document.removeEventListener('click', onDocumentClick));
                 role="menuitem"
                 @click="logout"
             >
-                Log out
+                {{ $t('components.sign_out') }}
             </button>
-        </div>
+            </div>
+        </Transition>
     </div>
 </template>

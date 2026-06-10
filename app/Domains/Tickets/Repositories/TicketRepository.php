@@ -66,6 +66,7 @@ class TicketRepository
                 'team:id,name',
             ])
             ->whereNull('merged_into_ticket_id')
+            ->visibleInQueue()
             ->orderByDesc('updated_at');
 
         if (! empty($filters['status_id'])) {
@@ -126,6 +127,10 @@ class TicketRepository
 
         if (! empty($filters['watching']) && $watchingUserId) {
             $query->whereHas('watchers', fn ($q) => $q->where('user_id', $watchingUserId));
+        }
+
+        if (! empty($filters['type'])) {
+            $query->where('type', $filters['type']);
         }
 
         return $query;

@@ -3,11 +3,14 @@ import { Head, Link, useForm } from '@inertiajs/vue3';
 import AdminLayout from '../../../../Layouts/AdminLayout.vue';
 import PageHeader from '../../../../Components/PageHeader.vue';
 import { adminInputClass } from '../../../../composables/usePlatformAdmin.js';
+import { useI18n } from 'vue-i18n';
 
 const props = defineProps({
     user: { type: Object, default: null },
     roles: Array,
 });
+
+const { t } = useI18n();
 
 const editing = !!props.user;
 
@@ -41,12 +44,12 @@ const formatRole = (name) => name.split('_').map((part) => part.charAt(0).toUppe
             <form class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm" @submit.prevent="submit">
                 <div class="space-y-5">
                     <div>
-                        <label class="mb-1.5 block text-sm font-medium text-slate-700">Name</label>
+                        <label class="mb-1.5 block text-sm font-medium text-slate-700">{{ $t('profile.name') }}</label>
                         <input v-model="form.name" type="text" :class="adminInputClass" />
                         <p v-if="form.errors.name" class="mt-1 text-xs text-red-600">{{ form.errors.name }}</p>
                     </div>
                     <div>
-                        <label class="mb-1.5 block text-sm font-medium text-slate-700">Email</label>
+                        <label class="mb-1.5 block text-sm font-medium text-slate-700">{{ $t('profile.email') }}</label>
                         <input v-model="form.email" type="email" :class="adminInputClass" />
                         <p v-if="form.errors.email" class="mt-1 text-xs text-red-600">{{ form.errors.email }}</p>
                     </div>
@@ -56,7 +59,7 @@ const formatRole = (name) => name.split('_').map((part) => part.charAt(0).toUppe
                         <p v-if="form.errors.password" class="mt-1 text-xs text-red-600">{{ form.errors.password }}</p>
                     </div>
                     <div>
-                        <label class="mb-1.5 block text-sm font-medium text-slate-700">Confirm password</label>
+                        <label class="mb-1.5 block text-sm font-medium text-slate-700">{{ $t('profile.confirm_password_disable') }}</label>
                         <input v-model="form.password_confirmation" type="password" :class="adminInputClass" />
                     </div>
                     <label class="flex items-center gap-2 text-sm text-slate-700">
@@ -64,7 +67,7 @@ const formatRole = (name) => name.split('_').map((part) => part.charAt(0).toUppe
                         Active account
                     </label>
                     <div>
-                        <p class="mb-2 text-sm font-medium text-slate-700">Roles</p>
+                        <p class="mb-2 text-sm font-medium text-slate-700">{{ $t('central.roles') }}</p>
                         <div class="grid gap-2 sm:grid-cols-2">
                             <label
                                 v-for="role in roles"
@@ -84,7 +87,7 @@ const formatRole = (name) => name.split('_').map((part) => part.charAt(0).toUppe
                     <button type="submit" class="rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-blue-700" :disabled="form.processing">
                         {{ editing ? 'Save changes' : 'Create user' }}
                     </button>
-                    <Link href="/admin/users" class="text-sm font-medium text-slate-600 hover:text-slate-800">Cancel</Link>
+                    <Link href="/admin/users" class="text-sm font-medium text-slate-600 hover:text-slate-800">{{ $t('common.cancel') }}</Link>
                 </div>
             </form>
         </div>

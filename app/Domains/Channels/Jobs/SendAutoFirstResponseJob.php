@@ -16,6 +16,7 @@ class SendAutoFirstResponseJob implements ShouldQueue
     public function __construct(
         public int $ticketId,
         public int $messageId,
+        public int $customerMessageId,
     ) {
         $this->afterCommit();
     }
@@ -24,7 +25,8 @@ class SendAutoFirstResponseJob implements ShouldQueue
     {
         $ticket = $tickets->find($this->ticketId);
         $message = $ticket->messages()->findOrFail($this->messageId);
+        $customerMessage = $ticket->messages()->findOrFail($this->customerMessageId);
 
-        $mail->deliverAutoFirstResponse($ticket, $message);
+        $mail->deliverAutoFirstResponse($ticket, $message, $customerMessage);
     }
 }

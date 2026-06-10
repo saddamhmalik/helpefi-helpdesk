@@ -1,7 +1,12 @@
 <script setup>
 import { router, useForm, usePage } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
+import { useI18n } from 'vue-i18n';
+import { useDateTime } from '../composables/useDateTime.js';
 import { formInputClass, formTextareaClass } from '../composables/useFormControls.js';
+
+const { t } = useI18n();
+const { formatDateTime } = useDateTime();
 
 const props = defineProps({
     ticketId: { type: Number, required: true },
@@ -31,13 +36,9 @@ const formatDuration = (minutes) => {
     return remainder ? `${hours}h ${remainder}m` : `${hours}h`;
 };
 
-const formatWhen = (value) => {
-    if (!value) {
-        return '';
-    }
-
-    return new Date(value).toLocaleString();
-};
+const totalLoggedLabel = computed(() => t('components.time_logged_summary', {
+    duration: formatDuration(props.timeTracking.total_minutes ?? 0),
+}));
 
 const canDelete = (entry) => isAdmin.value || entry.user?.id === currentUserId.value;
 
@@ -63,9 +64,9 @@ const removeEntry = (entryId) => {
     <section class="px-4 py-3">
         <div class="flex items-center justify-between gap-2">
             <div>
-                <p class="text-[11px] font-semibold uppercase tracking-wide text-slate-400">Time tracking</p>
+                <p class="text-[11px] font-semibold uppercase tracking-wide text-slate-400">{{ $t('components.time_tracking') }}</p>
                 <p class="mt-0.5 text-xs text-slate-500">
-                    {{ formatDuration(timeTracking.total_minutes ?? 0) }} logged on this ticket
+                    {{ totalLoggedLabel }}
                 </p>
             </div>
             <button
@@ -73,7 +74,7 @@ const removeEntry = (entryId) => {
                 class="rounded-md border border-slate-200 px-2.5 py-1 text-xs font-medium text-slate-700 transition hover:bg-slate-50"
                 @click="showForm = !showForm"
             >
-                {{ showForm ? 'Cancel' : 'Log time' }}
+                {{ showForm ? $t('components.cancel') : $t('components.log_time') }}
             </button>
         </div>
 
@@ -85,19 +86,19 @@ const removeEntry = (entryId) => {
                     min="1"
                     max="1440"
                     required
-                    placeholder="Minutes"
+                    :placeholder="$t('components.minutes')"
                     :class="formInputClass"
                 />
                 <input v-model="form.logged_at" type="datetime-local" :class="formInputClass" />
             </div>
-            <textarea v-model="form.note" rows="2" placeholder="Note (optional)" :class="formTextareaClass" />
+            <textarea v-model="form.note" rows="2" :placeholder="$t('components.note_optional')" :class="formTextareaClass" />
             <p v-if="form.errors.minutes" class="text-xs text-red-600">{{ form.errors.minutes }}</p>
             <button
                 type="submit"
                 class="rounded-md bg-slate-900 px-3 py-1.5 text-xs font-medium text-white hover:bg-slate-800 disabled:opacity-50"
                 :disabled="form.processing"
             >
-                Save entry
+                {{ $t('components.save_entry') }}
             </button>
         </form>
 
@@ -110,7 +111,7 @@ const removeEntry = (entryId) => {
                 <div class="flex items-start justify-between gap-2">
                     <div class="min-w-0">
                         <p class="text-sm font-medium text-slate-900">{{ formatDuration(entry.minutes) }}</p>
-                        <p class="text-xs text-slate-500">{{ entry.user?.name || 'Unknown' }} · {{ formatWhen(entry.logged_at) }}</p>
+                        <p class="text-xs text-slate-500">{{ entry.user?.name || $t('components.unknown') }} · {{ formatDateTime(entry.logged_at) }}</p>
                         <p v-if="entry.note" class="mt-1 text-xs text-slate-600">{{ entry.note }}</p>
                     </div>
                     <button
@@ -119,12 +120,12 @@ const removeEntry = (entryId) => {
                         class="shrink-0 rounded px-1.5 py-0.5 text-xs text-slate-400 hover:bg-slate-100 hover:text-red-600"
                         @click="removeEntry(entry.id)"
                     >
-                        Remove
+                        {{ $t('components.remove') }}
                     </button>
                 </div>
             </li>
         </ul>
 
-        <p v-else class="mt-3 text-xs text-slate-500">No time logged yet.</p>
+        <p v-else class="mt-3 text-xs text-slate-500">{{ $t('components.no_time_logged_yet') }}</p>
     </section>
 </template>

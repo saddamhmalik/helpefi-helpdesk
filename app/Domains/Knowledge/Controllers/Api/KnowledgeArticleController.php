@@ -27,6 +27,7 @@ class KnowledgeArticleController extends Controller
             'knowledge_category_id' => ['nullable', 'exists:knowledge_categories,id'],
             'knowledge_collection_id' => ['nullable', 'exists:knowledge_collections,id'],
             'is_published' => ['boolean'],
+            'locale' => ['nullable', 'string', 'max:10'],
         ]);
 
         return response()->json(
@@ -37,7 +38,10 @@ class KnowledgeArticleController extends Controller
 
     public function show(int $article): JsonResponse
     {
-        return response()->json($this->knowledgeService->show($article));
+        return response()->json([
+            'article' => $this->knowledgeService->show($article),
+            'translations' => $this->knowledgeService->translations($article),
+        ]);
     }
 
     public function update(Request $request, int $article): JsonResponse

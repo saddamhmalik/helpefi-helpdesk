@@ -48,7 +48,9 @@ class CentralSettingsTest extends TestCase
                 ->andReturnUsing(fn (array $catalog) => collect($catalog)
                     ->map(fn (array $plan, string $slug) => array_merge($plan, [
                         'stripe_product_id' => "prod_{$slug}",
-                        'stripe_price_id' => "price_{$slug}",
+                        'stripe_price_id' => "price_monthly_{$slug}",
+                        'stripe_price_id_monthly' => "price_monthly_{$slug}",
+                        'stripe_price_id_yearly' => "price_yearly_{$slug}",
                     ]))
                     ->all());
         });
@@ -57,12 +59,15 @@ class CentralSettingsTest extends TestCase
 
         $this->put('http://'.config('tenancy.central_app_domain').'/admin/settings', [
             'trial_days' => 14,
+            'tenant_purge_grace_days' => 15,
+            'tenant_purge_enabled' => true,
             'currency' => 'USD',
             'plans' => [
                 [
                     'slug' => 'starter',
                     'name' => 'Starter',
                     'price' => 29,
+                    'price_yearly' => 290,
                     'limits' => ['agents' => 3, 'tickets_monthly' => 50],
                     'features' => [],
                 ],
@@ -70,6 +75,7 @@ class CentralSettingsTest extends TestCase
                     'slug' => 'professional',
                     'name' => 'Professional',
                     'price' => 79,
+                    'price_yearly' => 790,
                     'limits' => ['agents' => 15, 'tickets_monthly' => 500],
                     'features' => ['automation'],
                 ],
@@ -77,6 +83,7 @@ class CentralSettingsTest extends TestCase
                     'slug' => 'enterprise',
                     'name' => 'Enterprise',
                     'price' => 199,
+                    'price_yearly' => 1990,
                     'limits' => ['agents' => null, 'tickets_monthly' => null],
                     'features' => ['automation', 'ai'],
                 ],
@@ -86,7 +93,8 @@ class CentralSettingsTest extends TestCase
         $starter = app(\App\Domains\Billing\Repositories\PlanRepository::class)->find('starter');
 
         $this->assertSame('prod_starter', $starter['stripe_product_id']);
-        $this->assertSame('price_starter', $starter['stripe_price_id']);
+        $this->assertSame('price_monthly_starter', $starter['stripe_price_id']);
+        $this->assertSame('price_yearly_starter', $starter['stripe_price_id_yearly']);
     }
 
     public function test_admin_can_update_trial_days_pricing_and_currency(): void
@@ -95,12 +103,15 @@ class CentralSettingsTest extends TestCase
 
         $this->put('http://'.config('tenancy.central_app_domain').'/admin/settings', [
             'trial_days' => 21,
+            'tenant_purge_grace_days' => 10,
+            'tenant_purge_enabled' => false,
             'currency' => 'EUR',
             'plans' => [
                 [
                     'slug' => 'starter',
                     'name' => 'Starter',
                     'price' => 35,
+                    'price_yearly' => 350,
                     'limits' => ['agents' => 5, 'tickets_monthly' => 100],
                     'features' => [],
                 ],
@@ -108,6 +119,7 @@ class CentralSettingsTest extends TestCase
                     'slug' => 'professional',
                     'name' => 'Pro',
                     'price' => 99,
+                    'price_yearly' => 990,
                     'limits' => ['agents' => 20, 'tickets_monthly' => 1000],
                     'features' => ['automation', 'sla', 'channels'],
                 ],
@@ -115,8 +127,18 @@ class CentralSettingsTest extends TestCase
                     'slug' => 'enterprise',
                     'name' => 'Enterprise',
                     'price' => 249,
+                    'price_yearly' => 2490,
                     'limits' => ['agents' => null, 'tickets_monthly' => null],
                     'features' => ['automation', 'service_catalog', 'channels', 'sla', 'workspace', 'ai', 'integrations', 'assets'],
+                ],
+            ],
+            'addons' => [
+                [
+                    'key' => 'service_desk',
+                    'name' => 'Service Desk (ITSM)',
+                    'description' => 'ITIL workflows and war rooms.',
+                    'price_monthly' => 59,
+                    'enabled' => true,
                 ],
             ],
         ])->assertRedirect();
@@ -164,7 +186,8 @@ class CentralSettingsTest extends TestCase
         $this->get('http://'.config('tenancy.central_app_domain').'/')
             ->assertOk()
             ->assertInertia(fn ($page) => $page
-                ->where('plans', fn ($plans) => collect($plans)->firstWhere('slug', 'professional')['price'] === 120)
+                ->where('plans', fn ($plans) => collect($plans)->firstWhere('slug', 'professional')['price_monthly'] === 120
+                    && collect($plans)->firstWhere('slug', 'professional')['price_yearly'] === 1200)
                 ->where('currency.code', 'GBP')
                 ->where('currency.symbol', '£')
             );

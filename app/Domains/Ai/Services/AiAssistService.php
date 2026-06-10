@@ -7,6 +7,7 @@ use App\Domains\Billing\Services\BillingService;
 use App\Domains\Ai\Repositories\AiSettingRepository;
 use App\Domains\Ai\Repositories\KnowledgeAiRepository;
 use App\Domains\Ai\Repositories\TicketAiRepository;
+use App\Domains\Brands\Services\BrandService;
 use App\Models\User;
 use App\Domains\Tickets\Models\Ticket;
 use Illuminate\Auth\Access\AuthorizationException;
@@ -19,6 +20,7 @@ class AiAssistService
         private KnowledgeAiRepository $knowledge,
         private AiCompletionClient $client,
         private BillingService $billing,
+        private BrandService $brands,
     ) {
     }
 
@@ -34,6 +36,7 @@ class AiAssistService
         return [
             'enabled' => $setting->enabled,
             'model' => $setting->model ?: config('ai.model'),
+            'triage_enabled' => $setting->triage_enabled,
             'provider_configured' => $this->client->available(),
             'mode' => $this->client->available() ? 'openai' : 'local',
         ];
@@ -44,6 +47,7 @@ class AiAssistService
         $setting = $this->settings->update($this->settings->current(), [
             'enabled' => $data['enabled'] ?? false,
             'model' => $data['model'] ?? null,
+            'triage_enabled' => $data['triage_enabled'] ?? false,
         ]);
 
         if ($setting->model) {
@@ -111,7 +115,10 @@ class AiAssistService
             'title' => $article->title,
             'slug' => $article->slug,
             'excerpt' => $article->excerpt,
-            'url' => '/portal/articles/'.$article->slug,
+            'url' => route('portal.article', [
+                'brand' => $this->brands->defaultSlug(),
+                'articleSlug' => $article->slug,
+            ]),
         ])->values()->all();
 
         if ($this->client->available() && $mapped) {

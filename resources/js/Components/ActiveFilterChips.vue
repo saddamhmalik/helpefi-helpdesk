@@ -8,7 +8,7 @@ const emit = defineEmits(['remove', 'clear']);
 
 <template>
     <div v-if="items.length" class="flex flex-wrap items-center gap-2">
-        <span class="text-sm text-slate-500">Active filters:</span>
+        <span class="text-sm text-slate-500">{{ $t('components.active_filters') }}</span>
         <button
             v-for="item in items"
             :key="item.key"
@@ -20,7 +20,7 @@ const emit = defineEmits(['remove', 'clear']);
             <span class="text-slate-400">×</span>
         </button>
         <button type="button" class="text-xs font-medium text-blue-600 hover:text-blue-700" @click="emit('clear')">
-            Clear all
+            {{ $t('components.clear_all') }}
         </button>
     </div>
 </template>

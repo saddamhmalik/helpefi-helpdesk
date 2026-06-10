@@ -1,0 +1,320 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Helpdesk API",
+    "version": "1.0.0",
+    "description": "REST API for the Helpdesk workspace. Authenticate via POST /auth/login to obtain a bearer token."
+  },
+  "servers": [
+    {
+      "url": "https://{workspace}.example.com/api/v1",
+      "description": "Tenant workspace",
+      "variables": {
+        "workspace": {
+          "default": "demo"
+        }
+      }
+    }
+  ],
+  "tags": [
+    { "name": "Auth", "description": "Agent authentication" },
+    { "name": "Tickets", "description": "Ticket CRUD and actions" },
+    { "name": "Ticket statuses", "description": "Custom workflow statuses" },
+    { "name": "Workspace", "description": "Agent inbox and realtime polling" },
+    { "name": "Contacts", "description": "Customers and organizations" },
+    { "name": "Settings", "description": "Helpdesk configuration" },
+    { "name": "Security", "description": "Security, audit, SSO" },
+    { "name": "Messaging", "description": "WhatsApp and SMS via Twilio" },
+    { "name": "Integrations", "description": "Webhooks and marketplace connectors" },
+    { "name": "AI", "description": "Agent assist and triage settings" },
+    { "name": "Knowledge", "description": "Knowledge base articles" },
+    { "name": "Reports", "description": "Analytics and exports" }
+  ],
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "token"
+      }
+    },
+    "schemas": {
+      "TicketStatus": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "name": { "type": "string" },
+          "slug": { "type": "string" },
+          "color": { "type": "string" },
+          "sort_order": { "type": "integer" },
+          "is_closed": { "type": "boolean" }
+        }
+      },
+      "SnoozeRequest": {
+        "type": "object",
+        "properties": {
+          "minutes": { "type": "integer", "minimum": 15, "maximum": 10080 },
+          "until": { "type": "string", "format": "date-time" }
+        }
+      }
+    }
+  },
+  "security": [{ "bearerAuth": [] }],
+  "paths": {
+    "/auth/login": {
+      "post": {
+        "tags": ["Auth"],
+        "security": [],
+        "summary": "Obtain API token",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["email", "password"],
+                "properties": {
+                  "email": { "type": "string", "format": "email" },
+                  "password": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Token issued" }
+        }
+      }
+    },
+    "/auth/me": {
+      "get": {
+        "tags": ["Auth"],
+        "summary": "Current agent profile",
+        "responses": { "200": { "description": "Agent user" } }
+      }
+    },
+    "/tickets": {
+      "get": {
+        "tags": ["Tickets"],
+        "summary": "List tickets",
+        "parameters": [
+          { "name": "status_id", "in": "query", "schema": { "type": "integer" } },
+          { "name": "priority_id", "in": "query", "schema": { "type": "integer" } },
+          { "name": "search", "in": "query", "schema": { "type": "string" } }
+        ],
+        "responses": { "200": { "description": "Paginated tickets" } }
+      },
+      "post": {
+        "tags": ["Tickets"],
+        "summary": "Create ticket",
+        "responses": { "201": { "description": "Ticket created" } }
+      }
+    },
+    "/tickets/bulk": {
+      "post": {
+        "tags": ["Tickets"],
+        "summary": "Bulk ticket actions",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["ticket_ids", "action"],
+                "properties": {
+                  "ticket_ids": { "type": "array", "items": { "type": "integer" }, "maxItems": 100 },
+                  "action": { "type": "string", "enum": ["assign", "status", "priority", "close", "snooze"] },
+                  "assigned_to": { "type": "integer", "nullable": true },
+                  "ticket_status_id": { "type": "integer" },
+                  "ticket_priority_id": { "type": "integer" },
+                  "minutes": { "type": "integer", "minimum": 15, "maximum": 10080 },
+                  "until": { "type": "string", "format": "date-time" }
+                }
+              }
+            }
+          }
+        },
+        "responses": { "200": { "description": "Bulk result with updated and failed counts" } }
+      }
+    },
+    "/tickets/{ticket}": {
+      "get": {
+        "tags": ["Tickets"],
+        "summary": "Show ticket",
+        "parameters": [{ "name": "ticket", "in": "path", "required": true, "schema": { "type": "integer" } }],
+        "responses": { "200": { "description": "Ticket detail" } }
+      },
+      "put": {
+        "tags": ["Tickets"],
+        "summary": "Update ticket",
+        "parameters": [{ "name": "ticket", "in": "path", "required": true, "schema": { "type": "integer" } }],
+        "responses": { "200": { "description": "Updated ticket" } }
+      }
+    },
+    "/tickets/{ticket}/reply": {
+      "post": {
+        "tags": ["Tickets"],
+        "summary": "Reply to ticket",
+        "parameters": [{ "name": "ticket", "in": "path", "required": true, "schema": { "type": "integer" } }],
+        "responses": { "200": { "description": "Message created" } }
+      }
+    },
+    "/ticket-statuses": {
+      "get": {
+        "tags": ["Ticket statuses"],
+        "summary": "List ticket statuses",
+        "responses": {
+          "200": {
+            "description": "Status list",
+            "content": {
+              "application/json": {
+                "schema": { "type": "array", "items": { "$ref": "#/components/schemas/TicketStatus" } }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Ticket statuses"],
+        "summary": "Create ticket status",
+        "responses": { "201": { "description": "Status created" } }
+      }
+    },
+    "/ticket-statuses/{status}": {
+      "put": {
+        "tags": ["Ticket statuses"],
+        "summary": "Update ticket status",
+        "parameters": [{ "name": "status", "in": "path", "required": true, "schema": { "type": "integer" } }],
+        "responses": { "200": { "description": "Status updated" } }
+      },
+      "delete": {
+        "tags": ["Ticket statuses"],
+        "summary": "Delete ticket status",
+        "parameters": [{ "name": "status", "in": "path", "required": true, "schema": { "type": "integer" } }],
+        "responses": { "200": { "description": "Status deleted" } }
+      }
+    },
+    "/workspace/queue": {
+      "get": {
+        "tags": ["Workspace"],
+        "summary": "Inbox queue",
+        "responses": { "200": { "description": "Paginated queue (excludes snoozed tickets)" } }
+      }
+    },
+    "/workspace/tickets/{ticket}": {
+      "get": {
+        "tags": ["Workspace"],
+        "summary": "Workspace ticket snapshot",
+        "parameters": [{ "name": "ticket", "in": "path", "required": true, "schema": { "type": "integer" } }],
+        "responses": { "200": { "description": "Ticket" } }
+      },
+      "patch": {
+        "tags": ["Workspace"],
+        "summary": "Quick update status, priority, assignee",
+        "parameters": [{ "name": "ticket", "in": "path", "required": true, "schema": { "type": "integer" } }],
+        "responses": { "200": { "description": "Updated ticket" } }
+      }
+    },
+    "/workspace/tickets/{ticket}/snooze": {
+      "post": {
+        "tags": ["Workspace"],
+        "summary": "Snooze ticket",
+        "parameters": [{ "name": "ticket", "in": "path", "required": true, "schema": { "type": "integer" } }],
+        "requestBody": {
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/SnoozeRequest" } }
+          }
+        },
+        "responses": { "200": { "description": "Snoozed ticket" } }
+      },
+      "delete": {
+        "tags": ["Workspace"],
+        "summary": "Unsnooze ticket",
+        "parameters": [{ "name": "ticket", "in": "path", "required": true, "schema": { "type": "integer" } }],
+        "responses": { "200": { "description": "Unsnoozed ticket" } }
+      }
+    },
+    "/contacts": {
+      "get": { "tags": ["Contacts"], "summary": "List contacts", "responses": { "200": { "description": "Contact list" } } },
+      "post": { "tags": ["Contacts"], "summary": "Create contact", "responses": { "201": { "description": "Contact created" } } }
+    },
+    "/contacts/{contact}/timeline": {
+      "get": {
+        "tags": ["Contacts"],
+        "summary": "Customer 360 timeline",
+        "parameters": [{ "name": "contact", "in": "path", "required": true, "schema": { "type": "integer" } }],
+        "responses": { "200": { "description": "Unified timeline events" } }
+      }
+    },
+    "/settings/helpdesk": {
+      "get": { "tags": ["Settings"], "summary": "Helpdesk settings", "responses": { "200": { "description": "Settings snapshot" } } },
+      "put": { "tags": ["Settings"], "summary": "Update helpdesk settings", "responses": { "200": { "description": "Updated settings" } } }
+    },
+    "/security": {
+      "get": { "tags": ["Security"], "summary": "Security settings", "responses": { "200": { "description": "Security snapshot" } } },
+      "put": { "tags": ["Security"], "summary": "Update security settings", "responses": { "200": { "description": "Updated settings" } } }
+    },
+    "/security/sso": {
+      "get": { "tags": ["Security"], "summary": "SSO settings", "responses": { "200": { "description": "SSO snapshot" } } },
+      "put": { "tags": ["Security"], "summary": "Update SSO settings", "responses": { "200": { "description": "Updated SSO settings" } } }
+    },
+    "/messaging/settings": {
+      "get": { "tags": ["Messaging"], "summary": "Twilio messaging settings", "responses": { "200": { "description": "Messaging snapshot" } } },
+      "put": { "tags": ["Messaging"], "summary": "Update messaging settings", "responses": { "200": { "description": "Updated settings" } } }
+    },
+    "/integrations/webhooks": {
+      "get": { "tags": ["Integrations"], "summary": "List outbound webhooks", "responses": { "200": { "description": "Webhooks" } } },
+      "post": { "tags": ["Integrations"], "summary": "Create webhook", "responses": { "201": { "description": "Webhook created" } } }
+    },
+    "/integrations/connections": {
+      "get": { "tags": ["Integrations"], "summary": "Marketplace connection status", "responses": { "200": { "description": "Connections" } } }
+    },
+    "/integrations/connections/{provider}": {
+      "put": {
+        "tags": ["Integrations"],
+        "summary": "Update integration connection",
+        "parameters": [{ "name": "provider", "in": "path", "required": true, "schema": { "type": "string", "enum": ["slack", "jira", "linear", "shopify", "hubspot", "salesforce", "microsoft_teams", "zapier"] } }],
+        "responses": { "200": { "description": "Connection updated" } }
+      }
+    },
+    "/integrations/connections/{provider}/test": {
+      "post": {
+        "tags": ["Integrations"],
+        "summary": "Test integration connection",
+        "parameters": [{ "name": "provider", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": { "200": { "description": "Test result" } }
+      }
+    },
+    "/ai/settings": {
+      "get": { "tags": ["AI"], "summary": "AI settings including triage and deflection", "responses": { "200": { "description": "AI settings" } } },
+      "put": { "tags": ["AI"], "summary": "Update AI settings", "responses": { "200": { "description": "Updated settings" } } }
+    },
+    "/ai/tickets/{ticket}/suggest-reply": {
+      "post": {
+        "tags": ["AI"],
+        "summary": "Suggest agent reply",
+        "parameters": [{ "name": "ticket", "in": "path", "required": true, "schema": { "type": "integer" } }],
+        "responses": { "200": { "description": "Suggested reply" } }
+      }
+    },
+    "/knowledge/settings": {
+      "get": { "tags": ["Knowledge"], "summary": "KB locale settings", "responses": { "200": { "description": "Enabled locales and default" } } },
+      "put": { "tags": ["Knowledge"], "summary": "Update KB locales", "responses": { "200": { "description": "Updated locale settings" } } }
+    },
+    "/knowledge/articles": {
+      "get": { "tags": ["Knowledge"], "summary": "List KB articles", "responses": { "200": { "description": "Articles" } } },
+      "post": { "tags": ["Knowledge"], "summary": "Create article", "responses": { "201": { "description": "Article created" } } }
+    },
+    "/reports/dashboard": {
+      "get": { "tags": ["Reports"], "summary": "Dashboard metrics", "responses": { "200": { "description": "Dashboard data" } } }
+    },
+    "/search": {
+      "get": {
+        "tags": ["Reports"],
+        "summary": "Global search",
+        "parameters": [{ "name": "q", "in": "query", "required": true, "schema": { "type": "string" } }],
+        "responses": { "200": { "description": "Search results" } }
+      }
+    }
+  }
+}

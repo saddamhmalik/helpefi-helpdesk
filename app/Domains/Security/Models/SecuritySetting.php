@@ -10,6 +10,9 @@ class SecuritySetting extends Model
         'mfa_required_for_agents',
         'audit_retention_days',
         'closed_ticket_retention_days',
+        'sso_enabled',
+        'sso_protocol',
+        'sso_config',
     ];
 
     protected function casts(): array
@@ -18,6 +21,8 @@ class SecuritySetting extends Model
             'mfa_required_for_agents' => 'boolean',
             'audit_retention_days' => 'integer',
             'closed_ticket_retention_days' => 'integer',
+            'sso_enabled' => 'boolean',
+            'sso_config' => 'encrypted:array',
         ];
     }
 }

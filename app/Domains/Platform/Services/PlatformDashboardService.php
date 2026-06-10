@@ -18,13 +18,14 @@ class PlatformDashboardService
         private PlatformTenantService $tenantService,
         private PlatformPaymentService $payments,
         private CentralSettingsService $settings,
+        private PlatformExecutiveMetricsService $executiveMetrics,
     ) {
     }
 
     public function snapshot(PlatformUser $user): array
     {
         $data = [
-            'stripe_enabled' => (bool) config('stripe.enabled'),
+            'stripe_enabled' => (bool) config('stripe.configured'),
         ];
 
         if ($this->authorization->allows($user, 'tenants.view')) {
@@ -32,6 +33,7 @@ class PlatformDashboardService
             $data['recent_workspaces'] = $this->tenants->recent(6)
                 ->map(fn (Tenant $tenant) => $this->tenantService->presentForList($tenant))
                 ->all();
+            $data['executive_metrics'] = $this->executiveMetrics->snapshot();
         }
 
         if ($this->authorization->allows($user, 'users.view')) {

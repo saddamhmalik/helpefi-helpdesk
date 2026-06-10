@@ -2,6 +2,8 @@
 
 namespace App\Domains\Notifications\Notifications;
 
+use App\Domains\Channels\Models\EmailTemplate;
+use App\Domains\Channels\Services\EmailTemplateService;
 use App\Domains\Notifications\Repositories\NotificationSettingRepository;
 use App\Domains\Tickets\Models\Ticket;
 use Illuminate\Bus\Queueable;
@@ -38,10 +40,18 @@ class CustomerReplyNotification extends Notification implements ShouldQueue
 
     public function toMail(object $notifiable): MailMessage
     {
-        return (new MailMessage)
-            ->subject("Customer reply: {$this->ticket->number}")
-            ->line("A customer replied on {$this->ticket->number}.")
-            ->line($this->preview)
-            ->action('View ticket', url('/tickets/'.$this->ticket->id));
+        return app(EmailTemplateService::class)->mailMessage(
+            EmailTemplate::SLUG_CUSTOMER_REPLY,
+            [
+                'ticket_number' => $this->ticket->number,
+                'message_preview' => $this->preview,
+                'action_url' => url('/tickets/'.$this->ticket->id),
+            ],
+            fn () => (new MailMessage)
+                ->subject("Customer reply: {$this->ticket->number}")
+                ->line("A customer replied on {$this->ticket->number}.")
+                ->line($this->preview)
+                ->action('View ticket', url('/tickets/'.$this->ticket->id)),
+        );
     }
 }

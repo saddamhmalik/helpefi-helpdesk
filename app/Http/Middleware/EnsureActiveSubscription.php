@@ -2,22 +2,26 @@
 
 namespace App\Http\Middleware;
 
-use App\Domains\Billing\Models\Subscription;
+use App\Domains\Billing\Repositories\SubscriptionRepository;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 class EnsureActiveSubscription
 {
+    public function __construct(private SubscriptionRepository $subscriptions)
+    {
+    }
+
     public function handle(Request $request, Closure $next): Response
     {
         if (! tenant('id') || ! $request->user()) {
             return $next($request);
         }
 
-        $subscription = Subscription::query()->where('tenant_id', tenant('id'))->first();
+        $subscription = $this->subscriptions->current();
 
-        if (! $subscription || $subscription->isAccessible()) {
+        if ($subscription->isAccessible()) {
             return $next($request);
         }
 

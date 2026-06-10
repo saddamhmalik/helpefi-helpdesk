@@ -3,11 +3,15 @@
 namespace App\Domains\Auth\Controllers;
 
 use App\Domains\Auth\Services\ProfileService;
+use App\Domains\Auth\Services\UserPreferenceService;
 use App\Domains\Security\Services\SecuritySettingService;
 use App\Domains\Security\Services\TwoFactorService;
+use App\Domains\Sla\Services\BusinessHoursService;
 use App\Http\Controllers\Controller;
+use App\Support\LocaleSupport;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -16,6 +20,8 @@ class ProfileController extends Controller
 {
     public function __construct(
         private ProfileService $profileService,
+        private UserPreferenceService $preferences,
+        private BusinessHoursService $businessHours,
         private TwoFactorService $twoFactor,
         private SecuritySettingService $security,
     ) {
@@ -28,19 +34,29 @@ class ProfileController extends Controller
         return Inertia::render('Settings/Profile', [
             'twoFactor' => $this->twoFactor->status($user),
             'mfaRequired' => $this->security->userMustEnrollMfa($user),
+            'locale' => $this->preferences->locale($user),
+            'storedTimezone' => $user->timezone,
+            'localeOptions' => LocaleSupport::options(),
+            'timezoneOptions' => $this->businessHours->timezoneOptions(),
         ]);
     }
 
     public function update(Request $request): RedirectResponse
     {
+        if ($request->input('timezone') === '') {
+            $request->merge(['timezone' => null]);
+        }
+
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255'],
+            'locale' => ['required', 'string', Rule::in(LocaleSupport::APP_LOCALES)],
+            'timezone' => ['nullable', 'string', 'timezone:all'],
         ]);
 
         $this->profileService->update($request->user(), $data);
 
-        return back()->with('success', 'Profile updated.');
+        return back()->with('success', __('messages.profile_updated'));
     }
 
     public function updatePassword(Request $request): RedirectResponse
@@ -56,6 +72,6 @@ class ProfileController extends Controller
             $data['password'],
         );
 
-        return back()->with('success', 'Password updated.');
+        return back()->with('success', __('messages.password_updated'));
     }
 }

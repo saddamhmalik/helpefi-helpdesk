@@ -1,0 +1,114 @@
+<script setup>
+import { Head, Link, router } from '@inertiajs/vue3';
+import { computed } from 'vue';
+import AgentLayout from '../../Layouts/AgentLayout.vue';
+import ServiceDeskNav from '../../Components/ServiceDeskNav.vue';
+import PageHeader from '../../Components/PageHeader.vue';
+import { useI18n } from 'vue-i18n';
+import { useDateTime } from '../../composables/useDateTime.js';
+
+const props = defineProps({
+    from: String,
+    to: String,
+    entries: Array,
+    riskOptions: Array,
+});
+
+const { formatDateTime, formatDate } = useDateTime();
+
+const { t } = useI18n();
+
+const monthLabel = computed(() => {
+    const date = new Date(`${props.from}T00:00:00`);
+
+    return formatDate(date, { month: 'long', year: 'numeric' });
+});
+
+const shiftMonth = (delta) => {
+    const start = new Date(`${props.from}T00:00:00`);
+    start.setMonth(start.getMonth() + delta);
+
+    const end = new Date(start.getFullYear(), start.getMonth() + 1, 0);
+
+    router.get('/service-desk/changes/calendar', {
+        from: start.toISOString().slice(0, 10),
+        to: end.toISOString().slice(0, 10),
+    }, { preserveState: true, replace: true });
+};
+
+const riskBadgeClass = (risk) => {
+    if (risk === 'critical') return 'bg-red-100 text-red-800';
+    if (risk === 'high') return 'bg-orange-100 text-orange-800';
+    if (risk === 'low') return 'bg-emerald-100 text-emerald-800';
+
+    return 'bg-amber-100 text-amber-800';
+};
+
+const formatRange = (entry) => {
+    if (!entry.planned_start) {
+        return t('service_desk.unscheduled');
+    }
+
+    const start = new Date(entry.planned_start);
+    const end = entry.planned_end ? new Date(entry.planned_end) : null;
+    const startText = formatDateTime(start, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+
+    if (!end) {
+        return startText;
+    }
+
+    const endText = formatDateTime(end, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+
+    return `${startText} → ${endText}`;
+};
+</script>
+
+<template>
+    <Head :title="$t('service_desk.change_calendar')" />
+    <AgentLayout>
+        <PageHeader :title="$t('service_desk.change_calendar')" :description="$t('service_desk.scheduled_changes_across_your_service_desk')" />
+
+        <ServiceDeskNav />
+
+        <div class="mb-4 flex items-center justify-between gap-3">
+            <button type="button" class="rounded-lg bg-white px-3 py-1.5 text-sm font-medium text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50" @click="shiftMonth(-1)">{{ $t('service_desk.previous') }}</button>
+            <h2 class="text-sm font-semibold text-slate-900">{{ monthLabel }}</h2>
+            <button type="button" class="rounded-lg bg-white px-3 py-1.5 text-sm font-medium text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50" @click="shiftMonth(1)">{{ $t('service_desk.next') }}</button>
+        </div>
+
+        <div class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+            <table class="min-w-full divide-y divide-slate-100">
+                <thead class="bg-slate-50">
+                    <tr>
+                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('service_desk.change') }}</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('service_desk.schedule') }}</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('service_desk.risk') }}</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('service_desk.assignee') }}</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('service_desk.status') }}</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                    <tr v-for="entry in entries" :key="entry.id" class="hover:bg-slate-50">
+                        <td class="px-4 py-3">
+                            <Link :href="`/tickets/${entry.ticket_id}`" class="font-medium text-blue-600 hover:text-blue-700">
+                                {{ entry.number }}
+                            </Link>
+                            <p class="mt-0.5 max-w-md truncate text-sm text-slate-700">{{ entry.subject }}</p>
+                        </td>
+                        <td class="px-4 py-3 text-sm text-slate-600">{{ formatRange(entry) }}</td>
+                        <td class="px-4 py-3">
+                            <span class="rounded-full px-2 py-0.5 text-xs font-medium capitalize" :class="riskBadgeClass(entry.risk)">
+                                {{ entry.risk }}
+                            </span>
+                        </td>
+                        <td class="px-4 py-3 text-sm text-slate-600">{{ entry.assignee || '—' }}</td>
+                        <td class="px-4 py-3 text-sm text-slate-600">{{ entry.status || '—' }}</td>
+                    </tr>
+                    <tr v-if="!entries?.length">
+                        <td colspan="5" class="px-4 py-12 text-center text-sm text-slate-500">No scheduled changes in this period.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </AgentLayout>
+</template>

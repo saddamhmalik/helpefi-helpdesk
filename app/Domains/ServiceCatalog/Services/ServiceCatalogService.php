@@ -3,11 +3,13 @@
 namespace App\Domains\ServiceCatalog\Services;
 
 use App\Domains\Brands\Support\BrandContext;
+use App\Domains\Billing\Services\BillingService;
 use App\Domains\Channels\Services\ChannelService;
 use App\Domains\Contacts\Services\ContactService;
 use App\Domains\ServiceCatalog\Models\ServiceCatalogItem;
 use App\Domains\ServiceCatalog\Repositories\ServiceCatalogItemRepository;
 use App\Domains\ServiceCatalog\Repositories\ServiceCategoryRepository;
+use App\Domains\ServiceDesk\Services\ApprovalService;
 use App\Domains\Tickets\Models\Ticket;
 use App\Domains\Tickets\Services\TicketService;
 use App\Models\User;
@@ -24,6 +26,8 @@ class ServiceCatalogService
         private TicketService $tickets,
         private ChannelService $channels,
         private BrandContext $brandContext,
+        private BillingService $billing,
+        private ApprovalService $approvals,
     ) {
     }
 
@@ -42,7 +46,7 @@ class ServiceCatalogService
         return $this->items->findPublicBySlug($slug);
     }
 
-    public function meta(Collection $priorities): array
+    public function meta(Collection $priorities, Collection $agents): array
     {
         return [
             'ticket_types' => [
@@ -57,11 +61,14 @@ class ServiceCatalogService
                 ['value' => 'select', 'label' => 'Select'],
             ],
             'priorities' => $priorities,
+            'agents' => $agents,
         ];
     }
 
     public function createCategory(array $data): Collection
     {
+        $this->billing->assertFeature('service_catalog');
+
         $this->categories->create($this->validatedCategory($data));
 
         return $this->categories->allWithItems();
@@ -69,6 +76,8 @@ class ServiceCatalogService
 
     public function updateCategory(int $id, array $data): Collection
     {
+        $this->billing->assertFeature('service_catalog');
+
         $this->categories->update($this->categories->find($id), $this->validatedCategory($data));
 
         return $this->categories->allWithItems();
@@ -76,6 +85,8 @@ class ServiceCatalogService
 
     public function deleteCategory(int $id): Collection
     {
+        $this->billing->assertFeature('service_catalog');
+
         $this->categories->delete($this->categories->find($id));
 
         return $this->categories->allWithItems();
@@ -83,6 +94,8 @@ class ServiceCatalogService
 
     public function createItem(array $data): Collection
     {
+        $this->billing->assertFeature('service_catalog');
+
         $this->items->create($this->validatedItem($data));
 
         return $this->categories->allWithItems();
@@ -90,6 +103,8 @@ class ServiceCatalogService
 
     public function updateItem(int $id, array $data): Collection
     {
+        $this->billing->assertFeature('service_catalog');
+
         $this->items->update($this->items->find($id), $this->validatedItem($data));
 
         return $this->categories->allWithItems();
@@ -97,6 +112,8 @@ class ServiceCatalogService
 
     public function deleteItem(int $id): Collection
     {
+        $this->billing->assertFeature('service_catalog');
+
         $this->items->delete($this->items->find($id));
 
         return $this->categories->allWithItems();
@@ -104,6 +121,8 @@ class ServiceCatalogService
 
     public function submitRequest(string $slug, array $data, ?User $user = null): Ticket
     {
+        $this->billing->assertFeature('service_catalog');
+
         $item = $this->items->findPublicBySlug($slug);
         $payload = $this->validatedSubmission($item, $data, $user);
 
@@ -134,7 +153,11 @@ class ServiceCatalogService
             'brand_id' => $this->brandContext->id(),
             'type' => $item->ticket_type,
             'service_catalog_item_id' => $item->id,
-        ]);
+        ], $user?->id);
+
+        if ($item->requires_approval && $this->billing->canUseFeature('service_desk')) {
+            $this->approvals->startFromCatalog($ticket, $item, $user);
+        }
 
         return $this->tickets->show($ticket->id);
     }
@@ -172,7 +195,26 @@ class ServiceCatalogService
             'sort_order' => ['integer', 'min:0'],
             'is_public' => ['boolean'],
             'is_active' => ['boolean'],
+            'requires_approval' => ['boolean'],
+            'approver_user_ids' => ['nullable', 'array'],
+            'approver_user_ids.*' => ['integer', 'exists:users,id'],
         ]);
+
+        if (($validated['requires_approval'] ?? false) && empty($validated['approver_user_ids'])) {
+            throw ValidationException::withMessages([
+                'approver_user_ids' => 'Select at least one approver when approval is required.',
+            ]);
+        }
+
+        $validated['approver_user_ids'] = collect($validated['approver_user_ids'] ?? [])
+            ->map(fn ($id) => (int) $id)
+            ->unique()
+            ->values()
+            ->all();
+
+        if (! ($validated['requires_approval'] ?? false)) {
+            $validated['approver_user_ids'] = [];
+        }
 
         $validated['fields'] = collect($validated['fields'] ?? [])
             ->map(fn (array $field) => [

@@ -1,7 +1,9 @@
 <script setup>
 import { Link, router, useForm } from '@inertiajs/vue3';
 import { computed } from 'vue';
-import SettingsLayout from '../../Layouts/SettingsLayout.vue';
+import SettingsPage from '../../Components/SettingsPage.vue';
+import { useI18n } from 'vue-i18n';
+import { useDateTime } from '../../composables/useDateTime.js';
 
 const props = defineProps({
     auditLogs: Object,
@@ -9,6 +11,10 @@ const props = defineProps({
     eventLabels: Object,
     summary: Object,
 });
+
+const { formatDateTime } = useDateTime();
+
+const { t } = useI18n();
 
 const filterForm = useForm({
     event: props.filters.event ?? '',
@@ -62,9 +68,9 @@ const formatProperties = (properties) => {
 </script>
 
 <template>
-    <SettingsLayout
-        title="Audit logs"
-        description="Track sign-ins, ticket changes, settings updates, and other activity across the helpdesk."
+    <SettingsPage
+        :title="$t('settings.audit_logs')"
+        :description="$t('settings_audit_logs.track_sign-ins_ticket_changes_settings_updates_and_other_activity_acro')"
     >
         <div class="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <div
@@ -72,7 +78,7 @@ const formatProperties = (properties) => {
                 :key="event"
                 class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"
             >
-                <p class="text-xs font-medium uppercase tracking-wide text-slate-500">7 days</p>
+                <p class="text-xs font-medium uppercase tracking-wide text-slate-500">{{ $t('settings_audit_logs.7_days') }}</p>
                 <p class="mt-1 text-sm font-medium text-slate-900">{{ eventLabel(event) }}</p>
                 <p class="mt-2 text-2xl font-semibold text-slate-900">{{ total }}</p>
             </div>
@@ -84,21 +90,17 @@ const formatProperties = (properties) => {
         <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
             <div class="mb-4 flex flex-wrap items-end gap-3">
                 <div>
-                    <label class="mb-1 block text-sm font-medium text-slate-700">Event</label>
+                    <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('settings_audit_logs.event') }}</label>
                     <input v-model="filterForm.event" type="text" class="rounded-lg border border-slate-300 px-3 py-2 text-sm" placeholder="ticket.updated" />
                 </div>
                 <div>
-                    <label class="mb-1 block text-sm font-medium text-slate-700">Search</label>
-                    <input v-model="filterForm.search" type="text" class="rounded-lg border border-slate-300 px-3 py-2 text-sm" placeholder="Email, event, subject id" />
+                    <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('common.search') }}</label>
+                    <input v-model="filterForm.search" type="text" class="rounded-lg border border-slate-300 px-3 py-2 text-sm" :placeholder="$t('settings_audit_logs.email_event_subject_id')" />
                 </div>
-                <button type="button" class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50" @click="applyFilters">
-                    Filter
-                </button>
-                <button type="button" class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50" @click="clearFilters">
-                    Clear
-                </button>
+                <button type="button" class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50" @click="applyFilters">{{ $t('settings_audit_logs.filter') }}</button>
+                <button type="button" class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50" @click="clearFilters">{{ $t('settings_audit_logs.clear') }}</button>
                 <a :href="exportUrl" class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">
-                    Export CSV
+                    {{ $t('settings_audit_logs.export_csv') }}
                 </a>
             </div>
 
@@ -106,17 +108,17 @@ const formatProperties = (properties) => {
                 <table class="min-w-full text-sm">
                     <thead>
                         <tr class="border-b border-slate-200 text-left text-slate-500">
-                            <th class="px-3 py-2 font-medium">When</th>
-                            <th class="px-3 py-2 font-medium">Event</th>
-                            <th class="px-3 py-2 font-medium">Actor</th>
-                            <th class="px-3 py-2 font-medium">Subject</th>
-                            <th class="px-3 py-2 font-medium">Details</th>
-                            <th class="px-3 py-2 font-medium">IP</th>
+                            <th class="px-3 py-2 font-medium">{{ $t('settings_audit_logs.when') }}</th>
+                            <th class="px-3 py-2 font-medium">{{ $t('settings_audit_logs.event') }}</th>
+                            <th class="px-3 py-2 font-medium">{{ $t('settings_audit_logs.actor') }}</th>
+                            <th class="px-3 py-2 font-medium">{{ $t('settings_audit_logs.subject') }}</th>
+                            <th class="px-3 py-2 font-medium">{{ $t('settings_audit_logs.details') }}</th>
+                            <th class="px-3 py-2 font-medium">{{ $t('settings_audit_logs.ip') }}</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr v-for="log in auditLogs.data" :key="log.id" class="border-b border-slate-100 align-top">
-                            <td class="px-3 py-2 whitespace-nowrap text-slate-600">{{ new Date(log.created_at).toLocaleString() }}</td>
+                            <td class="px-3 py-2 whitespace-nowrap text-slate-600">{{ formatDateTime(log.created_at) }}</td>
                             <td class="px-3 py-2">
                                 <p class="font-medium text-slate-900">{{ eventLabel(log.event) }}</p>
                                 <p class="text-xs text-slate-500">{{ log.event }}</p>
@@ -147,5 +149,5 @@ const formatProperties = (properties) => {
                 />
             </div>
         </div>
-    </SettingsLayout>
+    </SettingsPage>
 </template>

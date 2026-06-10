@@ -4,6 +4,9 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
+use Illuminate\Session\TokenMismatchException;
+use Inertia\Inertia;
+use Symfony\Component\HttpFoundation\Response;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -31,13 +34,16 @@ return Application::configure(basePath: dirname(__DIR__))
             'platform.permission' => \App\Http\Middleware\EnsurePlatformPermission::class,
             'tenant.not_blocked' => \App\Http\Middleware\EnsureTenantNotBlocked::class,
             'tenant.custom_domain_redirect' => \App\Http\Middleware\RedirectToCustomDomain::class,
+            'portal.locale' => \App\Http\Middleware\ResolvePortalLocale::class,
         ]);
 
         $middleware->web(prepend: [
             \App\Http\Middleware\InitializeTenancyWhenNotCentral::class,
+            \App\Http\Middleware\RewriteUnscopedPortalUrl::class,
         ]);
 
         $middleware->web(append: [
+            \App\Http\Middleware\SetUserLocale::class,
             \App\Http\Middleware\HandleInertiaRequests::class,
         ]);
 
@@ -49,4 +55,38 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->shouldRenderJsonWhen(
             fn (Request $request) => $request->is('api/*'),
         );
+
+        $exceptions->render(function (TokenMismatchException $exception, Request $request) {
+            if ($request->header('X-Inertia')) {
+                return Inertia::location($request->fullUrl());
+            }
+
+            if ($request->expectsJson()) {
+                return response()->json(['message' => 'Page expired.'], 419);
+            }
+
+            return null;
+        });
+
+        $exceptions->respond(function (Response $response, \Throwable $exception, Request $request) {
+            if ($request->is('api/*') || $request->expectsJson()) {
+                return $response;
+            }
+
+            $status = $response->getStatusCode();
+
+            if (! in_array($status, [403, 404, 419, 429, 500, 503], true)) {
+                return $response;
+            }
+
+            $page = match (true) {
+                $status === 404 => 'Error/NotFound',
+                in_array($status, [500, 503], true) => 'Error/ServerError',
+                default => 'Error/Generic',
+            };
+
+            return Inertia::render($page, [
+                'status' => $status,
+            ])->toResponse($request)->setStatusCode($status);
+        });
     })->create();

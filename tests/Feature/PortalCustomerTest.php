@@ -22,7 +22,7 @@ class PortalCustomerTest extends TestCase
             'email' => 'portal@example.com',
             'password' => 'password123',
             'password_confirmation' => 'password123',
-        ])->assertRedirect(route('portal.my-tickets'));
+        ])->assertRedirect(route('portal.my-tickets', ['brand' => 'default']));
 
         $this->assertAuthenticated();
         $this->assertDatabaseHas('users', ['email' => 'portal@example.com']);
@@ -64,7 +64,7 @@ class PortalCustomerTest extends TestCase
         $this->post('/portal/login', [
             'email' => 'jane@example.com',
             'password' => 'password',
-        ])->assertRedirect(route('portal.my-tickets'));
+        ])->assertRedirect(route('portal.my-tickets', ['brand' => 'default']));
 
         $this->actingAs($user)
             ->get('/portal/my-tickets')
@@ -72,6 +72,15 @@ class PortalCustomerTest extends TestCase
             ->assertInertia(fn ($page) => $page
                 ->component('Portal/MyTickets')
                 ->has('tickets.data', 1));
+
+        $ticket = Ticket::query()->where('contact_id', $contact->id)->first();
+
+        $this->actingAs($user)
+            ->get("/portal/default/my-tickets/{$ticket->id}")
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('Portal/MyTicket')
+                ->where('ticket.id', $ticket->id));
     }
 
     public function test_agent_cannot_use_portal_login(): void

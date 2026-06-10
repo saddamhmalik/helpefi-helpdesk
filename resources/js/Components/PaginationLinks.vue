@@ -12,7 +12,7 @@ defineProps({
 <template>
     <div v-if="links?.length > 3" class="flex flex-wrap items-center justify-between gap-3">
         <p v-if="from != null && to != null && total != null" class="text-sm text-slate-500">
-            Showing {{ from }}–{{ to }} of {{ total }}
+            {{ $t('components.pagination_showing', { from, to, total }) }}
         </p>
         <div class="flex flex-wrap gap-1">
             <Link

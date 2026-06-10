@@ -54,15 +54,16 @@ class StripeCatalogRepository
         ]);
     }
 
-    public function createRecurringPrice(string $productId, int $amountCents, string $currency, string $slug): object
+    public function createRecurringPrice(string $productId, int $amountCents, string $currency, string $slug, string $interval = 'month'): object
     {
         return $this->client()->prices->create([
             'product' => $productId,
             'unit_amount' => $amountCents,
             'currency' => strtolower($currency),
-            'recurring' => ['interval' => 'month'],
+            'recurring' => ['interval' => $interval],
             'metadata' => [
                 'plan_slug' => $slug,
+                'billing_interval' => $interval,
                 'managed_by' => 'helpdesk',
             ],
         ]);

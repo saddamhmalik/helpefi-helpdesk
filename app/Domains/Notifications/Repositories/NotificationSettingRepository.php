@@ -13,6 +13,7 @@ class NotificationSettingRepository
             'notify_ticket_assigned' => true,
             'notify_customer_reply' => true,
             'notify_sla_breach' => true,
+            'notify_approval_pending' => true,
         ]);
     }
 
@@ -31,6 +32,7 @@ class NotificationSettingRepository
             'ticket_assigned' => $setting->notify_ticket_assigned,
             'customer_reply' => $setting->notify_customer_reply,
             'sla_breach' => $setting->notify_sla_breach,
+            'approval_pending' => $setting->notify_approval_pending,
             default => false,
         };
 

@@ -1,14 +1,17 @@
 <script setup>
 import { Link } from '@inertiajs/vue3';
-import { onMounted, onUnmounted, ref } from 'vue';
+import { computed, onMounted, onUnmounted, ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 
 defineProps({
     brand: { type: String, default: 'Helpdesk' },
     trialDays: { type: Number, default: 14 },
     transparentNav: { type: Boolean, default: false },
     showFooter: { type: Boolean, default: true },
+    showPromoBar: { type: Boolean, default: true },
 });
 
+const { t } = useI18n();
 const mobileOpen = ref(false);
 const scrolled = ref(false);
 
@@ -25,17 +28,29 @@ onUnmounted(() => {
     window.removeEventListener('scroll', onScroll);
 });
 
-const navLinks = [
-    { href: '/#product', label: 'Product' },
-    { href: '/#features', label: 'Features' },
-    { href: '/#how-it-works', label: 'How it works' },
-    { href: '/#pricing', label: 'Pricing' },
-    { href: '/#faq', label: 'FAQ' },
-];
+const navLinks = computed(() => [
+    { href: '/#product', label: t('layouts.central.product') },
+    { href: '/#differentiators', label: t('layouts.central.why_us') },
+    { href: '/#features', label: t('layouts.central.features') },
+    { href: '/#how-it-works', label: t('layouts.central.how_it_works') },
+    { href: '/#pricing', label: t('layouts.central.pricing') },
+    { href: '/#faq', label: t('layouts.central.faq') },
+]);
 </script>
 
 <template>
     <div class="flex min-h-screen flex-col">
+        <div
+            v-if="showPromoBar && trialDays"
+            class="relative z-50 bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 px-4 py-2.5 text-center text-sm font-medium text-white"
+        >
+            <span>
+                🎉 {{ trialDays }}-day free trial — full platform access, no credit card.
+            </span>
+            <Link href="/register" class="ml-2 font-bold underline underline-offset-2 hover:text-blue-100">
+                Start now →
+            </Link>
+        </div>
         <header
             class="sticky top-0 z-40 border-b backdrop-blur-xl transition-all duration-300"
             :class="[
@@ -80,14 +95,16 @@ const navLinks = [
                         class="rounded-lg px-3 py-2 text-sm font-medium transition"
                         :class="transparentNav && !scrolled ? 'text-slate-200 hover:text-white' : 'text-slate-600 hover:text-slate-900'"
                     >
-                        Sign in
+                        {{ $t('layouts.central.sign_in') }}
                     </Link>
                     <Link
                         href="/register"
-                        class="rounded-xl px-4 py-2 text-sm font-semibold shadow-sm transition"
-                        :class="transparentNav && !scrolled ? 'bg-white text-slate-900 hover:bg-slate-100' : 'bg-blue-600 text-white hover:bg-blue-700'"
+                        class="rounded-xl px-4 py-2 text-sm font-bold shadow-lg transition"
+                        :class="transparentNav && !scrolled
+                            ? 'bg-white text-slate-900 shadow-white/20 hover:bg-blue-50'
+                            : 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-blue-600/30 hover:from-blue-500 hover:to-indigo-500'"
                     >
-                        Start free trial
+                        {{ $t('layouts.central.start_free_trial') }}
                     </Link>
                 </div>
 
@@ -106,11 +123,12 @@ const navLinks = [
                 </button>
             </div>
 
-            <div
-                v-if="mobileOpen"
-                class="border-t px-4 py-4 lg:hidden"
-                :class="transparentNav && !scrolled ? 'border-white/10 bg-slate-950' : 'border-slate-200 bg-white'"
-            >
+            <Transition name="fade">
+                <div
+                    v-if="mobileOpen"
+                    class="border-t px-4 py-4 lg:hidden"
+                    :class="transparentNav && !scrolled ? 'border-white/10 bg-slate-950' : 'border-slate-200 bg-white'"
+                >
                 <nav class="flex flex-col gap-1">
                     <a
                         v-for="link in navLinks"
@@ -123,13 +141,14 @@ const navLinks = [
                         {{ link.label }}
                     </a>
                     <Link href="/login" class="rounded-lg px-3 py-2.5 text-sm font-medium text-slate-600" @click="mobileOpen = false">
-                        Sign in
+                        {{ $t('layouts.central.sign_in') }}
                     </Link>
                     <Link href="/register" class="mt-2 rounded-xl bg-blue-600 px-3 py-2.5 text-center text-sm font-semibold text-white" @click="mobileOpen = false">
-                        Start free trial
+                        {{ $t('layouts.central.start_free_trial') }}
                     </Link>
                 </nav>
-            </div>
+                </div>
+            </Transition>
         </header>
 
         <main class="flex-1">
@@ -142,41 +161,41 @@ const navLinks = [
                     <div class="lg:col-span-1">
                         <p class="text-lg font-semibold text-white">{{ brand }}</p>
                         <p class="mt-3 text-sm leading-relaxed text-slate-400">
-                            Modern customer support software — tickets, chat, knowledge base, and automation in one workspace built for growing teams.
+                            {{ $t('layouts.central.footer_tagline') }}
                         </p>
                     </div>
                     <div>
-                        <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">Product</p>
+                        <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">{{ $t('layouts.central.footer_product') }}</p>
                         <ul class="mt-4 space-y-2.5 text-sm">
-                            <li><a href="/#features" class="transition hover:text-white">Features</a></li>
-                            <li><a href="/#product" class="transition hover:text-white">Platform overview</a></li>
-                            <li><a href="/#pricing" class="transition hover:text-white">Pricing</a></li>
-                            <li><a href="/#faq" class="transition hover:text-white">FAQ</a></li>
+                            <li><a href="/#differentiators" class="transition hover:text-white">{{ $t('layouts.central.why_us') }}</a></li>
+                            <li><a href="/#features" class="transition hover:text-white">{{ $t('layouts.central.features') }}</a></li>
+                            <li><a href="/#product" class="transition hover:text-white">{{ $t('layouts.central.footer_platform_overview') }}</a></li>
+                            <li><a href="/#pricing" class="transition hover:text-white">{{ $t('layouts.central.pricing') }}</a></li>
+                            <li><a href="/#faq" class="transition hover:text-white">{{ $t('layouts.central.faq') }}</a></li>
                         </ul>
                     </div>
                     <div>
-                        <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">Get started</p>
+                        <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">{{ $t('layouts.central.footer_get_started') }}</p>
                         <ul class="mt-4 space-y-2.5 text-sm">
-                            <li><Link href="/register" class="transition hover:text-white">Start free trial</Link></li>
-                            <li><Link href="/login" class="transition hover:text-white">Sign in to workspace</Link></li>
-                            <li><Link href="/admin/login" class="transition hover:text-white">Platform admin</Link></li>
-                            <li><a href="/#how-it-works" class="transition hover:text-white">Setup guide</a></li>
+                            <li><Link href="/register" class="transition hover:text-white">{{ $t('layouts.central.start_free_trial') }}</Link></li>
+                            <li><Link href="/login" class="transition hover:text-white">{{ $t('layouts.central.footer_sign_in_workspace') }}</Link></li>
+                            <li><a href="/#how-it-works" class="transition hover:text-white">{{ $t('layouts.central.footer_setup_guide') }}</a></li>
                         </ul>
                     </div>
                     <div>
-                        <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">Capabilities</p>
+                        <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">{{ $t('layouts.central.footer_capabilities') }}</p>
                         <ul class="mt-4 space-y-2.5 text-sm text-slate-400">
-                            <li>Shared inbox & tickets</li>
-                            <li>Live chat widget</li>
-                            <li>Knowledge base & portal</li>
-                            <li>SLA & automation</li>
-                            <li>AI assist & integrations</li>
+                            <li>{{ $t('layouts.central.footer_capability_inbox') }}</li>
+                            <li>{{ $t('layouts.central.footer_capability_channels') }}</li>
+                            <li>{{ $t('layouts.central.footer_capability_kb') }}</li>
+                            <li>{{ $t('layouts.central.footer_capability_sla') }}</li>
+                            <li>{{ $t('layouts.central.footer_capability_service_desk') }}</li>
+                            <li>{{ $t('layouts.central.footer_capability_integrations') }}</li>
                         </ul>
                     </div>
                 </div>
-                <div class="mt-12 flex flex-col gap-4 border-t border-white/10 pt-8 sm:flex-row sm:items-center sm:justify-between">
-                    <p class="text-xs text-slate-500">© {{ new Date().getFullYear() }} {{ brand }}. All rights reserved.</p>
-                    <p class="text-xs text-slate-500">Self-hosted ready · Multi-tenant workspaces · Your data, your subdomain</p>
+                <div class="mt-12 border-t border-white/10 pt-8">
+                    <p class="text-xs text-slate-500">© {{ new Date().getFullYear() }} {{ brand }}. {{ $t('layouts.central.footer_rights') }}</p>
                 </div>
             </div>
         </footer>

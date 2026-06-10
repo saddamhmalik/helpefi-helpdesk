@@ -46,7 +46,9 @@ class InvitationService
             ]);
         }
 
-        $this->billing->assertLimit('agents', 1);
+        if (in_array($role, ['admin', 'agent'], true)) {
+            $this->billing->assertLimit('agents', 1);
+        }
 
         $invitation = $this->invitations->create([
             'email' => $email,
@@ -96,7 +98,9 @@ class InvitationService
             ]);
         }
 
-        $this->billing->assertLimit('agents', 1);
+        if (in_array($invitation->role, ['admin', 'agent'], true)) {
+            $this->billing->assertLimit('agents', 1);
+        }
 
         $user = $this->members->createMember(
             $name,
@@ -117,5 +121,18 @@ class InvitationService
     public function acceptUrl(Invitation $invitation): string
     {
         return url('/invitations/'.$invitation->token);
+    }
+
+    public function shouldExposeAcceptUrl(): bool
+    {
+        if (app()->environment('production')) {
+            return false;
+        }
+
+        if ($this->invitationMail->isDeliveryConfigured()) {
+            return false;
+        }
+
+        return true;
     }
 }

@@ -55,9 +55,7 @@ class PlatformAuditLogRepository
                         ->orWhere('subject_type', 'like', "%{$search}%")
                         ->orWhere('tenant_id', 'like', "%{$search}%");
 
-                    if (is_numeric($search)) {
-                        $inner->orWhere('subject_id', (int) $search);
-                    }
+                    $inner->orWhere('subject_id', 'like', "%{$search}%");
                 });
             })
             ->orderByDesc('created_at');

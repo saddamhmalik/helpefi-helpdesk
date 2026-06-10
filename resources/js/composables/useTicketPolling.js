@@ -1,16 +1,19 @@
 import { onUnmounted, ref, watch } from 'vue';
+import { usePage } from '@inertiajs/vue3';
+import { csrfHeaders } from '../support/csrf.js';
+import { isRealtimeConfigured, onRealtimeConnectionChange } from '../lib/realtimeClient.js';
 
 export function useTicketPolling(ticketIdRef, messagesRef, options = {}) {
+    const page = usePage();
     const lastPollAt = ref(new Date().toISOString());
     const pulse = ref(null);
     let pollTimer = null;
-
-    const csrf = () => document.querySelector('meta[name="csrf-token"]')?.content;
+    let pollWhenConnected = true;
+    let unsubscribeConnection = null;
 
     const jsonHeaders = () => ({
         Accept: 'application/json',
-        'X-CSRF-TOKEN': csrf(),
-        'X-Requested-With': 'XMLHttpRequest',
+        ...csrfHeaders(),
     });
 
     const resetPollCursor = () => {
@@ -41,7 +44,7 @@ export function useTicketPolling(ticketIdRef, messagesRef, options = {}) {
     const poll = async () => {
         const ticketId = ticketIdRef.value;
 
-        if (!ticketId) {
+        if (!ticketId || !pollWhenConnected) {
             return;
         }
 
@@ -104,6 +107,22 @@ export function useTicketPolling(ticketIdRef, messagesRef, options = {}) {
         }
     };
 
+    const syncPolling = () => {
+        if (pollWhenConnected) {
+            start();
+        } else {
+            stop();
+        }
+    };
+
+    if (isRealtimeConfigured(page.props.realtime)) {
+        pollWhenConnected = false;
+        unsubscribeConnection = onRealtimeConnectionChange((connected) => {
+            pollWhenConnected = !connected;
+            syncPolling();
+        });
+    }
+
     watch(ticketIdRef, (ticketId, previousId) => {
         if (!ticketId) {
             stop();
@@ -115,10 +134,13 @@ export function useTicketPolling(ticketIdRef, messagesRef, options = {}) {
             resetPollCursor();
         }
 
-        start();
+        syncPolling();
     }, { immediate: true });
 
-    onUnmounted(stop);
+    onUnmounted(() => {
+        stop();
+        unsubscribeConnection?.();
+    });
 
     return { poll, resetPollCursor };
 }

@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class KnowledgeArticle extends Model
 {
@@ -15,6 +16,8 @@ class KnowledgeArticle extends Model
         'author_id',
         'title',
         'slug',
+        'locale',
+        'translation_group_id',
         'excerpt',
         'body',
         'is_published',
@@ -47,5 +50,10 @@ class KnowledgeArticle extends Model
     public function versions(): HasMany
     {
         return $this->hasMany(KnowledgeArticleVersion::class)->orderByDesc('version_number');
+    }
+
+    public function embedding(): HasOne
+    {
+        return $this->hasOne(KnowledgeArticleEmbedding::class);
     }
 }

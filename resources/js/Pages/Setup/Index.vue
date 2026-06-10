@@ -4,17 +4,69 @@ import { computed, onMounted, ref } from 'vue';
 import AgentLayout from '../../Layouts/AgentLayout.vue';
 import { useClipboard } from '../../composables/useClipboard.js';
 import { useToast } from '../../composables/useToast.js';
+import { useI18n } from 'vue-i18n';
 
 const props = defineProps({
     guide: Object,
     welcome: Boolean,
+    dummyData: {
+        type: Object,
+        default: () => ({ active: false, needs_choice: true, summary: {} }),
+    },
 });
+
+const { t } = useI18n();
+
+const loadingSample = ref(false);
+const loadingSkip = ref(false);
+const confirmingRemove = ref(false);
 
 const showWelcome = ref(props.welcome);
 const { copied: snippetCopied, copy: copySnippet } = useClipboard();
 const toast = useToast();
 const progress = computed(() => props.guide?.progress ?? { completed: 0, total: 0 });
-const canFinish = computed(() => progress.value.completed >= progress.value.total && progress.value.total > 0);
+const guidePaused = computed(() => props.dummyData?.active === true);
+
+const canFinish = computed(() => (
+    !guidePaused.value
+    && !props.dummyData?.needs_choice
+    && progress.value.completed >= progress.value.total
+    && progress.value.total > 0
+));
+
+const loadSampleData = () => {
+    loadingSample.value = true;
+    router.post('/setup/dummy-data', {}, {
+        preserveScroll: true,
+        onFinish: () => {
+            loadingSample.value = false;
+        },
+    });
+};
+
+const startEmpty = () => {
+    loadingSkip.value = true;
+    router.post('/setup/dummy-data/skip', {}, {
+        preserveScroll: true,
+        onFinish: () => {
+            loadingSkip.value = false;
+        },
+    });
+};
+
+const removeSampleData = () => {
+    if (!confirmingRemove.value) {
+        confirmingRemove.value = true;
+        return;
+    }
+
+    router.delete('/setup/dummy-data', {
+        preserveScroll: true,
+        onFinish: () => {
+            confirmingRemove.value = false;
+        },
+    });
+};
 const isDismissed = computed(() => props.guide?.completed === true);
 
 onMounted(() => {
@@ -45,7 +97,7 @@ const copy = async (text) => {
 </script>
 
 <template>
-    <Head title="Workspace setup" />
+    <Head :title="$t('setup_index.workspace_setup')" />
     <AgentLayout>
         <div class="mx-auto max-w-3xl px-4 py-8">
             <Transition name="welcome-banner">
@@ -61,23 +113,119 @@ const copy = async (text) => {
                             ✓
                         </div>
                         <div>
-                            <p class="text-sm font-medium text-blue-100">Workspace ready</p>
+                            <p class="text-sm font-medium text-blue-100">{{ $t('setup_index.workspace_ready') }}</p>
                             <h2 class="mt-1 text-xl font-semibold">Welcome to {{ guide.workspace?.name }}</h2>
                             <p class="mt-2 text-sm text-blue-100">
-                                Your helpdesk is live at
+                                {{ $t('setup_index.helpdesk_live_at') }}
                                 <span class="font-medium text-white">{{ guide.workspace?.domain }}</span>.
-                                Complete the steps below to start supporting customers.
+                                {{ $t('setup_index.complete_steps_below') }}
                             </p>
                         </div>
                     </div>
                 </div>
             </Transition>
 
-            <div class="mb-8">
-                <p class="text-sm font-medium text-blue-600">Getting started</p>
+            <section
+                v-if="dummyData.needs_choice"
+                class="mb-8 overflow-hidden rounded-2xl border border-blue-200 bg-white shadow-sm"
+            >
+                <div class="border-b border-blue-100 bg-blue-50/80 px-5 py-4">
+                    <p class="text-sm font-semibold text-blue-900">How would you like to start?</p>
+                    <p class="mt-1 text-sm text-blue-800">
+                        {{ $t('setup_index.load_realistic_sample_tickets_and_customers_to_explore_the_product_or_') }}
+                    </p>
+                </div>
+                <div class="grid gap-4 p-5 sm:grid-cols-2">
+                    <button
+                        type="button"
+                        class="rounded-xl border border-blue-200 bg-blue-50/50 p-5 text-left transition hover:border-blue-400 hover:bg-blue-50 disabled:opacity-60"
+                        :disabled="loadingSample || loadingSkip"
+                        @click="loadSampleData"
+                    >
+                        <p class="text-base font-semibold text-slate-900">{{ $t('setup_index.explore_with_sample_data') }}</p>
+                        <p class="mt-2 text-sm text-slate-600">
+                            {{ $t('setup_index.adds_demo_tickets_conversations_customers_tags_teams_and_departments_y') }}
+                        </p>
+                        <p class="mt-3 text-xs font-medium text-blue-700">
+                            {{ loadingSample ? 'Loading sample data…' : 'Recommended for first-time setup' }}
+                        </p>
+                    </button>
+                    <button
+                        type="button"
+                        class="rounded-xl border border-slate-200 p-5 text-left transition hover:border-slate-300 hover:bg-slate-50 disabled:opacity-60"
+                        :disabled="loadingSample || loadingSkip"
+                        @click="startEmpty"
+                    >
+                        <p class="text-base font-semibold text-slate-900">{{ $t('setup_index.start_with_my_own_data') }}</p>
+                        <p class="mt-2 text-sm text-slate-600">
+                            {{ $t('setup_index.skip_sample_content_and_build_your_workspace_from_scratch_with_real_cu') }}
+                        </p>
+                        <p class="mt-3 text-xs font-medium text-slate-500">
+                            {{ loadingSkip ? 'Continuing…' : 'Empty workspace' }}
+                        </p>
+                    </button>
+                </div>
+                <p class="border-t border-slate-100 px-5 py-3 text-xs text-slate-500">
+                    {{ $t('setup_index.sample_data_is_for_testing_only_if_you_load_it_you_can_remove_everythi') }}
+                </p>
+            </section>
+
+            <section
+                v-else-if="guidePaused"
+                class="mb-8 overflow-hidden rounded-2xl border border-amber-200 bg-white shadow-sm"
+            >
+                <div class="border-b border-amber-100 bg-amber-50 px-5 py-4">
+                    <p class="text-sm font-semibold text-amber-950">{{ $t('setup_index.sample_workspace_ready') }}</p>
+                    <p class="mt-1 text-sm text-amber-800">
+                        {{ dummyData.summary?.tickets ?? 0 }} tickets · {{ dummyData.summary?.contacts ?? 0 }} customers ·
+                        {{ dummyData.summary?.teams ?? 0 }} teams · {{ dummyData.summary?.departments ?? 0 }} departments
+                    </p>
+                </div>
+                <div class="space-y-4 p-5">
+                    <p class="text-sm text-slate-600">
+                        {{ $t('setup_index.workspace_setup_is_paused_while_you_explore_open_the_inbox_browse_cust') }}
+                    </p>
+                    <div class="flex flex-col gap-2 sm:flex-row">
+                        <Link
+                            href="/workspace"
+                            class="inline-flex h-10 items-center justify-center rounded-lg bg-blue-600 px-4 text-sm font-semibold text-white transition hover:bg-blue-700"
+                        >
+                            {{ $t('setup_index.open_inbox') }}
+                        </Link>
+                        <Link
+                            href="/dashboard"
+                            class="inline-flex h-10 items-center justify-center rounded-lg border border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+                        >
+                            {{ $t('nav.dashboard') }}
+                        </Link>
+                    </div>
+                </div>
+                <div class="flex flex-col gap-3 border-t border-amber-100 bg-amber-50/50 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+                    <p class="text-xs text-amber-900">{{ $t('setup_index.ready_configure_real') }}</p>
+                    <div class="flex items-center gap-2">
+                        <button
+                            v-if="confirmingRemove"
+                            type="button"
+                            class="rounded-lg px-3 py-1.5 text-sm font-medium text-amber-900 hover:bg-amber-100"
+                            @click="confirmingRemove = false"
+                        >{{ $t('setup_index.cancel') }}</button>
+                        <button
+                            type="button"
+                            class="rounded-lg px-3 py-1.5 text-sm font-semibold text-white transition"
+                            :class="confirmingRemove ? 'bg-red-600 hover:bg-red-700' : 'bg-amber-900 hover:bg-amber-950'"
+                            @click="removeSampleData"
+                        >
+                            {{ confirmingRemove ? 'Yes, remove sample data' : 'Remove sample data' }}
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <div v-if="!guidePaused" class="mb-8">
+                <p class="text-sm font-medium text-blue-600">{{ $t('setup_index.getting_started') }}</p>
                 <h1 class="mt-1 text-2xl font-semibold text-slate-900">Set up {{ guide.workspace?.name }}</h1>
                 <p class="mt-2 text-sm text-slate-600">
-                    Complete these steps to configure your workspace at
+                    {{ $t('setup_index.complete_steps_configure') }}
                     <span class="font-medium text-slate-800">{{ guide.workspace?.domain }}</span>.
                 </p>
                 <div class="mt-4 h-2 overflow-hidden rounded-full bg-slate-100">
@@ -89,7 +237,7 @@ const copy = async (text) => {
                 <p class="mt-2 text-xs text-slate-500">{{ progress.completed }} of {{ progress.total }} required steps complete</p>
             </div>
 
-            <div class="space-y-4">
+            <div v-if="!guidePaused" class="space-y-4">
                 <article
                     v-for="(step, index) in guide.steps"
                     :key="step.key"
@@ -108,18 +256,18 @@ const copy = async (text) => {
                             <div class="min-w-0 flex-1">
                                 <div class="flex flex-wrap items-center gap-2">
                                     <h2 class="text-base font-semibold text-slate-900">{{ step.title }}</h2>
-                                    <span v-if="!step.required" class="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-500">Optional</span>
+                                    <span v-if="!step.required" class="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-500">{{ $t('setup_index.optional') }}</span>
                                     <span
                                         v-if="step.complete"
                                         class="rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-emerald-700"
                                     >
-                                        Done
+                                        {{ $t('setup_index.done') }}
                                     </span>
                                 </div>
                                 <p class="mt-2 text-sm text-slate-600">{{ step.description }}</p>
 
                                 <div v-if="step.key === 'chat_widget' && step.meta?.embed_snippet" class="mt-3">
-                                    <p class="mb-1 text-xs font-medium uppercase tracking-wide text-slate-500">Embed snippet</p>
+                                    <p class="mb-1 text-xs font-medium uppercase tracking-wide text-slate-500">{{ $t('setup_index.embed_snippet') }}</p>
                                     <pre class="overflow-x-auto rounded-lg bg-slate-900 p-3 text-xs text-slate-100">{{ step.meta.embed_snippet }}</pre>
                                     <button
                                         type="button"
@@ -131,7 +279,7 @@ const copy = async (text) => {
                                 </div>
 
                                 <div v-if="step.key === 'email_inbox'" class="mt-3 text-xs text-slate-500">
-                                    Inbound webhook:
+                                    {{ $t('setup_index.inbound_webhook') }}
                                     <code class="rounded bg-slate-100 px-1.5 py-0.5">{{ guide.infrastructure?.inbound_webhook }}</code>
                                 </div>
                             </div>
@@ -144,28 +292,27 @@ const copy = async (text) => {
                             type="button"
                             class="inline-flex h-9 w-full items-center justify-center rounded-lg px-4 text-sm font-medium text-slate-600 transition hover:bg-slate-50 hover:text-slate-900 sm:w-auto"
                             @click="completeStep(step.key)"
-                        >
-                            Mark done
-                        </button>
+                        >{{ $t('setup_index.mark_done') }}</button>
                         <Link
                             :href="step.url"
                             class="inline-flex h-9 w-full items-center justify-center rounded-lg border border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 transition hover:bg-slate-50 sm:w-auto"
                         >
-                            Open
+                            {{ $t('setup_index.open') }}
                         </Link>
                     </div>
                 </article>
             </div>
 
-            <div class="mt-8 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+            <div v-if="!guidePaused" class="mt-8 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
                 <div class="p-5">
                     <template v-if="isDismissed">
-                        <p class="text-sm font-medium text-slate-900">Setup guide</p>
-                        <p class="mt-1 text-sm text-slate-500">Return to your dashboard. Incomplete items will keep showing warnings until configured.</p>
+                        <p class="text-sm font-medium text-slate-900">{{ $t('setup_index.setup_guide') }}</p>
+                        <p class="mt-1 text-sm text-slate-500">{{ $t('setup_index.return_to_your_dashboard_incomplete_items_will_keep_showing_warnings_u') }}</p>
                     </template>
                     <template v-else>
                         <p class="text-sm font-medium text-slate-900">Ready to start supporting customers?</p>
-                        <p class="mt-1 text-sm text-slate-500">Finish setup to open your workspace dashboard. Missing configuration will still show warnings.</p>
+                        <p class="mt-1 text-sm text-slate-500">{{ $t('setup_index.finish_setup_to_open_your_workspace_dashboard_missing_configuration_wi') }}</p>
+                        <p v-if="dummyData.needs_choice" class="mt-2 text-sm text-amber-700">{{ $t('setup_index.choose_sample_data_or_an_empty_workspace_above_to_continue') }}</p>
                     </template>
                 </div>
                 <div class="flex flex-col-reverse gap-2 border-t border-slate-100 px-5 py-3 sm:flex-row sm:items-center sm:justify-end">
@@ -174,7 +321,7 @@ const copy = async (text) => {
                         href="/dashboard"
                         class="inline-flex h-9 w-full items-center justify-center rounded-lg bg-blue-600 px-4 text-sm font-semibold text-white transition hover:bg-blue-700 sm:w-auto"
                     >
-                        Go to dashboard
+                        {{ $t('setup_index.go_to_dashboard') }}
                     </Link>
                     <button
                         v-else
@@ -182,9 +329,7 @@ const copy = async (text) => {
                         class="inline-flex h-9 w-full items-center justify-center rounded-lg bg-blue-600 px-4 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
                         :disabled="!canFinish"
                         @click="finish"
-                    >
-                        Go to dashboard
-                    </button>
+                    >{{ $t('setup_index.go_to_dashboard') }}</button>
                 </div>
             </div>
         </div>

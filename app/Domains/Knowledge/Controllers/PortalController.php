@@ -35,9 +35,7 @@ class PortalController extends Controller
 
     public function article(\App\Domains\Brands\Models\Brand $brand, string $articleSlug): Response
     {
-        return Inertia::render('Portal/Article', [
-            'article' => $this->portalService->article($articleSlug),
-        ]);
+        return Inertia::render('Portal/Article', $this->portalService->article($articleSlug));
     }
 
     public function search(Request $request): Response
@@ -138,9 +136,9 @@ class PortalController extends Controller
         ]);
     }
 
-    public function myTicket(Request $request, int $ticket): Response
+    public function myTicket(Request $request, string $ticket): Response
     {
-        $ticketModel = $this->portalService->customerTicket($request->user(), $ticket);
+        $ticketModel = $this->portalService->customerTicket($request->user(), (int) $ticket);
 
         return Inertia::render('Portal/MyTicket', [
             'ticket' => $ticketModel,

@@ -5,6 +5,8 @@ namespace App\Domains\Billing\Services;
 use App\Domains\Billing\Models\Subscription;
 use App\Domains\Billing\Repositories\PlanRepository;
 use App\Domains\Billing\Repositories\SubscriptionRepository;
+use App\Domains\Tenancy\Services\CentralSettingsService;
+use App\Domains\Tenancy\Support\AddonCatalogDefinition;
 use App\Models\Tenant;
 use Illuminate\Support\Carbon;
 
@@ -13,6 +15,7 @@ class SubscriptionLifecycleService
     public function __construct(
         private SubscriptionRepository $subscriptions,
         private PlanRepository $plans,
+        private CentralSettingsService $centralSettings,
     ) {
     }
 
@@ -29,13 +32,20 @@ class SubscriptionLifecycleService
             ? Carbon::createFromTimestamp($stripeSubscription->current_period_end)
             : null;
         $priceId = $stripeSubscription->items->data[0]->price->id ?? $subscription->stripe_price_id;
+        $interval = $stripeSubscription->items->data[0]->price->recurring->interval
+            ?? $stripeSubscription->metadata->billing_interval
+            ?? $subscription->billing_interval
+            ?? 'month';
         $plan = $stripeSubscription->metadata->plan
             ?? $this->resolvePlanFromPriceId($priceId)
             ?? $subscription->plan;
 
+        [$activeAddons, $stripeAddonItems] = $this->resolveAddonsFromStripeItems($stripeSubscription);
+
         if (in_array($status, ['active', 'trialing'], true) && ! $cancelAtPeriodEnd) {
             return $this->restorePaidAccess($subscription, [
                 'plan' => $plan,
+                'billing_interval' => $interval,
                 'status' => Subscription::STATUS_ACTIVE,
                 'trial_ends_at' => null,
                 'renews_at' => $periodEnd,
@@ -43,12 +53,15 @@ class SubscriptionLifecycleService
                 'stripe_price_id' => $priceId,
                 'cancelled_at' => null,
                 'access_ends_at' => null,
+                'active_addons' => $activeAddons,
+                'stripe_addon_items' => $stripeAddonItems,
             ]);
         }
 
         if (in_array($status, ['active', 'trialing'], true) && $cancelAtPeriodEnd) {
             return $this->subscriptions->update($subscription, [
                 'plan' => $plan,
+                'billing_interval' => $interval,
                 'status' => Subscription::STATUS_ACTIVE,
                 'trial_ends_at' => null,
                 'renews_at' => $periodEnd,
@@ -64,6 +77,7 @@ class SubscriptionLifecycleService
         if (in_array($status, ['past_due', 'unpaid'], true)) {
             return $this->subscriptions->update($subscription, [
                 'plan' => $plan,
+                'billing_interval' => $interval,
                 'status' => Subscription::STATUS_PAST_DUE,
                 'trial_ends_at' => null,
                 'renews_at' => $periodEnd,
@@ -74,6 +88,7 @@ class SubscriptionLifecycleService
 
         return $this->markCancelled($subscription, [
             'plan' => $plan,
+            'billing_interval' => $interval,
             'stripe_subscription_id' => $stripeSubscription->id,
             'stripe_price_id' => $priceId,
             'renews_at' => null,
@@ -143,11 +158,43 @@ class SubscriptionLifecycleService
         }
 
         foreach ($this->plans->all() as $slug => $plan) {
-            if (($plan['stripe_price_id'] ?? null) === $priceId) {
-                return $slug;
+            foreach (['stripe_price_id_monthly', 'stripe_price_id_yearly', 'stripe_price_id'] as $key) {
+                if (($plan[$key] ?? null) === $priceId) {
+                    return $slug;
+                }
             }
         }
 
         return null;
+    }
+
+    private function resolveAddonsFromStripeItems(object $stripeSubscription): array
+    {
+        $activeAddons = [];
+        $stripeAddonItems = [];
+        $addonCatalog = $this->centralSettings->addonCatalog();
+        $priceToAddon = [];
+
+        foreach ($addonCatalog as $key => $addon) {
+            $priceId = AddonCatalogDefinition::stripePriceId($addon);
+
+            if ($priceId) {
+                $priceToAddon[$priceId] = $key;
+            }
+        }
+
+        foreach ($stripeSubscription->items->data ?? [] as $item) {
+            $priceId = $item->price->id ?? null;
+            $addonKey = $priceToAddon[$priceId] ?? ($item->metadata->addon ?? null);
+
+            if (! is_string($addonKey) || $addonKey === '') {
+                continue;
+            }
+
+            $activeAddons[] = $addonKey;
+            $stripeAddonItems[$addonKey] = $item->id;
+        }
+
+        return [array_values(array_unique($activeAddons)), $stripeAddonItems];
     }
 }

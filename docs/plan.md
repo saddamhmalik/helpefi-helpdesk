@@ -119,6 +119,30 @@ todos:
   - id: phase5-18-skills-routing
     content: "Skills-based routing and group SLA policies by team/customer tier"
     status: completed
+  - id: phase7-01-feature-gate
+    content: "Service Desk paid add-on — service_desk feature on Enterprise plan"
+    status: completed
+  - id: phase7-02-overview
+    content: "Service desk hub with ITIL type stats and queue links"
+    status: completed
+  - id: phase7-03-type-queues
+    content: "Type-filtered ticket queues (incident, request, change, problem)"
+    status: completed
+  - id: phase7-04-nav
+    content: "Service Desk agent nav section and upgrade page"
+    status: completed
+  - id: phase7-05-approvals
+    content: "Approval engine for catalog items and change requests"
+    status: completed
+  - id: phase7-06-change-mgmt
+    content: "Change management — risk, schedule, CAB lite"
+    status: completed
+  - id: phase7-07-problem-mgmt
+    content: "Problem records with linked incidents and known errors"
+    status: completed
+  - id: phase7-08-major-incident
+    content: "Major incident flag, war-room view, post-incident review"
+    status: completed
 isProject: true
 ---
 
@@ -416,3 +440,154 @@ Demo login: `admin@helpdesk.test` / `password`
 1. `phase5-18-skills-routing` — skills-based routing and group SLA policies by team/customer tier (done)
 
 Phase 5 is complete. API parity follow-up (`phase5-11-api-parity`) is complete.
+
+---
+
+## Phase 6 — Enterprise Gaps (June 2026)
+
+Competitive R&D vs Zendesk, Freshdesk, Intercom. Priority 1 implemented using official packages.
+
+| Package | Purpose |
+|---------|---------|
+| `laravel/socialite` | OIDC/OAuth (Google, generic OIDC) |
+| `socialiteproviders/microsoft-azure` | Microsoft Entra ID |
+| `onelogin/php-saml` | SAML 2.0 SP |
+| `twilio/sdk` | WhatsApp + SMS |
+| `openai-php/client` | KB vector embeddings |
+| `hubspot/api-client` | HubSpot CRM |
+| `shopify/shopify-api` | Shopify store |
+| `omniphx/forrest` | Salesforce |
+
+### 6P1 — Enterprise blockers
+
+| ID | Task | Status |
+|----|------|--------|
+| `phase6-01-sso` | SSO: OIDC (Google/Azure/generic) + SAML via Socialite & php-saml | done |
+| `phase6-02-messaging` | WhatsApp + SMS via Twilio SDK, inbound webhook, agent replies | done |
+| `phase6-03-marketplace` | Integration marketplace: Shopify, HubSpot, Salesforce, Teams, Zapier | done |
+| `phase6-04-vector-kb` | Vector KB search via OpenAI embeddings + cosine similarity | done |
+
+**Run after deploy:**
+```bash
+composer install
+php artisan tenants:migrate
+php artisan knowledge:embed-articles
+npm run build
+```
+
+**Configure:** Settings → Security → Single sign-on, Settings → WhatsApp & SMS, Settings → Integrations (marketplace apps).
+
+### 6P2 — Q1 competitive parity
+
+| ID | Task | Status |
+|----|------|--------|
+| `phase6-05-snooze` | Ticket snooze with scheduled unsnooze | done |
+| `phase6-06-statuses` | Custom ticket statuses admin CRUD | done |
+| `phase6-07-crm-enrich` | HubSpot/Salesforce CRM enrichment on ticket create | done |
+| `phase6-08-realtime-poll` | Disable workspace polling when realtime WebSocket is connected | done |
+| `phase6-09-ai-triage` | AI auto-triage priority on new tickets | done |
+
+**Run after deploy:**
+```bash
+php artisan tenants:migrate
+npm run build
+```
+
+**Configure:** Settings → Ticket statuses, Settings → AI assistance (auto-triage), Settings → Integrations (HubSpot/Salesforce for CRM enrichment).
+
+### 6P3 — API admin parity & OpenAPI
+
+| ID | Task | Status |
+|----|------|--------|
+| `phase6-10-api-statuses` | Ticket statuses CRUD via REST API | done |
+| `phase6-11-api-snooze` | Ticket snooze/unsnooze via workspace API | done |
+| `phase6-12-api-sso` | SSO settings GET/PUT `/security/sso` | done |
+| `phase6-13-api-messaging` | Twilio messaging settings GET/PUT | done |
+| `phase6-14-api-integrations` | Marketplace connections GET/PUT/test | done |
+| `phase6-15-api-ai` | AI settings API parity (triage + deflection) | done |
+| `phase6-16-openapi` | OpenAPI 3.1 spec + Swagger UI at `/api/docs` | done |
+
+**API docs:** `{workspace}/api/docs` — spec at `/api/v1/openapi.json`
+
+### 6P4 — Customer 360 & executive dashboard
+
+| ID | Task | Status |
+|----|------|--------|
+| `phase6-17-customer-360` | Unified customer timeline (tickets, messages, CSAT, chat, notes) | done |
+| `phase6-18-executive-dashboard` | Central admin aggregated usage metrics across workspaces | done |
+| `phase6-19-customer-context` | Ticket sidebar customer context: health score, CRM card, Shopify orders | done |
+| `phase6-20-crm-profile-sync` | Cached CRM profiles with field sync; enriched HubSpot/Salesforce lookups | done |
+
+**API:** `GET /api/v1/contacts/{id}/timeline`, `GET /api/v1/tickets/{id}/customer-context`
+
+### 6P5 — Bulk ticket actions & multilingual KB
+
+| ID | Task | Status |
+|----|------|--------|
+| `phase6-21-bulk-tickets` | Bulk assign, status, priority, close, snooze from ticket list + API | done |
+| `phase6-22-kb-locales` | Locale settings, article translations, portal language switcher | done |
+| `phase6-23-kb-portal-filter` | Portal KB filtered by resolved locale (query, session, Accept-Language) | done |
+| `phase6-24-kb-search-locale` | Vector/keyword KB search scoped to active locale | done |
+
+**API:** `POST /api/v1/tickets/bulk`, `GET/PUT /api/v1/knowledge/settings`
+
+**Deploy:** `php artisan tenants:migrate` then `npm run build`
+
+---
+
+## Phase 7 — Service Desk (Paid ITSM Add-on)
+
+Enterprise-only paid add-on (`service_desk` feature). Builds ITSM workflows on top of existing tickets, service catalog, assets, and SLA.
+
+| Tier | Scope | Status |
+|------|-------|--------|
+| **7A — Foundation** | Feature gate, hub dashboard, type queues, nav | done |
+| **7B — Approvals** | Reusable approval requests on catalog/change | done |
+| **7C — Change & Problem** | Change records, problem linking, change calendar | done |
+| **7D — Major Incidents** | Major incident mode, war-room, post-incident review | done |
+
+### 7A — Foundation (done)
+
+| ID | Task | Description |
+|----|------|-------------|
+| `phase7-01-feature-gate` | **Paid add-on** | `service_desk` feature on Enterprise; billing UI + upgrade page |
+| `phase7-02-overview` | **Service desk hub** | `/service-desk` with open/unassigned counts per ITIL type |
+| `phase7-03-type-queues` | **Type queues** | `/service-desk/queues/{type}` filtered ticket lists |
+| `phase7-04-nav` | **Agent nav** | Service Desk section in sidebar; locked upgrade for non-Enterprise |
+
+**Billing:** Enterprise plan includes `service_desk`. Professional retains `service_catalog` only.
+
+**Configure:** Upgrade to Enterprise → Settings → Service catalog (per-item approvers) → Settings → Change approvals → `/service-desk/approvals`.
+
+### 7B — Approvals (done)
+
+| ID | Task | Description |
+|----|------|-------------|
+| `phase7-05-approvals` | **Approval engine** | Sequential approvers; catalog + change tickets; email/in-app; automation triggers |
+| `phase7-05a-catalog-approval` | **Catalog approval** | Per-item `requires_approval` + approver list on service catalog items |
+| `phase7-05b-change-approval` | **Change approval** | Global change-ticket approval settings at `/settings/service-desk/approvals` |
+| `phase7-05c-approval-inbox` | **Approval inbox** | `/service-desk/approvals` queue with approve/reject actions |
+| `phase7-05d-automation-hooks` | **Automation hooks** | Triggers `approval.approved` and `approval.rejected` |
+
+**API:** `GET/PUT /api/v1/service-desk/approvals`, `POST .../approve`, `POST .../reject`, `GET /api/v1/tickets/{id}/approval`
+
+### 7C — Change & Problem (done)
+
+| ID | Task | Description |
+|----|------|-------------|
+| `phase7-06-change-mgmt` | **Change records** | Risk, schedule, CAB fields on change tickets; change calendar |
+| `phase7-07-problem-mgmt` | **Problem records** | Root cause, known errors, linked incidents |
+
+**API:** `GET /api/v1/service-desk/changes/calendar`, `GET/PUT /api/v1/tickets/{id}/change-record`, `GET/PUT /api/v1/tickets/{id}/problem-record`, `POST/DELETE /api/v1/tickets/{id}/problem-incidents`
+
+### 7D — Major Incidents (done)
+
+| ID | Task | Description |
+|----|------|-------------|
+| `phase7-08-major-incident` | **Major incident flag** | Declare on incident tickets; coordinator list |
+| `phase7-08a-war-room` | **War room** | `/service-desk/major-incidents/{id}/war-room` with live conversation |
+| `phase7-08b-post-review` | **Post-incident review** | Summary, timeline, lessons learned, action items |
+
+**API:** `GET /api/v1/service-desk/major-incidents`, `GET/POST/PUT /api/v1/tickets/{id}/major-incident`, `POST .../resolve`, `POST .../complete-review`
+
+**Deploy:** `php artisan tenants:migrate` then `npm run build`

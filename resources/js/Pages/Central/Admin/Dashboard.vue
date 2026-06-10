@@ -4,10 +4,13 @@ import AdminLayout from '../../../Layouts/AdminLayout.vue';
 import PageHeader from '../../../Components/PageHeader.vue';
 import PlatformStatCard from '../../../Components/Platform/PlatformStatCard.vue';
 import { usePlatformAdmin } from '../../../composables/usePlatformAdmin.js';
+import { useI18n } from 'vue-i18n';
 
 defineProps({
     dashboard: Object,
 });
+
+const { t } = useI18n();
 
 const { can, quickLinks } = usePlatformAdmin();
 
@@ -49,16 +52,16 @@ const statusTone = (workspace) => {
 </script>
 
 <template>
-    <Head title="Dashboard" />
+    <Head :title="$t('nav.dashboard')" />
     <AdminLayout>
         <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6">
             <PageHeader
-                title="Dashboard"
-                description="Overview of workspaces, billing, and platform configuration."
+                :title="$t('nav.dashboard')"
+                :description="$t('central.overview_of_workspaces_billing_and_platform_configuration')"
             />
 
             <section v-if="quickLinks.length > 1" class="mb-8">
-                <h2 class="mb-3 text-sm font-semibold text-slate-900">Quick access</h2>
+                <h2 class="mb-3 text-sm font-semibold text-slate-900">{{ $t('central.quick_access') }}</h2>
                 <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                     <Link
                         v-for="item in quickLinks.filter((link) => link.href !== '/admin/dashboard')"
@@ -72,21 +75,41 @@ const statusTone = (workspace) => {
                 </div>
             </section>
 
+            <section v-if="dashboard.executive_metrics" class="mb-8">
+                <h2 class="mb-3 text-sm font-semibold text-slate-900">{{ $t('central.platform_usage_all_workspaces') }}</h2>
+                <p class="mb-4 text-sm text-slate-500">
+                    Aggregated across {{ dashboard.executive_metrics.workspaces_scanned }} workspace(s). Refreshed every 15 minutes.
+                </p>
+                <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                    <PlatformStatCard :label="$t('central.open_tickets')" :value="dashboard.executive_metrics.open_tickets" tone="blue" />
+                    <PlatformStatCard :label="$t('central.total_tickets')" :value="dashboard.executive_metrics.total_tickets" />
+                    <PlatformStatCard :label="$t('central.tickets_30_days')" :value="dashboard.executive_metrics.tickets_last_30_days" tone="emerald" />
+                    <PlatformStatCard :label="$t('central.total_customers')" :value="dashboard.executive_metrics.total_contacts" />
+                    <PlatformStatCard :label="$t('central.total_agents')" :value="dashboard.executive_metrics.total_agents" />
+                    <PlatformStatCard
+                        :label="$t('central.csat_average_30_days')"
+                        :value="dashboard.executive_metrics.csat_average_30_days ?? '—'"
+                        tone="emerald"
+                    />
+                    <PlatformStatCard :label="$t('central.csat_responses_30_days')" :value="dashboard.executive_metrics.csat_responses_30_days" />
+                </div>
+            </section>
+
             <section v-if="dashboard.workspace_stats" class="mb-8">
-                <h2 class="mb-3 text-sm font-semibold text-slate-900">Workspaces</h2>
+                <h2 class="mb-3 text-sm font-semibold text-slate-900">{{ $t('central.workspaces') }}</h2>
                 <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
-                    <PlatformStatCard label="Total" :value="dashboard.workspace_stats.total" />
-                    <PlatformStatCard label="Active plans" :value="dashboard.workspace_stats.active" tone="emerald" />
-                    <PlatformStatCard label="On trial" :value="dashboard.workspace_stats.on_trial" tone="blue" />
-                    <PlatformStatCard label="Trial expired" :value="dashboard.workspace_stats.expired_trial" tone="amber" />
-                    <PlatformStatCard label="Blocked" :value="dashboard.workspace_stats.blocked" tone="red" />
+                    <PlatformStatCard :label="$t('central.total')" :value="dashboard.workspace_stats.total" />
+                    <PlatformStatCard :label="$t('central.active_plans')" :value="dashboard.workspace_stats.active" tone="emerald" />
+                    <PlatformStatCard :label="$t('central.on_trial')" :value="dashboard.workspace_stats.on_trial" tone="blue" />
+                    <PlatformStatCard :label="$t('central.trial_expired')" :value="dashboard.workspace_stats.expired_trial" tone="amber" />
+                    <PlatformStatCard :label="$t('central.blocked')" :value="dashboard.workspace_stats.blocked" tone="red" />
                 </div>
             </section>
 
             <div class="grid gap-6 lg:grid-cols-3">
                 <section v-if="dashboard.recent_workspaces?.length" class="lg:col-span-2">
                     <div class="mb-3 flex items-center justify-between gap-3">
-                        <h2 class="text-sm font-semibold text-slate-900">Recent workspaces</h2>
+                        <h2 class="text-sm font-semibold text-slate-900">{{ $t('central.recent_workspaces') }}</h2>
                         <Link v-if="can('tenants.view')" href="/admin/tenants" class="text-sm font-medium text-blue-600 hover:text-blue-700">
                             View all
                         </Link>
@@ -103,7 +126,7 @@ const statusTone = (workspace) => {
                                         target="_blank"
                                         class="mt-1 inline-block text-xs font-medium text-blue-600 hover:text-blue-700"
                                     >
-                                        Open workspace
+                                        {{ $t('central.open_workspace') }}
                                     </a>
                                 </div>
                                 <span
@@ -124,7 +147,7 @@ const statusTone = (workspace) => {
 
                 <section class="space-y-4">
                     <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-                        <h2 class="text-sm font-semibold text-slate-900">Billing</h2>
+                        <h2 class="text-sm font-semibold text-slate-900">{{ $t('central.billing') }}</h2>
                         <p class="mt-2 text-sm text-slate-600">
                             Stripe is
                             <span class="font-medium" :class="dashboard.stripe_enabled ? 'text-emerald-700' : 'text-amber-700'">
@@ -134,13 +157,13 @@ const statusTone = (workspace) => {
                         </p>
                         <div v-if="dashboard.payment_stats" class="mt-4 grid grid-cols-2 gap-3">
                             <div class="rounded-xl bg-slate-50 px-3 py-2">
-                                <p class="text-xs text-slate-500">Collected</p>
+                                <p class="text-xs text-slate-500">{{ $t('central.collected') }}</p>
                                 <p class="mt-1 text-lg font-semibold tabular-nums text-slate-900">
                                     {{ new Intl.NumberFormat(undefined, { style: 'currency', currency: dashboard.currency?.code ?? 'USD' }).format((dashboard.payment_stats.total_collected ?? 0) / 100) }}
                                 </p>
                             </div>
                             <div class="rounded-xl bg-slate-50 px-3 py-2">
-                                <p class="text-xs text-slate-500">Paid invoices</p>
+                                <p class="text-xs text-slate-500">{{ $t('central.paid_invoices') }}</p>
                                 <p class="mt-1 text-lg font-semibold tabular-nums text-slate-900">{{ dashboard.payment_stats.paid_count ?? 0 }}</p>
                             </div>
                         </div>
@@ -170,9 +193,9 @@ const statusTone = (workspace) => {
                     </div>
 
                     <div v-if="dashboard.platform_user_count != null" class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-                        <h2 class="text-sm font-semibold text-slate-900">Platform team</h2>
+                        <h2 class="text-sm font-semibold text-slate-900">{{ $t('central.platform_team') }}</h2>
                         <p class="mt-2 text-3xl font-semibold tabular-nums text-slate-900">{{ dashboard.platform_user_count }}</p>
-                        <p class="mt-1 text-sm text-slate-500">admin accounts</p>
+                        <p class="mt-1 text-sm text-slate-500">{{ $t('central.admin_accounts') }}</p>
                         <Link
                             v-if="can('users.view')"
                             href="/admin/users"
@@ -183,8 +206,8 @@ const statusTone = (workspace) => {
                     </div>
 
                     <div v-if="can('roles.view')" class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-                        <h2 class="text-sm font-semibold text-slate-900">Access control</h2>
-                        <p class="mt-2 text-sm text-slate-600">Configure roles and permissions for the central admin team.</p>
+                        <h2 class="text-sm font-semibold text-slate-900">{{ $t('central.access_control') }}</h2>
+                        <p class="mt-2 text-sm text-slate-600">{{ $t('central.configure_roles_and_permissions_for_the_central_admin_team') }}</p>
                         <Link href="/admin/roles" class="mt-4 inline-flex text-sm font-medium text-blue-600 hover:text-blue-700">
                             Manage roles →
                         </Link>

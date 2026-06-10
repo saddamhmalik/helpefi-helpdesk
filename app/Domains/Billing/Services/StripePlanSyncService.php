@@ -43,12 +43,33 @@ class StripePlanSyncService
         $productId = $this->resolveProductId($slug, $plan);
         $this->stripeCatalog->updateProduct($productId, $plan['name'], $slug);
 
-        $amountCents = max(0, (int) $plan['price']) * 100;
-        $priceId = $this->resolvePriceId($slug, $plan, $productId, $amountCents, $currency);
+        $monthlyPriceId = $this->resolvePriceId(
+            $slug,
+            $plan,
+            $productId,
+            max(0, (int) ($plan['price_monthly'] ?? $plan['price'] ?? 0)) * 100,
+            $currency,
+            'month',
+            'stripe_price_id_monthly',
+            'stripe_price_id',
+        );
+
+        $yearlyPriceId = $this->resolvePriceId(
+            $slug,
+            $plan,
+            $productId,
+            max(0, (int) ($plan['price_yearly'] ?? 0)) * 100,
+            $currency,
+            'year',
+            'stripe_price_id_yearly',
+        );
 
         return array_merge($plan, [
             'stripe_product_id' => $productId,
-            'stripe_price_id' => $priceId,
+            'stripe_price_id' => $monthlyPriceId,
+            'stripe_price_id_monthly' => $monthlyPriceId,
+            'stripe_price_id_yearly' => $yearlyPriceId,
+            'price' => (int) ($plan['price_monthly'] ?? $plan['price'] ?? 0),
         ]);
     }
 
@@ -60,9 +81,13 @@ class StripePlanSyncService
             return $productId;
         }
 
-        $priceId = $plan['stripe_price_id'] ?? null;
+        foreach (['stripe_price_id_monthly', 'stripe_price_id_yearly', 'stripe_price_id'] as $key) {
+            $priceId = $plan[$key] ?? null;
 
-        if (is_string($priceId) && $priceId !== '') {
+            if (! is_string($priceId) || $priceId === '') {
+                continue;
+            }
+
             $price = $this->stripeCatalog->retrievePrice($priceId);
 
             if ($price && is_string($price->product)) {
@@ -81,26 +106,34 @@ class StripePlanSyncService
         string $productId,
         int $amountCents,
         string $currency,
+        string $interval,
+        string $primaryKey,
+        ?string $fallbackKey = null,
     ): string {
-        $existingPriceId = $plan['stripe_price_id'] ?? null;
+        $existingPriceId = $plan[$primaryKey] ?? ($fallbackKey ? ($plan[$fallbackKey] ?? null) : null);
 
         if (is_string($existingPriceId) && $existingPriceId !== '') {
             $existingPrice = $this->stripeCatalog->retrievePrice($existingPriceId);
 
-            if ($this->priceMatches($existingPrice, $productId, $amountCents, $currency)) {
+            if ($this->priceMatches($existingPrice, $productId, $amountCents, $currency, $interval)) {
                 return $existingPriceId;
             }
 
             $this->stripeCatalog->archivePrice($existingPriceId);
         }
 
-        $price = $this->stripeCatalog->createRecurringPrice($productId, $amountCents, $currency, $slug);
+        $price = $this->stripeCatalog->createRecurringPrice($productId, $amountCents, $currency, $slug, $interval);
 
         return $price->id;
     }
 
-    private function priceMatches(?object $price, string $productId, int $amountCents, string $currency): bool
-    {
+    private function priceMatches(
+        ?object $price,
+        string $productId,
+        int $amountCents,
+        string $currency,
+        string $interval,
+    ): bool {
         if ($price === null || ! ($price->active ?? false)) {
             return false;
         }
@@ -117,6 +150,6 @@ class StripePlanSyncService
             return false;
         }
 
-        return ($price->recurring->interval ?? null) === 'month';
+        return ($price->recurring->interval ?? null) === $interval;
     }
 }

@@ -34,7 +34,7 @@ class AdminSubscriptionController extends Controller
                 'q' => $search,
                 'status' => $status,
             ],
-            'stripe_enabled' => (bool) config('stripe.enabled'),
+            'stripe_enabled' => (bool) config('stripe.configured'),
         ]);
     }
 }

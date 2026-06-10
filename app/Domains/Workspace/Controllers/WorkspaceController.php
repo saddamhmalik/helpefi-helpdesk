@@ -12,10 +12,12 @@ use App\Domains\Tickets\Services\TicketLifecycleService;
 use App\Domains\Tickets\Services\TicketService;
 use App\Domains\Tickets\Services\TicketViewService;
 use App\Domains\Workforce\Services\WorkforceService;
+use App\Domains\Tickets\Services\TicketSnoozeService;
 use App\Domains\Workspace\Services\WorkspaceService;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -34,6 +36,7 @@ class WorkspaceController extends Controller
         private SideConversationService $sideConversationService,
         private TimeTrackingService $timeTracking,
         private TicketExternalIssueService $externalIssues,
+        private TicketSnoozeService $snoozeService,
     ) {
     }
 
@@ -208,6 +211,29 @@ class WorkspaceController extends Controller
 
         return response()->json(
             $this->workspaceService->quickUpdate($ticket, $data)
+        );
+    }
+
+    public function snooze(Request $request, int $ticket): JsonResponse
+    {
+        $data = $request->validate([
+            'minutes' => ['required_without:until', 'integer', 'min:15', 'max:10080'],
+            'until' => ['required_without:minutes', 'date', 'after:now'],
+        ]);
+
+        $until = isset($data['until'])
+            ? Carbon::parse($data['until'])
+            : now()->addMinutes((int) $data['minutes']);
+
+        return response()->json(
+            $this->snoozeService->snooze($ticket, $until, $request->user()->id)
+        );
+    }
+
+    public function unsnooze(Request $request, int $ticket): JsonResponse
+    {
+        return response()->json(
+            $this->snoozeService->unsnooze($ticket, $request->user()->id)
         );
     }
 }

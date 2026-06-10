@@ -1,9 +1,11 @@
 <script setup>
 import { Link, usePage } from '@inertiajs/vue3';
 import { computed, onMounted, ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 
 const page = usePage();
 const expanded = ref(false);
+const { t } = useI18n();
 
 const warnings = computed(() => page.props.setupWarnings ?? []);
 
@@ -17,11 +19,7 @@ const showBanner = computed(() => {
     return path !== '/setup';
 });
 
-const countLabel = computed(() => {
-    const count = warnings.value.length;
-
-    return `${count} ${count === 1 ? 'item' : 'items'}`;
-});
+const countLabel = computed(() => t('components.setup_item_count', { count: warnings.value.length }));
 
 const summary = computed(() => warnings.value.map((warning) => warning.title).join(' · '));
 
@@ -57,7 +55,7 @@ const toggleExpanded = () => {
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
             </svg>
 
-            <span class="shrink-0 text-sm font-semibold text-amber-950">Setup incomplete</span>
+            <span class="shrink-0 text-sm font-semibold text-amber-950">{{ $t('components.setup_incomplete') }}</span>
             <span class="shrink-0 rounded bg-amber-200/60 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-900">
                 {{ countLabel }}
             </span>
@@ -68,7 +66,7 @@ const toggleExpanded = () => {
                     href="/setup"
                     class="rounded px-2 py-1 text-xs font-medium text-amber-900 hover:bg-amber-100/80"
                 >
-                    Setup guide
+                    {{ $t('components.setup_guide') }}
                 </Link>
                 <button
                     type="button"

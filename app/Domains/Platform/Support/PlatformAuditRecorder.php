@@ -28,8 +28,8 @@ class PlatformAuditRecorder
             $actorEmail ?? $actor?->email,
             $tenantId,
             $subject ? $subject::class : null,
-            $subject?->getKey(),
-            $properties ?: null,
+            $subject?->getKey() !== null ? (string) $subject->getKey() : null,
+            $properties,
         );
     }
 

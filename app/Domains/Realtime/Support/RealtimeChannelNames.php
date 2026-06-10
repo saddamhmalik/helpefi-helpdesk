@@ -25,4 +25,9 @@ class RealtimeChannelNames
     {
         return self::scoped('workspace');
     }
+
+    public static function user(int $userId): string
+    {
+        return self::scoped("user.{$userId}");
+    }
 }

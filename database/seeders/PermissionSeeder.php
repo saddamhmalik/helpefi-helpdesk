@@ -11,6 +11,12 @@ class PermissionSeeder extends Seeder
 {
     public function run(): void
     {
+        if (! tenant('id') && config('database.default') === 'central') {
+            throw new \RuntimeException(
+                'PermissionSeeder runs on tenant databases, not the central database. Use: php artisan permissions:sync',
+            );
+        }
+
         app()[PermissionRegistrar::class]->forgetCachedPermissions();
 
         foreach ($this->permissionNames() as $name) {

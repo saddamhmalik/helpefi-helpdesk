@@ -7,6 +7,8 @@ import PageHeader from '../../../../Components/PageHeader.vue';
 import PaginationLinks from '../../../../Components/PaginationLinks.vue';
 import PlatformStatCard from '../../../../Components/Platform/PlatformStatCard.vue';
 import { adminInputClass } from '../../../../composables/usePlatformAdmin.js';
+import { useI18n } from 'vue-i18n';
+import { useDateTime } from '../../../../composables/useDateTime.js';
 
 const props = defineProps({
     subscriptions: Object,
@@ -16,17 +18,21 @@ const props = defineProps({
     stripe_enabled: Boolean,
 });
 
+const { formatDateTime, formatDate } = useDateTime();
+
+const { t } = useI18n();
+
 const search = ref(props.filters.q ?? '');
 const status = ref(props.filters.status ?? 'all');
 
 const statusFilters = [
-    { value: 'all', label: 'All' },
-    { value: 'active', label: 'Active' },
-    { value: 'trial', label: 'Trial' },
-    { value: 'grace', label: 'Grace period' },
-    { value: 'cancelled', label: 'Cancelled' },
-    { value: 'past_due', label: 'Past due' },
-    { value: 'blocked', label: 'Blocked' },
+    { value: 'all', label: t('central.all') },
+    { value: 'active', label: t('common.active') },
+    { value: 'trial', label: t('central.trial') },
+    { value: 'grace', label: t('central.grace_period') },
+    { value: 'cancelled', label: t('central.cancelled') },
+    { value: 'past_due', label: t('central.past_due') },
+    { value: 'blocked', label: t('central.blocked') },
 ];
 
 let searchTimer = null;
@@ -48,18 +54,6 @@ function applyFilters() {
         replace: true,
     });
 }
-
-const formatDate = (value) => {
-    if (!value) {
-        return '—';
-    }
-
-    return new Date(value).toLocaleDateString(undefined, {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
-    });
-};
 
 const formatPrice = (price) => {
     if (price == null) {
@@ -130,21 +124,21 @@ const hasFilters = computed(() => Boolean(props.filters.q) || (props.filters.sta
 </script>
 
 <template>
-    <Head title="Subscriptions" />
+    <Head :title="$t('central.subscriptions')" />
     <AdminLayout>
         <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6">
             <PageHeader
-                title="Subscriptions"
-                description="Workspace subscription status, billing cycles, Stripe linkage, and cancellation grace windows."
+                :title="$t('central.subscriptions')"
+                :description="$t('central.workspace_subscription_status_billing_cycles_stripe_linkage_and_cancel')"
             />
 
             <div class="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-6">
-                <PlatformStatCard label="Total" :value="stats.total" />
-                <PlatformStatCard label="Active" :value="stats.active" tone="emerald" />
-                <PlatformStatCard label="On trial" :value="stats.on_trial" tone="blue" />
-                <PlatformStatCard label="In grace" :value="stats.in_grace" tone="amber" />
-                <PlatformStatCard label="Cancelled" :value="stats.cancelled" />
-                <PlatformStatCard label="Blocked" :value="stats.blocked" tone="red" />
+                <PlatformStatCard :label="$t('central.total')" :value="stats.total" />
+                <PlatformStatCard :label="$t('common.active')" :value="stats.active" tone="emerald" />
+                <PlatformStatCard :label="$t('central.on_trial')" :value="stats.on_trial" tone="blue" />
+                <PlatformStatCard :label="$t('central.in_grace')" :value="stats.in_grace" tone="amber" />
+                <PlatformStatCard :label="$t('central.cancelled')" :value="stats.cancelled" />
+                <PlatformStatCard :label="$t('central.blocked')" :value="stats.blocked" tone="red" />
             </div>
 
             <div class="mb-4 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
@@ -155,7 +149,7 @@ const hasFilters = computed(() => Boolean(props.filters.q) || (props.filters.sta
                     <input
                         v-model="search"
                         type="search"
-                        placeholder="Search workspace, plan, Stripe ID..."
+                        :placeholder="$t('central.search_workspace_plan_stripe_id')"
                         :class="[adminInputClass, 'pl-10']"
                     />
                 </div>
@@ -179,12 +173,12 @@ const hasFilters = computed(() => Boolean(props.filters.q) || (props.filters.sta
                     <table class="min-w-full text-sm">
                         <thead class="border-b border-slate-200 bg-slate-50/80">
                             <tr>
-                                <th class="px-5 py-3.5 text-left font-medium text-slate-600">Workspace</th>
-                                <th class="px-5 py-3.5 text-left font-medium text-slate-600">Plan</th>
-                                <th class="px-5 py-3.5 text-left font-medium text-slate-600">Status</th>
-                                <th class="px-5 py-3.5 text-left font-medium text-slate-600">Billing</th>
-                                <th class="px-5 py-3.5 text-left font-medium text-slate-600">Access ends</th>
-                                <th class="px-5 py-3.5 text-left font-medium text-slate-600">Stripe</th>
+                                <th class="px-5 py-3.5 text-left font-medium text-slate-600">{{ $t('settings.groups.workspace') }}</th>
+                                <th class="px-5 py-3.5 text-left font-medium text-slate-600">{{ $t('central.plan') }}</th>
+                                <th class="px-5 py-3.5 text-left font-medium text-slate-600">{{ $t('central.status') }}</th>
+                                <th class="px-5 py-3.5 text-left font-medium text-slate-600">{{ $t('central.billing') }}</th>
+                                <th class="px-5 py-3.5 text-left font-medium text-slate-600">{{ $t('central.access_ends') }}</th>
+                                <th class="px-5 py-3.5 text-left font-medium text-slate-600">{{ $t('central.stripe') }}</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-100">
@@ -243,7 +237,7 @@ const hasFilters = computed(() => Boolean(props.filters.q) || (props.filters.sta
                                 </td>
                                 <td class="px-5 py-4">
                                     <p v-if="item.has_stripe" class="font-mono text-xs text-violet-700">{{ item.stripe_subscription_id || 'Linked' }}</p>
-                                    <p v-else-if="item.tenant?.stripe_customer" class="text-xs text-slate-500">Customer only</p>
+                                    <p v-else-if="item.tenant?.stripe_customer" class="text-xs text-slate-500">{{ $t('central.customer_only') }}</p>
                                     <span v-else class="text-slate-400">—</span>
                                     <Link
                                         v-if="stripe_enabled"
@@ -256,7 +250,7 @@ const hasFilters = computed(() => Boolean(props.filters.q) || (props.filters.sta
                             </tr>
                             <tr v-if="!subscriptions.data.length">
                                 <td colspan="6" class="px-5 py-16 text-center">
-                                    <p class="text-sm font-medium text-slate-900">No subscriptions found</p>
+                                    <p class="text-sm font-medium text-slate-900">{{ $t('central.no_subscriptions_found') }}</p>
                                     <p class="mt-1 text-sm text-slate-500">
                                         {{ hasFilters ? 'Try adjusting your search or filters.' : 'Subscriptions appear when workspaces sign up.' }}
                                     </p>

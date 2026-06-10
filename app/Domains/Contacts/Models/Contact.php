@@ -63,4 +63,9 @@ class Contact extends Model
         return $this->hasOne(User::class, 'contact_id')
             ->whereHas('roles', fn ($query) => $query->where('name', 'customer'));
     }
+
+    public function crmProfile(): HasOne
+    {
+        return $this->hasOne(\App\Domains\Integrations\Models\ContactCrmProfile::class);
+    }
 }

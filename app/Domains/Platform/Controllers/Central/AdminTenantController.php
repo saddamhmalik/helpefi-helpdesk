@@ -4,6 +4,7 @@ namespace App\Domains\Platform\Controllers\Central;
 
 use App\Domains\Billing\Repositories\PlanRepository;
 use App\Domains\Platform\Services\PlatformTenantService;
+use App\Domains\Tenancy\Services\TenantProvisioningService;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -15,6 +16,7 @@ class AdminTenantController extends Controller
     public function __construct(
         private PlatformTenantService $tenants,
         private PlanRepository $plans,
+        private TenantProvisioningService $provisioning,
     ) {
     }
 
@@ -22,6 +24,15 @@ class AdminTenantController extends Controller
     {
         $search = trim((string) $request->string('q'));
         $status = (string) $request->string('status', 'all');
+
+        $healed = $this->provisioning->healMissingSubscriptions();
+
+        if ($healed > 0) {
+            session()->flash(
+                'success',
+                "Started free trial for {$healed} workspace(s) that were missing a subscription.",
+            );
+        }
 
         return Inertia::render('Central/Admin/Tenants/Index', [
             'tenants' => $this->tenants->list(
@@ -42,7 +53,7 @@ class AdminTenantController extends Controller
                 ])
                 ->values()
                 ->all(),
-            'stripe_enabled' => (bool) config('stripe.enabled'),
+            'stripe_enabled' => (bool) config('stripe.configured'),
         ]);
     }
 
@@ -53,10 +64,36 @@ class AdminTenantController extends Controller
         $data = $request->validate([
             'is_blocked' => ['sometimes', 'boolean'],
             'plan' => ['sometimes', 'nullable', 'string', 'in:'.$slugs],
+            'start_trial' => ['sometimes', 'boolean'],
         ]);
+
+        if ($request->boolean('start_trial')) {
+            $this->provisioning->ensureCentralSubscription($this->tenants->find($tenant));
+        }
 
         $this->tenants->update($tenant, $data);
 
         return back()->with('success', 'Workspace updated.');
+    }
+
+    public function destroy(Request $request, string $tenant): RedirectResponse
+    {
+        $data = $request->validate([
+            'confirm_slug' => ['required', 'string'],
+        ]);
+
+        $record = $this->tenants->find($tenant);
+
+        if ($data['confirm_slug'] !== $record->slug) {
+            return back()->withErrors([
+                'confirm_slug' => 'Workspace slug does not match. Deletion cancelled.',
+            ]);
+        }
+
+        $this->tenants->delete($tenant);
+
+        return redirect()
+            ->route('central.admin.tenants.index')
+            ->with('success', 'Workspace and tenant database deleted.');
     }
 }

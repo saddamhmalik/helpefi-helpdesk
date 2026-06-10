@@ -53,6 +53,17 @@ class RealtimePublisher
         ]);
     }
 
+    public function notificationCreated(int $userId, array $notification): void
+    {
+        $this->publish(RealtimeChannelNames::user($userId), [
+            'event' => 'notification.created',
+            'data' => [
+                'notification' => $notification,
+                'unread_count' => null,
+            ],
+        ]);
+    }
+
     private function publish(string $channel, array $payload): void
     {
         $payload['timestamp'] = now()->toIso8601String();

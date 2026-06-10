@@ -1,4 +1,8 @@
-export function messageAuthor(message) {
+import { computed } from 'vue';
+import { usePage } from '@inertiajs/vue3';
+import { useI18n } from 'vue-i18n';
+
+export function messageAuthor(message, t = null) {
     if (message.user?.name) {
         return message.user.name;
     }
@@ -9,7 +13,7 @@ export function messageAuthor(message) {
             : message.contact.email;
     }
 
-    return message.contact?.name || 'System';
+    return message.contact?.name || (t ? t('components.system') : 'System');
 }
 
 export function messageSide(message, currentUserId = null) {
@@ -79,11 +83,11 @@ export function avatarColor(seed) {
     return palette[Math.abs(hash) % palette.length];
 }
 
-export function formatRelativeTime(value) {
+export function formatRelativeTime(value, locale = undefined) {
     const date = new Date(value);
     const diffMs = date.getTime() - Date.now();
     const absMs = Math.abs(diffMs);
-    const rtf = new Intl.RelativeTimeFormat(undefined, { numeric: 'auto' });
+    const rtf = new Intl.RelativeTimeFormat(locale, { numeric: 'auto' });
 
     if (absMs < 60_000) {
         return rtf.format(Math.round(diffMs / 1000), 'second');
@@ -101,7 +105,7 @@ export function formatRelativeTime(value) {
         return rtf.format(Math.round(diffMs / 86_400_000), 'day');
     }
 
-    return date.toLocaleString();
+    return date.toLocaleString(locale);
 }
 
 export function messagePlainText(body) {
@@ -111,4 +115,20 @@ export function messagePlainText(body) {
         .replace(/<[^>]+>/g, '')
         .replace(/&nbsp;/g, ' ')
         .trim();
+}
+
+export function useTicketMessage() {
+    const { t, locale } = useI18n();
+    const page = usePage();
+    const currentLocale = computed(() => page.props.locale ?? locale.value ?? 'en');
+
+    return {
+        messageAuthor: (message) => messageAuthor(message, t),
+        formatRelativeTime: (value) => formatRelativeTime(value, currentLocale.value),
+        messageSide,
+        messageAvatar,
+        messagePlainText,
+        avatarLabel,
+        avatarColor,
+    };
 }

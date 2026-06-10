@@ -1,16 +1,22 @@
 <script setup>
 import { Head, useForm } from '@inertiajs/vue3';
+import { onMounted } from 'vue';
 import AgentLayout from '../../Layouts/AgentLayout.vue';
 import FormRichTextField from '../../Components/FormRichTextField.vue';
 import FormField from '../../Components/FormField.vue';
 import FormPage from '../../Components/FormPage.vue';
 import FormSection from '../../Components/FormSection.vue';
 import { formInputClass, formSelectClass } from '../../composables/useFormControls.js';
+import { useI18n } from 'vue-i18n';
 
-defineProps({
+const props = defineProps({
     categories: Array,
     collections: Array,
+    locales: Array,
+    defaultLocale: String,
 });
+
+const { t } = useI18n();
 
 const form = useForm({
     title: '',
@@ -19,49 +25,61 @@ const form = useForm({
     knowledge_category_id: '',
     knowledge_collection_id: '',
     is_published: false,
+    locale: props.defaultLocale ?? 'en',
+});
+
+onMounted(() => {
+    if (!form.locale) {
+        form.locale = props.defaultLocale ?? 'en';
+    }
 });
 
 const submit = () => form.post('/knowledge');
 </script>
 
 <template>
-    <Head title="New article" />
+    <Head :title="$t('knowledge.new_article')" />
     <AgentLayout>
         <FormPage
-            description="Write help content for agents and customers. You can publish immediately or save as a draft."
+            :description="$t('knowledge.write_help_content_for_agents_and_customers_you_can_publish_immediatel')"
             cancel-href="/knowledge"
-            submit-label="Save article"
+            :submit-label="$t('knowledge.save_article')"
             :processing="form.processing"
             max-width="lg"
             @submit="submit"
         >
-            <FormSection title="Article">
-                <FormField label="Title" required :error="form.errors.title">
-                    <input v-model="form.title" type="text" :class="formInputClass" placeholder="How to reset your password" required />
+            <FormSection :title="$t('knowledge.article')">
+                <FormField :label="$t('common.title')" required :error="form.errors.title">
+                    <input v-model="form.title" type="text" :class="formInputClass" :placeholder="$t('knowledge.how_to_reset_your_password')" required />
                 </FormField>
-                <FormField label="Excerpt" hint="Short summary shown in search results and article lists." :error="form.errors.excerpt">
-                    <input v-model="form.excerpt" type="text" :class="formInputClass" placeholder="One-line summary" />
+                <FormField :label="$t('knowledge.excerpt')" hint="Short summary shown in search results and article lists." :error="form.errors.excerpt">
+                    <input v-model="form.excerpt" type="text" :class="formInputClass" :placeholder="$t('knowledge.one-line_summary')" />
                 </FormField>
                 <FormRichTextField
                     v-model="form.body"
-                    label="Body"
+                    :label="$t('knowledge.body')"
                     required
                     :error="form.errors.body"
-                    placeholder="Write the full article content…"
+                    :placeholder="$t('knowledge.write_the_full_article_content_ellipsis')"
                 />
             </FormSection>
 
-            <FormSection title="Organization">
+            <FormSection :title="$t('knowledge.organization')">
                 <div class="grid gap-5 sm:grid-cols-2">
-                    <FormField label="Collection" :error="form.errors.knowledge_collection_id">
+                    <FormField :label="$t('knowledge.language')" :error="form.errors.locale">
+                        <select v-model="form.locale" :class="formSelectClass">
+                            <option v-for="locale in locales" :key="locale.code" :value="locale.code">{{ locale.label }}</option>
+                        </select>
+                    </FormField>
+                    <FormField :label="$t('knowledge.collection')" :error="form.errors.knowledge_collection_id">
                         <select v-model="form.knowledge_collection_id" :class="formSelectClass">
-                            <option value="">No collection</option>
+                            <option value="">{{ $t('knowledge.no_collection') }}</option>
                             <option v-for="collection in collections" :key="collection.id" :value="collection.id">{{ collection.name }}</option>
                         </select>
                     </FormField>
-                    <FormField label="Category" :error="form.errors.knowledge_category_id">
+                    <FormField :label="$t('knowledge.category')" :error="form.errors.knowledge_category_id">
                         <select v-model="form.knowledge_category_id" :class="formSelectClass">
-                            <option value="">Uncategorized</option>
+                            <option value="">{{ $t('knowledge.uncategorized') }}</option>
                             <option v-for="category in categories" :key="category.id" :value="category.id">{{ category.name }}</option>
                         </select>
                     </FormField>
@@ -73,8 +91,8 @@ const submit = () => form.post('/knowledge');
                         class="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500/20"
                     >
                     <span>
-                        <span class="block text-sm font-medium text-slate-900">Publish immediately</span>
-                        <span class="block text-xs text-slate-500">Make this article visible in the help center right away.</span>
+                        <span class="block text-sm font-medium text-slate-900">{{ $t('knowledge.publish_immediately') }}</span>
+                        <span class="block text-xs text-slate-500">{{ $t('knowledge.make_this_article_visible_in_the_help_center_right_away') }}</span>
                     </span>
                 </label>
             </FormSection>

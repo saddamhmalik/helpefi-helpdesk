@@ -7,6 +7,8 @@ import ListPanel from '../../Components/ListPanel.vue';
 import FilterField from '../../Components/FilterField.vue';
 import DataTable from '../../Components/DataTable.vue';
 import StatusBadge from '../../Components/StatusBadge.vue';
+import { useI18n } from 'vue-i18n';
+import { useDateTime } from '../../composables/useDateTime.js';
 
 const props = defineProps({
     reportTypes: Array,
@@ -20,6 +22,10 @@ const props = defineProps({
     activeType: String,
     result: Object,
 });
+
+const { formatDateTime } = useDateTime();
+
+const { t } = useI18n();
 
 const filterForm = useForm({
     type: props.activeType ?? 'tickets',
@@ -195,13 +201,13 @@ const removeSchedule = () => {
     });
 };
 
-const formatDate = (value) => value ? new Date(value).toLocaleString() : '—';
+const formatDate = (value) => value ? formatDateTime(value) : '—';
 </script>
 
 <template>
-    <Head title="Reports" />
+    <Head :title="$t('reports.reports')" />
     <AgentLayout>
-        <PageHeader description="Run, save, and export helpdesk reports." />
+        <PageHeader :description="$t('reports.run_save_and_export_helpdesk_reports')" />
 
         <div v-if="savedReports.length" class="mb-4 flex flex-wrap gap-2">
             <div
@@ -211,12 +217,12 @@ const formatDate = (value) => value ? new Date(value).toLocaleString() : '—';
             >
                 <button type="button" class="px-1" @click="loadSaved(saved)">
                     {{ saved.name }}
-                    <span v-if="saved.schedule?.is_enabled" class="ml-1 rounded bg-blue-50 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-blue-700">Scheduled</span>
+                    <span v-if="saved.schedule?.is_enabled" class="ml-1 rounded bg-blue-50 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-blue-700">{{ $t('reports.scheduled') }}</span>
                 </button>
                 <button
                     type="button"
                     class="rounded px-1.5 py-0.5 text-xs text-slate-400 hover:bg-slate-100 hover:text-slate-700"
-                    title="Email schedule"
+                    :title="$t('reports.email_schedule')"
                     @click="openSchedule(saved)"
                 >
                     ⏱
@@ -231,28 +237,28 @@ const formatDate = (value) => value ? new Date(value).toLocaleString() : '—';
             </div>
         </div>
 
-        <ListPanel v-if="showSchedule" class="mb-4" title="Email schedule" :description="schedulingReport ? `Deliver “${schedulingReport.name}” to your inbox.` : ''">
+        <ListPanel v-if="showSchedule" class="mb-4" :title="$t('reports.email_schedule')" :description="schedulingReport ? `Deliver “${schedulingReport.name}” to your inbox.` : ''">
             <form @submit.prevent="saveSchedule">
                 <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-                    <FilterField label="Frequency">
+                    <FilterField :label="$t('reports.frequency')">
                         <select v-model="scheduleForm.frequency" :class="inputClass">
                             <option v-for="option in scheduleOptions?.frequencies ?? []" :key="option.value" :value="option.value">{{ option.label }}</option>
                         </select>
                     </FilterField>
 
-                    <FilterField v-if="scheduleForm.frequency === 'weekly'" label="Day">
+                    <FilterField v-if="scheduleForm.frequency === 'weekly'" :label="$t('reports.day')">
                         <select v-model="scheduleForm.weekday" :class="inputClass">
                             <option v-for="option in scheduleOptions?.weekdays ?? []" :key="option.value" :value="option.value">{{ option.label }}</option>
                         </select>
                     </FilterField>
 
-                    <FilterField label="Send time">
+                    <FilterField :label="$t('reports.send_time')">
                         <select v-model="scheduleForm.send_hour" :class="inputClass">
                             <option v-for="option in scheduleOptions?.hours ?? []" :key="option.value" :value="option.value">{{ option.label }}</option>
                         </select>
                     </FilterField>
 
-                    <FilterField label="Attachment format">
+                    <FilterField :label="$t('reports.attachment_format')">
                         <select v-model="scheduleForm.format" :class="inputClass">
                             <option v-for="option in scheduleOptions?.formats ?? []" :key="option.value" :value="option.value">{{ option.label }}</option>
                         </select>
@@ -269,110 +275,110 @@ const formatDate = (value) => value ? new Date(value).toLocaleString() : '—';
                 </p>
 
                 <div class="mt-4 flex flex-wrap gap-2">
-                    <button type="submit" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700" :disabled="scheduleForm.processing">Save schedule</button>
-                    <button v-if="schedulingReport?.schedule" type="button" class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50" @click="removeSchedule">Remove schedule</button>
-                    <button type="button" class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50" @click="showSchedule = false">Cancel</button>
+                    <button type="submit" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700" :disabled="scheduleForm.processing">{{ $t('reports.save_schedule') }}</button>
+                    <button v-if="schedulingReport?.schedule" type="button" class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50" @click="removeSchedule">{{ $t('reports.remove_schedule') }}</button>
+                    <button type="button" class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50" @click="showSchedule = false">{{ $t('reports.cancel') }}</button>
                 </div>
             </form>
         </ListPanel>
 
-        <ListPanel class="mb-6" title="Report options" description="Choose a report type, set filters, then run the report.">
+        <ListPanel class="mb-6" :title="$t('reports.report_options')" :description="$t('reports.choose_a_report_type_set_filters_then_run_the_report')">
             <form @submit.prevent="runReport">
                 <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-                    <FilterField label="Report type" class="xl:col-span-2">
+                    <FilterField :label="$t('reports.report_type')" class="xl:col-span-2">
                         <select v-model="filterForm.type" :class="inputClass">
                             <option v-for="reportType in reportTypes" :key="reportType.value" :value="reportType.value">{{ reportType.label }}</option>
                         </select>
                     </FilterField>
 
-                    <FilterField label="Assignee">
+                    <FilterField :label="$t('reports.assignee')">
                         <select v-model="filterForm.assigned_to" :class="inputClass">
-                            <option value="">All assignees</option>
+                            <option value="">{{ $t('reports.all_assignees') }}</option>
                             <option v-for="agent in agents" :key="agent.id" :value="agent.id">{{ agent.name }}</option>
                         </select>
                     </FilterField>
 
-                    <FilterField label="Date from">
+                    <FilterField :label="$t('reports.date_from')">
                         <input v-model="filterForm.date_from" type="date" :class="inputClass" />
                     </FilterField>
 
-                    <FilterField label="Date to">
+                    <FilterField :label="$t('reports.date_to')">
                         <input v-model="filterForm.date_to" type="date" :class="inputClass" />
                     </FilterField>
 
-                    <FilterField v-if="filterForm.type === 'time_tracking'" label="Team">
+                    <FilterField v-if="filterForm.type === 'time_tracking'" :label="$t('reports.team')">
                         <select v-model="filterForm.team_id" :class="inputClass">
-                            <option value="">All teams</option>
+                            <option value="">{{ $t('reports.all_teams') }}</option>
                             <option v-for="team in teams" :key="team.id" :value="team.id">{{ team.name }}</option>
                         </select>
                     </FilterField>
 
-                    <FilterField v-if="filterForm.type !== 'agent_performance' && filterForm.type !== 'csat' && filterForm.type !== 'time_tracking'" label="Status">
+                    <FilterField v-if="filterForm.type !== 'agent_performance' && filterForm.type !== 'csat' && filterForm.type !== 'time_tracking'" :label="$t('reports.status')">
                         <select v-model="filterForm.status_id" :class="inputClass">
-                            <option value="">All statuses</option>
+                            <option value="">{{ $t('reports.all_statuses') }}</option>
                             <option v-for="status in statuses" :key="status.id" :value="status.id">{{ status.name }}</option>
                         </select>
                     </FilterField>
 
-                    <FilterField v-if="filterForm.type === 'tickets'" label="Priority">
+                    <FilterField v-if="filterForm.type === 'tickets'" :label="$t('reports.priority')">
                         <select v-model="filterForm.priority_id" :class="inputClass">
-                            <option value="">All priorities</option>
+                            <option value="">{{ $t('reports.all_priorities') }}</option>
                             <option v-for="priority in priorities" :key="priority.id" :value="priority.id">{{ priority.name }}</option>
                         </select>
                     </FilterField>
                 </div>
 
                 <div class="mt-4 flex flex-wrap items-center gap-2">
-                    <button type="submit" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">Run report</button>
-                    <a v-if="result" :href="exportUrl" class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">Export CSV</a>
-                    <button v-if="result" type="button" class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50" @click="openSave">Save report</button>
+                    <button type="submit" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">{{ $t('reports.run_report') }}</button>
+                    <a v-if="result" :href="exportUrl" class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">{{ $t('reports.export_csv') }}</a>
+                    <button v-if="result" type="button" class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50" @click="openSave">{{ $t('reports.save_report') }}</button>
                 </div>
             </form>
 
             <form v-if="showSave" class="mt-5 border-t border-slate-100 pt-5" @submit.prevent="saveReport">
                 <div class="grid gap-4 md:grid-cols-2">
-                    <FilterField label="Report name">
-                        <input v-model="saveForm.name" type="text" required placeholder="Weekly open tickets" :class="inputClass" />
+                    <FilterField :label="$t('reports.report_name')">
+                        <input v-model="saveForm.name" type="text" required :placeholder="$t('reports.weekly_open_tickets')" :class="inputClass" />
                     </FilterField>
                     <label class="flex items-center gap-2 self-end pb-2 text-sm text-slate-600">
                         <input v-model="saveForm.is_default" type="checkbox" class="rounded border-slate-300" />
                         Set as default
                     </label>
                 </div>
-                <button type="submit" class="mt-3 rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white" :disabled="saveForm.processing">Save</button>
+                <button type="submit" class="mt-3 rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white" :disabled="saveForm.processing">{{ $t('reports.save') }}</button>
             </form>
         </ListPanel>
 
         <div v-if="result && isTimeTrackingReport" class="mb-6 grid gap-4 sm:grid-cols-2">
             <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-                <p class="text-sm text-slate-500">Total minutes</p>
+                <p class="text-sm text-slate-500">{{ $t('reports.total_minutes') }}</p>
                 <p class="mt-2 text-3xl font-semibold text-slate-900">{{ formatMinutes(result.summary?.total_minutes ?? 0) }}</p>
             </div>
             <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-                <p class="text-sm text-slate-500">Entries logged</p>
+                <p class="text-sm text-slate-500">{{ $t('reports.entries_logged') }}</p>
                 <p class="mt-2 text-3xl font-semibold text-slate-900">{{ result.summary?.entry_count ?? 0 }}</p>
             </div>
         </div>
 
         <div v-if="result && isCsatReport" class="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
             <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-                <p class="text-sm text-slate-500">Average rating</p>
+                <p class="text-sm text-slate-500">{{ $t('reports.average_rating') }}</p>
                 <p class="mt-2 text-3xl font-semibold text-slate-900">{{ result.summary?.average_rating ?? '—' }}</p>
             </div>
             <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-                <p class="text-sm text-slate-500">Total responses</p>
+                <p class="text-sm text-slate-500">{{ $t('reports.total_responses') }}</p>
                 <p class="mt-2 text-3xl font-semibold text-slate-900">{{ result.summary?.total_responses ?? 0 }}</p>
             </div>
             <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-                <p class="text-sm text-slate-500">Portal responses</p>
+                <p class="text-sm text-slate-500">{{ $t('reports.portal_responses') }}</p>
                 <p class="mt-2 text-3xl font-semibold text-slate-900">{{ result.summary?.by_channel?.portal ?? 0 }}</p>
             </div>
             <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-                <p class="text-sm text-slate-500">Email responses</p>
+                <p class="text-sm text-slate-500">{{ $t('reports.email_responses') }}</p>
                 <p class="mt-2 text-3xl font-semibold text-slate-900">{{ result.summary?.by_channel?.email ?? 0 }}</p>
             </div>
             <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-                <p class="text-sm text-slate-500">5-star ratings</p>
+                <p class="text-sm text-slate-500">{{ $t('reports.5-star_ratings') }}</p>
                 <p class="mt-2 text-3xl font-semibold text-slate-900">{{ result.summary?.breakdown?.[5] ?? 0 }}</p>
             </div>
         </div>
@@ -381,9 +387,9 @@ const formatDate = (value) => value ? new Date(value).toLocaleString() : '—';
             <DataTable class="mb-6">
                 <thead class="bg-slate-50">
                     <tr>
-                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Agent</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Total time</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Entries</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('reports.agent') }}</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('reports.total_time') }}</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('reports.entries') }}</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100">
@@ -401,9 +407,9 @@ const formatDate = (value) => value ? new Date(value).toLocaleString() : '—';
             <DataTable>
                 <thead class="bg-slate-50">
                     <tr>
-                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Team</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Total time</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Entries</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('reports.team') }}</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('reports.total_time') }}</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('reports.entries') }}</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100">
@@ -422,10 +428,10 @@ const formatDate = (value) => value ? new Date(value).toLocaleString() : '—';
         <DataTable v-else-if="result && isAgentReport">
             <thead class="bg-slate-50">
                 <tr>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Agent</th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Open</th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Closed</th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Total</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('reports.agent') }}</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('reports.open') }}</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('reports.closed') }}</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('reports.total') }}</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-slate-100">
@@ -444,13 +450,13 @@ const formatDate = (value) => value ? new Date(value).toLocaleString() : '—';
         <DataTable v-else-if="result && isCsatReport">
             <thead class="bg-slate-50">
                 <tr>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Ticket</th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Contact</th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Rating</th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Channel</th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Comment</th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Assignee</th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Submitted</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('reports.ticket') }}</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('reports.contact') }}</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('reports.rating') }}</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('reports.channel') }}</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('reports.comment') }}</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('reports.assignee') }}</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('reports.submitted') }}</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-slate-100">
@@ -474,14 +480,14 @@ const formatDate = (value) => value ? new Date(value).toLocaleString() : '—';
         <DataTable v-else-if="result">
             <thead class="bg-slate-50">
                 <tr>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Number</th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Subject</th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Contact</th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Status</th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Priority</th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Assignee</th>
-                    <th v-if="activeType === 'sla_breaches'" class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Breaches</th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Created</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('reports.number') }}</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('reports.subject') }}</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('reports.contact') }}</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('reports.status') }}</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('reports.priority') }}</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('reports.assignee') }}</th>
+                    <th v-if="activeType === 'sla_breaches'" class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('reports.breaches') }}</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('reports.created') }}</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-slate-100">
@@ -497,8 +503,8 @@ const formatDate = (value) => value ? new Date(value).toLocaleString() : '—';
                     <td class="px-4 py-3 text-sm text-slate-600">{{ ticket.priority?.name }}</td>
                     <td class="px-4 py-3 text-sm text-slate-600">{{ ticket.assignee?.name || '—' }}</td>
                     <td v-if="activeType === 'sla_breaches'" class="px-4 py-3 text-sm text-slate-600">
-                        <span v-if="ticket.sla_timer?.first_response_breached" class="mr-1 rounded bg-red-100 px-1.5 py-0.5 text-xs text-red-800">FR</span>
-                        <span v-if="ticket.sla_timer?.resolution_breached" class="rounded bg-red-100 px-1.5 py-0.5 text-xs text-red-800">RES</span>
+                        <span v-if="ticket.sla_timer?.first_response_breached" class="mr-1 rounded bg-red-100 px-1.5 py-0.5 text-xs text-red-800">{{ $t('reports.fr') }}</span>
+                        <span v-if="ticket.sla_timer?.resolution_breached" class="rounded bg-red-100 px-1.5 py-0.5 text-xs text-red-800">{{ $t('reports.res') }}</span>
                     </td>
                     <td class="px-4 py-3 text-sm text-slate-500">{{ formatDate(ticket.created_at) }}</td>
                 </tr>

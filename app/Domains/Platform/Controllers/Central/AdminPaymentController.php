@@ -34,7 +34,8 @@ class AdminPaymentController extends Controller
                 'q' => $search,
                 'status' => $status,
             ],
-            'stripe_enabled' => (bool) config('stripe.enabled'),
+            'stripe_enabled' => (bool) config('stripe.configured'),
+            'stripe_webhooks_configured' => (bool) config('stripe.webhooks_configured'),
         ]);
     }
 }

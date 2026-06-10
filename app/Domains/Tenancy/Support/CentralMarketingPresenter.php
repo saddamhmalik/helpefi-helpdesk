@@ -2,6 +2,7 @@
 
 namespace App\Domains\Tenancy\Support;
 
+use App\Domains\Tenancy\Services\CentralSeoService;
 use App\Domains\Tenancy\Services\CentralSettingsService;
 
 class CentralMarketingPresenter
@@ -14,6 +15,7 @@ class CentralMarketingPresenter
             'centralDomain' => config('tenancy.central_app_domain'),
             'currency' => app(CentralSettingsService::class)->currencyMeta(),
             'plans' => self::plans(),
+            'seo' => app(CentralSeoService::class)->shared(),
         ];
     }
 

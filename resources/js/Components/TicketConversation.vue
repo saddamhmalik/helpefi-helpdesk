@@ -1,9 +1,13 @@
 <script setup>
 import { computed, nextTick, onMounted, ref, watch } from 'vue';
+import { useDateTime } from '../composables/useDateTime.js';
 import AppAvatar from './AppAvatar.vue';
 import TicketAttachmentPreview from './TicketAttachmentPreview.vue';
 import TicketMessageContent from './TicketMessageContent.vue';
-import { formatRelativeTime, messageAuthor, messageAvatar, messagePlainText, messageSide } from './ticketMessage.js';
+import { messageAvatar, messagePlainText, messageSide, useTicketMessage } from './ticketMessage.js';
+
+const { formatDateTime } = useDateTime();
+const { messageAuthor, formatRelativeTime } = useTicketMessage();
 
 const props = defineProps({
     messages: { type: Array, default: () => [] },
@@ -141,6 +145,8 @@ const copyMessage = async (message) => {
         }
     }, 1600);
 };
+
+const relativeTime = (value) => formatRelativeTime(value);
 </script>
 
 <template>
@@ -183,10 +189,10 @@ const copyMessage = async (message) => {
                         <span class="font-medium text-slate-700">{{ messageAuthor(message) }}</span>
                         <time
                             :datetime="message.created_at"
-                            :title="new Date(message.created_at).toLocaleString()"
+                            :title="formatDateTime(message.created_at)"
                             class="cursor-default"
                         >
-                            {{ formatRelativeTime(message.created_at) }}
+                            {{ relativeTime(message.created_at) }}
                         </time>
                         <button
                             v-if="messageHasBody(message)"
@@ -194,7 +200,7 @@ const copyMessage = async (message) => {
                             class="rounded px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-slate-400 opacity-0 transition hover:bg-slate-100 hover:text-slate-600 group-hover/message:opacity-100"
                             @click="copyMessage(message)"
                         >
-                            {{ copiedMessageId === message.id ? 'Copied' : 'Copy' }}
+                            {{ copiedMessageId === message.id ? $t('components.copied') : $t('components.copy') }}
                         </button>
                     </div>
 
@@ -243,7 +249,7 @@ const copyMessage = async (message) => {
                             alignment(message) === 'center' ? 'justify-center' : '',
                         ]"
                     >
-                        <span v-if="message.is_internal" class="text-[11px] font-medium uppercase tracking-wide text-amber-700">Internal note</span>
+                        <span v-if="message.is_internal" class="text-[11px] font-medium uppercase tracking-wide text-amber-700">{{ $t('components.internal_note') }}</span>
                         <span v-if="message.channel" class="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] text-slate-600">{{ message.channel.name }}</span>
                     </div>
                 </div>
@@ -256,7 +262,7 @@ const copyMessage = async (message) => {
                 />
             </div>
 
-            <p v-if="!sortedMessages.length" class="py-8 text-center text-sm text-slate-500">No messages yet.</p>
+            <p v-if="!sortedMessages.length" class="py-8 text-center text-sm text-slate-500">{{ $t('components.no_messages_yet') }}</p>
         </div>
 
         <button
@@ -268,7 +274,7 @@ const copyMessage = async (message) => {
             <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
             </svg>
-            {{ unreadBelow > 0 ? `${unreadBelow} new message${unreadBelow === 1 ? '' : 's'}` : 'Jump to latest' }}
+            {{ unreadBelow > 0 ? $t('components.new_messages', unreadBelow, { count: unreadBelow }) : $t('components.jump_to_latest') }}
         </button>
     </div>
 </template>

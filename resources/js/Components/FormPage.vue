@@ -1,20 +1,26 @@
 <script setup>
 import { Link } from '@inertiajs/vue3';
 import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { formMaxWidthClass } from '../composables/useFormControls.js';
 
 const props = defineProps({
     description: { type: String, default: '' },
     cancelHref: { type: String, default: '' },
-    cancelLabel: { type: String, default: 'Cancel' },
-    submitLabel: { type: String, default: 'Save' },
+    cancelLabel: { type: String, default: '' },
+    submitLabel: { type: String, default: '' },
     processing: { type: Boolean, default: false },
+    submitDisabled: { type: Boolean, default: false },
     maxWidth: { type: String, default: 'lg' },
 });
 
 defineEmits(['submit']);
 
+const { t } = useI18n();
+
 const widthClass = computed(() => formMaxWidthClass(props.maxWidth));
+const resolvedCancelLabel = computed(() => props.cancelLabel || t('components.cancel'));
+const resolvedSubmitLabel = computed(() => props.submitLabel || t('components.save'));
 </script>
 
 <template>
@@ -37,7 +43,7 @@ const widthClass = computed(() => formMaxWidthClass(props.maxWidth));
                         :href="cancelHref"
                         class="text-sm font-medium text-slate-600 transition hover:text-slate-900"
                     >
-                        {{ cancelLabel }}
+                        {{ resolvedCancelLabel }}
                     </Link>
                     <span v-else />
 
@@ -46,9 +52,9 @@ const widthClass = computed(() => formMaxWidthClass(props.maxWidth));
                         <button
                             type="submit"
                             class="inline-flex items-center justify-center rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm shadow-blue-600/20 transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
-                            :disabled="processing"
+                            :disabled="processing || submitDisabled"
                         >
-                            {{ processing ? 'Saving…' : submitLabel }}
+                            {{ processing ? $t('components.saving') : resolvedSubmitLabel }}
                         </button>
                     </div>
                 </div>

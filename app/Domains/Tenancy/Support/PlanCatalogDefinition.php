@@ -34,6 +34,33 @@ class PlanCatalogDefinition
         return array_keys(self::limitDefinitions());
     }
 
+    public static function defaultYearlyPrice(int $monthly): int
+    {
+        return $monthly > 0 ? $monthly * 10 : 0;
+    }
+
+    public static function priceForInterval(array $plan, string $interval = 'month'): int
+    {
+        if ($interval === 'year') {
+            return (int) ($plan['price_yearly'] ?? self::defaultYearlyPrice((int) ($plan['price_monthly'] ?? $plan['price'] ?? 0)));
+        }
+
+        return (int) ($plan['price_monthly'] ?? $plan['price'] ?? 0);
+    }
+
+    public static function stripePriceIdForInterval(array $plan, string $interval = 'month'): ?string
+    {
+        if ($interval === 'year') {
+            $yearly = $plan['stripe_price_id_yearly'] ?? null;
+
+            return $yearly !== null && $yearly !== '' ? (string) $yearly : null;
+        }
+
+        $monthly = $plan['stripe_price_id_monthly'] ?? $plan['stripe_price_id'] ?? null;
+
+        return $monthly !== null && $monthly !== '' ? (string) $monthly : null;
+    }
+
     public static function defaultCatalog(): array
     {
         $catalog = [];
@@ -59,12 +86,23 @@ class PlanCatalogDefinition
             ->values()
             ->all();
 
+        $priceMonthly = max(0, (int) ($plan['price_monthly'] ?? $plan['price'] ?? 0));
+        $priceYearly = array_key_exists('price_yearly', $plan) && $plan['price_yearly'] !== ''
+            ? max(0, (int) $plan['price_yearly'])
+            : self::defaultYearlyPrice($priceMonthly);
+        $stripePriceIdMonthly = self::resolveStripePriceIdMonthly($slug, $plan);
+        $stripePriceIdYearly = self::resolveStripePriceIdYearly($slug, $plan);
+
         return [
             'slug' => $slug,
             'name' => (string) ($plan['name'] ?? ucfirst($slug)),
-            'price' => max(0, (int) ($plan['price'] ?? 0)),
+            'price' => $priceMonthly,
+            'price_monthly' => $priceMonthly,
+            'price_yearly' => $priceYearly,
             'stripe_product_id' => self::resolveStripeProductId($plan),
-            'stripe_price_id' => self::resolveStripePriceId($slug, $plan),
+            'stripe_price_id' => $stripePriceIdMonthly,
+            'stripe_price_id_monthly' => $stripePriceIdMonthly,
+            'stripe_price_id_yearly' => $stripePriceIdYearly,
             'limits' => $limits,
             'features' => $features,
         ];
@@ -159,13 +197,28 @@ class PlanCatalogDefinition
         return null;
     }
 
-    private static function resolveStripePriceId(string $slug, array $plan): ?string
+    private static function resolveStripePriceIdMonthly(string $slug, array $plan): ?string
     {
+        if (isset($plan['stripe_price_id_monthly']) && $plan['stripe_price_id_monthly'] !== '') {
+            return (string) $plan['stripe_price_id_monthly'];
+        }
+
         if (isset($plan['stripe_price_id']) && $plan['stripe_price_id'] !== '') {
             return (string) $plan['stripe_price_id'];
         }
 
         $fromEnv = config('billing.stripe_plans.'.$slug);
+
+        return $fromEnv ? (string) $fromEnv : null;
+    }
+
+    private static function resolveStripePriceIdYearly(string $slug, array $plan): ?string
+    {
+        if (isset($plan['stripe_price_id_yearly']) && $plan['stripe_price_id_yearly'] !== '') {
+            return (string) $plan['stripe_price_id_yearly'];
+        }
+
+        $fromEnv = config('billing.stripe_plans_yearly.'.$slug);
 
         return $fromEnv ? (string) $fromEnv : null;
     }

@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Domains\Tenancy\Services\TenantDummyDataService;
 use App\Domains\Tenancy\Services\TenantSetupService;
 use Closure;
 use Illuminate\Http\Request;
@@ -9,15 +10,17 @@ use Symfony\Component\HttpFoundation\Response;
 
 class EnsureWorkspaceSetup
 {
-    public function __construct(private TenantSetupService $setup)
-    {
+    public function __construct(
+        private TenantSetupService $setup,
+        private TenantDummyDataService $dummyData,
+    ) {
     }
 
     public function handle(Request $request, Closure $next): Response
     {
         $user = $request->user();
 
-        if (! tenant('id') || ! $user?->hasRole('admin') || ! $this->setup->shouldRedirect()) {
+        if (! tenant('id') || ! $user?->hasRole('admin') || ! $this->setup->shouldRedirect() || $this->dummyData->isActive()) {
             return $next($request);
         }
 

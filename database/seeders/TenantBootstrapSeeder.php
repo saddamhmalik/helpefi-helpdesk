@@ -10,8 +10,6 @@ class TenantBootstrapSeeder extends Seeder
     {
         $this->call([
             TicketLookupSeeder::class,
-            KnowledgeCategorySeeder::class,
-            KnowledgeCollectionSeeder::class,
             SlaSeeder::class,
             ContactLookupSeeder::class,
             ChannelSeeder::class,
@@ -23,7 +21,6 @@ class TenantBootstrapSeeder extends Seeder
             CsatSeeder::class,
             PermissionSeeder::class,
             WorkforceSeeder::class,
-            ProductKnowledgeSeeder::class,
         ]);
     }
 }

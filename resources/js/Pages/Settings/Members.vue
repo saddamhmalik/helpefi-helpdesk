@@ -1,25 +1,33 @@
 <script setup>
 import { Link, router, useForm, usePage } from '@inertiajs/vue3';
-import { computed, ref, watch } from 'vue';
-import SettingsLayout from '../../Layouts/SettingsLayout.vue';
+import { computed, ref } from 'vue';
+import SettingsPage from '../../Components/SettingsPage.vue';
+import PlanLimitBanner from '../../Components/PlanLimitBanner.vue';
+import SettingsSectionNav from '../../Components/SettingsSectionNav.vue';
+import { usePlanLimit } from '../../composables/usePlanFeature.js';
 import AppModal from '../../Components/AppModal.vue';
 import AppConfirmDialog from '../../Components/AppConfirmDialog.vue';
+import AppRowActions from '../../Components/AppRowActions.vue';
+import AppIconAction from '../../Components/AppIconAction.vue';
+import AppDeleteAction from '../../Components/AppDeleteAction.vue';
 import CustomFields from '../../Components/CustomFields.vue';
 import { useConfirmDialog } from '../../composables/useConfirmDialog.js';
 import { useSettingsSection } from '../../composables/useSettingsSection.js';
+import { useI18n } from 'vue-i18n';
 
 const props = defineProps({
     employees: Object,
     pendingInvitations: Array,
     roles: Array,
     customFieldDefinitions: { type: Array, default: () => [] },
-    departments: { type: Array, default: () => [] },
     teams: { type: Array, default: () => [] },
 });
 
+const { t } = useI18n();
+const { atLimit: agentLimitReached } = usePlanLimit('agents');
+
 const page = usePage();
 const showInvite = ref(false);
-const showAdd = ref(false);
 const editingMember = ref(null);
 const { state: confirm, ask: askConfirm, close: closeConfirm, confirm: onConfirm } = useConfirmDialog();
 
@@ -28,29 +36,15 @@ const { activeSection } = useSettingsSection({
     sections: ['members', 'invitations'],
 });
 
+const sectionTabs = computed(() => [
+    { id: 'members', label: t('settings.agents') },
+    { id: 'invitations', label: t('settings.invitations') },
+]);
+
 const inviteForm = useForm({
     email: '',
     role: 'agent',
     team_id: '',
-});
-
-const addForm = useForm({
-    name: '',
-    email: '',
-    role: 'agent',
-    department_id: '',
-    team_id: '',
-    custom_fields: {},
-});
-
-const filteredTeams = computed(() =>
-    props.teams.filter((team) => !addForm.department_id || team.department_id === Number(addForm.department_id)),
-);
-
-watch(() => addForm.department_id, () => {
-    if (addForm.team_id && !filteredTeams.value.some((team) => team.id === Number(addForm.team_id))) {
-        addForm.team_id = '';
-    }
 });
 
 const editFieldsForm = useForm({
@@ -59,10 +53,6 @@ const editFieldsForm = useForm({
 
 const closeInvite = () => {
     showInvite.value = false;
-};
-
-const closeAdd = () => {
-    showAdd.value = false;
 };
 
 const openEditFields = (member) => {
@@ -96,29 +86,13 @@ const invite = () => {
     });
 };
 
-const addMember = () => {
-    addForm.transform((data) => ({
-        name: data.name,
-        email: data.email,
-        role: data.role,
-        team_id: data.team_id || null,
-        custom_fields: data.custom_fields,
-    })).post('/settings/members', {
-        onSuccess: () => {
-            addForm.reset();
-            addForm.role = 'agent';
-            closeAdd();
-        },
-    });
-};
-
 const updateRole = (memberId, role) => {
     router.put(`/settings/members/${memberId}`, { role }, { preserveScroll: true });
 };
 
 const removeMember = (member) => {
     askConfirm({
-        title: 'Remove member',
+        title: t('settings_members.remove_member'),
         message: `Remove ${member.name} from the team? They will lose access immediately.`,
         confirmLabel: 'Remove',
         action: () => router.delete(`/settings/members/${member.id}`, { preserveScroll: true }),
@@ -127,20 +101,34 @@ const removeMember = (member) => {
 </script>
 
 <template>
-    <SettingsLayout title="Team members" description="Add members directly or send email invitations.">
+    <SettingsPage :title="$t('settings_members.team_members')" :description="$t('settings_members.invite_members_description')">
         <template #actions>
-            <a href="/settings/members/export" class="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50">Export CSV</a>
-            <Link href="/settings/profile" class="text-sm text-blue-600 transition hover:text-blue-700">Your profile</Link>
-            <button type="button" class="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50" @click="showAdd = true">Add member</button>
-            <button type="button" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700" @click="showInvite = true">Invite member</button>
+            <a href="/settings/members/export" class="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50">{{ $t('settings_members.export_csv') }}</a>
+            <Link href="/settings/profile" class="text-sm text-blue-600 transition hover:text-blue-700">{{ $t('settings.profile') }}</Link>
+            <button
+                type="button"
+                class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+                :disabled="agentLimitReached"
+                @click="showInvite = true"
+            >{{ $t('settings_members.invite_member') }}</button>
         </template>
+
+        <PlanLimitBanner limit-key="agents" />
+
+        <SettingsSectionNav
+            path="/settings/members"
+            default-section="members"
+            :sections="sectionTabs"
+            :active-section="activeSection"
+        />
 
         <div
             v-if="page.props.flash?.invite_url"
             class="mb-4 rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-900"
         >
-            <p class="font-medium">Invitation link (local dev)</p>
-            <a :href="page.props.flash.invite_url" class="mt-1 break-all underline">{{ page.props.flash.invite_url }}</a>
+            <p class="font-medium">{{ $t('settings_members.share_this_invitation_link') }}</p>
+            <p class="mt-1 text-xs text-blue-800">{{ $t('settings_members.outbound_email_is_not_configured_copy_the_link_below_for_the_invitee') }}</p>
+            <a :href="page.props.flash.invite_url" class="mt-2 block break-all underline">{{ page.props.flash.invite_url }}</a>
         </div>
 
         <div v-show="activeSection === 'invitations'" class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
@@ -149,7 +137,7 @@ const removeMember = (member) => {
                     <span class="font-medium">{{ invitation.email }}</span>
                     <span class="text-slate-500"> · {{ invitation.role }} · invited by {{ invitation.inviter?.name }}</span>
                 </li>
-                <li v-if="!pendingInvitations.length" class="text-sm text-slate-500">No pending invitations.</li>
+                <li v-if="!pendingInvitations.length" class="text-sm text-slate-500">{{ $t('settings_members.no_pending_invitations') }}</li>
             </ul>
         </div>
 
@@ -157,12 +145,12 @@ const removeMember = (member) => {
             <table class="min-w-full divide-y divide-slate-200">
                 <thead class="bg-slate-50">
                     <tr>
-                        <th class="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500">Name</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500">Email</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500">Role</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500">Teams</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500">Score</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500">Actions</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500">{{ $t('profile.name') }}</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500">{{ $t('profile.email') }}</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500">{{ $t('settings_members.role') }}</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500">{{ $t('nav.teams') }}</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500">{{ $t('settings_members.score') }}</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500">{{ $t('settings_members.actions') }}</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-200">
@@ -191,43 +179,26 @@ const removeMember = (member) => {
                             </Link>
                         </td>
                         <td class="px-4 py-3">
-                            <div class="flex items-center gap-1">
-                                <Link
+                            <AppRowActions>
+                                <AppIconAction
+                                    icon="view"
+                                    variant="primary"
+                                    :label="$t('settings_members.view_profile')"
                                     :href="`/settings/members/${member.id}`"
-                                    class="rounded-lg p-2 text-slate-400 transition hover:bg-blue-50 hover:text-blue-600"
-                                    title="View profile"
-                                    aria-label="View profile"
-                                >
-                                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                    </svg>
-                                </Link>
-                                <button
+                                />
+                                <AppIconAction
                                     v-if="customFieldDefinitions.length"
-                                    type="button"
-                                    class="rounded-lg p-2 text-slate-400 transition hover:bg-violet-50 hover:text-violet-600"
-                                    title="Edit fields"
-                                    aria-label="Edit fields"
+                                    icon="edit"
+                                    variant="violet"
+                                    :label="$t('settings_members.edit_fields')"
                                     @click="openEditFields(member)"
-                                >
-                                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                    </svg>
-                                </button>
-                                <button
+                                />
+                                <AppDeleteAction
                                     v-if="member.id !== page.props.auth.user.id"
-                                    type="button"
-                                    class="rounded-lg p-2 text-slate-400 transition hover:bg-red-50 hover:text-red-600"
-                                    title="Remove member"
-                                    aria-label="Remove member"
+                                    :label="$t('settings_members.remove_member')"
                                     @click="removeMember(member)"
-                                >
-                                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                    </svg>
-                                </button>
-                            </div>
+                                />
+                            </AppRowActions>
                         </td>
                     </tr>
                     <tr v-if="!employees.data.length">
@@ -238,87 +209,28 @@ const removeMember = (member) => {
         </div>
 
         <AppModal
-            :open="showAdd"
-            title="Add member"
-            description="Create an account and assign them to a department team. They'll receive an email to set their password."
-            size="md"
-            @close="closeAdd"
-        >
-            <form id="add-form" class="space-y-4" @submit.prevent="addMember">
-                <div>
-                    <label class="mb-1 block text-sm font-medium text-slate-700">Name</label>
-                    <input v-model="addForm.name" type="text" class="w-full rounded-lg border border-slate-300 px-3 py-2 transition focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20" required />
-                    <p v-if="addForm.errors.name" class="mt-1 text-sm text-red-600">{{ addForm.errors.name }}</p>
-                </div>
-                <div>
-                    <label class="mb-1 block text-sm font-medium text-slate-700">Email</label>
-                    <input v-model="addForm.email" type="email" class="w-full rounded-lg border border-slate-300 px-3 py-2 transition focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20" required />
-                    <p v-if="addForm.errors.email" class="mt-1 text-sm text-red-600">{{ addForm.errors.email }}</p>
-                </div>
-                <div class="grid gap-4 sm:grid-cols-2">
-                    <div>
-                        <label class="mb-1 block text-sm font-medium text-slate-700">Department</label>
-                        <select v-model="addForm.department_id" class="w-full rounded-lg border border-slate-300 px-3 py-2 transition focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20">
-                            <option value="">None</option>
-                            <option v-for="department in departments" :key="department.id" :value="department.id">{{ department.name }}</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="mb-1 block text-sm font-medium text-slate-700">Team</label>
-                        <select v-model="addForm.team_id" class="w-full rounded-lg border border-slate-300 px-3 py-2 transition focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20" :disabled="!filteredTeams.length">
-                            <option value="">None</option>
-                            <option v-for="team in filteredTeams" :key="team.id" :value="team.id">{{ team.name }}</option>
-                        </select>
-                        <p v-if="addForm.department_id && !filteredTeams.length" class="mt-1 text-xs text-slate-500">No teams in this department.</p>
-                        <p v-if="addForm.errors.team_id" class="mt-1 text-sm text-red-600">{{ addForm.errors.team_id }}</p>
-                    </div>
-                </div>
-                <div>
-                    <label class="mb-1 block text-sm font-medium text-slate-700">Role</label>
-                    <select v-model="addForm.role" class="w-full rounded-lg border border-slate-300 px-3 py-2 transition focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20">
-                        <option v-for="role in roles" :key="role" :value="role">{{ role }}</option>
-                    </select>
-                </div>
-                <CustomFields
-                    v-model="addForm.custom_fields"
-                    :definitions="customFieldDefinitions"
-                    :errors="addForm.errors"
-                />
-            </form>
-
-            <template #footer>
-                <div class="flex justify-end gap-2">
-                    <button type="button" class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-white" @click="closeAdd">Cancel</button>
-                    <button type="submit" form="add-form" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700 disabled:opacity-60" :disabled="addForm.processing">
-                        Add member
-                    </button>
-                </div>
-            </template>
-        </AppModal>
-
-        <AppModal
             :open="showInvite"
-            title="Invite member"
-            description="Send an email invitation. They set their own password when accepting."
+            :title="$t('settings_members.invite_member')"
+            :description="$t('settings_members.send_an_email_invitation_they_set_their_own_password_when_accepting')"
             size="md"
             @close="closeInvite"
         >
             <form id="invite-form" class="space-y-4" @submit.prevent="invite">
                 <div>
-                    <label class="mb-1 block text-sm font-medium text-slate-700">Email</label>
+                    <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('profile.email') }}</label>
                     <input v-model="inviteForm.email" type="email" class="w-full rounded-lg border border-slate-300 px-3 py-2 transition focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20" required />
                     <p v-if="inviteForm.errors.email" class="mt-1 text-sm text-red-600">{{ inviteForm.errors.email }}</p>
                 </div>
                 <div>
-                    <label class="mb-1 block text-sm font-medium text-slate-700">Role</label>
+                    <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('settings_members.role') }}</label>
                     <select v-model="inviteForm.role" class="w-full rounded-lg border border-slate-300 px-3 py-2 transition focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20">
                         <option v-for="role in roles" :key="role" :value="role">{{ role }}</option>
                     </select>
                 </div>
                 <div>
-                    <label class="mb-1 block text-sm font-medium text-slate-700">Team</label>
+                    <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('settings.groups.team') }}</label>
                     <select v-model="inviteForm.team_id" class="w-full rounded-lg border border-slate-300 px-3 py-2 transition focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20">
-                        <option value="">None</option>
+                        <option value="">{{ $t('settings_members.none') }}</option>
                         <option v-for="team in teams" :key="team.id" :value="team.id">{{ team.name }}</option>
                     </select>
                     <p v-if="inviteForm.errors.team_id" class="mt-1 text-sm text-red-600">{{ inviteForm.errors.team_id }}</p>
@@ -327,10 +239,8 @@ const removeMember = (member) => {
 
             <template #footer>
                 <div class="flex justify-end gap-2">
-                    <button type="button" class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-white" @click="closeInvite">Cancel</button>
-                    <button type="submit" form="invite-form" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700 disabled:opacity-60" :disabled="inviteForm.processing">
-                        Send invitation
-                    </button>
+                    <button type="button" class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-white" @click="closeInvite">{{ $t('common.cancel') }}</button>
+                    <button type="submit" form="invite-form" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700 disabled:opacity-60" :disabled="inviteForm.processing">{{ $t('settings_members.send_invitation') }}</button>
                 </div>
             </template>
         </AppModal>
@@ -338,7 +248,7 @@ const removeMember = (member) => {
         <AppModal
             :open="!!editingMember"
             :title="editingMember ? `Fields — ${editingMember.name}` : 'Member fields'"
-            description="Update optional team member fields."
+            :description="$t('settings_members.update_optional_team_member_fields')"
             size="md"
             @close="closeEditFields"
         >
@@ -352,10 +262,8 @@ const removeMember = (member) => {
 
             <template #footer>
                 <div class="flex justify-end gap-2">
-                    <button type="button" class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-white" @click="closeEditFields">Cancel</button>
-                    <button type="submit" form="edit-fields-form" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700 disabled:opacity-60" :disabled="editFieldsForm.processing">
-                        Save fields
-                    </button>
+                    <button type="button" class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-white" @click="closeEditFields">{{ $t('common.cancel') }}</button>
+                    <button type="submit" form="edit-fields-form" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700 disabled:opacity-60" :disabled="editFieldsForm.processing">{{ $t('settings_members.save_fields') }}</button>
                 </div>
             </template>
         </AppModal>
@@ -369,5 +277,5 @@ const removeMember = (member) => {
             @close="closeConfirm"
             @confirm="onConfirm"
         />
-    </SettingsLayout>
+    </SettingsPage>
 </template>

@@ -1,6 +1,9 @@
 <script setup>
 import { computed, ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import AppModal from './AppModal.vue';
+
+const { t } = useI18n();
 
 const props = defineProps({
     attachment: { type: Object, required: true },
@@ -14,7 +17,7 @@ const isImage = computed(() => (props.attachment.mime_type || '').startsWith('im
 const extension = computed(() => {
     const parts = props.attachment.filename?.split('.') ?? [];
 
-    return parts.length > 1 ? parts.pop().toUpperCase() : 'FILE';
+    return parts.length > 1 ? parts.pop().toUpperCase() : t('components.file');
 });
 
 const formatFileSize = (bytes) => {
@@ -55,7 +58,7 @@ const openPreview = () => {
             />
             <div class="absolute inset-0 flex items-center justify-center bg-slate-900/0 transition group-hover:bg-slate-900/20">
                 <span class="rounded-full bg-white/90 px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-slate-700 opacity-0 shadow transition group-hover:opacity-100">
-                    Preview
+                    {{ $t('components.preview') }}
                 </span>
             </div>
         </div>
@@ -94,7 +97,7 @@ const openPreview = () => {
                 rel="noopener"
                 class="font-medium text-blue-600 hover:text-blue-700"
             >
-                Open original
+                {{ $t('components.open_original') }}
             </a>
         </div>
     </AppModal>

@@ -12,6 +12,7 @@ use Stancl\Tenancy\Events;
 use Stancl\Tenancy\Jobs;
 use App\Domains\Tenancy\Jobs\FinalizeTenantProvisioningJob;
 use Stancl\Tenancy\Listeners;
+use Stancl\Tenancy\DatabaseConfig;
 use Stancl\Tenancy\Middleware;
 
 class TenancyServiceProvider extends ServiceProvider
@@ -74,7 +75,9 @@ class TenancyServiceProvider extends ServiceProvider
                 Listeners\RevertToCentralContext::class,
             ],
 
-            Events\BootstrappingTenancy::class => [],
+            Events\BootstrappingTenancy::class => [
+                \App\Domains\Tenancy\Listeners\BootstrapTenantUrl::class.'@handleBootstrappingTenancy',
+            ],
             Events\TenancyBootstrapped::class => [
                 \App\Domains\Tenancy\Listeners\BootstrapTenantUrl::class.'@handleTenancyBootstrapped',
             ],
@@ -100,6 +103,10 @@ class TenancyServiceProvider extends ServiceProvider
 
     public function boot()
     {
+        DatabaseConfig::generateDatabaseNamesUsing(
+            fn ($tenant) => config('tenancy.database.prefix').$tenant->slug
+        );
+
         $this->bootEvents();
         $this->mapRoutes();
 

@@ -1,9 +1,11 @@
 <script setup>
-import { computed, toRef } from 'vue';
+import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useBodyScrollLock, useEscapeKey } from '../composables/useModal.js';
 
 const props = defineProps({
     open: { type: Boolean, default: false },
+    show: { type: Boolean, default: false },
     title: { type: String, default: '' },
     description: { type: String, default: '' },
     size: { type: String, default: 'lg' },
@@ -13,10 +15,12 @@ const props = defineProps({
 
 const emit = defineEmits(['close']);
 
-const openRef = toRef(props, 'open');
+const { t } = useI18n();
 
-useBodyScrollLock(openRef);
-useEscapeKey(openRef, () => emit('close'));
+const isOpen = computed(() => props.open || props.show);
+
+useBodyScrollLock(isOpen);
+useEscapeKey(isOpen, () => emit('close'));
 
 const sizeClass = computed(() => ({
     sm: 'max-w-md',
@@ -24,6 +28,8 @@ const sizeClass = computed(() => ({
     lg: 'max-w-2xl',
     xl: 'max-w-4xl',
 }[props.size] ?? 'max-w-2xl'));
+
+const dialogAriaLabel = computed(() => props.title || t('components.dialog'));
 
 const onBackdropClick = () => {
     if (props.closeOnBackdrop) {
@@ -36,12 +42,12 @@ const onBackdropClick = () => {
     <Teleport to="body">
         <Transition name="modal-fade">
             <div
-                v-if="open"
+                v-if="isOpen"
                 class="fixed inset-0 z-50 flex"
                 :class="variant === 'drawer' ? 'justify-end' : 'items-center justify-center p-4'"
                 role="dialog"
                 aria-modal="true"
-                :aria-label="title || 'Dialog'"
+                :aria-label="dialogAriaLabel"
             >
                 <div
                     class="absolute inset-0 bg-slate-900/50 backdrop-blur-[2px] transition-opacity"
@@ -50,7 +56,7 @@ const onBackdropClick = () => {
 
                 <Transition :name="variant === 'drawer' ? 'modal-drawer' : 'modal-scale'" appear>
                     <div
-                        v-if="open"
+                        v-if="isOpen"
                         class="relative flex max-h-[92vh] w-full flex-col overflow-hidden bg-white shadow-2xl"
                         :class="[
                             variant === 'drawer'
@@ -68,7 +74,7 @@ const onBackdropClick = () => {
                             <button
                                 type="button"
                                 class="shrink-0 rounded-lg p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600"
-                                aria-label="Close"
+                                :aria-label="$t('components.close')"
                                 @click="emit('close')"
                             >
                                 <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">

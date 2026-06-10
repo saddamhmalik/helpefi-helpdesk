@@ -2,11 +2,16 @@
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import { onMounted } from 'vue';
 import PortalLayout from '../../Layouts/PortalLayout.vue';
+import { usePortalRoutes } from '../../composables/usePortalRoutes.js';
+import { useI18n } from 'vue-i18n';
 
 const props = defineProps({
     service: Object,
     customer: Object,
 });
+
+const { t } = useI18n();
+const { portalPath } = usePortalRoutes();
 
 const form = useForm({
     name: '',
@@ -31,18 +36,18 @@ onMounted(() => {
     <Head :title="service.name" />
     <PortalLayout>
         <div class="mx-auto max-w-xl">
-            <Link href="/portal/services" class="text-sm text-blue-600 hover:text-blue-700">← Service catalog</Link>
+            <Link :href="portalPath('/services')" class="text-sm text-blue-600 hover:text-blue-700">← Service catalog</Link>
             <h1 class="mt-2 text-2xl font-bold text-slate-900">{{ service.name }}</h1>
             <p v-if="service.description" class="mt-1 text-sm text-slate-600">{{ service.description }}</p>
 
-            <form class="mt-6 space-y-4 rounded-xl border border-slate-200 bg-white p-6 shadow-sm" @submit.prevent="form.post(`/portal/services/${service.slug}`)">
+            <form class="mt-6 space-y-4 rounded-xl border border-slate-200 bg-white p-6 shadow-sm" @submit.prevent="form.post(portalPath(`/services/${service.slug}`))">
                 <template v-if="!customer">
                     <div>
-                        <label class="mb-1 block text-sm font-medium text-slate-700">Name</label>
+                        <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('portal.name') }}</label>
                         <input v-model="form.name" type="text" required class="w-full rounded-lg border border-slate-300 px-3 py-2" />
                     </div>
                     <div>
-                        <label class="mb-1 block text-sm font-medium text-slate-700">Email</label>
+                        <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('portal.email') }}</label>
                         <input v-model="form.email" type="email" required class="w-full rounded-lg border border-slate-300 px-3 py-2" />
                     </div>
                 </template>
@@ -58,7 +63,7 @@ onMounted(() => {
                         :required="field.required"
                         class="w-full rounded-lg border border-slate-300 px-3 py-2"
                     >
-                        <option value="">Select...</option>
+                        <option value="">{{ $t('portal.select') }}</option>
                         <option v-for="option in field.options" :key="option" :value="option">{{ option }}</option>
                     </select>
                     <textarea
@@ -78,13 +83,11 @@ onMounted(() => {
                 </div>
 
                 <div>
-                    <label class="mb-1 block text-sm font-medium text-slate-700">Additional details</label>
+                    <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('portal.additional_details') }}</label>
                     <textarea v-model="form.details" rows="4" class="w-full rounded-lg border border-slate-300 px-3 py-2" />
                 </div>
 
-                <button type="submit" class="w-full rounded-lg bg-blue-600 px-4 py-2 font-medium text-white hover:bg-blue-700" :disabled="form.processing">
-                    Submit request
-                </button>
+                <button type="submit" class="w-full rounded-lg bg-blue-600 px-4 py-2 font-medium text-white hover:bg-blue-700" :disabled="form.processing">{{ $t('portal.submit_request') }}</button>
             </form>
         </div>
     </PortalLayout>

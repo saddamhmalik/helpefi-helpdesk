@@ -3,6 +3,7 @@
 .env
 .env.backup
 .env.production
+.env.docker
 .phpactor.json
 .phpunit.result.cache
 /.codex
@@ -25,6 +26,7 @@ _ide_helper.php
 Homestead.json
 Homestead.yaml
 Thumbs.db
+/docker/nginx/generated/*.conf
 /database/helpdesk_tenant_*
 /storage/tenant*/
 /storage/app/private/backups/

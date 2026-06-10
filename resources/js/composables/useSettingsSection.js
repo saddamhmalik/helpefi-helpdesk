@@ -43,10 +43,13 @@ export function isSettingsNavActive(itemHref, currentUrl) {
         return false;
     }
 
-    const itemSection = item.section ?? defaultSectionForPath(item.path);
+    if (!item.section) {
+        return true;
+    }
+
     const currentSection = current.section ?? defaultSectionForPath(current.path);
 
-    return itemSection === currentSection;
+    return item.section === currentSection;
 }
 
 function defaultSectionForPath(path) {
@@ -58,6 +61,7 @@ function defaultSectionForPath(path) {
         '/settings/integrations': 'webhooks',
         '/settings/billing': 'usage',
         '/settings/security': 'overview',
+        '/settings/messaging': 'overview',
     }[path] ?? null;
 }
 

@@ -28,15 +28,20 @@ class KnowledgeRepository
 
     public function create(array $data): KnowledgeArticle
     {
-        $data['slug'] = $this->uniqueSlug($data['title']);
+        $locale = $data['locale'] ?? 'en';
+        $data['locale'] = $locale;
+        $data['slug'] = $this->uniqueSlug($data['title'], $locale);
+        $data['translation_group_id'] = $data['translation_group_id'] ?? (string) Str::uuid();
 
         return KnowledgeArticle::query()->create($data);
     }
 
     public function update(KnowledgeArticle $article, array $data): KnowledgeArticle
     {
+        $locale = $data['locale'] ?? $article->locale;
+
         if (isset($data['title']) && $data['title'] !== $article->title) {
-            $data['slug'] = $this->uniqueSlug($data['title'], $article->id);
+            $data['slug'] = $this->uniqueSlug($data['title'], $locale, $article->id);
         }
 
         $article->update($data);
@@ -49,16 +54,25 @@ class KnowledgeRepository
         return KnowledgeCategory::query()->orderBy('name')->get();
     }
 
-    public function publishedCount(): int
+    public function publishedCount(?string $locale = null): int
     {
-        return KnowledgeArticle::query()->where('is_published', true)->count();
+        return KnowledgeArticle::query()
+            ->where('is_published', true)
+            ->when($locale, fn ($q) => $q->where('locale', $locale))
+            ->count();
     }
 
-    public function publishedPaginate(?int $collectionId = null, ?string $search = null, int $perPage = 15, ?int $brandId = null): LengthAwarePaginator
-    {
+    public function publishedPaginate(
+        ?int $collectionId = null,
+        ?string $search = null,
+        int $perPage = 15,
+        ?int $brandId = null,
+        ?string $locale = null,
+    ): LengthAwarePaginator {
         return KnowledgeArticle::query()
             ->with(['category:id,name', 'collection:id,name,slug'])
             ->where('is_published', true)
+            ->when($locale, fn ($q) => $q->where('locale', $locale))
             ->when($collectionId, fn ($q) => $q->where('knowledge_collection_id', $collectionId))
             ->when($brandId, fn ($q) => $q->whereHas('collection', fn ($c) => $c->where('brand_id', $brandId)))
             ->when($search, fn ($q) => $q->where(function ($q) use ($search) {
@@ -71,12 +85,13 @@ class KnowledgeRepository
             ->withQueryString();
     }
 
-    public function findPublishedBySlug(string $slug, ?int $brandId = null): KnowledgeArticle
+    public function findPublishedBySlug(string $slug, ?int $brandId = null, ?string $locale = null): KnowledgeArticle
     {
         return KnowledgeArticle::query()
             ->with(['category:id,name', 'collection:id,name,slug'])
             ->where('slug', $slug)
             ->where('is_published', true)
+            ->when($locale, fn ($q) => $q->where('locale', $locale))
             ->when($brandId, fn ($query) => $query->whereIn(
                 'knowledge_collection_id',
                 KnowledgeCollection::query()->where('brand_id', $brandId)->select('id'),
@@ -84,18 +99,41 @@ class KnowledgeRepository
             ->firstOrFail();
     }
 
-    public function featuredPublished(int $limit = 6, ?int $brandId = null): Collection
+    public function featuredPublished(int $limit = 6, ?int $brandId = null, ?string $locale = null): Collection
     {
         return KnowledgeArticle::query()
             ->with(['collection:id,name,slug'])
             ->where('is_published', true)
+            ->when($locale, fn ($q) => $q->where('locale', $locale))
             ->when($brandId, fn ($q) => $q->whereHas('collection', fn ($c) => $c->where('brand_id', $brandId)))
             ->orderByDesc('published_at')
             ->limit($limit)
-            ->get(['id', 'title', 'slug', 'excerpt', 'knowledge_collection_id', 'published_at']);
+            ->get(['id', 'title', 'slug', 'excerpt', 'locale', 'knowledge_collection_id', 'published_at']);
     }
 
-    private function uniqueSlug(string $title, ?int $ignoreId = null): string
+    public function translations(KnowledgeArticle $article): Collection
+    {
+        if (! $article->translation_group_id) {
+            return KnowledgeArticle::query()
+                ->where('id', $article->id)
+                ->get(['id', 'locale', 'slug', 'title', 'is_published']);
+        }
+
+        return KnowledgeArticle::query()
+            ->where('translation_group_id', $article->translation_group_id)
+            ->orderBy('locale')
+            ->get(['id', 'locale', 'slug', 'title', 'is_published']);
+    }
+
+    public function findByGroupAndLocale(string $groupId, string $locale): ?KnowledgeArticle
+    {
+        return KnowledgeArticle::query()
+            ->where('translation_group_id', $groupId)
+            ->where('locale', $locale)
+            ->first();
+    }
+
+    private function uniqueSlug(string $title, string $locale, ?int $ignoreId = null): string
     {
         $base = Str::slug($title);
         $slug = $base;
@@ -103,6 +141,7 @@ class KnowledgeRepository
 
         while (
             KnowledgeArticle::query()
+                ->where('locale', $locale)
                 ->when($ignoreId, fn ($q) => $q->where('id', '!=', $ignoreId))
                 ->where('slug', $slug)
                 ->exists()

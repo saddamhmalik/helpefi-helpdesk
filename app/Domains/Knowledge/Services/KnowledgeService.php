@@ -2,16 +2,19 @@
 
 namespace App\Domains\Knowledge\Services;
 
+use App\Domains\Knowledge\Jobs\EmbedKnowledgeArticleJob;
 use App\Domains\Knowledge\Models\KnowledgeArticle;
 use App\Domains\Knowledge\Models\KnowledgeArticleVersion;
 use App\Domains\Knowledge\Models\KnowledgeCollection;
 use App\Domains\Knowledge\Repositories\KnowledgeCollectionRepository;
 use App\Domains\Knowledge\Repositories\KnowledgeRepository;
+use App\Domains\Knowledge\Repositories\KnowledgeSettingRepository;
 use App\Domains\Knowledge\Repositories\KnowledgeVersionRepository;
 use App\Domains\Security\Support\AuditRecorder;
 use App\Domains\Tickets\Support\MessageBodySanitizer;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
+use InvalidArgumentException;
 
 class KnowledgeService
 {
@@ -19,6 +22,7 @@ class KnowledgeService
         private KnowledgeRepository $articles,
         private KnowledgeVersionRepository $versions,
         private KnowledgeCollectionRepository $collections,
+        private KnowledgeSettingRepository $settings,
         private AuditRecorder $audit,
     ) {
     }
@@ -36,6 +40,7 @@ class KnowledgeService
     public function create(array $data, int $authorId): KnowledgeArticle
     {
         $data['author_id'] = $authorId;
+        $data['locale'] = $this->normalizeLocale($data['locale'] ?? null);
 
         if (! empty($data['is_published'])) {
             $data['published_at'] = now();
@@ -51,6 +56,10 @@ class KnowledgeService
             'title' => $article->title,
             'slug' => $article->slug,
         ], $authorId);
+
+        if ($article->is_published) {
+            EmbedKnowledgeArticleJob::dispatch($article->id)->afterResponse();
+        }
 
         return $article;
     }
@@ -77,6 +86,10 @@ class KnowledgeService
             'title' => $article->title,
             'slug' => $article->slug,
         ], $userId);
+
+        if ($article->is_published) {
+            EmbedKnowledgeArticleJob::dispatch($article->id)->afterResponse();
+        }
 
         return $article;
     }
@@ -135,19 +148,53 @@ class KnowledgeService
         return $this->collections->findBySlugForBrand($slug, $brandId);
     }
 
-    public function publishedArticles(?int $collectionId = null, ?string $search = null, int $perPage = 15, ?int $brandId = null): LengthAwarePaginator
-    {
-        return $this->articles->publishedPaginate($collectionId, $search, $perPage, $brandId);
+    public function publishedArticles(
+        ?int $collectionId = null,
+        ?string $search = null,
+        int $perPage = 15,
+        ?int $brandId = null,
+        ?string $locale = null,
+    ): LengthAwarePaginator {
+        return $this->articles->publishedPaginate($collectionId, $search, $perPage, $brandId, $locale);
     }
 
-    public function publishedArticleBySlug(string $slug, ?int $brandId = null): KnowledgeArticle
+    public function publishedArticleBySlug(string $slug, ?int $brandId = null, ?string $locale = null): KnowledgeArticle
     {
-        return $this->articles->findPublishedBySlug($slug, $brandId);
+        return $this->articles->findPublishedBySlug($slug, $brandId, $locale);
     }
 
-    public function featuredPublished(int $limit = 6, ?int $brandId = null): Collection
+    public function featuredPublished(int $limit = 6, ?int $brandId = null, ?string $locale = null): Collection
     {
-        return $this->articles->featuredPublished($limit, $brandId);
+        return $this->articles->featuredPublished($limit, $brandId, $locale);
+    }
+
+    public function translations(int $articleId): Collection
+    {
+        return $this->articles->translations($this->articles->find($articleId));
+    }
+
+    public function createTranslation(int $sourceArticleId, string $locale, array $data, int $authorId): KnowledgeArticle
+    {
+        $source = $this->articles->find($sourceArticleId);
+        $locale = $this->normalizeLocale($locale);
+
+        if ($this->articles->findByGroupAndLocale((string) $source->translation_group_id, $locale)) {
+            throw new InvalidArgumentException('A translation already exists for this locale.');
+        }
+
+        $payload = array_merge([
+            'knowledge_category_id' => $source->knowledge_category_id,
+            'knowledge_collection_id' => $source->knowledge_collection_id,
+            'translation_group_id' => $source->translation_group_id,
+            'locale' => $locale,
+        ], $data);
+
+        return $this->create($payload, $authorId);
+    }
+
+    public function enabledLocales(): array
+    {
+        return $this->settings->current()->kb_locales ?? ['en'];
     }
 
     public function versions(int $articleId): Collection
@@ -174,5 +221,17 @@ class KnowledgeService
     private function normalizeBody(string $body): string
     {
         return MessageBodySanitizer::sanitize($body);
+    }
+
+    private function normalizeLocale(?string $locale): string
+    {
+        $locale = strtolower(trim((string) ($locale ?: ($this->settings->current()->kb_default_locale ?? 'en'))));
+        $enabled = $this->settings->current()->kb_locales ?? ['en'];
+
+        if (! in_array($locale, $enabled, true)) {
+            throw new InvalidArgumentException('Locale is not enabled for the knowledge base.');
+        }
+
+        return $locale;
     }
 }

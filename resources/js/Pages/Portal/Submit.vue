@@ -4,12 +4,15 @@ import { onMounted, ref, watch } from 'vue';
 import PortalLayout from '../../Layouts/PortalLayout.vue';
 import AppRichTextEditor from '../../Components/AppRichTextEditor.vue';
 import { usePortalRoutes } from '../../composables/usePortalRoutes.js';
+import { useI18n } from 'vue-i18n';
 
 const props = defineProps({
     customer: Object,
     kbDeflectionEnabled: Boolean,
     ticketFields: Array,
 });
+
+const { t } = useI18n();
 
 const { portalPath, portalApiPath } = usePortalRoutes();
 
@@ -134,11 +137,11 @@ const submitAnyway = async () => {
 </script>
 
 <template>
-    <Head title="Submit request" />
+    <Head :title="$t('portal.submit_request')" />
     <PortalLayout>
         <div class="mx-auto max-w-xl">
             <Link :href="portalPath()" class="text-sm text-blue-600 hover:text-blue-700">← Help Center</Link>
-            <h1 class="mt-2 text-2xl font-bold text-slate-900">Submit a request</h1>
+            <h1 class="mt-2 text-2xl font-bold text-slate-900">{{ $t('portal.submit_a_request') }}</h1>
             <p class="mt-1 text-sm text-slate-600">
                 {{ customer ? 'Submitting as ' + customer.email : 'We\'ll create a ticket you can track by email or after signing in.' }}
             </p>
@@ -147,8 +150,8 @@ const submitAnyway = async () => {
                 v-if="deflected"
                 class="mt-6 rounded-xl border border-emerald-200 bg-emerald-50 p-6 text-emerald-900"
             >
-                <h2 class="text-lg font-semibold">Glad we could help!</h2>
-                <p class="mt-2 text-sm">Your issue appears resolved. No ticket was created.</p>
+                <h2 class="text-lg font-semibold">{{ $t('portal.glad_we_could_help') }}</h2>
+                <p class="mt-2 text-sm">{{ $t('portal.your_issue_appears_resolved_no_ticket_was_created') }}</p>
                 <Link :href="portalPath()" class="mt-4 inline-block text-sm font-medium text-emerald-700 hover:text-emerald-800">
                     Back to Help Center
                 </Link>
@@ -161,24 +164,24 @@ const submitAnyway = async () => {
             >
                 <template v-if="!customer">
                     <div>
-                        <label class="mb-1 block text-sm font-medium text-slate-700">Name</label>
+                        <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('portal.name') }}</label>
                         <input v-model="form.name" type="text" required class="w-full rounded-lg border border-slate-300 px-3 py-2" />
                     </div>
                     <div>
-                        <label class="mb-1 block text-sm font-medium text-slate-700">Email</label>
+                        <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('portal.email') }}</label>
                         <input v-model="form.email" type="email" required class="w-full rounded-lg border border-slate-300 px-3 py-2" />
                     </div>
                 </template>
                 <div>
-                    <label class="mb-1 block text-sm font-medium text-slate-700">Subject</label>
+                    <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('portal.subject') }}</label>
                     <input v-model="form.subject" type="text" required class="w-full rounded-lg border border-slate-300 px-3 py-2" />
                 </div>
                 <div>
-                    <label class="mb-1.5 block text-sm font-medium text-slate-700">Description</label>
+                    <label class="mb-1.5 block text-sm font-medium text-slate-700">{{ $t('portal.description') }}</label>
                     <AppRichTextEditor
                         v-model="form.description"
                         form
-                        placeholder="Describe your issue in as much detail as you can"
+                        :placeholder="$t('portal.describe_your_issue_in_as_much_detail_as_you_can')"
                     />
                 </div>
 
@@ -206,7 +209,7 @@ const submitAnyway = async () => {
                         :required="field.required"
                         class="w-full rounded-lg border border-slate-300 px-3 py-2"
                     >
-                        <option value="">Select…</option>
+                        <option value="">{{ $t('portal.select_ellipsis') }}</option>
                         <option v-for="option in field.options" :key="option" :value="option">{{ option }}</option>
                     </select>
                 </div>
@@ -215,8 +218,8 @@ const submitAnyway = async () => {
                     v-if="kbDeflectionEnabled && (loadingSuggestions || showSuggestions)"
                     class="rounded-lg border border-blue-100 bg-blue-50 p-4"
                 >
-                    <p class="text-sm font-medium text-blue-900">These articles might help</p>
-                    <p v-if="loadingSuggestions" class="mt-2 text-sm text-blue-700">Searching knowledge base…</p>
+                    <p class="text-sm font-medium text-blue-900">{{ $t('portal.these_articles_might_help') }}</p>
+                    <p v-if="loadingSuggestions" class="mt-2 text-sm text-blue-700">{{ $t('portal.searching_knowledge_base_ellipsis') }}</p>
                     <ul v-else class="mt-3 space-y-2">
                         <li v-for="article in suggestions" :key="article.id">
                             <button
@@ -234,16 +237,12 @@ const submitAnyway = async () => {
                             type="button"
                             class="rounded-lg bg-emerald-600 px-3 py-2 text-sm font-medium text-white hover:bg-emerald-700"
                             @click="markResolved()"
-                        >
-                            This solved my issue
-                        </button>
+                        >{{ $t('portal.this_solved_my_issue') }}</button>
                         <button
                             type="submit"
                             class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
                             :disabled="form.processing"
-                        >
-                            Still need help — submit request
-                        </button>
+                        >{{ $t('portal.still_need_help_submit_request') }}</button>
                     </div>
                 </div>
 
@@ -252,9 +251,7 @@ const submitAnyway = async () => {
                     type="submit"
                     class="w-full rounded-lg bg-blue-600 px-4 py-2 font-medium text-white hover:bg-blue-700"
                     :disabled="form.processing"
-                >
-                    Submit
-                </button>
+                >{{ $t('portal.submit') }}</button>
             </form>
         </div>
     </PortalLayout>

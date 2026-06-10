@@ -28,14 +28,18 @@ class ServiceCatalogItem extends Model
         'sort_order',
         'is_public',
         'is_active',
+        'requires_approval',
+        'approver_user_ids',
     ];
 
     protected function casts(): array
     {
         return [
             'fields' => 'array',
+            'approver_user_ids' => 'array',
             'is_public' => 'boolean',
             'is_active' => 'boolean',
+            'requires_approval' => 'boolean',
         ];
     }
 

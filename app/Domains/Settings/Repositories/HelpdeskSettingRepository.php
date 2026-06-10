@@ -17,6 +17,8 @@ class HelpdeskSettingRepository
             'auto_first_response_body' => null,
             'email_blocklist' => [],
             'kb_deflection_enabled' => true,
+            'kb_locales' => ['en'],
+            'kb_default_locale' => 'en',
         ]);
     }
 

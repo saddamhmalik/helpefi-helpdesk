@@ -1,16 +1,24 @@
 <script setup>
 import { router, useForm } from '@inertiajs/vue3';
 import { ref } from 'vue';
-import SettingsLayout from '../../Layouts/SettingsLayout.vue';
+import SettingsPage from '../../Components/SettingsPage.vue';
+import PlanFeatureBanner from '../../Components/PlanFeatureBanner.vue';
 import AppModal from '../../Components/AppModal.vue';
 import AppToggle from '../../Components/AppToggle.vue';
 import AppConfirmDialog from '../../Components/AppConfirmDialog.vue';
+import AppRowActions from '../../Components/AppRowActions.vue';
+import AppEditAction from '../../Components/AppEditAction.vue';
+import AppDeleteAction from '../../Components/AppDeleteAction.vue';
 import { useConfirmDialog } from '../../composables/useConfirmDialog.js';
+import { useI18n } from 'vue-i18n';
 
 const props = defineProps({
     categories: Array,
     meta: Object,
+    agents: Array,
 });
+
+const { t } = useI18n();
 
 const showCategoryForm = ref(false);
 const showItemForm = ref(false);
@@ -35,6 +43,8 @@ const blankItem = () => ({
     sort_order: 0,
     is_public: true,
     is_active: true,
+    requires_approval: false,
+    approver_user_ids: [],
 });
 
 const categoryForm = useForm(blankCategory());
@@ -83,7 +93,7 @@ const saveCategory = () => {
 
 const destroyCategory = (category) => {
     askConfirm({
-        title: 'Delete category',
+        title: t('settings_service_catalog.delete_category'),
         message: `Delete "${category.name}" and all its services? This cannot be undone.`,
         confirmLabel: 'Delete',
         action: () => router.delete(`/settings/service-catalog/categories/${category.id}`, { preserveScroll: true }),
@@ -109,6 +119,8 @@ const openEditItem = (item) => {
         sort_order: item.sort_order ?? 0,
         is_public: item.is_public,
         is_active: item.is_active,
+        requires_approval: item.requires_approval ?? false,
+        approver_user_ids: item.approver_user_ids ?? [],
     });
     itemForm.reset();
     showItemForm.value = true;
@@ -134,9 +146,22 @@ const saveItem = () => {
     }
 };
 
+const toggleApprover = (agentId) => {
+    const ids = new Set(itemForm.approver_user_ids.map(Number));
+    const id = Number(agentId);
+
+    if (ids.has(id)) {
+        ids.delete(id);
+    } else {
+        ids.add(id);
+    }
+
+    itemForm.approver_user_ids = Array.from(ids);
+};
+
 const destroyItem = (item) => {
     askConfirm({
-        title: 'Delete service',
+        title: t('settings_service_catalog.delete_service'),
         message: `Remove "${item.name}" from the catalog?`,
         confirmLabel: 'Delete',
         action: () => router.delete(`/settings/service-catalog/items/${item.id}`, { preserveScroll: true }),
@@ -145,10 +170,12 @@ const destroyItem = (item) => {
 </script>
 
 <template>
-    <SettingsLayout title="Service catalog" description="ITSM service categories and requestable items for the customer portal.">
+    <SettingsPage :title="$t('settings.service_catalog')" :description="$t('settings_service_catalog.itsm_service_categories_and_requestable_items_for_the_customer_portal')">
+        <PlanFeatureBanner feature="service_catalog" />
+
         <template #actions>
-            <button type="button" class="rounded-lg border border-slate-300 px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-50" @click="openCreateCategory">Add category</button>
-            <button type="button" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700" @click="openCreateItem()">Add service</button>
+            <button type="button" class="rounded-lg border border-slate-300 px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-50" @click="openCreateCategory">{{ $t('settings_service_catalog.add_category') }}</button>
+            <button type="button" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700" @click="openCreateItem()">{{ $t('settings_service_catalog.add_service') }}</button>
         </template>
 
         <div class="space-y-6">
@@ -164,9 +191,11 @@ const destroyItem = (item) => {
                         <p v-if="category.description" class="mt-1 text-sm text-slate-600">{{ category.description }}</p>
                     </div>
                     <div class="flex gap-2">
-                        <button type="button" class="rounded-lg border border-slate-300 px-3 py-1.5 text-sm text-slate-700 transition hover:bg-slate-50" @click="openCreateItem(category.id)">Add service</button>
-                        <button type="button" class="rounded-lg border border-slate-300 px-3 py-1.5 text-sm text-slate-700 transition hover:bg-slate-50" @click="openEditCategory(category)">Edit</button>
-                        <button type="button" class="rounded-lg border border-red-200 px-3 py-1.5 text-sm text-red-700 transition hover:bg-red-50" @click="destroyCategory(category)">Delete</button>
+                        <button type="button" class="rounded-lg border border-slate-300 px-3 py-1.5 text-sm text-slate-700 transition hover:bg-slate-50" @click="openCreateItem(category.id)">{{ $t('settings_service_catalog.add_service') }}</button>
+                        <AppRowActions>
+                            <AppEditAction :label="$t('settings_service_catalog.edit')" @click="openEditCategory(category)" />
+                            <AppDeleteAction :label="$t('settings_service_catalog.delete')" @click="destroyCategory(category)" />
+                        </AppRowActions>
                     </div>
                 </div>
 
@@ -184,15 +213,17 @@ const destroyItem = (item) => {
                                 </div>
                             </div>
                             <div class="flex gap-2">
-                                <button type="button" class="text-sm text-blue-600 transition hover:text-blue-700" @click="openEditItem(item)">Edit</button>
-                                <button type="button" class="text-sm text-red-600 transition hover:text-red-700" @click="destroyItem(item)">Delete</button>
+                                <AppRowActions>
+                                    <AppEditAction :label="$t('settings_service_catalog.edit')" @click="openEditItem(item)" />
+                                    <AppDeleteAction :label="$t('settings_service_catalog.delete')" @click="destroyItem(item)" />
+                                </AppRowActions>
                             </div>
                         </div>
                     </div>
-                    <p v-if="!category.items?.length" class="text-sm text-slate-500">No services in this category.</p>
+                    <p v-if="!category.items?.length" class="text-sm text-slate-500">{{ $t('settings_service_catalog.no_services_in_this_category') }}</p>
                 </div>
             </div>
-            <p v-if="!categories.length" class="rounded-xl border border-dashed border-slate-300 px-6 py-12 text-center text-sm text-slate-500">No categories yet.</p>
+            <p v-if="!categories.length" class="rounded-xl border border-dashed border-slate-300 px-6 py-12 text-center text-sm text-slate-500">{{ $t('settings_service_catalog.no_categories_yet') }}</p>
         </div>
 
         <AppModal
@@ -203,20 +234,20 @@ const destroyItem = (item) => {
         >
             <form id="category-form" class="space-y-4" @submit.prevent="saveCategory">
                 <div>
-                    <label class="mb-1 block text-sm font-medium text-slate-700">Name</label>
+                    <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('profile.name') }}</label>
                     <input v-model="categoryForm.name" type="text" required class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm transition focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20" />
                 </div>
                 <div>
-                    <label class="mb-1 block text-sm font-medium text-slate-700">Description</label>
+                    <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('settings_service_catalog.description') }}</label>
                     <textarea v-model="categoryForm.description" rows="3" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm transition focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20" />
                 </div>
-                <AppToggle v-model="categoryForm.is_active" label="Active" description="Hidden categories are not shown on the portal." />
+                <AppToggle v-model="categoryForm.is_active" :label="$t('common.active')" :description="$t('settings_service_catalog.hidden_categories_are_not_shown_on_the_portal')" />
             </form>
 
             <template #footer>
                 <div class="flex justify-end gap-2">
-                    <button type="button" class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-white" @click="closeCategoryForm">Cancel</button>
-                    <button type="submit" form="category-form" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700 disabled:opacity-60" :disabled="categoryForm.processing">Save</button>
+                    <button type="button" class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-white" @click="closeCategoryForm">{{ $t('common.cancel') }}</button>
+                    <button type="submit" form="category-form" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700 disabled:opacity-60" :disabled="categoryForm.processing">{{ $t('common.save') }}</button>
                 </div>
             </template>
         </AppModal>
@@ -224,45 +255,65 @@ const destroyItem = (item) => {
         <AppModal
             :open="showItemForm"
             :title="editingItem ? 'Edit service' : 'Add service'"
-            description="Configure how this service appears on the customer portal."
+            :description="$t('settings_service_catalog.configure_how_this_service_appears_on_the_customer_portal')"
             variant="drawer"
             @close="closeItemForm"
         >
             <form id="item-form" class="space-y-5" @submit.prevent="saveItem">
                 <div class="grid gap-4 sm:grid-cols-2">
                     <div class="sm:col-span-2">
-                        <label class="mb-1 block text-sm font-medium text-slate-700">Category</label>
+                        <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('settings_service_catalog.category') }}</label>
                         <select v-model="itemForm.service_category_id" required class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm">
                             <option v-for="category in categories" :key="category.id" :value="category.id">{{ category.name }}</option>
                         </select>
                     </div>
                     <div class="sm:col-span-2">
-                        <label class="mb-1 block text-sm font-medium text-slate-700">Name</label>
+                        <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('profile.name') }}</label>
                         <input v-model="itemForm.name" type="text" required class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
                     </div>
                     <div class="sm:col-span-2">
-                        <label class="mb-1 block text-sm font-medium text-slate-700">Description</label>
+                        <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('settings_service_catalog.description') }}</label>
                         <textarea v-model="itemForm.description" rows="2" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
                     </div>
                     <div>
-                        <label class="mb-1 block text-sm font-medium text-slate-700">Ticket type</label>
+                        <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('settings_service_catalog.ticket_type') }}</label>
                         <select v-model="itemForm.ticket_type" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm">
                             <option v-for="type in meta.ticket_types" :key="type.value" :value="type.value">{{ type.label }}</option>
                         </select>
                     </div>
                     <div>
-                        <label class="mb-1 block text-sm font-medium text-slate-700">Default priority</label>
+                        <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('settings_service_catalog.default_priority') }}</label>
                         <select v-model="itemForm.ticket_priority_id" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm">
-                            <option value="">Default</option>
+                            <option value="">{{ $t('settings_service_catalog.default') }}</option>
                             <option v-for="priority in meta.priorities" :key="priority.id" :value="priority.id">{{ priority.name }}</option>
                         </select>
                     </div>
                 </div>
 
+                <div v-if="meta.service_desk_available" class="rounded-xl border border-violet-200 bg-violet-50/50 p-4">
+                    <AppToggle v-model="itemForm.requires_approval" :label="$t('settings_service_catalog.require_approval_before_fulfillment')" />
+                    <p class="mt-2 text-xs text-slate-600">{{ $t('settings_service_catalog.creates_a_pending_ticket_and_routes_sequential_approvers_from_service_') }}</p>
+                    <div v-if="itemForm.requires_approval" class="mt-4">
+                        <p class="mb-2 text-sm font-medium text-slate-700">{{ $t('settings_service_catalog.approvers_in_order') }}</p>
+                        <div class="flex flex-wrap gap-2">
+                            <button
+                                v-for="agent in agents"
+                                :key="agent.id"
+                                type="button"
+                                class="rounded-full px-3 py-1 text-xs font-medium transition"
+                                :class="itemForm.approver_user_ids.includes(agent.id) ? 'bg-violet-700 text-white' : 'bg-white text-slate-700 ring-1 ring-slate-200'"
+                                @click="toggleApprover(agent.id)"
+                            >
+                                {{ agent.name }}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
                 <div>
                     <div class="mb-3 flex items-center justify-between">
-                        <p class="text-sm font-medium text-slate-700">Custom fields</p>
-                        <button type="button" class="rounded-lg border border-blue-200 bg-blue-50 px-3 py-1.5 text-sm font-medium text-blue-700 transition hover:bg-blue-100" @click="addField">Add field</button>
+                        <p class="text-sm font-medium text-slate-700">{{ $t('settings_service_catalog.custom_fields') }}</p>
+                        <button type="button" class="rounded-lg border border-blue-200 bg-blue-50 px-3 py-1.5 text-sm font-medium text-blue-700 transition hover:bg-blue-100" @click="addField">{{ $t('settings_service_catalog.add_field') }}</button>
                     </div>
 
                     <p v-if="!itemForm.fields.length" class="rounded-lg border border-dashed border-slate-200 bg-slate-50 px-4 py-6 text-center text-sm text-slate-500">
@@ -272,36 +323,36 @@ const destroyItem = (item) => {
                     <TransitionGroup name="list" tag="div" class="space-y-3">
                         <div v-for="(field, index) in itemForm.fields" :key="`field-${index}`" class="rounded-lg border border-slate-200 bg-slate-50/50 p-3">
                             <div class="grid gap-3 sm:grid-cols-2">
-                                <input v-model="field.name" type="text" placeholder="Field key" class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm" />
+                                <input v-model="field.name" type="text" :placeholder="$t('settings_service_catalog.field_key')" class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm" />
                                 <input v-model="field.label" type="text" placeholder="Label" class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm" />
                                 <select v-model="field.type" class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm">
                                     <option v-for="fieldType in meta.field_types" :key="fieldType.value" :value="fieldType.value">{{ fieldType.label }}</option>
                                 </select>
-                                <AppToggle v-model="field.required" label="Required" />
+                                <AppToggle v-model="field.required" :label="$t('settings_service_catalog.required')" />
                             </div>
                             <input
                                 v-if="field.type === 'select'"
                                 :value="(field.options ?? []).join(', ')"
                                 type="text"
-                                placeholder="Options (comma separated)"
+                                :placeholder="$t('settings_service_catalog.options_comma_separated')"
                                 class="mt-3 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
                                 @input="field.options = $event.target.value.split(',').map((item) => item.trim()).filter(Boolean)"
                             />
-                            <button type="button" class="mt-2 text-xs text-red-600 transition hover:text-red-700" @click="removeField(index)">Remove field</button>
+                            <button type="button" class="mt-2 text-xs text-red-600 transition hover:text-red-700" @click="removeField(index)">{{ $t('settings_service_catalog.remove_field') }}</button>
                         </div>
                     </TransitionGroup>
                 </div>
 
                 <div class="space-y-3 rounded-lg border border-slate-200 bg-slate-50/50 p-4">
-                    <AppToggle v-model="itemForm.is_public" label="Public on portal" description="Internal services are agent-only." />
-                    <AppToggle v-model="itemForm.is_active" label="Active" />
+                    <AppToggle v-model="itemForm.is_public" :label="$t('settings_service_catalog.public_on_portal')" :description="$t('settings_service_catalog.internal_services_are_agent-only')" />
+                    <AppToggle v-model="itemForm.is_active" :label="$t('common.active')" />
                 </div>
             </form>
 
             <template #footer>
                 <div class="flex justify-end gap-2">
-                    <button type="button" class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-white" @click="closeItemForm">Cancel</button>
-                    <button type="submit" form="item-form" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700 disabled:opacity-60" :disabled="itemForm.processing">Save</button>
+                    <button type="button" class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-white" @click="closeItemForm">{{ $t('common.cancel') }}</button>
+                    <button type="submit" form="item-form" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700 disabled:opacity-60" :disabled="itemForm.processing">{{ $t('common.save') }}</button>
                 </div>
             </template>
         </AppModal>
@@ -315,5 +366,5 @@ const destroyItem = (item) => {
             @close="closeConfirm"
             @confirm="onConfirm"
         />
-    </SettingsLayout>
+    </SettingsPage>
 </template>

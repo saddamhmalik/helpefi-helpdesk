@@ -136,6 +136,92 @@ class IntegrationController extends Controller
         );
     }
 
+    public function updateShopify(Request $request): RedirectResponse
+    {
+        $this->connections->updateShopify($request->validate([
+            'shop' => ['nullable', 'string', 'max:255'],
+            'access_token' => ['nullable', 'string', 'max:255'],
+            'is_active' => ['boolean'],
+        ]));
+
+        return back()->with('success', 'Shopify integration saved.');
+    }
+
+    public function updateHubspot(Request $request): RedirectResponse
+    {
+        $this->connections->updateHubspot($request->validate([
+            'access_token' => ['nullable', 'string', 'max:255'],
+            'is_active' => ['boolean'],
+        ]));
+
+        return back()->with('success', 'HubSpot integration saved.');
+    }
+
+    public function updateSalesforce(Request $request): RedirectResponse
+    {
+        $this->connections->updateSalesforce($request->validate([
+            'consumer_key' => ['nullable', 'string', 'max:255'],
+            'consumer_secret' => ['nullable', 'string', 'max:255'],
+            'username' => ['nullable', 'string', 'max:255'],
+            'password' => ['nullable', 'string', 'max:255'],
+            'security_token' => ['nullable', 'string', 'max:255'],
+            'login_url' => ['nullable', 'url', 'max:2048'],
+            'is_active' => ['boolean'],
+        ]));
+
+        return back()->with('success', 'Salesforce integration saved.');
+    }
+
+    public function updateTeams(Request $request): RedirectResponse
+    {
+        $this->connections->updateTeams($request->validate([
+            'webhook_url' => ['nullable', 'url', 'max:2048'],
+            'is_active' => ['boolean'],
+        ]));
+
+        return back()->with('success', 'Microsoft Teams integration saved.');
+    }
+
+    public function updateZapier(Request $request): RedirectResponse
+    {
+        $connection = $this->connections->updateZapier($request->validate([
+            'is_active' => ['boolean'],
+        ]));
+
+        return back()->with([
+            'success' => 'Zapier integration saved.',
+            'integration_secret' => $connection->config['subscribe_secret'] ?? null,
+        ]);
+    }
+
+    public function testShopify(): RedirectResponse
+    {
+        $successful = $this->connections->testShopify();
+
+        return back()->with($successful ? 'success' : 'error', $successful ? 'Shopify connection verified.' : 'Shopify connection failed.');
+    }
+
+    public function testHubspot(): RedirectResponse
+    {
+        $successful = $this->connections->testHubspot();
+
+        return back()->with($successful ? 'success' : 'error', $successful ? 'HubSpot connection verified.' : 'HubSpot connection failed.');
+    }
+
+    public function testSalesforce(): RedirectResponse
+    {
+        $successful = $this->connections->testSalesforce();
+
+        return back()->with($successful ? 'success' : 'error', $successful ? 'Salesforce connection verified.' : 'Salesforce connection failed.');
+    }
+
+    public function testTeams(): RedirectResponse
+    {
+        $successful = $this->connections->testTeams();
+
+        return back()->with($successful ? 'success' : 'error', $successful ? 'Teams notification sent.' : 'Teams notification failed.');
+    }
+
     private function validatedWebhook(Request $request): array
     {
         return $request->validate([

@@ -9,7 +9,6 @@ use App\Domains\Settings\Services\HelpdeskSettingService;
 use App\Domains\Workforce\Models\Team;
 use App\Models\User;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
-use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
@@ -53,7 +52,9 @@ class MemberService
             ]);
         }
 
-        $this->billing->assertLimit('agents', 1);
+        if (in_array($role, ['admin', 'agent'], true)) {
+            $this->billing->assertLimit('agents', 1);
+        }
 
         $member = $this->members->createMember(
             $name,
@@ -66,8 +67,6 @@ class MemberService
         if ($teamId) {
             $member = $this->members->attachToTeam($member, $teamId);
         }
-
-        Password::sendResetLink(['email' => $email]);
 
         $this->audit->record('member.created', $member, [
             'email' => $member->email,
@@ -98,6 +97,10 @@ class MemberService
             throw ValidationException::withMessages([
                 'role' => 'At least one admin is required.',
             ]);
+        }
+
+        if (in_array($role, ['admin', 'agent'], true) && ! $member->hasAnyRole(['admin', 'agent'])) {
+            $this->billing->assertLimit('agents', 1);
         }
 
         $updated = $this->members->updateRole($member, $role);

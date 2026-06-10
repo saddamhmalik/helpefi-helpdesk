@@ -3,6 +3,7 @@
 namespace App\Domains\Contacts\Controllers;
 
 use App\Domains\Contacts\Services\ContactService;
+use App\Domains\Contacts\Services\ContactTimelineService;
 use App\Domains\Contacts\Services\OrganizationService;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
@@ -15,6 +16,7 @@ class ContactController extends Controller
 {
     public function __construct(
         private ContactService $contactService,
+        private ContactTimelineService $timelineService,
         private OrganizationService $organizationService,
     ) {
     }
@@ -75,6 +77,7 @@ class ContactController extends Controller
     {
         return Inertia::render('Contacts/Show', [
             'contact' => $this->contactService->show($contact),
+            'timeline' => $this->timelineService->forContact($contact),
             'organizations' => $this->organizationService->options(),
             'tags' => $this->contactService->allTags(),
             'customFieldDefinitions' => $this->contactService->fieldDefinitions(),

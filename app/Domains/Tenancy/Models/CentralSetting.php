@@ -10,9 +10,12 @@ class CentralSetting extends Model
 
     protected $fillable = [
         'trial_days',
+        'tenant_purge_grace_days',
+        'tenant_purge_enabled',
         'currency',
         'plan_pricing',
         'plan_catalog',
+        'addon_catalog',
         'backup_schedule_enabled',
         'backup_schedule_frequency',
         'backup_schedule_weekday',
@@ -23,8 +26,11 @@ class CentralSetting extends Model
     {
         return [
             'trial_days' => 'integer',
+            'tenant_purge_grace_days' => 'integer',
+            'tenant_purge_enabled' => 'boolean',
             'plan_pricing' => 'array',
             'plan_catalog' => 'array',
+            'addon_catalog' => 'array',
             'backup_schedule_enabled' => 'boolean',
             'backup_schedule_weekday' => 'integer',
         ];

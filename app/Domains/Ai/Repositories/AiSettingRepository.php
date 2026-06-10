@@ -14,6 +14,7 @@ class AiSettingRepository
             'deflection_enabled' => false,
             'deflection_portal_enabled' => true,
             'deflection_widget_enabled' => true,
+            'triage_enabled' => false,
         ]);
     }
 

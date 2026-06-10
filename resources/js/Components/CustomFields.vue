@@ -26,7 +26,7 @@ const updateField = (name, value) => {
 </script>
 
 <template>
-    <FormSection v-if="fields.length" title="Additional information" description="Custom fields configured for this record.">
+    <FormSection v-if="fields.length" :title="$t('components.additional_information')" :description="$t('components.custom_fields_configured_for_this_record')">
         <FormField
             v-for="field in fields"
             :key="field.name"
@@ -49,7 +49,7 @@ const updateField = (name, value) => {
                 :required="field.required"
                 @change="updateField(field.name, $event.target.value)"
             >
-                <option value="">Select…</option>
+                <option value="">{{ $t('components.select_ellipsis') }}</option>
                 <option v-for="option in field.options ?? []" :key="option" :value="option">{{ option }}</option>
             </select>
 

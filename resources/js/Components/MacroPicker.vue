@@ -1,5 +1,6 @@
 <script setup>
 import { nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
+import { csrfHeaders } from '../support/csrf.js';
 
 const props = defineProps({
     ticketId: { type: Number, default: null },
@@ -16,8 +17,6 @@ const panelRef = ref(null);
 let debounceTimer = null;
 let abortController = null;
 
-const csrf = () => document.querySelector('meta[name="csrf-token"]')?.content;
-
 const fetchResults = async (term) => {
     if (abortController) {
         abortController.abort();
@@ -29,10 +28,10 @@ const fetchResults = async (term) => {
     try {
         const params = term.trim() ? `?q=${encodeURIComponent(term.trim())}` : '';
         const response = await fetch(`/canned-responses/search${params}`, {
+            credentials: 'same-origin',
             headers: {
                 Accept: 'application/json',
-                'X-Requested-With': 'XMLHttpRequest',
-                'X-CSRF-TOKEN': csrf(),
+                ...csrfHeaders(),
             },
             signal: abortController.signal,
         });
@@ -69,11 +68,11 @@ const close = () => {
 const applyMacro = async (macro) => {
     const response = await fetch(`/canned-responses/${macro.id}/apply`, {
         method: 'POST',
+        credentials: 'same-origin',
         headers: {
             Accept: 'application/json',
             'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': csrf(),
-            'X-Requested-With': 'XMLHttpRequest',
+            ...csrfHeaders(),
         },
         body: JSON.stringify({ ticket_id: props.ticketId }),
     });
@@ -136,7 +135,7 @@ onUnmounted(() => {
             <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M9 16h6m2 5H7a2 2 0 01-2-2V7a2 2 0 012-2h5.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
-            Macros
+            {{ $t('components.macros') }}
         </button>
 
         <div
@@ -149,13 +148,13 @@ onUnmounted(() => {
                     v-model="query"
                     type="text"
                     class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
-                    placeholder="Search macros…"
+                    :placeholder="$t('components.search_macros_ellipsis')"
                     @input="onInput"
                 />
             </div>
             <ul class="max-h-64 overflow-y-auto py-1">
-                <li v-if="loading" class="px-3 py-2 text-xs text-slate-500">Loading…</li>
-                <li v-else-if="!results.length" class="px-3 py-2 text-xs text-slate-500">No macros found.</li>
+                <li v-if="loading" class="px-3 py-2 text-xs text-slate-500">{{ $t('components.loading_ellipsis') }}</li>
+                <li v-else-if="!results.length" class="px-3 py-2 text-xs text-slate-500">{{ $t('components.no_macros_found') }}</li>
                 <li v-for="macro in results" :key="macro.id">
                     <button
                         type="button"

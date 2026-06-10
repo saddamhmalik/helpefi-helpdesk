@@ -49,7 +49,7 @@ class WorkspaceTest extends TestCase
 
         $this->actingAs($customer)
             ->get('/workspace')
-            ->assertRedirect(route('portal.my-tickets'));
+            ->assertRedirect(route('portal.my-tickets', ['brand' => 'default']));
     }
 
     public function test_agent_can_save_composer_draft(): void

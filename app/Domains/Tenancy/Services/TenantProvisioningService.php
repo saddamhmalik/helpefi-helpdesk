@@ -43,6 +43,8 @@ class TenantProvisioningService
 
         app(TenantDomainRepository::class)->createPlatform($tenant, $domain);
 
+        $this->ensureCentralSubscription($tenant);
+
         return $tenant;
     }
 
@@ -56,7 +58,7 @@ class TenantProvisioningService
     public function tenantUrl(Tenant $tenant): string
     {
         return app(TenantDomainService::class)->primaryUrl($tenant)
-            ?? 'http://'.app(TenantDomainRepository::class)->platformDomain($tenant)?->domain;
+            ?? (string) config('app.url');
     }
 
     public function welcomeUrl(Tenant $tenant, string $email): string
@@ -66,16 +68,37 @@ class TenantProvisioningService
         return $this->tenantUrl($tenant).'/welcome?token='.urlencode($token);
     }
 
-    public function createCentralSubscription(Tenant $tenant): Subscription
+    public function ensureCentralSubscription(Tenant $tenant): Subscription
     {
         $trialDays = app(CentralSettingsService::class)->trialDays();
 
-        return Subscription::query()->create([
-            'tenant_id' => $tenant->id,
-            'plan' => null,
-            'status' => Subscription::STATUS_TRIAL,
-            'trial_ends_at' => now()->addDays($trialDays),
-            'renews_at' => null,
-        ]);
+        return Subscription::query()->firstOrCreate(
+            ['tenant_id' => $tenant->id],
+            [
+                'plan' => null,
+                'status' => Subscription::STATUS_TRIAL,
+                'trial_ends_at' => now()->addDays($trialDays),
+                'renews_at' => null,
+            ],
+        );
+    }
+
+    public function healMissingSubscriptions(): int
+    {
+        $healed = 0;
+
+        Tenant::query()
+            ->whereDoesntHave('subscription')
+            ->each(function (Tenant $tenant) use (&$healed) {
+                $this->ensureCentralSubscription($tenant);
+                $healed++;
+            });
+
+        return $healed;
+    }
+
+    public function createCentralSubscription(Tenant $tenant): Subscription
+    {
+        return $this->ensureCentralSubscription($tenant);
     }
 }

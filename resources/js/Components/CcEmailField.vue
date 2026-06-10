@@ -1,15 +1,20 @@
 <script setup>
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { formInputClass } from '../composables/useFormControls.js';
 
 const props = defineProps({
     modelValue: { type: Array, default: () => [] },
     max: { type: Number, default: 10 },
     error: { type: String, default: '' },
-    placeholder: { type: String, default: 'Add email and press Enter' },
+    placeholder: { type: String, default: '' },
 });
 
 const emit = defineEmits(['update:modelValue']);
+
+const { t } = useI18n();
+
+const resolvedPlaceholder = computed(() => props.placeholder || t('components.add_email_press_enter'));
 
 const input = ref('');
 
@@ -85,14 +90,14 @@ const onBlur = () => {
                 v-model="input"
                 type="text"
                 class="min-w-[8rem] flex-1 border-0 bg-transparent px-1 py-1 text-sm outline-none focus:ring-0"
-                :placeholder="modelValue.length ? '' : placeholder"
+                :placeholder="modelValue.length ? '' : resolvedPlaceholder"
                 :disabled="modelValue.length >= max"
                 @keydown="onKeydown"
                 @paste="onPaste"
                 @blur="onBlur"
             />
         </div>
-        <p class="mt-1 text-xs text-slate-500">{{ modelValue.length }}/{{ max }} CC recipients</p>
+        <p class="mt-1 text-xs text-slate-500">{{ $t('components.cc_recipients_count', { count: modelValue.length, max }) }}</p>
         <p v-if="error" class="mt-1 text-xs text-red-600">{{ error }}</p>
     </div>
 </template>

@@ -26,7 +26,7 @@ class EmailSeeder extends Seeder
             'driver' => 'log',
             'from_address' => config('mail.from.address'),
             'from_name' => config('mail.from.name'),
-            'queue_connection' => env('QUEUE_CONNECTION', 'database'),
+            'queue_connection' => MailSetting::QUEUE_REDIS,
         ]);
     }
 }

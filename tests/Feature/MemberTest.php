@@ -43,27 +43,10 @@ class MemberTest extends TestCase
         Queue::assertPushed(\App\Domains\Auth\Jobs\SendTeamInvitationJob::class);
     }
 
-    public function test_admin_can_add_member_directly(): void
+    public function test_admin_can_invite_member_with_team(): void
     {
-        $admin = User::factory()->create();
-        $admin->assignRole('admin');
+        Queue::fake();
 
-        $this->actingAs($admin)
-            ->post('/settings/members', [
-                'name' => 'Direct Agent',
-                'email' => 'direct@example.com',
-                'role' => 'agent',
-            ])
-            ->assertRedirect();
-
-        $this->assertDatabaseHas('users', [
-            'name' => 'Direct Agent',
-            'email' => 'direct@example.com',
-        ]);
-    }
-
-    public function test_admin_can_add_member_with_team(): void
-    {
         $admin = User::factory()->admin()->create();
         $department = \App\Domains\Workforce\Models\Department::query()->create([
             'name' => 'Support',
@@ -78,20 +61,26 @@ class MemberTest extends TestCase
         ]);
 
         $this->actingAs($admin)
-            ->post('/settings/members', [
-                'name' => 'Team Agent',
+            ->post('/settings/members/invite', [
                 'email' => 'teamagent@example.com',
                 'role' => 'agent',
                 'team_id' => $team->id,
             ])
             ->assertRedirect();
 
-        $member = User::query()->where('email', 'teamagent@example.com')->first();
-
-        $this->assertDatabaseHas('team_user', [
-            'user_id' => $member->id,
+        $this->assertDatabaseHas('invitations', [
+            'email' => 'teamagent@example.com',
+            'role' => 'agent',
             'team_id' => $team->id,
         ]);
+
+        Queue::assertPushed(\App\Domains\Auth\Jobs\SendTeamInvitationJob::class);
+    }
+
+    public function test_password_reset_routes_are_not_available(): void
+    {
+        $this->get('/reset-password/test-token')->assertNotFound();
+        $this->post('/reset-password')->assertNotFound();
     }
 
     public function test_agent_cannot_access_members_page(): void

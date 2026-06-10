@@ -1,5 +1,8 @@
 <script setup>
 import { Head, Link, useForm } from '@inertiajs/vue3';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 
 const form = useForm({
     email: '',
@@ -13,19 +16,19 @@ const submit = () => {
 </script>
 
 <template>
-    <Head title="Platform admin" />
+    <Head :title="$t('central.platform_admin')" />
     <div class="flex min-h-screen items-center justify-center bg-slate-950 px-4">
         <div class="w-full max-w-sm rounded-2xl border border-white/10 bg-white p-8 shadow-2xl">
-            <h1 class="text-xl font-semibold text-slate-900">Platform admin</h1>
-            <p class="mt-2 text-sm text-slate-600">Sign in to manage workspaces and platform settings.</p>
+            <h1 class="text-xl font-semibold text-slate-900">{{ $t('central.platform_admin') }}</h1>
+            <p class="mt-2 text-sm text-slate-600">{{ $t('central.sign_in_to_manage_workspaces_and_platform_settings') }}</p>
             <form class="mt-6 space-y-4" @submit.prevent="submit">
                 <div>
-                    <label class="mb-1.5 block text-sm font-medium text-slate-700">Email</label>
+                    <label class="mb-1.5 block text-sm font-medium text-slate-700">{{ $t('profile.email') }}</label>
                     <input v-model="form.email" type="email" required class="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20" autofocus />
                     <p v-if="form.errors.email" class="mt-1.5 text-xs text-red-600">{{ form.errors.email }}</p>
                 </div>
                 <div>
-                    <label class="mb-1.5 block text-sm font-medium text-slate-700">Password</label>
+                    <label class="mb-1.5 block text-sm font-medium text-slate-700">{{ $t('settings.password') }}</label>
                     <input v-model="form.password" type="password" required class="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20" />
                     <p v-if="form.errors.password" class="mt-1.5 text-xs text-red-600">{{ form.errors.password }}</p>
                 </div>
@@ -33,9 +36,7 @@ const submit = () => {
                     <input v-model="form.remember" type="checkbox" class="rounded border-slate-300" />
                     Remember me
                 </label>
-                <button type="submit" class="w-full rounded-xl bg-blue-600 py-2.5 text-sm font-semibold text-white hover:bg-blue-700" :disabled="form.processing">
-                    Sign in
-                </button>
+                <button type="submit" class="w-full rounded-xl bg-blue-600 py-2.5 text-sm font-semibold text-white hover:bg-blue-700" :disabled="form.processing">{{ $t('central.sign_in') }}</button>
             </form>
             <Link href="/" class="mt-4 block text-center text-sm text-slate-500 hover:text-slate-700">← Back to site</Link>
         </div>

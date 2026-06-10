@@ -6,6 +6,8 @@ import PageHeader from '../../../../Components/PageHeader.vue';
 import PaginationLinks from '../../../../Components/PaginationLinks.vue';
 import PlatformStatCard from '../../../../Components/Platform/PlatformStatCard.vue';
 import { adminInputClass } from '../../../../composables/usePlatformAdmin.js';
+import { useI18n } from 'vue-i18n';
+import { useDateTime } from '../../../../composables/useDateTime.js';
 
 const props = defineProps({
     payments: Object,
@@ -13,16 +15,21 @@ const props = defineProps({
     currency: Object,
     filters: Object,
     stripe_enabled: Boolean,
+    stripe_webhooks_configured: { type: Boolean, default: false },
 });
+
+const { formatDateTime } = useDateTime();
+
+const { t } = useI18n();
 
 const search = ref(props.filters.q ?? '');
 const status = ref(props.filters.status ?? 'all');
 
 const statusFilters = [
-    { value: 'all', label: 'All' },
-    { value: 'paid', label: 'Paid' },
-    { value: 'failed', label: 'Failed' },
-    { value: 'refunded', label: 'Refunded' },
+    { value: 'all', label: t('central.all') },
+    { value: 'paid', label: t('central.paid') },
+    { value: 'failed', label: t('central.failed') },
+    { value: 'refunded', label: t('central.refunded') },
 ];
 
 let searchTimer = null;
@@ -61,20 +68,6 @@ const formatMoney = (amount, currencyCode = props.currency.code) => {
     }
 };
 
-const formatDateTime = (value) => {
-    if (!value) {
-        return '—';
-    }
-
-    return new Date(value).toLocaleString(undefined, {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
-        hour: 'numeric',
-        minute: '2-digit',
-    });
-};
-
 const statusClass = (payment) => {
     if (payment.status === 'paid') {
         return 'bg-emerald-100 text-emerald-700 ring-emerald-200';
@@ -91,23 +84,27 @@ const hasFilters = computed(() => Boolean(props.filters.q) || (props.filters.sta
 </script>
 
 <template>
-    <Head title="Payments" />
+    <Head :title="$t('central.payments')" />
     <AdminLayout>
         <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6">
             <PageHeader
-                title="Payments"
-                description="Received Stripe subscription payments with workspace and invoice details."
+                :title="$t('central.payments')"
+                :description="$t('central.received_stripe_subscription_payments_with_workspace_and_invoice_detai')"
             />
 
             <div class="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-                <PlatformStatCard label="Total collected" :value="formatMoney(stats.total_collected)" tone="emerald" />
-                <PlatformStatCard label="This month" :value="formatMoney(stats.month_collected)" tone="blue" />
-                <PlatformStatCard label="Paid payments" :value="stats.paid_count" />
-                <PlatformStatCard label="All records" :value="stats.payment_count" />
+                <PlatformStatCard :label="$t('central.total_collected')" :value="formatMoney(stats.total_collected)" tone="emerald" />
+                <PlatformStatCard :label="$t('central.this_month')" :value="formatMoney(stats.month_collected)" tone="blue" />
+                <PlatformStatCard :label="$t('central.paid_payments')" :value="stats.paid_count" />
+                <PlatformStatCard :label="$t('central.all_records')" :value="stats.payment_count" />
             </div>
 
             <div v-if="!stripe_enabled" class="mb-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
-                Stripe is not configured. New payments will not be recorded until Stripe webhooks are enabled.
+                Stripe is not configured. Add <code class="rounded bg-amber-100 px-1">STRIPE_ENABLED=true</code>, your test API keys, and billing vars to <code class="rounded bg-amber-100 px-1">.env.docker</code> (or run <code class="rounded bg-amber-100 px-1">./docker/init-env.sh</code> to copy them from <code class="rounded bg-amber-100 px-1">.env</code>), then restart Docker.
+            </div>
+
+            <div v-else-if="!stripe_webhooks_configured" class="mb-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+                Stripe API keys are configured, but webhooks are not. Run <code class="rounded bg-amber-100 px-1">./docker/stripe-listen.sh</code>, copy the <code class="rounded bg-amber-100 px-1">whsec_...</code> secret into <code class="rounded bg-amber-100 px-1">STRIPE_WEBHOOK_SECRET</code> in <code class="rounded bg-amber-100 px-1">.env.docker</code>, and restart Docker so invoice payments appear here.
             </div>
 
             <div class="mb-4 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
@@ -118,7 +115,7 @@ const hasFilters = computed(() => Boolean(props.filters.q) || (props.filters.sta
                     <input
                         v-model="search"
                         type="search"
-                        placeholder="Search workspace, email, invoice..."
+                        :placeholder="$t('central.search_workspace_email_invoice')"
                         :class="[adminInputClass, 'pl-10']"
                     />
                 </div>
@@ -142,13 +139,13 @@ const hasFilters = computed(() => Boolean(props.filters.q) || (props.filters.sta
                     <table class="min-w-full divide-y divide-slate-200 text-sm">
                         <thead class="bg-slate-50">
                             <tr>
-                                <th class="px-4 py-3 text-left font-semibold text-slate-600">Date</th>
-                                <th class="px-4 py-3 text-left font-semibold text-slate-600">Workspace</th>
-                                <th class="px-4 py-3 text-left font-semibold text-slate-600">Customer</th>
-                                <th class="px-4 py-3 text-left font-semibold text-slate-600">Plan</th>
-                                <th class="px-4 py-3 text-left font-semibold text-slate-600">Amount</th>
-                                <th class="px-4 py-3 text-left font-semibold text-slate-600">Status</th>
-                                <th class="px-4 py-3 text-left font-semibold text-slate-600">Invoice</th>
+                                <th class="px-4 py-3 text-left font-semibold text-slate-600">{{ $t('central.date') }}</th>
+                                <th class="px-4 py-3 text-left font-semibold text-slate-600">{{ $t('settings.groups.workspace') }}</th>
+                                <th class="px-4 py-3 text-left font-semibold text-slate-600">{{ $t('central.customer') }}</th>
+                                <th class="px-4 py-3 text-left font-semibold text-slate-600">{{ $t('central.plan') }}</th>
+                                <th class="px-4 py-3 text-left font-semibold text-slate-600">{{ $t('central.amount') }}</th>
+                                <th class="px-4 py-3 text-left font-semibold text-slate-600">{{ $t('central.status') }}</th>
+                                <th class="px-4 py-3 text-left font-semibold text-slate-600">{{ $t('central.invoice') }}</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-100">
@@ -166,10 +163,10 @@ const hasFilters = computed(() => Boolean(props.filters.q) || (props.filters.sta
                                             class="text-xs text-blue-600 hover:text-blue-700"
                                             target="_blank"
                                         >
-                                            Open workspace
+                                            {{ $t('central.open_workspace') }}
                                         </Link>
                                     </template>
-                                    <span v-else class="text-slate-400">Unlinked</span>
+                                    <span v-else class="text-slate-400">{{ $t('central.unlinked') }}</span>
                                 </td>
                                 <td class="px-4 py-3">
                                     <p class="text-slate-900">{{ payment.customer_name || '—' }}</p>
@@ -198,7 +195,7 @@ const hasFilters = computed(() => Boolean(props.filters.q) || (props.filters.sta
                                             target="_blank"
                                             class="text-blue-600 hover:text-blue-700"
                                         >
-                                            View
+                                            {{ $t('central.view') }}
                                         </a>
                                         <a
                                             v-if="payment.invoice_pdf"
@@ -206,7 +203,7 @@ const hasFilters = computed(() => Boolean(props.filters.q) || (props.filters.sta
                                             target="_blank"
                                             class="text-blue-600 hover:text-blue-700"
                                         >
-                                            PDF
+                                            {{ $t('central.pdf') }}
                                         </a>
                                     </div>
                                 </td>

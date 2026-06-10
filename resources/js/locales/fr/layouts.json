@@ -1,0 +1,68 @@
+{
+    "layouts": {
+        "admin": {
+            "platform_admin": "Administrateur plateforme",
+            "close_menu": "Fermer le menu",
+            "open_menu": "Ouvrir le menu",
+            "profile_password": "Profil et mot de passe",
+            "nav_overview": "Aperçu",
+            "nav_dashboard": "Tableau de bord",
+            "nav_workspaces_group": "Espaces de travail",
+            "nav_workspaces": "Espaces de travail",
+            "nav_subscriptions": "Abonnements",
+            "nav_payments": "Paiements",
+            "nav_platform_group": "Plateforme",
+            "nav_platform_settings": "Paramètres plateforme",
+            "nav_email_templates": "Modèles d'email",
+            "nav_notices": "Annonces",
+            "nav_backups": "Sauvegardes",
+            "nav_feedback": "Retours et demandes",
+            "nav_audit_logs": "Journaux d'audit",
+            "nav_observability": "Erreurs et exceptions",
+            "nav_access_group": "Contrôle d'accès",
+            "nav_users": "Utilisateurs",
+            "nav_roles": "Rôles et permissions"
+        },
+        "portal": {
+            "help_center": "Centre d'aide",
+            "search": "Rechercher",
+            "services": "Services",
+            "submit_request": "Soumettre une demande",
+            "my_tickets": "Mes tickets",
+            "logout": "Se déconnecter",
+            "track_request": "Suivre la demande",
+            "sign_in": "Se connecter",
+            "register": "S'inscrire",
+            "agent_login": "Connexion agent"
+        },
+        "central": {
+            "product": "Produit",
+            "features": "Fonctionnalités",
+            "how_it_works": "Comment ça marche",
+            "pricing": "Tarifs",
+            "faq": "FAQ",
+            "sign_in": "Se connecter",
+            "start_free_trial": "Essai gratuit",
+            "footer_tagline": "Logiciel moderne de support client et ITSM — tickets, chat, base de connaissances, automatisation et workflows Service Desk dans un seul espace de travail.",
+            "footer_product": "Produit",
+            "footer_platform_overview": "Aperçu de la plateforme",
+            "footer_get_started": "Commencer",
+            "footer_sign_in_workspace": "Se connecter à l'espace de travail",
+            "footer_platform_admin": "Administrateur plateforme",
+            "footer_setup_guide": "Guide de configuration",
+            "footer_capabilities": "Capacités",
+            "footer_capability_inbox": "Boîte partagée et espace agent",
+            "footer_capability_channels": "Chat en direct, SMS et portail",
+            "footer_capability_kb": "Base de connaissances et catalogue de services",
+            "footer_capability_sla": "SLA, automatisation et déviation IA",
+            "footer_capability_service_desk": "Service Desk ITSM (Entreprise)",
+            "footer_capability_integrations": "Intégrations, SSO et CMDB d'actifs",
+            "footer_rights": "Tous droits réservés.",
+            "footer_hosted": "Hébergement cloud · Espace dédié · Domaine personnalisé en Enterprise",
+            "why_us": "Pourquoi nous"
+        },
+        "app": {
+            "helpdesk": "Helpdesk"
+        }
+    }
+}

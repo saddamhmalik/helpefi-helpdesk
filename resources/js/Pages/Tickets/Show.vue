@@ -5,11 +5,13 @@ import AgentLayout from '../../Layouts/AgentLayout.vue';
 import TicketComposerDock from '../../Components/TicketComposerDock.vue';
 import TicketConversation from '../../Components/TicketConversation.vue';
 import TicketDetailsSidebar from '../../Components/TicketDetailsSidebar.vue';
+import AppCollapse from '../../Components/AppCollapse.vue';
 import TicketExportMenu from '../../Components/TicketExportMenu.vue';
 import TicketCollisionBanner from '../../Components/TicketCollisionBanner.vue';
 import { useTicketPresence } from '../../composables/useTicketPresence.js';
 import { useTicketRealtimeMessages } from '../../composables/useTicketRealtimeMessages.js';
 import { useTicketPolling } from '../../composables/useTicketPolling.js';
+import { useI18n } from 'vue-i18n';
 
 const props = defineProps({
     ticket: Object,
@@ -28,11 +30,22 @@ const props = defineProps({
     sideConversations: { type: Array, default: () => [] },
     timeTracking: { type: Object, default: () => ({ total_minutes: 0, entries: [] }) },
     externalIssues: { type: Array, default: () => [] },
+    approval: { type: Object, default: null },
+    canDecideApproval: { type: Boolean, default: false },
+    changeRecord: { type: Object, default: null },
+    problemRecord: { type: Object, default: null },
+    incidentCandidates: { type: Array, default: () => [] },
+    changeRiskOptions: { type: Array, default: () => [] },
+    majorIncident: { type: Object, default: null },
+    canDeclareMajorIncident: { type: Boolean, default: false },
 });
+
+const { t } = useI18n();
 
 const page = usePage();
 const aiEnabled = computed(() => page.props.ai?.enabled ?? false);
 const editorKey = ref(0);
+const mobileDetailsOpen = ref(false);
 
 const plainReplyToHtml = (text) => {
     const escaped = text
@@ -93,111 +106,121 @@ const onReplyKeydown = (event) => {
         reply();
     }
 };
+
+const sidebarProps = computed(() => ({
+    ticket: props.ticket,
+    sla: props.sla,
+    statuses: props.statuses,
+    priorities: props.priorities,
+    agents: props.agents,
+    departments: props.departments,
+    teams: props.teams,
+    mergeCandidates: props.mergeCandidates,
+    assetOptions: props.assetOptions,
+    csat: props.csat,
+    currentUserId: props.currentUserId,
+    customFieldDefinitions: props.customFieldDefinitions,
+    lifecycle: props.lifecycle ?? [],
+    sideConversations: props.sideConversations,
+    timeTracking: props.timeTracking,
+    externalIssues: props.externalIssues,
+    approval: props.approval,
+    canDecideApproval: props.canDecideApproval,
+    changeRecord: props.changeRecord,
+    problemRecord: props.problemRecord,
+    incidentCandidates: props.incidentCandidates,
+    changeRiskOptions: props.changeRiskOptions,
+    majorIncident: props.majorIncident,
+    canDeclareMajorIncident: props.canDeclareMajorIncident,
+}));
 </script>
 
 <template>
     <Head :title="ticket.number" />
     <AgentLayout>
+        <div class="flex h-0 min-h-0 flex-1 flex-col overflow-hidden">
         <div
             v-if="ticket.merged_into"
-            class="mx-6 mb-0 shrink-0 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900"
+            class="mb-3 shrink-0 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900"
         >
-            Merged into
+            {{ $t('tickets.merged_into') }}
             <Link :href="`/tickets/${ticket.merged_into.id}`" class="font-medium underline">{{ ticket.merged_into.number }}</Link>
         </div>
 
-        <div class="-m-6 flex h-[calc(100dvh-8rem)] min-h-0 flex-col overflow-hidden lg:h-[calc(100dvh-4rem)] xl:flex-row">
-            <div class="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden border-slate-200 bg-white xl:border-r">
-                <div class="flex shrink-0 items-center gap-2 border-b border-slate-200 bg-white px-3 py-2">
-                    <Link href="/tickets" class="shrink-0 text-xs font-medium text-blue-600 hover:text-blue-700" title="Back to tickets">
-                        ←
-                    </Link>
-                    <span class="shrink-0 font-mono text-xs font-semibold text-blue-600">{{ ticket.number }}</span>
-                    <span class="hidden h-3.5 w-px bg-slate-200 sm:block" />
-                    <h1 class="min-w-0 truncate text-sm font-semibold text-slate-900" :title="ticket.subject">
-                        {{ ticket.subject }}
-                    </h1>
-                    <span v-if="ticket.channel" class="hidden shrink-0 text-[10px] text-slate-400 lg:inline">· {{ ticket.channel.name }}</span>
-                    <span v-if="messages.length" class="hidden shrink-0 text-[10px] text-slate-400 md:inline">· {{ messages.length }} msgs</span>
-                    <div class="ml-auto flex shrink-0 items-center gap-1.5">
-                        <TicketExportMenu
-                            :ticket-id="ticket.id"
-                            :default-email="ticket.contact?.email ?? ''"
-                        />
-                        <span class="rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold text-emerald-700 ring-1 ring-inset ring-emerald-600/15">
-                            {{ ticket.status?.name }}
-                        </span>
+        <div class="-mb-4 flex h-0 min-h-0 flex-1 basis-0 overflow-hidden sm:-mb-6">
+            <div class="flex min-h-0 min-w-0 flex-1">
+                <section class="flex min-h-0 min-w-0 flex-1 basis-0 flex-col overflow-hidden bg-white">
+                    <div class="flex shrink-0 items-center gap-2 border-b border-slate-200 bg-white px-3 py-2">
+                        <Link href="/tickets" class="shrink-0 text-xs font-medium text-blue-600 hover:text-blue-700" :title="$t('tickets.back_to_tickets')">
+                            ←
+                        </Link>
+                        <span class="shrink-0 font-mono text-xs font-semibold text-blue-600">{{ ticket.number }}</span>
+                        <span class="hidden h-3.5 w-px bg-slate-200 sm:block" />
+                        <h1 class="min-w-0 flex-1 truncate text-sm font-semibold text-slate-900" :title="ticket.subject">
+                            {{ ticket.subject }}
+                        </h1>
+                        <span v-if="ticket.channel" class="hidden shrink-0 text-[10px] text-slate-400 lg:inline">· {{ ticket.channel.name }}</span>
+                        <span v-if="messages.length" class="hidden shrink-0 text-[10px] text-slate-400 md:inline">· {{ messages.length }} {{ $t('tickets.message_count_suffix') }}</span>
+                        <div class="ml-auto flex shrink-0 items-center gap-1.5">
+                            <TicketExportMenu
+                                :ticket-id="ticket.id"
+                                :default-email="ticket.contact?.email ?? ''"
+                            />
+                            <span class="rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold text-emerald-700 ring-1 ring-inset ring-emerald-600/15">
+                                {{ ticket.status?.name }}
+                            </span>
+                        </div>
                     </div>
-                </div>
 
-                <TicketCollisionBanner :viewers="viewers" />
+                    <TicketCollisionBanner :viewers="viewers" />
 
-                <div class="relative min-h-0 flex-1 overflow-hidden bg-[#e5ddd5]/30 px-3 py-2">
-                    <TicketConversation
-                        :messages="messages"
-                        :current-user-id="currentUserId"
-                        fill
-                    />
-                </div>
+                    <div class="relative min-h-0 flex-1 overflow-hidden bg-[#e5ddd5]/30 px-3 py-2">
+                        <TicketConversation
+                            :messages="messages"
+                            :current-user-id="currentUserId"
+                            fill
+                        />
+                    </div>
 
-                <form class="shrink-0 px-2 pb-2 pt-1" @submit.prevent="reply" @keydown="onReplyKeydown">
-                    <TicketComposerDock
-                        v-model:body="replyForm.body"
-                        v-model:attachments="replyForm.attachments"
-                        v-model:is-internal="replyForm.is_internal"
-                        :processing="replyForm.processing"
-                        :ai-enabled="aiEnabled"
-                        :ticket-id="ticket.id"
-                        :ai-base-path="`/tickets/${ticket.id}/ai`"
-                        :editor-key="editorKey"
-                        :on-suggest-reply="(reply) => { replyForm.body = plainReplyToHtml(reply); replyForm.is_internal = false; }"
-                        @submit="reply"
-                    />
-                </form>
+                    <form class="shrink-0 border-t border-slate-200 bg-white px-2 pb-2 pt-1" @submit.prevent="reply" @keydown="onReplyKeydown">
+                        <TicketComposerDock
+                            v-model:body="replyForm.body"
+                            v-model:attachments="replyForm.attachments"
+                            v-model:is-internal="replyForm.is_internal"
+                            :processing="replyForm.processing"
+                            :ai-enabled="aiEnabled"
+                            :ticket-id="ticket.id"
+                            :ai-base-path="`/tickets/${ticket.id}/ai`"
+                            :editor-key="editorKey"
+                            :on-suggest-reply="(reply) => { replyForm.body = plainReplyToHtml(reply); replyForm.is_internal = false; }"
+                            @submit="reply"
+                        />
+                    </form>
+                </section>
+
+                <aside class="hidden min-h-0 w-72 shrink-0 flex-col overflow-hidden border-l border-slate-200 bg-white xl:flex">
+                    <TicketDetailsSidebar embedded v-bind="sidebarProps" />
+                </aside>
             </div>
-
-            <aside class="hidden min-h-0 w-72 shrink-0 flex-col overflow-hidden border-l border-slate-200 bg-white xl:flex">
-                <TicketDetailsSidebar
-                    embedded
-                    :ticket="ticket"
-                    :sla="sla"
-                    :statuses="statuses"
-                    :priorities="priorities"
-                    :agents="agents"
-                    :departments="departments"
-                    :teams="teams"
-                    :merge-candidates="mergeCandidates"
-                    :asset-options="assetOptions"
-                    :csat="csat"
-                    :current-user-id="currentUserId"
-                    :custom-field-definitions="customFieldDefinitions"
-                    :lifecycle="lifecycle ?? []"
-                    :side-conversations="sideConversations"
-                    :time-tracking="timeTracking"
-                    :external-issues="externalIssues"
-                />
-            </aside>
         </div>
 
-        <div class="mt-4 xl:hidden">
-            <TicketDetailsSidebar
-                :ticket="ticket"
-                :sla="sla"
-                :statuses="statuses"
-                :priorities="priorities"
-                :agents="agents"
-                :departments="departments"
-                :teams="teams"
-                :merge-candidates="mergeCandidates"
-                :asset-options="assetOptions"
-                :csat="csat"
-                :current-user-id="currentUserId"
-                :custom-field-definitions="customFieldDefinitions"
-                :lifecycle="lifecycle ?? []"
-                :side-conversations="sideConversations"
-                :time-tracking="timeTracking"
-                :external-issues="externalIssues"
-            />
+        <div class="shrink-0 border-t border-slate-200 bg-white xl:hidden">
+            <button
+                type="button"
+                class="flex w-full items-center justify-between px-4 py-2.5 text-sm font-medium text-slate-700"
+                @click="mobileDetailsOpen = !mobileDetailsOpen"
+            >
+                <span>{{ $t('tickets.ticket_details') }}</span>
+                <svg class="h-4 w-4 text-slate-400 transition-transform duration-300 ease-out" :class="mobileDetailsOpen ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </button>
+            <AppCollapse :open="mobileDetailsOpen">
+                <div class="max-h-[40vh] overflow-y-auto border-t border-slate-100">
+                    <TicketDetailsSidebar v-bind="sidebarProps" />
+                </div>
+            </AppCollapse>
+        </div>
         </div>
     </AgentLayout>
 </template>

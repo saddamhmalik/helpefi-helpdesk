@@ -51,46 +51,20 @@ class EmailSettingController extends Controller
 
     public function storeInbox(Request $request): RedirectResponse
     {
-        $data = $request->validate([
-            'name' => ['required', 'string', 'max:100'],
-            'address' => ['required', 'email', 'max:255'],
-            'brand_id' => ['required', 'integer', 'exists:brands,id'],
-            'department_id' => ['nullable', 'integer', 'exists:departments,id'],
-            'team_id' => ['nullable', 'integer', 'exists:teams,id'],
-            'aliases' => ['nullable', 'array'],
-            'aliases.*' => ['email', 'max:255'],
-            'inbound_method' => ['nullable', 'in:webhook,poll,oauth'],
-            'is_active' => ['boolean'],
-        ]);
+        $data = $request->validate($this->inboxValidationRules(requireInboundMethod: false));
 
         $this->inboxes->assertUniqueAddress($data['address']);
-        $this->inboxes->create($data);
+        $created = $this->inboxes->create($data);
 
-        return back()->with('success', 'Email inbox added.');
+        return back()->with([
+            'success' => 'Email inbox added.',
+            'created_inbox_id' => $created['id'],
+        ]);
     }
 
     public function updateInbox(Request $request, int $inbox): RedirectResponse
     {
-        $data = $request->validate([
-            'name' => ['required', 'string', 'max:100'],
-            'address' => ['required', 'email', 'max:255'],
-            'brand_id' => ['required', 'integer', 'exists:brands,id'],
-            'department_id' => ['nullable', 'integer', 'exists:departments,id'],
-            'team_id' => ['nullable', 'integer', 'exists:teams,id'],
-            'aliases' => ['nullable', 'array'],
-            'aliases.*' => ['email', 'max:255'],
-            'is_active' => ['boolean'],
-            'inbound_method' => ['required', 'in:webhook,poll,oauth'],
-            'oauth_provider' => ['nullable', 'in:google,microsoft,zoho'],
-            'mailbox_provider' => ['nullable', 'string', 'max:50'],
-            'mailbox_protocol' => ['nullable', 'in:imap,pop3'],
-            'mailbox_host' => ['nullable', 'string', 'max:255'],
-            'mailbox_port' => ['nullable', 'integer', 'min:1', 'max:65535'],
-            'mailbox_encryption' => ['nullable', 'in:ssl,tls,none'],
-            'mailbox_username' => ['nullable', 'string', 'max:255'],
-            'mailbox_password' => ['nullable', 'string', 'max:255'],
-            'mailbox_folder' => ['nullable', 'string', 'max:255'],
-        ]);
+        $data = $request->validate($this->inboxValidationRules(requireInboundMethod: true));
 
         $this->inboxes->assertUniqueAddress($data['address'], $inbox);
         $this->inboxes->update($inbox, $data);
@@ -148,8 +122,6 @@ class EmailSettingController extends Controller
         $data = $request->validate([
             'enabled' => ['required', 'boolean'],
             'reply_enabled' => ['required', 'boolean'],
-            'delivery_mode' => ['required', 'in:sync,queue'],
-            'queue_connection' => ['required', 'in:sync,database,redis'],
             'use_inbox_smtp' => ['required', 'boolean'],
             'email_inbox_id' => ['nullable', 'integer', 'exists:email_inboxes,id'],
             'driver' => ['required', 'in:smtp,log'],
@@ -184,7 +156,6 @@ class EmailSettingController extends Controller
             'to' => ['required', 'email'],
             'enabled' => ['nullable', 'boolean'],
             'reply_enabled' => ['nullable', 'boolean'],
-            'delivery_mode' => ['nullable', 'in:sync,queue'],
             'use_inbox_smtp' => ['nullable', 'boolean'],
             'email_inbox_id' => ['nullable', 'integer', 'exists:email_inboxes,id'],
             'driver' => ['nullable', 'in:smtp,log'],
@@ -235,5 +206,31 @@ class EmailSettingController extends Controller
         }
 
         return back()->with('success', 'Inbox SMTP test email sent.');
+    }
+
+    private function inboxValidationRules(bool $requireInboundMethod): array
+    {
+        return [
+            'name' => ['required', 'string', 'max:100'],
+            'address' => ['required', 'email', 'max:255'],
+            'brand_id' => ['required', 'integer', 'exists:brands,id'],
+            'department_id' => ['nullable', 'integer', 'exists:departments,id'],
+            'team_id' => ['nullable', 'integer', 'exists:teams,id'],
+            'aliases' => ['nullable', 'array'],
+            'aliases.*' => ['email', 'max:255'],
+            'is_active' => ['boolean'],
+            'inbound_method' => $requireInboundMethod
+                ? ['required', 'in:webhook,poll,oauth']
+                : ['nullable', 'in:webhook,poll,oauth'],
+            'oauth_provider' => ['nullable', 'in:google,microsoft,zoho'],
+            'mailbox_provider' => ['nullable', 'string', 'max:50'],
+            'mailbox_protocol' => ['nullable', 'in:imap,pop3'],
+            'mailbox_host' => ['nullable', 'string', 'max:255'],
+            'mailbox_port' => ['nullable', 'integer', 'min:1', 'max:65535'],
+            'mailbox_encryption' => ['nullable', 'in:ssl,tls,none'],
+            'mailbox_username' => ['nullable', 'string', 'max:255'],
+            'mailbox_password' => ['nullable', 'string', 'max:255'],
+            'mailbox_folder' => ['nullable', 'string', 'max:255'],
+        ];
     }
 }

@@ -5,6 +5,8 @@ import AdminLayout from '../../../../Layouts/AdminLayout.vue';
 import PageHeader from '../../../../Components/PageHeader.vue';
 import PaginationLinks from '../../../../Components/PaginationLinks.vue';
 import { adminInputClass } from '../../../../composables/usePlatformAdmin.js';
+import { useI18n } from 'vue-i18n';
+import { useDateTime } from '../../../../composables/useDateTime.js';
 
 const props = defineProps({
     auditLogs: Object,
@@ -12,6 +14,10 @@ const props = defineProps({
     eventLabels: Object,
     summary: Object,
 });
+
+const { formatDateTime } = useDateTime();
+
+const { t } = useI18n();
 
 const filterForm = useForm({
     event: props.filters.event ?? '',
@@ -71,11 +77,11 @@ const formatProperties = (properties) => {
 </script>
 
 <template>
-    <Head title="Platform audit logs" />
+    <Head :title="$t('central.platform_audit_logs')" />
     <AdminLayout>
         <PageHeader
-            title="Audit logs"
-            description="Track platform admin sign-ins, workspace changes, backups, and other central activity."
+            :title="$t('settings.audit_logs')"
+            :description="$t('central.track_platform_admin_sign-ins_workspace_changes_backups_and_other_cent')"
         />
 
         <div class="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -84,7 +90,7 @@ const formatProperties = (properties) => {
                 :key="event"
                 class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"
             >
-                <p class="text-xs font-medium uppercase tracking-wide text-slate-500">7 days</p>
+                <p class="text-xs font-medium uppercase tracking-wide text-slate-500">{{ $t('central.7_days') }}</p>
                 <p class="mt-1 text-sm font-medium text-slate-900">{{ eventLabel(event) }}</p>
                 <p class="mt-2 text-2xl font-semibold text-slate-900">{{ total }}</p>
             </div>
@@ -96,25 +102,21 @@ const formatProperties = (properties) => {
         <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
             <div class="mb-4 flex flex-wrap items-end gap-3">
                 <div>
-                    <label class="mb-1 block text-sm font-medium text-slate-700">Event</label>
+                    <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('central.event') }}</label>
                     <input v-model="filterForm.event" type="text" :class="adminInputClass" placeholder="platform.tenant.updated" />
                 </div>
                 <div>
-                    <label class="mb-1 block text-sm font-medium text-slate-700">Search</label>
-                    <input v-model="filterForm.search" type="text" :class="adminInputClass" placeholder="Email, event, subject id" />
+                    <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('common.search') }}</label>
+                    <input v-model="filterForm.search" type="text" :class="adminInputClass" :placeholder="$t('central.email_event_subject_id')" />
                 </div>
                 <div>
-                    <label class="mb-1 block text-sm font-medium text-slate-700">Workspace id</label>
-                    <input v-model="filterForm.tenant_id" type="text" :class="adminInputClass" placeholder="Tenant UUID" />
+                    <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('central.workspace_id') }}</label>
+                    <input v-model="filterForm.tenant_id" type="text" :class="adminInputClass" :placeholder="$t('central.tenant_uuid')" />
                 </div>
-                <button type="button" class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50" @click="applyFilters">
-                    Filter
-                </button>
-                <button type="button" class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50" @click="clearFilters">
-                    Clear
-                </button>
+                <button type="button" class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50" @click="applyFilters">{{ $t('central.filter') }}</button>
+                <button type="button" class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50" @click="clearFilters">{{ $t('central.clear') }}</button>
                 <a :href="exportUrl" class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">
-                    Export CSV
+                    {{ $t('central.export_csv') }}
                 </a>
             </div>
 
@@ -122,18 +124,18 @@ const formatProperties = (properties) => {
                 <table class="min-w-full text-sm">
                     <thead>
                         <tr class="border-b border-slate-200 text-left text-slate-500">
-                            <th class="px-3 py-2 font-medium">When</th>
-                            <th class="px-3 py-2 font-medium">Event</th>
-                            <th class="px-3 py-2 font-medium">Actor</th>
-                            <th class="px-3 py-2 font-medium">Workspace</th>
-                            <th class="px-3 py-2 font-medium">Subject</th>
-                            <th class="px-3 py-2 font-medium">Details</th>
-                            <th class="px-3 py-2 font-medium">IP</th>
+                            <th class="px-3 py-2 font-medium">{{ $t('central.when') }}</th>
+                            <th class="px-3 py-2 font-medium">{{ $t('central.event') }}</th>
+                            <th class="px-3 py-2 font-medium">{{ $t('central.actor') }}</th>
+                            <th class="px-3 py-2 font-medium">{{ $t('settings.groups.workspace') }}</th>
+                            <th class="px-3 py-2 font-medium">{{ $t('central.subject') }}</th>
+                            <th class="px-3 py-2 font-medium">{{ $t('central.details') }}</th>
+                            <th class="px-3 py-2 font-medium">{{ $t('central.ip') }}</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr v-for="log in auditLogs.data" :key="log.id" class="border-b border-slate-100 align-top">
-                            <td class="px-3 py-2 whitespace-nowrap text-slate-600">{{ new Date(log.created_at).toLocaleString() }}</td>
+                            <td class="px-3 py-2 whitespace-nowrap text-slate-600">{{ formatDateTime(log.created_at) }}</td>
                             <td class="px-3 py-2">
                                 <p class="font-medium text-slate-900">{{ eventLabel(log.event) }}</p>
                                 <p class="text-xs text-slate-500">{{ log.event }}</p>

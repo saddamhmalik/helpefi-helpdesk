@@ -1,5 +1,6 @@
 import { computed } from 'vue';
 import { usePage } from '@inertiajs/vue3';
+import { useI18n } from 'vue-i18n';
 import { useAgentNavigation } from './useAgentNavigation.js';
 
 const truncate = (value, length = 48) => {
@@ -16,10 +17,13 @@ const segmentLabel = (segment) => segment
     .join(' ');
 
 export function useAgentBreadcrumbs() {
+    const { t } = useI18n();
     const page = usePage();
-    const { flatNavItems, settingsLabelForHref, settingsNavGroups } = useAgentNavigation();
+    const { flatNavItems, settingsNavGroups } = useAgentNavigation();
 
     const navLabelFor = (href) => flatNavItems.value.find((item) => item.href === href)?.label ?? null;
+
+    const navOr = (href, key) => navLabelFor(href) ?? t(key);
 
     const settingsLabelForPath = (path, url) => {
         for (const group of settingsNavGroups.value) {
@@ -53,16 +57,16 @@ export function useAgentBreadcrumbs() {
         const props = page.props;
 
         if (path === '/dashboard') {
-            return [{ label: 'Dashboard' }];
+            return [{ label: t('nav.dashboard') }];
         }
 
         if (path === '/admin' || path === '/settings') {
-            return [{ label: 'Settings', href: '/settings' }];
+            return [{ label: t('common.settings'), href: '/settings' }];
         }
 
         if (path === '/workspace' || path.startsWith('/workspace/tickets/')) {
             const ticket = props.selectedTicket;
-            const items = [{ label: navLabelFor('/workspace') ?? 'Inbox', href: '/workspace' }];
+            const items = [{ label: navOr('/workspace', 'nav.inbox'), href: '/workspace' }];
 
             if (ticket) {
                 items.push({ label: truncate(`${ticket.number} · ${ticket.subject}`) });
@@ -72,127 +76,127 @@ export function useAgentBreadcrumbs() {
         }
 
         if (path === '/tickets') {
-            return [{ label: navLabelFor('/tickets') ?? 'Tickets' }];
+            return [{ label: navOr('/tickets', 'nav.tickets') }];
         }
 
         if (path === '/tickets/create') {
             return [
-                { label: navLabelFor('/tickets') ?? 'Tickets', href: '/tickets' },
-                { label: 'New ticket' },
+                { label: navOr('/tickets', 'nav.tickets'), href: '/tickets' },
+                { label: t('common.new_ticket') },
             ];
         }
 
         if (/^\/tickets\/\d+$/.test(path) && props.ticket) {
             return [
-                { label: navLabelFor('/tickets') ?? 'Tickets', href: '/tickets' },
+                { label: navOr('/tickets', 'nav.tickets'), href: '/tickets' },
                 { label: truncate(`${props.ticket.number} · ${props.ticket.subject}`) },
             ];
         }
 
         if (path === '/contacts') {
-            return [{ label: navLabelFor('/contacts') ?? 'Customers' }];
+            return [{ label: navOr('/contacts', 'nav.customers') }];
         }
 
         if (path === '/contacts/create') {
             return [
-                { label: navLabelFor('/contacts') ?? 'Customers', href: '/contacts' },
-                { label: 'New customer' },
+                { label: navOr('/contacts', 'nav.customers'), href: '/contacts' },
+                { label: t('components.new_customer') },
             ];
         }
 
         if (/^\/contacts\/\d+$/.test(path) && props.contact) {
             return [
-                { label: navLabelFor('/contacts') ?? 'Customers', href: '/contacts' },
+                { label: navOr('/contacts', 'nav.customers'), href: '/contacts' },
                 { label: props.contact.name },
             ];
         }
 
         if (path === '/organizations') {
-            return [{ label: navLabelFor('/organizations') ?? 'Organizations' }];
+            return [{ label: navOr('/organizations', 'nav.organizations') }];
         }
 
         if (path === '/organizations/create') {
             return [
-                { label: navLabelFor('/organizations') ?? 'Organizations', href: '/organizations' },
-                { label: 'New organization' },
+                { label: navOr('/organizations', 'nav.organizations'), href: '/organizations' },
+                { label: t('components.new_organization') },
             ];
         }
 
         if (/^\/organizations\/\d+$/.test(path) && props.organization) {
             return [
-                { label: navLabelFor('/organizations') ?? 'Organizations', href: '/organizations' },
+                { label: navOr('/organizations', 'nav.organizations'), href: '/organizations' },
                 { label: props.organization.name },
             ];
         }
 
         if (path === '/assets') {
-            return [{ label: navLabelFor('/assets') ?? 'Assets' }];
+            return [{ label: navOr('/assets', 'nav.assets') }];
         }
 
         if (path === '/assets/types') {
             return [
-                { label: navLabelFor('/assets') ?? 'Assets', href: '/assets' },
-                { label: 'Types' },
+                { label: navOr('/assets', 'nav.assets'), href: '/assets' },
+                { label: t('components.assets_types') },
             ];
         }
 
         if (path === '/assets/discovery') {
             return [
-                { label: navLabelFor('/assets') ?? 'Assets', href: '/assets' },
-                { label: 'Discovery' },
+                { label: navOr('/assets', 'nav.assets'), href: '/assets' },
+                { label: t('components.assets_discovery') },
             ];
         }
 
         if (/^\/assets\/discovery\/scans\/\d+$/.test(path)) {
             return [
-                { label: navLabelFor('/assets') ?? 'Assets', href: '/assets' },
-                { label: 'Discovery', href: '/assets/discovery' },
-                { label: 'Scan results' },
+                { label: navOr('/assets', 'nav.assets'), href: '/assets' },
+                { label: t('components.assets_discovery'), href: '/assets/discovery' },
+                { label: t('components.scan_results') },
             ];
         }
 
         if (path === '/assets/create') {
             return [
-                { label: navLabelFor('/assets') ?? 'Assets', href: '/assets' },
-                { label: 'New asset' },
+                { label: navOr('/assets', 'nav.assets'), href: '/assets' },
+                { label: t('components.new_asset') },
             ];
         }
 
         if (/^\/assets\/\d+$/.test(path) && props.asset) {
             return [
-                { label: navLabelFor('/assets') ?? 'Assets', href: '/assets' },
+                { label: navOr('/assets', 'nav.assets'), href: '/assets' },
                 { label: props.asset.name },
             ];
         }
 
         if (path === '/knowledge') {
-            return [{ label: navLabelFor('/knowledge') ?? 'Knowledge base' }];
+            return [{ label: navOr('/knowledge', 'nav.knowledge_base') }];
         }
 
         if (path === '/knowledge/create') {
             return [
-                { label: navLabelFor('/knowledge') ?? 'Knowledge base', href: '/knowledge' },
-                { label: 'New article' },
+                { label: navOr('/knowledge', 'nav.knowledge_base'), href: '/knowledge' },
+                { label: t('components.new_article') },
             ];
         }
 
         if (/^\/knowledge\/\d+$/.test(path) && props.article) {
             return [
-                { label: navLabelFor('/knowledge') ?? 'Knowledge base', href: '/knowledge' },
+                { label: navOr('/knowledge', 'nav.knowledge_base'), href: '/knowledge' },
                 { label: truncate(props.article.title) },
             ];
         }
 
         if (path === '/reports') {
-            return [{ label: navLabelFor('/reports') ?? 'Reports' }];
+            return [{ label: navOr('/reports', 'nav.reports') }];
         }
 
         if (path === '/notifications') {
-            return [{ label: 'Notifications' }];
+            return [{ label: t('common.notifications') }];
         }
 
         if (path.startsWith('/settings')) {
-            const root = { label: 'Settings', href: '/settings' };
+            const root = { label: t('common.settings'), href: '/settings' };
             const pageLabel = settingsLabelForPath(path, url);
 
             if (path === '/settings/profile' && !url.includes('section=')) {
@@ -201,12 +205,16 @@ export function useAgentBreadcrumbs() {
 
             const segments = path.replace('/settings/', '').split('/').filter(Boolean);
             const section = segments[0];
-            const items = [root, { label: pageLabel, href: `/settings/${section}` }];
+            const matchingNavItem = settingsNavGroups.value
+                .flatMap((group) => group.items)
+                .find((item) => item.href === url);
+            const pageHref = matchingNavItem?.href ?? `/settings/${segments.join('/')}`;
+            const items = [root, { label: pageLabel, href: pageHref }];
 
             if (segments.length > 1 && section === 'members') {
                 items.push({ label: props.member?.name ?? segmentLabel(segments[1]) });
             } else if (segments.length > 1 && section === 'performance') {
-                items.push({ label: props.user?.name ?? 'Performance' });
+                items.push({ label: props.user?.name ?? t('components.performance') });
             }
 
             return items;
@@ -220,7 +228,7 @@ export function useAgentBreadcrumbs() {
 
         const fallback = path.split('/').filter(Boolean).map((segment) => segmentLabel(segment));
 
-        return fallback.length ? [{ label: fallback.join(' / ') }] : [{ label: 'Helpdesk' }];
+        return fallback.length ? [{ label: fallback.join(' / ') }] : [{ label: t('app.name') }];
     });
 
     return { crumbs };

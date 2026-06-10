@@ -17,6 +17,7 @@ class SecuritySettingController extends Controller
         private SecuritySettingService $security,
         private AuditLogService $audit,
         private RetentionService $retention,
+        private \App\Domains\Security\Services\SsoService $sso,
     ) {
     }
 
@@ -24,6 +25,7 @@ class SecuritySettingController extends Controller
     {
         return Inertia::render('Settings/Security', [
             'observability' => $this->security->observability(),
+            'sso' => $this->sso->snapshot(),
         ]);
     }
 

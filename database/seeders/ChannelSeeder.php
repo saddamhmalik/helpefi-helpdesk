@@ -54,6 +54,20 @@ class ChannelSeeder extends Seeder
                     'allowed_origins' => ['*'],
                 ],
             ],
+            [
+                'name' => 'WhatsApp',
+                'slug' => 'whatsapp',
+                'type' => Channel::TYPE_WHATSAPP,
+                'is_active' => false,
+                'settings' => [],
+            ],
+            [
+                'name' => 'SMS',
+                'slug' => 'sms',
+                'type' => Channel::TYPE_SMS,
+                'is_active' => false,
+                'settings' => [],
+            ],
         ];
 
         foreach ($channels as $channel) {

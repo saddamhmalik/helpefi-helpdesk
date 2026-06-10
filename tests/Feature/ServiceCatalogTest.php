@@ -41,6 +41,17 @@ class ServiceCatalogTest extends TestCase
             ->assertOk();
     }
 
+    public function test_portal_shows_public_service_request_page(): void
+    {
+        $this->seed([TicketLookupSeeder::class, ServiceCatalogSeeder::class]);
+
+        $this->get('/portal/services/password-reset')
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('Portal/ServiceRequest')
+                ->where('service.slug', 'password-reset'));
+    }
+
     public function test_service_request_creates_typed_ticket(): void
     {
         $this->seed(TicketLookupSeeder::class);

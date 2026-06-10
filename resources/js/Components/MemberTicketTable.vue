@@ -1,11 +1,17 @@
 <script setup>
 import { Link } from '@inertiajs/vue3';
+import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 
-defineProps({
+const props = defineProps({
     title: { type: String, required: true },
     tickets: { type: Array, default: () => [] },
-    empty: { type: String, default: 'No tickets.' },
+    empty: { type: String, default: '' },
 });
+
+const { t } = useI18n();
+
+const emptyLabel = computed(() => props.empty || t('components.no_tickets'));
 
 const statusBadgeClass = (name) => {
     const value = (name || '').toLowerCase();
@@ -35,11 +41,11 @@ const priorityBadgeClass = (name) => {
             <table class="min-w-full divide-y divide-slate-100">
                 <thead class="bg-slate-50/80">
                     <tr>
-                        <th class="px-4 py-2.5 text-left text-xs font-medium uppercase text-slate-500">Ticket</th>
-                        <th class="px-4 py-2.5 text-left text-xs font-medium uppercase text-slate-500">Status</th>
-                        <th class="px-4 py-2.5 text-left text-xs font-medium uppercase text-slate-500">Priority</th>
-                        <th class="px-4 py-2.5 text-left text-xs font-medium uppercase text-slate-500">Routing</th>
-                        <th class="px-4 py-2.5 text-left text-xs font-medium uppercase text-slate-500">Assignee</th>
+                        <th class="px-4 py-2.5 text-left text-xs font-medium uppercase text-slate-500">{{ $t('components.ticket') }}</th>
+                        <th class="px-4 py-2.5 text-left text-xs font-medium uppercase text-slate-500">{{ $t('components.status') }}</th>
+                        <th class="px-4 py-2.5 text-left text-xs font-medium uppercase text-slate-500">{{ $t('components.priority') }}</th>
+                        <th class="px-4 py-2.5 text-left text-xs font-medium uppercase text-slate-500">{{ $t('components.routing') }}</th>
+                        <th class="px-4 py-2.5 text-left text-xs font-medium uppercase text-slate-500">{{ $t('components.assignee') }}</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100">
@@ -51,20 +57,20 @@ const priorityBadgeClass = (name) => {
                             </Link>
                         </td>
                         <td class="px-4 py-3">
-                            <span class="rounded-full px-2 py-0.5 text-xs font-medium" :class="statusBadgeClass(ticket.status?.name)">{{ ticket.status?.name || '—' }}</span>
+                            <span class="rounded-full px-2 py-0.5 text-xs font-medium" :class="statusBadgeClass(ticket.status?.name)">{{ ticket.status?.name || $t('components.em_dash') }}</span>
                         </td>
                         <td class="px-4 py-3">
-                            <span class="rounded-full px-2 py-0.5 text-xs font-medium" :class="priorityBadgeClass(ticket.priority?.name)">{{ ticket.priority?.name || '—' }}</span>
+                            <span class="rounded-full px-2 py-0.5 text-xs font-medium" :class="priorityBadgeClass(ticket.priority?.name)">{{ ticket.priority?.name || $t('components.em_dash') }}</span>
                         </td>
                         <td class="px-4 py-3 text-xs text-slate-600">
                             <span v-if="ticket.department">{{ ticket.department.name }}</span>
                             <span v-if="ticket.team"> · {{ ticket.team.name }}</span>
-                            <span v-if="!ticket.department && !ticket.team">—</span>
+                            <span v-if="!ticket.department && !ticket.team">{{ $t('components.em_dash') }}</span>
                         </td>
-                        <td class="px-4 py-3 text-sm text-slate-600">{{ ticket.assignee?.name || 'Unassigned' }}</td>
+                        <td class="px-4 py-3 text-sm text-slate-600">{{ ticket.assignee?.name || $t('components.unassigned') }}</td>
                     </tr>
                     <tr v-if="!tickets?.length">
-                        <td colspan="5" class="px-4 py-8 text-center text-sm text-slate-400">{{ empty }}</td>
+                        <td colspan="5" class="px-4 py-8 text-center text-sm text-slate-400">{{ emptyLabel }}</td>
                     </tr>
                 </tbody>
             </table>

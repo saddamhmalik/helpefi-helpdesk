@@ -2,8 +2,10 @@
 
 namespace App\Domains\ServiceCatalog\Controllers;
 
+use App\Domains\Billing\Services\BillingService;
 use App\Domains\ServiceCatalog\Services\ServiceCatalogService;
 use App\Domains\Tickets\Services\TicketService;
+use App\Domains\Workforce\Services\WorkforceService;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -15,6 +17,8 @@ class ServiceCatalogController extends Controller
     public function __construct(
         private ServiceCatalogService $catalogService,
         private TicketService $ticketService,
+        private WorkforceService $workforce,
+        private BillingService $billing,
     ) {
     }
 
@@ -22,7 +26,14 @@ class ServiceCatalogController extends Controller
     {
         return Inertia::render('Settings/ServiceCatalog', [
             'categories' => $this->catalogService->adminCatalog(),
-            'meta' => $this->catalogService->meta($this->ticketService->priorities()),
+            'meta' => array_merge(
+                $this->catalogService->meta(
+                    $this->ticketService->priorities(),
+                    $this->workforce->agentOptions(),
+                ),
+                ['service_desk_available' => $this->billing->canUseFeature('service_desk')],
+            ),
+            'agents' => $this->workforce->agentOptions(),
         ]);
     }
 

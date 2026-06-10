@@ -47,11 +47,12 @@ onUnmounted(() => document.removeEventListener('click', onDocumentClick));
             </svg>
         </button>
 
-        <div
-            v-if="open"
-            class="absolute right-0 z-50 mt-2 w-60 overflow-hidden rounded-xl border border-slate-200 bg-white py-1 shadow-xl"
-            role="menu"
-        >
+        <Transition name="dropdown">
+            <div
+                v-if="open"
+                class="absolute right-0 z-50 mt-2 w-60 overflow-hidden rounded-xl border border-slate-200 bg-white py-1 shadow-xl"
+                role="menu"
+            >
             <div class="border-b border-slate-100 px-4 py-3">
                 <p class="truncate text-sm font-semibold text-slate-900">{{ user?.name }}</p>
                 <p class="truncate text-xs text-slate-500">{{ user?.email }}</p>
@@ -65,18 +66,19 @@ onUnmounted(() => document.removeEventListener('click', onDocumentClick));
                 class="block px-4 py-2.5 text-sm text-slate-700 transition hover:bg-slate-50"
                 @click="close"
             >
-                Profile & password
+                {{ $t('components.profile_and_password') }}
             </Link>
             <Link href="/" class="block px-4 py-2.5 text-sm text-slate-700 transition hover:bg-slate-50" @click="close">
-                Public site
+                {{ $t('components.public_site') }}
             </Link>
             <button
                 type="button"
                 class="block w-full border-t border-slate-100 px-4 py-2.5 text-left text-sm text-red-600 transition hover:bg-red-50"
                 @click="logout"
             >
-                Sign out
+                {{ $t('components.sign_out') }}
             </button>
-        </div>
+            </div>
+        </Transition>
     </div>
 </template>

@@ -2,6 +2,7 @@
 
 namespace App\Domains\Sla\Services;
 
+use App\Domains\Billing\Services\BillingService;
 use App\Domains\Notifications\Services\NotificationService;
 use App\Domains\Sla\Models\SlaEscalationRule;
 use App\Domains\Sla\Models\TicketSlaTimer;
@@ -13,6 +14,7 @@ class SlaEscalationService
 {
     public function __construct(
         private SlaEscalationRepository $escalations,
+        private BillingService $billing,
         private TicketActionService $actions,
         private NotificationService $notifications,
     ) {
@@ -84,6 +86,8 @@ class SlaEscalationService
 
     public function saveRule(array $data): SlaEscalationRule
     {
+        $this->billing->assertFeature('sla');
+
         return $this->escalations->upsertRule([
             'sla_policy_id' => $data['sla_policy_id'],
             'level' => $data['level'],
@@ -96,6 +100,8 @@ class SlaEscalationService
 
     public function deleteRule(int $id): void
     {
+        $this->billing->assertFeature('sla');
+
         $this->escalations->deleteRule($this->escalations->findRule($id));
     }
 

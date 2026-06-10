@@ -12,6 +12,7 @@ class AiSetting extends Model
         'deflection_enabled',
         'deflection_portal_enabled',
         'deflection_widget_enabled',
+        'triage_enabled',
     ];
 
     protected function casts(): array
@@ -21,6 +22,7 @@ class AiSetting extends Model
             'deflection_enabled' => 'boolean',
             'deflection_portal_enabled' => 'boolean',
             'deflection_widget_enabled' => 'boolean',
+            'triage_enabled' => 'boolean',
         ];
     }
 }

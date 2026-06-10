@@ -1,4 +1,5 @@
 import { ref } from 'vue';
+import { csrfHeaders } from '../support/csrf.js';
 
 export function useTicketAi(basePath) {
     const aiLoading = ref(null);
@@ -6,13 +7,10 @@ export function useTicketAi(basePath) {
     const aiSummary = ref(null);
     const aiArticles = ref([]);
 
-    const csrf = () => document.querySelector('meta[name="csrf-token"]')?.content;
-
     const jsonHeaders = () => ({
         Accept: 'application/json',
         'Content-Type': 'application/json',
-        'X-CSRF-TOKEN': csrf(),
-        'X-Requested-With': 'XMLHttpRequest',
+        ...csrfHeaders(),
     });
 
     const request = async (method, action) => {

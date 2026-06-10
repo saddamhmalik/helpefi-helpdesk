@@ -115,6 +115,16 @@ class ContactRepository
         );
     }
 
+    public function findOrCreateByPhone(string $phone, string $name): Contact
+    {
+        $normalized = preg_replace('/[^\d+]/', '', $phone) ?? $phone;
+
+        return Contact::query()->updateOrCreate(
+            ['phone' => $normalized],
+            ['name' => $name, 'email' => null],
+        );
+    }
+
     public function update(Contact $contact, array $data): Contact
     {
         $contact->update($data);

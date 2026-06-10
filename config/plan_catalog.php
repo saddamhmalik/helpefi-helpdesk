@@ -27,5 +27,6 @@ return [
         'integrations' => 'Integrations & webhooks',
         'assets' => 'Asset management',
         'custom_domain' => 'Custom workspace domain',
+        'sso' => 'SSO (SAML / OIDC)',
     ],
 ];

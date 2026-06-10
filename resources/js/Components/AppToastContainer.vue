@@ -48,7 +48,7 @@ const styles = {
                     <button
                         type="button"
                         class="shrink-0 rounded p-0.5 opacity-60 transition hover:opacity-100"
-                        aria-label="Dismiss"
+                        :aria-label="$t('components.dismiss')"
                         @click="toast.dismiss(item.id)"
                     >
                         <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

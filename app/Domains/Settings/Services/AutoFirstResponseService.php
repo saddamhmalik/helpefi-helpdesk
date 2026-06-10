@@ -5,6 +5,7 @@ namespace App\Domains\Settings\Services;
 use App\Domains\Channels\Repositories\ChannelRepository;
 use App\Domains\Channels\Services\OutboundMailService;
 use App\Domains\Tickets\Models\Ticket;
+use App\Domains\Tickets\Models\TicketMessage;
 use App\Domains\Tickets\Repositories\TicketRepository;
 use App\Domains\Tickets\Support\MessageBodySanitizer;
 
@@ -18,7 +19,7 @@ class AutoFirstResponseService
     ) {
     }
 
-    public function sendIfEnabled(Ticket $ticket): void
+    public function sendIfEnabled(Ticket $ticket, ?TicketMessage $customerMessage = null): void
     {
         if (! $this->settings->autoFirstResponseEnabled()) {
             return;
@@ -32,6 +33,16 @@ class AutoFirstResponseService
         }
 
         if (! $this->isEmailTicket($ticket)) {
+            return;
+        }
+
+        $customerMessage ??= $ticket->messages()
+            ->whereNotNull('contact_id')
+            ->orderBy('created_at')
+            ->orderBy('id')
+            ->first();
+
+        if (! $customerMessage) {
             return;
         }
 
@@ -54,7 +65,11 @@ class AutoFirstResponseService
             'channel_id' => $ticket->channel_id,
         ]);
 
-        $this->outboundMail->sendAutoFirstResponse($this->tickets->find($ticket->id), $message);
+        $this->outboundMail->sendAutoFirstResponse(
+            $this->tickets->find($ticket->id),
+            $message,
+            $customerMessage,
+        );
     }
 
     private function isEmailTicket(Ticket $ticket): bool

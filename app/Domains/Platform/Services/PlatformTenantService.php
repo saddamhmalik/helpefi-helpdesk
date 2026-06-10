@@ -83,6 +83,29 @@ class PlatformTenantService
         return $this->present($tenant);
     }
 
+    public function find(string $tenantId): Tenant
+    {
+        return $this->tenants->find($tenantId);
+    }
+
+    public function delete(string $tenantId): void
+    {
+        $tenant = $this->tenants->find($tenantId);
+
+        $this->audit->record(
+            'platform.tenant.deleted',
+            $tenant,
+            [
+                'name' => $tenant->name,
+                'slug' => $tenant->slug,
+                'database' => $tenant->database()->getName(),
+            ],
+            tenantId: $tenant->id,
+        );
+
+        $tenant->delete();
+    }
+
     private function present(Tenant $tenant): array
     {
         $subscription = $tenant->subscription;
@@ -98,6 +121,7 @@ class PlatformTenantService
             'id' => $tenant->id,
             'name' => $tenant->name,
             'slug' => $tenant->slug,
+            'database' => $tenant->database()->getName(),
             'admin_email' => $admin['email'],
             'admin_name' => $admin['name'],
             'domain' => $domain,

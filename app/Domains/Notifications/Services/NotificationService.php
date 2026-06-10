@@ -5,6 +5,9 @@ namespace App\Domains\Notifications\Services;
 use App\Domains\Notifications\Notifications\CustomerReplyNotification;
 use App\Domains\Notifications\Notifications\SlaBreachNotification;
 use App\Domains\Notifications\Notifications\TicketAssignedNotification;
+use App\Domains\ServiceDesk\Notifications\ApprovalDecidedNotification;
+use App\Domains\ServiceDesk\Notifications\ApprovalRequestedNotification;
+use App\Domains\ServiceDesk\Models\ApprovalRequest;
 use App\Domains\Notifications\Repositories\AgentNotificationRepository;
 use App\Domains\Notifications\Repositories\NotificationSettingRepository;
 use App\Domains\Tickets\Models\Ticket;
@@ -30,6 +33,7 @@ class NotificationService
             'notify_ticket_assigned' => $setting->notify_ticket_assigned,
             'notify_customer_reply' => $setting->notify_customer_reply,
             'notify_sla_breach' => $setting->notify_sla_breach,
+            'notify_approval_pending' => $setting->notify_approval_pending,
         ];
     }
 
@@ -40,6 +44,7 @@ class NotificationService
             'notify_ticket_assigned' => $data['notify_ticket_assigned'] ?? true,
             'notify_customer_reply' => $data['notify_customer_reply'] ?? true,
             'notify_sla_breach' => $data['notify_sla_breach'] ?? true,
+            'notify_approval_pending' => $data['notify_approval_pending'] ?? true,
         ]);
 
         return $this->settingsSnapshot();
@@ -53,12 +58,17 @@ class NotificationService
         ];
     }
 
-    public function list(User $user, int $perPage = 20): LengthAwarePaginator
+    public function list(User $user, int $perPage = 20, array $filters = []): LengthAwarePaginator
     {
-        $paginator = $this->notifications->paginate($user, $perPage);
-        $paginator->getCollection()->transform(fn ($notification) => $this->mapNotification($notification));
+        $paginator = $this->notifications->paginate($user, $perPage, $filters);
+        $paginator->getCollection()->transform(fn ($notification) => $this->formatNotification($notification));
 
         return $paginator;
+    }
+
+    public function clearRead(User $user): int
+    {
+        return $this->notifications->deleteRead($user);
     }
 
     public function markRead(User $user, string $id): void
@@ -130,6 +140,20 @@ class NotificationService
         }
     }
 
+    public function approvalPending(ApprovalRequest $request, User $approver, string $reviewUrl): void
+    {
+        $approver->notify(new ApprovalRequestedNotification($request, $reviewUrl));
+    }
+
+    public function approvalDecided(ApprovalRequest $request, bool $approved): void
+    {
+        $request->loadMissing(['requestedBy']);
+
+        if ($request->requestedBy) {
+            $request->requestedBy->notify(new ApprovalDecidedNotification($request, $approved));
+        }
+    }
+
     private function ticketRecipients(Ticket $ticket, ?int $excludeUserId = null): Collection
     {
         $users = collect();
@@ -149,7 +173,12 @@ class NotificationService
 
     private function mapNotifications(Collection $notifications): array
     {
-        return $notifications->map(fn ($notification) => $this->mapNotification($notification))->all();
+        return $notifications->map(fn ($notification) => $this->formatNotification($notification))->all();
+    }
+
+    public function formatNotification($notification): array
+    {
+        return $this->mapNotification($notification);
     }
 
     private function mapNotification($notification): array

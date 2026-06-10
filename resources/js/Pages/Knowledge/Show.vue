@@ -1,94 +1,124 @@
 <script setup>
-import { Head, Link, router, useForm } from '@inertiajs/vue3';
+import { Head, Link, router, usePage } from '@inertiajs/vue3';
+import { computed } from 'vue';
 import AgentLayout from '../../Layouts/AgentLayout.vue';
-import FormRichTextField from '../../Components/FormRichTextField.vue';
-import FormField from '../../Components/FormField.vue';
-import { formInputClass, formSelectClass } from '../../composables/useFormControls.js';
+import KnowledgeBody from '../../Components/KnowledgeBody.vue';
+import { useI18n } from 'vue-i18n';
+import { useDateTime } from '../../composables/useDateTime.js';
 
 const props = defineProps({
     article: Object,
-    categories: Array,
-    collections: Array,
     versions: Array,
+    translations: Array,
 });
 
-const form = useForm({
-    title: props.article.title,
-    excerpt: props.article.excerpt,
-    body: props.article.body,
-    knowledge_category_id: props.article.knowledge_category_id,
-    knowledge_collection_id: props.article.knowledge_collection_id,
-    is_published: props.article.is_published,
-});
+const { formatDateTime } = useDateTime();
 
-const submit = () => form.put(`/knowledge/${props.article.id}`);
+const { t } = useI18n();
 
 const restoreVersion = (versionId) => {
     router.post(`/knowledge/${props.article.id}/versions/${versionId}/restore`);
 };
+
+const portalArticleUrl = computed(() => {
+    const helpCenter = usePage().props.helpCenter;
+    if (!helpCenter?.brandSlug) {
+        return null;
+    }
+
+    const locale = props.article.locale || 'en';
+
+    return `/portal/${helpCenter.brandSlug}/articles/${props.article.slug}?lang=${locale}`;
+});
 </script>
 
 <template>
     <Head :title="article.title" />
     <AgentLayout>
-        <div class="mb-4 flex items-center justify-between">
-            <Link href="/knowledge" class="text-sm text-blue-600 hover:text-blue-700">← Back to knowledge base</Link>
-            <a v-if="article.is_published" :href="`/portal/articles/${article.slug}`" target="_blank" class="text-sm text-blue-600 hover:text-blue-700">View on portal</a>
+        <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
+            <Link href="/knowledge" class="text-sm text-blue-600 hover:text-blue-700">{{ $t('knowledge.back_to_knowledge_base') }}</Link>
+            <div class="flex flex-wrap items-center gap-3">
+                <Link
+                    :href="`/knowledge/${article.id}/edit`"
+                    class="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+                >{{ $t('knowledge.edit') }}</Link>
+                <a
+                    v-if="article.is_published && portalArticleUrl"
+                    :href="portalArticleUrl"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="text-sm text-blue-600 hover:text-blue-700"
+                >{{ $t('knowledge.view_on_portal') }}</a>
+            </div>
         </div>
 
         <div class="grid gap-6 lg:grid-cols-3">
             <div class="lg:col-span-2">
-                <div class="rounded-xl border border-slate-200 bg-white p-8 shadow-sm">
-                    <form class="space-y-4" @submit.prevent="submit">
-                        <div>
-                            <label class="mb-1 block text-sm font-medium text-slate-700">Title</label>
-                            <input v-model="form.title" type="text" :class="formInputClass" required />
+                <article class="rounded-xl border border-slate-200 bg-white p-8 shadow-sm">
+                    <div class="mb-6 flex flex-wrap items-center gap-2">
+                        <span class="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-semibold uppercase text-slate-600">{{ article.locale || 'en' }}</span>
+                        <span
+                            class="inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium"
+                            :class="article.is_published ? 'bg-emerald-50 text-emerald-700 ring-1 ring-inset ring-emerald-600/15' : 'bg-slate-100 text-slate-600'"
+                        >
+                            {{ article.is_published ? $t('knowledge.published') : $t('knowledge.draft') }}
+                        </span>
+                    </div>
+
+                    <h1 class="text-3xl font-bold tracking-tight text-slate-900">{{ article.title }}</h1>
+
+                    <dl class="mt-4 grid gap-3 text-sm sm:grid-cols-2">
+                        <div v-if="article.collection?.name">
+                            <dt class="font-medium text-slate-500">{{ $t('knowledge.collection') }}</dt>
+                            <dd class="mt-0.5 text-slate-900">{{ article.collection.name }}</dd>
                         </div>
-                        <div>
-                            <label class="mb-1 block text-sm font-medium text-slate-700">Collection</label>
-                            <select v-model="form.knowledge_collection_id" :class="formSelectClass">
-                                <option value="">No collection</option>
-                                <option v-for="collection in collections" :key="collection.id" :value="collection.id">{{ collection.name }}</option>
-                            </select>
+                        <div v-if="article.category?.name">
+                            <dt class="font-medium text-slate-500">{{ $t('knowledge.category') }}</dt>
+                            <dd class="mt-0.5 text-slate-900">{{ article.category.name }}</dd>
                         </div>
-                        <div>
-                            <label class="mb-1 block text-sm font-medium text-slate-700">Category</label>
-                            <select v-model="form.knowledge_category_id" :class="formSelectClass">
-                                <option value="">Uncategorized</option>
-                                <option v-for="category in categories" :key="category.id" :value="category.id">{{ category.name }}</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="mb-1 block text-sm font-medium text-slate-700">Excerpt</label>
-                            <input v-model="form.excerpt" type="text" :class="formInputClass" />
-                        </div>
-                        <FormRichTextField
-                            v-model="form.body"
-                            label="Body"
-                            required
-                            :error="form.errors.body"
-                        />
-                        <label class="flex items-center gap-2 text-sm text-slate-600">
-                            <input v-model="form.is_published" type="checkbox" class="rounded border-slate-300" />
-                            Published
-                        </label>
-                        <button type="submit" class="rounded-lg bg-blue-600 px-4 py-2 font-medium text-white hover:bg-blue-700" :disabled="form.processing">Update article</button>
-                    </form>
-                </div>
+                    </dl>
+
+                    <p v-if="article.excerpt" class="mt-6 text-lg leading-relaxed text-slate-600">{{ article.excerpt }}</p>
+
+                    <div class="mt-8 border-t border-slate-100 pt-8">
+                        <KnowledgeBody :content="article.body" />
+                    </div>
+                </article>
             </div>
 
-            <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-                <h2 class="text-lg font-semibold text-slate-900">Version history</h2>
-                <div class="mt-4 space-y-3">
-                    <div v-for="version in versions" :key="version.id" class="rounded-lg border border-slate-100 p-3 text-sm">
-                        <div class="flex items-center justify-between gap-2">
-                            <span class="font-medium text-slate-900">v{{ version.version_number }}</span>
-                            <button type="button" class="text-blue-600 hover:text-blue-700" @click="restoreVersion(version.id)">Restore</button>
-                        </div>
-                        <p class="mt-1 truncate text-slate-600">{{ version.title }}</p>
-                        <p class="mt-1 text-xs text-slate-500">{{ version.user?.name || 'Unknown' }} · {{ new Date(version.created_at).toLocaleString() }}</p>
+            <div class="space-y-6">
+                <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+                    <div class="flex items-center justify-between gap-2">
+                        <h2 class="text-lg font-semibold text-slate-900">{{ $t('knowledge.translations') }}</h2>
+                        <Link :href="`/knowledge/${article.id}/edit`" class="text-sm font-medium text-blue-600 hover:text-blue-700">{{ $t('knowledge.edit') }}</Link>
                     </div>
-                    <p v-if="!versions?.length" class="text-sm text-slate-500">No previous versions yet.</p>
+                    <div class="mt-4 space-y-2">
+                        <Link
+                            v-for="translation in translations"
+                            :key="translation.id"
+                            :href="`/knowledge/${translation.id}`"
+                            class="flex items-center justify-between rounded-lg border px-3 py-2 text-sm transition"
+                            :class="translation.id === article.id ? 'border-blue-200 bg-blue-50 text-blue-700' : 'border-slate-100 hover:bg-slate-50'"
+                        >
+                            <span class="font-medium uppercase">{{ translation.locale }}</span>
+                            <span class="truncate text-slate-600">{{ translation.title }}</span>
+                        </Link>
+                    </div>
+                </div>
+
+                <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+                    <h2 class="text-lg font-semibold text-slate-900">{{ $t('knowledge.version_history') }}</h2>
+                    <div class="mt-4 space-y-3">
+                        <div v-for="version in versions" :key="version.id" class="rounded-lg border border-slate-100 p-3 text-sm">
+                            <div class="flex items-center justify-between gap-2">
+                                <span class="font-medium text-slate-900">v{{ version.version_number }}</span>
+                                <button type="button" class="text-blue-600 hover:text-blue-700" @click="restoreVersion(version.id)">{{ $t('knowledge.restore') }}</button>
+                            </div>
+                            <p class="mt-1 truncate text-slate-600">{{ version.title }}</p>
+                            <p class="mt-1 text-xs text-slate-500">{{ version.user?.name || 'Unknown' }} · {{ formatDateTime(version.created_at) }}</p>
+                        </div>
+                        <p v-if="!versions?.length" class="text-sm text-slate-500">{{ $t('knowledge.no_previous_versions_yet') }}</p>
+                    </div>
                 </div>
             </div>
         </div>

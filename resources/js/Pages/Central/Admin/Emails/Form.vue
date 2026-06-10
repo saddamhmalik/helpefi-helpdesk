@@ -2,11 +2,14 @@
 import { computed } from 'vue';
 import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
 import AdminLayout from '../../../../Layouts/AdminLayout.vue';
+import { useI18n } from 'vue-i18n';
 
 const props = defineProps({
     template: { type: Object, default: null },
     placeholders: { type: Array, default: () => [] },
 });
+
+const { t } = useI18n();
 
 const page = usePage();
 const isEditing = computed(() => props.template !== null);
@@ -42,7 +45,7 @@ const placeholderTag = (key) => `{{${key}}}`;
             </div>
 
             <div class="mb-6 rounded-xl border border-blue-200 bg-blue-50 p-4">
-                <p class="text-sm font-medium text-blue-900">Placeholders</p>
+                <p class="text-sm font-medium text-blue-900">{{ $t('central.placeholders') }}</p>
                 <ul class="mt-2 grid gap-1 sm:grid-cols-2">
                     <li v-for="item in placeholders" :key="item.key" class="text-xs text-blue-800">
                         <code class="rounded bg-white px-1.5 py-0.5">{{ placeholderTag(item.key) }}</code>
@@ -54,12 +57,12 @@ const placeholderTag = (key) => `{{${key}}}`;
             <form class="space-y-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm" @submit.prevent="submit">
                 <div class="grid gap-4 sm:grid-cols-2">
                     <div>
-                        <label class="mb-1.5 block text-sm font-medium text-slate-700">Name</label>
+                        <label class="mb-1.5 block text-sm font-medium text-slate-700">{{ $t('profile.name') }}</label>
                         <input v-model="form.name" type="text" required class="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm" />
                         <p v-if="form.errors.name" class="mt-1 text-xs text-red-600">{{ form.errors.name }}</p>
                     </div>
                     <div>
-                        <label class="mb-1.5 block text-sm font-medium text-slate-700">Slug</label>
+                        <label class="mb-1.5 block text-sm font-medium text-slate-700">{{ $t('central.slug') }}</label>
                         <input
                             v-model="form.slug"
                             type="text"
@@ -72,13 +75,13 @@ const placeholderTag = (key) => `{{${key}}}`;
                 </div>
 
                 <div>
-                    <label class="mb-1.5 block text-sm font-medium text-slate-700">Subject</label>
+                    <label class="mb-1.5 block text-sm font-medium text-slate-700">{{ $t('central.subject') }}</label>
                     <input v-model="form.subject" type="text" required class="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm" />
                     <p v-if="form.errors.subject" class="mt-1 text-xs text-red-600">{{ form.errors.subject }}</p>
                 </div>
 
                 <div>
-                    <label class="mb-1.5 block text-sm font-medium text-slate-700">Body (HTML)</label>
+                    <label class="mb-1.5 block text-sm font-medium text-slate-700">{{ $t('central.body_html') }}</label>
                     <textarea v-model="form.body_html" rows="14" required class="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 font-mono text-sm" />
                     <p v-if="form.errors.body_html" class="mt-1 text-xs text-red-600">{{ form.errors.body_html }}</p>
                 </div>
@@ -92,7 +95,7 @@ const placeholderTag = (key) => `{{${key}}}`;
                     <button type="submit" class="rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-blue-700" :disabled="form.processing">
                         {{ isEditing ? 'Save changes' : 'Create template' }}
                     </button>
-                    <Link href="/admin/emails" class="text-sm text-slate-500 hover:text-slate-700">Cancel</Link>
+                    <Link href="/admin/emails" class="text-sm text-slate-500 hover:text-slate-700">{{ $t('common.cancel') }}</Link>
                 </div>
             </form>
         </div>

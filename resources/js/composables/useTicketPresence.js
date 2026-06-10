@@ -2,6 +2,7 @@ import { ref, watch, onUnmounted } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 import { getSharedRealtimeClient } from '../lib/realtimeClient.js';
 import { ticketChannel } from '../lib/realtimeChannels.js';
+import { csrfHeaders } from '../support/csrf.js';
 
 export function useTicketPresence(ticketIdRef, composingRef) {
     const page = usePage();
@@ -10,13 +11,10 @@ export function useTicketPresence(ticketIdRef, composingRef) {
     let subscribedTicketId = null;
     let presenceHandler = null;
 
-    const csrf = () => document.querySelector('meta[name="csrf-token"]')?.content;
-
     const jsonHeaders = () => ({
         Accept: 'application/json',
         'Content-Type': 'application/json',
-        'X-CSRF-TOKEN': csrf(),
-        'X-Requested-With': 'XMLHttpRequest',
+        ...csrfHeaders(),
     });
 
     const sendHeartbeat = async () => {

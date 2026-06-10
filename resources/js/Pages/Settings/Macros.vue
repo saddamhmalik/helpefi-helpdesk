@@ -1,16 +1,22 @@
 <script setup>
 import { router, useForm } from '@inertiajs/vue3';
 import { ref } from 'vue';
-import SettingsLayout from '../../Layouts/SettingsLayout.vue';
+import SettingsPage from '../../Components/SettingsPage.vue';
 import AppModal from '../../Components/AppModal.vue';
 import AppConfirmDialog from '../../Components/AppConfirmDialog.vue';
+import AppRowActions from '../../Components/AppRowActions.vue';
+import AppEditAction from '../../Components/AppEditAction.vue';
+import AppDeleteAction from '../../Components/AppDeleteAction.vue';
 import { useConfirmDialog } from '../../composables/useConfirmDialog.js';
 import { formInputClass, formTextareaClass } from '../../composables/useFormControls.js';
+import { useI18n } from 'vue-i18n';
 
 const props = defineProps({
     responses: Array,
     placeholders: Array,
 });
+
+const { t } = useI18n();
 
 const showForm = ref(false);
 const editing = ref(null);
@@ -68,20 +74,18 @@ const destroy = (response) => {
 </script>
 
 <template>
-    <SettingsLayout title="Macros">
+    <SettingsPage :title="$t('settings.macros')">
         <div class="mx-auto max-w-4xl space-y-6">
             <div class="flex items-start justify-between gap-4">
                 <div>
-                    <h1 class="text-2xl font-bold text-slate-900">Canned responses</h1>
-                    <p class="mt-1 text-sm text-slate-500">Save reusable replies with placeholders for ticket and customer details.</p>
+                    <h1 class="text-2xl font-bold text-slate-900">{{ $t('settings_macros.canned_responses') }}</h1>
+                    <p class="mt-1 text-sm text-slate-500">{{ $t('settings_macros.save_reusable_replies_with_placeholders_for_ticket_and_customer_detail') }}</p>
                 </div>
-                <button type="button" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700" @click="openCreate">
-                    New macro
-                </button>
+                <button type="button" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700" @click="openCreate">{{ $t('settings_macros.new_macro') }}</button>
             </div>
 
             <div class="rounded-xl border border-slate-200 bg-slate-50 p-4">
-                <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Placeholders</p>
+                <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('settings_macros.placeholders') }}</p>
                 <div class="mt-2 flex flex-wrap gap-2">
                     <code v-for="item in placeholders" :key="item.token" class="rounded bg-white px-2 py-1 text-xs text-slate-700 ring-1 ring-slate-200">{{ item.token }}</code>
                 </div>
@@ -94,16 +98,18 @@ const destroy = (response) => {
                             <div class="flex flex-wrap items-center gap-2">
                                 <p class="font-medium text-slate-900">{{ response.title }}</p>
                                 <span v-if="response.shortcut" class="rounded bg-slate-100 px-2 py-0.5 text-[11px] text-slate-600">#{{ response.shortcut }}</span>
-                                <span v-if="response.is_shared" class="rounded bg-blue-50 px-2 py-0.5 text-[11px] font-medium text-blue-700">Shared</span>
+                                <span v-if="response.is_shared" class="rounded bg-blue-50 px-2 py-0.5 text-[11px] font-medium text-blue-700">{{ $t('settings_macros.shared') }}</span>
                             </div>
                             <p class="mt-1 line-clamp-2 text-sm text-slate-500">{{ response.body.replace(/<[^>]+>/g, ' ').trim() }}</p>
                         </div>
                         <div class="flex shrink-0 gap-2">
-                            <button type="button" class="text-sm text-blue-600 hover:text-blue-700" @click="openEdit(response)">Edit</button>
-                            <button type="button" class="text-sm text-red-600 hover:text-red-700" @click="destroy(response)">Delete</button>
+                            <AppRowActions>
+                                <AppEditAction :label="$t('settings_macros.edit')" @click="openEdit(response)" />
+                                <AppDeleteAction :label="$t('settings_macros.delete')" @click="destroy(response)" />
+                            </AppRowActions>
                         </div>
                     </li>
-                    <li v-if="!responses?.length" class="px-4 py-10 text-center text-sm text-slate-500">No macros yet.</li>
+                    <li v-if="!responses?.length" class="px-4 py-10 text-center text-sm text-slate-500">{{ $t('settings_macros.no_macros_yet') }}</li>
                 </ul>
             </div>
         </div>
@@ -112,15 +118,15 @@ const destroy = (response) => {
             <form class="space-y-4" @submit.prevent="submit">
                 <h2 class="text-lg font-semibold text-slate-900">{{ editing ? 'Edit macro' : 'New macro' }}</h2>
                 <div>
-                    <label class="mb-1 block text-sm font-medium text-slate-700">Title</label>
+                    <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('common.title') }}</label>
                     <input v-model="form.title" type="text" required :class="formInputClass" />
                 </div>
                 <div>
-                    <label class="mb-1 block text-sm font-medium text-slate-700">Shortcut</label>
-                    <input v-model="form.shortcut" type="text" placeholder="refund" :class="formInputClass" />
+                    <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('settings_macros.shortcut') }}</label>
+                    <input v-model="form.shortcut" type="text" :placeholder="$t('settings_macros.refund')" :class="formInputClass" />
                 </div>
                 <div>
-                    <label class="mb-1 block text-sm font-medium text-slate-700">Body</label>
+                    <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('settings_macros.body') }}</label>
                     <textarea v-model="form.body" rows="8" required :class="formTextareaClass" />
                 </div>
                 <label class="flex items-center gap-2 text-sm text-slate-700">
@@ -128,12 +134,12 @@ const destroy = (response) => {
                     Share with all agents
                 </label>
                 <div class="flex justify-end gap-2">
-                    <button type="button" class="rounded-lg border border-slate-200 px-4 py-2 text-sm" @click="showForm = false">Cancel</button>
-                    <button type="submit" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white" :disabled="form.processing">Save</button>
+                    <button type="button" class="rounded-lg border border-slate-200 px-4 py-2 text-sm" @click="showForm = false">{{ $t('common.cancel') }}</button>
+                    <button type="submit" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white" :disabled="form.processing">{{ $t('common.save') }}</button>
                 </div>
             </form>
         </AppModal>
 
         <AppConfirmDialog :state="confirm" @close="closeConfirm" @confirm="onConfirm" />
-    </SettingsLayout>
+    </SettingsPage>
 </template>

@@ -19,12 +19,12 @@ const removeField = (index) => emit('remove', index);
                 <p v-if="description" class="mt-1 text-sm text-slate-500">{{ description }}</p>
             </div>
             <button type="button" class="rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-50" @click="addField">
-                Add field
+                {{ $t('components.add_field') }}
             </button>
         </div>
 
         <div v-if="!fields.length" class="mt-4 rounded-lg border border-dashed border-slate-200 px-4 py-8 text-center text-sm text-slate-500">
-            No custom fields yet.
+            {{ $t('components.no_custom_fields_yet') }}
         </div>
 
         <div v-else class="mt-4 space-y-4">
@@ -35,33 +35,33 @@ const removeField = (index) => emit('remove', index);
             >
                 <div class="grid gap-4 sm:grid-cols-2">
                     <div>
-                        <label class="mb-1 block text-xs font-medium uppercase tracking-wide text-slate-500">Field key</label>
-                        <input v-model="field.name" type="text" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" placeholder="account_id" />
+                        <label class="mb-1 block text-xs font-medium uppercase tracking-wide text-slate-500">{{ $t('components.field_key') }}</label>
+                        <input v-model="field.name" type="text" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" :placeholder="$t('components.field_key_placeholder')" />
                     </div>
                     <div>
-                        <label class="mb-1 block text-xs font-medium uppercase tracking-wide text-slate-500">Label</label>
-                        <input v-model="field.label" type="text" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" placeholder="Account ID" />
+                        <label class="mb-1 block text-xs font-medium uppercase tracking-wide text-slate-500">{{ $t('components.label') }}</label>
+                        <input v-model="field.label" type="text" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" :placeholder="$t('components.account_id_2')" />
                     </div>
                     <div>
-                        <label class="mb-1 block text-xs font-medium uppercase tracking-wide text-slate-500">Type</label>
+                        <label class="mb-1 block text-xs font-medium uppercase tracking-wide text-slate-500">{{ $t('components.type') }}</label>
                         <select v-model="field.type" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm">
-                            <option value="text">Text</option>
-                            <option value="textarea">Long text</option>
-                            <option value="number">Number</option>
-                            <option value="email">Email</option>
-                            <option value="select">Select</option>
+                            <option value="text">{{ $t('components.text') }}</option>
+                            <option value="textarea">{{ $t('components.long_text') }}</option>
+                            <option value="number">{{ $t('components.number') }}</option>
+                            <option value="email">{{ $t('components.email') }}</option>
+                            <option value="select">{{ $t('components.select') }}</option>
                         </select>
                     </div>
                     <div class="flex items-end">
                         <label class="flex items-center gap-2 text-sm text-slate-600">
                             <input v-model="field.required" type="checkbox" class="rounded border-slate-300" />
-                            Required
+                            {{ $t('components.required') }}
                         </label>
                     </div>
                 </div>
 
                 <div v-if="field.type === 'select'" class="mt-3">
-                    <label class="mb-1 block text-xs font-medium uppercase tracking-wide text-slate-500">Options (one per line)</label>
+                    <label class="mb-1 block text-xs font-medium uppercase tracking-wide text-slate-500">{{ $t('components.options_one_per_line') }}</label>
                     <textarea
                         :value="(field.options ?? []).join('\n')"
                         rows="3"
@@ -71,7 +71,7 @@ const removeField = (index) => emit('remove', index);
                 </div>
 
                 <button type="button" class="mt-3 text-sm text-red-600 hover:text-red-700" @click="removeField(index)">
-                    Remove field
+                    {{ $t('components.remove_field') }}
                 </button>
             </div>
         </div>

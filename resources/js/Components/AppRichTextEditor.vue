@@ -2,11 +2,12 @@
 import Placeholder from '@tiptap/extension-placeholder';
 import StarterKit from '@tiptap/starter-kit';
 import { EditorContent, useEditor } from '@tiptap/vue-3';
-import { computed, onBeforeUnmount, ref, watch } from 'vue';
+import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 
 const props = defineProps({
     modelValue: { type: String, default: '' },
-    placeholder: { type: String, default: 'Write a reply...' },
+    placeholder: { type: String, default: '' },
     borderless: { type: Boolean, default: false },
     compact: { type: Boolean, default: false },
     inline: { type: Boolean, default: false },
@@ -14,7 +15,11 @@ const props = defineProps({
     form: { type: Boolean, default: false },
 });
 
-const emit = defineEmits(['update:modelValue']);
+const emit = defineEmits(['update:modelValue', 'user-input']);
+
+const { t } = useI18n();
+
+const resolvedPlaceholder = computed(() => props.placeholder || t('components.write_a_reply'));
 
 const toolbarTick = ref(0);
 
@@ -32,7 +37,7 @@ const editorSurfaceClass = computed(() => {
     }
 
     if (props.compact) {
-        return 'min-h-[72px] px-3 py-2 text-sm text-slate-800 focus:outline-none';
+        return 'max-h-[4.5rem] min-h-[2.75rem] overflow-y-auto px-3 py-2 text-sm leading-snug text-slate-800 focus:outline-none';
     }
 
     return 'min-h-[120px] px-3 py-2 text-sm text-slate-800 focus:outline-none';
@@ -51,7 +56,7 @@ const editor = useEditor({
                 HTMLAttributes: { rel: 'noopener noreferrer', target: '_blank' },
             },
         }),
-        Placeholder.configure({ placeholder: props.placeholder }),
+        Placeholder.configure({ placeholder: resolvedPlaceholder.value }),
     ],
     editorProps: {
         attributes: {
@@ -60,6 +65,10 @@ const editor = useEditor({
     },
     onUpdate: ({ editor: currentEditor }) => {
         emit('update:modelValue', currentEditor.getHTML());
+
+        if (currentEditor.isFocused) {
+            emit('user-input');
+        }
     },
     onTransaction: () => {
         toolbarTick.value += 1;
@@ -67,14 +76,20 @@ const editor = useEditor({
 });
 
 watch(editorSurfaceClass, (value) => {
+    const wasFocused = editor.value?.isFocused ?? false;
+
     editor.value?.setOptions({
         editorProps: {
             attributes: { class: value },
         },
     });
+
+    if (wasFocused) {
+        nextTick(() => editor.value?.commands.focus());
+    }
 });
 
-watch(() => props.placeholder, (value) => {
+watch(resolvedPlaceholder, (value) => {
     if (!editor.value) {
         return;
     }
@@ -123,7 +138,7 @@ const toggleLink = () => {
     }
 
     const previous = editor.value.getAttributes('link').href;
-    const url = window.prompt('Link URL', previous || 'https://');
+    const url = window.prompt(t('components.link_url_prompt'), previous || 'https://');
 
     if (url === null) {
         return;
@@ -171,9 +186,9 @@ const toolbarClass = computed(() => {
         class="flex min-w-0 flex-1 items-center gap-1 rounded-lg bg-slate-50 ring-1 ring-slate-200 transition focus-within:ring-blue-400"
     >
         <div v-if="editor" class="flex shrink-0 items-center gap-0.5 pl-1">
-            <button type="button" :class="buttonClass(isActive('bold'), true)" title="Bold" @mousedown.prevent @click="run((instance) => instance.chain().focus().toggleBold())">B</button>
-            <button type="button" :class="buttonClass(isActive('italic'), true)" title="Italic" @mousedown.prevent @click="run((instance) => instance.chain().focus().toggleItalic())"><span class="italic">I</span></button>
-            <button type="button" :class="buttonClass(isActive('link'), true)" title="Link" @mousedown.prevent @click="toggleLink">
+            <button type="button" :class="buttonClass(isActive('bold'), true)" :title="$t('components.bold')" @mousedown.prevent @click="run((instance) => instance.chain().focus().toggleBold())">B</button>
+            <button type="button" :class="buttonClass(isActive('italic'), true)" :title="$t('components.italic')" @mousedown.prevent @click="run((instance) => instance.chain().focus().toggleItalic())"><span class="italic">I</span></button>
+            <button type="button" :class="buttonClass(isActive('link'), true)" :title="$t('components.link')" @mousedown.prevent @click="toggleLink">
                 <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
                 </svg>
@@ -187,14 +202,14 @@ const toolbarClass = computed(() => {
 
     <div v-else :class="shellClass">
         <div v-if="editor" :class="toolbarClass">
-            <button type="button" :class="buttonClass(isActive('bold'))" title="Bold" @mousedown.prevent @click="run((instance) => instance.chain().focus().toggleBold())">B</button>
-            <button type="button" :class="buttonClass(isActive('italic'))" title="Italic" @mousedown.prevent @click="run((instance) => instance.chain().focus().toggleItalic())"><span class="italic">I</span></button>
-            <button type="button" :class="buttonClass(isActive('underline'))" title="Underline" @mousedown.prevent @click="run((instance) => instance.chain().focus().toggleUnderline())"><span class="underline">U</span></button>
+            <button type="button" :class="buttonClass(isActive('bold'))" :title="$t('components.bold')" @mousedown.prevent @click="run((instance) => instance.chain().focus().toggleBold())">B</button>
+            <button type="button" :class="buttonClass(isActive('italic'))" :title="$t('components.italic')" @mousedown.prevent @click="run((instance) => instance.chain().focus().toggleItalic())"><span class="italic">I</span></button>
+            <button type="button" :class="buttonClass(isActive('underline'))" :title="$t('components.underline')" @mousedown.prevent @click="run((instance) => instance.chain().focus().toggleUnderline())"><span class="underline">U</span></button>
             <span class="mx-1 h-4 w-px bg-slate-300" />
-            <button type="button" :class="buttonClass(isActive('bulletList'))" title="Bullet list" @mousedown.prevent @click="run((instance) => instance.chain().focus().toggleBulletList())">• List</button>
-            <button type="button" :class="buttonClass(isActive('orderedList'))" title="Numbered list" @mousedown.prevent @click="run((instance) => instance.chain().focus().toggleOrderedList())">1. List</button>
+            <button type="button" :class="buttonClass(isActive('bulletList'))" :title="$t('components.bullet_list')" @mousedown.prevent @click="run((instance) => instance.chain().focus().toggleBulletList())">{{ $t('components.bullet_list_short') }}</button>
+            <button type="button" :class="buttonClass(isActive('orderedList'))" :title="$t('components.numbered_list')" @mousedown.prevent @click="run((instance) => instance.chain().focus().toggleOrderedList())">{{ $t('components.numbered_list_short') }}</button>
             <span class="mx-1 h-4 w-px bg-slate-300" />
-            <button type="button" :class="buttonClass(isActive('link'))" title="Insert link" @mousedown.prevent @click="toggleLink">Link</button>
+            <button type="button" :class="buttonClass(isActive('link'))" :title="$t('components.insert_link')" @mousedown.prevent @click="toggleLink">{{ $t('components.link') }}</button>
             <slot name="toolbar-extra" />
         </div>
         <EditorContent :editor="editor" />

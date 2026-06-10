@@ -4,6 +4,7 @@
     "type": "module",
     "scripts": {
         "build": "vite build",
+        "validate:locales": "node scripts/validate-locales.mjs",
         "dev": "vite",
         "realtime": "node --env-file=.env realtime/server.mjs"
     },
@@ -29,6 +30,7 @@
         "marked": "^18.0.5",
         "pusher-js": "^8.5.0",
         "vue": "^3.5.35",
+        "vue-i18n": "^11.4.5",
         "ws": "^8.21.0"
     }
 }

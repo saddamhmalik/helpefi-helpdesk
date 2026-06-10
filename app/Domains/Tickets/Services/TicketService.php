@@ -9,12 +9,16 @@ use App\Domains\Billing\Services\BillingService;
 use App\Domains\Channels\Models\Channel;
 use App\Domains\Channels\Repositories\ChannelRepository;
 use App\Domains\Channels\Services\OutboundMailService;
+use App\Domains\Channels\Services\TwilioMessagingService;
 use App\Domains\Notifications\Services\NotificationService;
 use App\Domains\Performance\Services\PerformanceService;
 use App\Domains\Sla\Services\SlaService;
 use App\Domains\Security\Support\AuditRecorder;
 use App\Domains\Settings\Services\AutoFirstResponseService;
 use App\Domains\Settings\Services\HelpdeskSettingService;
+use App\Domains\ServiceDesk\Services\ApprovalService;
+use App\Domains\ServiceDesk\Services\ChangeRecordService;
+use App\Domains\ServiceDesk\Services\ProblemRecordService;
 use App\Domains\Tickets\Models\Ticket;
 use App\Domains\Tickets\Models\TicketAttachment;
 use App\Domains\Tickets\Models\TicketMessage;
@@ -40,6 +44,7 @@ class TicketService
         private BillingService $billing,
         private NotificationService $notifications,
         private OutboundMailService $outboundMail,
+        private TwilioMessagingService $messaging,
         private AuditRecorder $audit,
         private WorkforceService $workforce,
         private PerformanceService $performance,
@@ -51,6 +56,9 @@ class TicketService
         private AssignmentService $assignment,
         private RealtimePublisher $realtime,
         private TicketReadService $ticketReads,
+        private ApprovalService $approvals,
+        private ChangeRecordService $changeRecords,
+        private ProblemRecordService $problemRecords,
     ) {
     }
 
@@ -123,6 +131,10 @@ class TicketService
             'number' => $ticket->number,
             'subject' => $ticket->subject,
         ], $userId);
+
+        $this->approvals->evaluateForNewTicket($ticket, $userId);
+        $this->changeRecords->ensureForTicket($ticket);
+        $this->problemRecords->ensureForTicket($ticket);
 
         return $ticket;
     }
@@ -234,7 +246,14 @@ class TicketService
             $replyChannelType = $ticketForMail->channel?->type
                 ?? $this->channels->find($channelId)?->type;
 
-            if ($replyChannelType !== Channel::TYPE_CHAT) {
+            if ($replyChannelType === Channel::TYPE_WHATSAPP || $replyChannelType === Channel::TYPE_SMS) {
+                $ticketForMail->loadMissing('contact');
+                $phone = $ticketForMail->contact?->phone;
+
+                if ($phone) {
+                    $this->messaging->send($phone, $message->body, $replyChannelType);
+                }
+            } elseif ($replyChannelType !== Channel::TYPE_CHAT) {
                 $this->outboundMail->sendTicketReply($ticketForMail, $message, $user);
             }
         }
@@ -276,7 +295,7 @@ class TicketService
         $this->notifications->customerReply($ticket, $message);
 
         if ($ticket->messages()->whereNotNull('contact_id')->count() === 1) {
-            $this->autoFirstResponse->sendIfEnabled($ticket);
+            $this->autoFirstResponse->sendIfEnabled($ticket, $message);
         }
 
         $this->audit->record('ticket.customer_message', $ticket, [
@@ -404,6 +423,8 @@ class TicketService
 
     public function split(int $id, int $fromMessageId, int $userId, ?string $subject = null): Ticket
     {
+        $this->billing->assertLimit('tickets_monthly', 1);
+
         $source = $this->tickets->find($id);
         $newTicket = $this->tickets->split($source, $fromMessageId, $userId, $subject);
 
@@ -587,6 +608,7 @@ class TicketService
             'ticket_status_id' => $ticket->ticket_status_id,
             'ticket_priority_id' => $ticket->ticket_priority_id,
             'assigned_to' => $ticket->assigned_to,
+            'snoozed_until' => $ticket->snoozed_until?->toIso8601String(),
             'updated_at' => $ticket->updated_at?->toIso8601String(),
             'status' => $ticket->status,
             'priority' => $ticket->priority,

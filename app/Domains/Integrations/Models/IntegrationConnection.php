@@ -12,6 +12,16 @@ class IntegrationConnection extends Model
 
     public const PROVIDER_LINEAR = 'linear';
 
+    public const PROVIDER_SHOPIFY = 'shopify';
+
+    public const PROVIDER_HUBSPOT = 'hubspot';
+
+    public const PROVIDER_SALESFORCE = 'salesforce';
+
+    public const PROVIDER_MICROSOFT_TEAMS = 'microsoft_teams';
+
+    public const PROVIDER_ZAPIER = 'zapier';
+
     protected $fillable = [
         'provider',
         'config',

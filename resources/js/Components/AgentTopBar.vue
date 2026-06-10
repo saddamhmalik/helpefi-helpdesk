@@ -2,12 +2,13 @@
 import AgentGlobalSearch from './AgentGlobalSearch.vue';
 import AgentUserMenu from './AgentUserMenu.vue';
 import NotificationBell from './NotificationBell.vue';
-import { Link } from '@inertiajs/vue3';
-import { ref } from 'vue';
+import { Link, usePage } from '@inertiajs/vue3';
+import { computed, ref } from 'vue';
 import { useAgentBreadcrumbs } from '../composables/useAgentBreadcrumbs.js';
 
 const { crumbs } = useAgentBreadcrumbs();
 const searchRef = ref(null);
+const helpCenter = computed(() => usePage().props.helpCenter);
 
 const openSearch = () => {
     searchRef.value?.openSearch();
@@ -17,7 +18,7 @@ const openSearch = () => {
 <template>
     <header class="sticky top-0 z-20 border-b border-slate-200/80 bg-white/90 backdrop-blur-md">
         <div class="hidden h-16 items-center gap-4 px-6 lg:flex">
-            <nav aria-label="Breadcrumb" class="flex min-w-0 flex-1 items-center gap-1.5">
+            <nav :aria-label="$t('components.breadcrumb')" class="flex min-w-0 flex-1 items-center gap-1.5">
                 <template v-for="(crumb, index) in crumbs" :key="`${crumb.label}-${index}`">
                     <span v-if="index > 0" class="text-slate-300">/</span>
                     <Link
@@ -43,13 +44,20 @@ const openSearch = () => {
 
             <div class="flex shrink-0 items-center gap-1">
                 <Link
+                    v-if="helpCenter"
+                    :href="helpCenter.homeUrl"
+                    class="hidden rounded-lg px-3 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 xl:inline-flex"
+                >
+                    {{ helpCenter.title }}
+                </Link>
+                <Link
                     href="/tickets/create"
                     class="inline-flex items-center gap-1.5 rounded-lg bg-blue-600 px-3 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-blue-700"
                 >
                     <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                     </svg>
-                    New ticket
+                    {{ $t('components.new_ticket') }}
                 </Link>
                 <NotificationBell />
                 <AgentUserMenu />
@@ -57,7 +65,7 @@ const openSearch = () => {
         </div>
 
         <div class="flex h-14 items-center gap-2 px-4 lg:hidden">
-            <nav aria-label="Breadcrumb" class="min-w-0 flex-1">
+            <nav :aria-label="$t('components.breadcrumb')" class="min-w-0 flex-1">
                 <p class="truncate text-sm font-semibold text-slate-900">
                     {{ crumbs[crumbs.length - 1]?.label }}
                 </p>
@@ -69,7 +77,7 @@ const openSearch = () => {
             <button
                 type="button"
                 class="rounded-lg p-2 text-slate-500 transition hover:bg-slate-100 hover:text-slate-700"
-                aria-label="Search"
+                :aria-label="$t('components.search')"
                 @click="openSearch"
             >
                 <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -80,7 +88,7 @@ const openSearch = () => {
             <Link
                 href="/tickets/create"
                 class="rounded-lg p-2 text-blue-600 transition hover:bg-blue-50"
-                aria-label="New ticket"
+                :aria-label="$t('components.new_ticket')"
             >
                 <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />

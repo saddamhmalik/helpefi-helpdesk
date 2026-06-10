@@ -1,5 +1,6 @@
 <script setup>
 import { Head, usePage } from '@inertiajs/vue3';
+import { useI18n } from 'vue-i18n';
 import PortalLayout from '../../Layouts/PortalLayout.vue';
 import CsatRatingForm from '../../Components/CsatRatingForm.vue';
 
@@ -8,15 +9,17 @@ defineProps({
     csat: Object,
     submitUrl: String,
 });
+
+const { t } = useI18n();
 </script>
 
 <template>
-    <Head :title="`Feedback for ${ticket.number}`" />
+    <Head :title="t('portal.feedback_for', { number: ticket.number })" />
     <PortalLayout>
         <div class="mx-auto max-w-xl">
-            <h1 class="text-2xl font-bold text-slate-900">How did we do?</h1>
+            <h1 class="text-2xl font-bold text-slate-900">{{ $t('portal.how_did_we_do') }}</h1>
             <p class="mt-1 text-sm text-slate-600">
-                Your request <span class="font-medium text-slate-900">{{ ticket.number }}</span>
+                {{ $t('portal.your_request') }} <span class="font-medium text-slate-900">{{ ticket.number }}</span>
                 — {{ ticket.subject }}
             </p>
 

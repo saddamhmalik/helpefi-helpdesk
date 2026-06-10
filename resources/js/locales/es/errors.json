@@ -1,0 +1,25 @@
+{
+    "errors": {
+        "error_label": "Error",
+        "not_found_title": "Página no encontrada",
+        "not_found_description": "La página que buscas no existe, se movió o ya no está disponible.",
+        "server_title": "Algo salió mal",
+        "server_description": "Encontramos un problema inesperado. Inténtalo de nuevo en un momento.",
+        "generic_title": "No se pudo completar la solicitud",
+        "generic_description": "No se pudo procesar esta solicitud. Si el problema continúa, contacta a tu administrador.",
+        "status_403_title": "Acceso denegado",
+        "status_403_description": "No tienes permiso para ver esta página.",
+        "status_419_title": "Página expirada",
+        "status_419_description": "Tu sesión expiró. Actualiza la página e inténtalo de nuevo.",
+        "status_429_title": "Demasiadas solicitudes",
+        "status_429_description": "Estás enviando solicitudes demasiado rápido. Espera un momento e inténtalo de nuevo.",
+        "status_503_title": "Servicio no disponible",
+        "status_503_description": "La aplicación no está disponible temporalmente por mantenimiento o actualizaciones.",
+        "go_back": "Volver",
+        "try_again": "Reintentar",
+        "back_to_help_center": "Volver al centro de ayuda",
+        "back_to_dashboard": "Volver al panel",
+        "back_to_sign_in": "Volver al inicio de sesión",
+        "support_hint": "Si crees que esto es un error, contacta al administrador de tu espacio de trabajo."
+    }
+}
