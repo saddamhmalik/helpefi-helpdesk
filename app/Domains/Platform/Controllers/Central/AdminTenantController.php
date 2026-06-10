@@ -25,12 +25,20 @@ class AdminTenantController extends Controller
         $search = trim((string) $request->string('q'));
         $status = (string) $request->string('status', 'all');
 
-        $healed = $this->provisioning->healMissingSubscriptions();
+        $healedSubscriptions = $this->provisioning->healMissingSubscriptions();
+        $healedDomains = $this->provisioning->healMissingDomains();
 
-        if ($healed > 0) {
+        if ($healedSubscriptions > 0) {
             session()->flash(
                 'success',
-                "Started free trial for {$healed} workspace(s) that were missing a subscription.",
+                "Started free trial for {$healedSubscriptions} workspace(s) that were missing a subscription.",
+            );
+        }
+
+        if ($healedDomains > 0) {
+            session()->flash(
+                'success',
+                "Restored platform domain for {$healedDomains} workspace(s) that were missing a domain.",
             );
         }
 

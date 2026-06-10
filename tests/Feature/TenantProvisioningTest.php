@@ -6,6 +6,7 @@ use App\Domains\Tenancy\Services\TenantProvisioningService;
 use App\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
+use Stancl\Tenancy\Events\DatabaseCreated;
 use Tests\TestCase;
 
 class TenantProvisioningTest extends TestCase
@@ -33,6 +34,25 @@ class TenantProvisioningTest extends TestCase
         ]);
 
         tenancy()->end();
+
+        $tenant->delete();
+    }
+
+    public function test_provision_creates_domain_before_tenant_database_is_created(): void
+    {
+        $domainExistsBeforeDatabase = false;
+
+        $this->app['events']->listen(DatabaseCreated::class, function (DatabaseCreated $event) use (&$domainExistsBeforeDatabase) {
+            $domainExistsBeforeDatabase = $event->tenant->domains()->exists();
+        });
+
+        $tenant = $this->provisionTenant('order@domain.test', 'domain-order-test');
+
+        $this->assertTrue($domainExistsBeforeDatabase);
+        $this->assertSame(
+            'domain-order-test.'.config('tenancy.central_app_domain'),
+            $tenant->domains()->value('domain'),
+        );
 
         $tenant->delete();
     }

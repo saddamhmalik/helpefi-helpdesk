@@ -10,6 +10,7 @@ use Illuminate\Support\ServiceProvider;
 use Stancl\JobPipeline\JobPipeline;
 use Stancl\Tenancy\Events;
 use Stancl\Tenancy\Jobs;
+use App\Domains\Tenancy\Jobs\EnsurePlatformDomainJob;
 use App\Domains\Tenancy\Jobs\FinalizeTenantProvisioningJob;
 use Stancl\Tenancy\Listeners;
 use Stancl\Tenancy\DatabaseConfig;
@@ -27,6 +28,7 @@ class TenancyServiceProvider extends ServiceProvider
             Events\CreatingTenant::class => [],
             Events\TenantCreated::class => [
                 JobPipeline::make([
+                    EnsurePlatformDomainJob::class,
                     Jobs\CreateDatabase::class,
                     Jobs\MigrateDatabase::class,
                     FinalizeTenantProvisioningJob::class,

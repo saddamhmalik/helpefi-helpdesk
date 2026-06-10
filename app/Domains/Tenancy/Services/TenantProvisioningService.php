@@ -41,8 +41,6 @@ class TenantProvisioningService
             'admin_password' => $adminPassword,
         ]);
 
-        app(TenantDomainRepository::class)->createPlatform($tenant, $domain);
-
         $this->ensureCentralSubscription($tenant);
 
         return $tenant;
@@ -91,6 +89,27 @@ class TenantProvisioningService
             ->whereDoesntHave('subscription')
             ->each(function (Tenant $tenant) use (&$healed) {
                 $this->ensureCentralSubscription($tenant);
+                $healed++;
+            });
+
+        return $healed;
+    }
+
+    public function healMissingDomains(): int
+    {
+        $healed = 0;
+
+        Tenant::query()
+            ->whereDoesntHave('domains')
+            ->each(function (Tenant $tenant) use (&$healed) {
+                if ($tenant->slug === null || $tenant->slug === '') {
+                    return;
+                }
+
+                app(TenantDomainRepository::class)->createPlatform(
+                    $tenant,
+                    $this->tenantDomain($tenant->slug),
+                );
                 $healed++;
             });
 
