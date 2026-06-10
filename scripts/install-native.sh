@@ -44,7 +44,30 @@ fi
 
 export DEBIAN_FRONTEND=noninteractive
 
+php_packages_available() {
+    apt-cache show "php${PHP_VERSION}-fpm" >/dev/null 2>&1
+}
+
+ensure_php_packages() {
+    if php_packages_available; then
+        return
+    fi
+
+    echo "PHP ${PHP_VERSION} not in default Ubuntu repos — adding ppa:ondrej/php..."
+    apt-get install -y software-properties-common ca-certificates lsb-release apt-transport-https
+    add-apt-repository -y ppa:ondrej/php
+    apt-get update
+
+    if ! php_packages_available; then
+        echo "ERROR: php${PHP_VERSION}-fpm still unavailable after adding ppa:ondrej/php."
+        echo "Try: PHP_VERSION=8.4 sudo ./scripts/install-native.sh on Ubuntu 22.04/24.04 LTS."
+        exit 1
+    fi
+}
+
 apt-get update
+ensure_php_packages
+
 apt-get install -y \
     nginx \
     mysql-server \

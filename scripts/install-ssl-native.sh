@@ -49,7 +49,24 @@ fi
 
 if ! command -v certbot >/dev/null 2>&1; then
     apt-get update
+    if ! apt-cache show certbot >/dev/null 2>&1; then
+        apt-get install -y software-properties-common
+    fi
     apt-get install -y certbot python3-certbot-nginx
+fi
+
+if [[ ! -S "$PHP_FPM_SOCK" ]]; then
+    for candidate in /run/php/php8.4-fpm.sock /run/php/php8.3-fpm.sock; do
+        if [[ -S "$candidate" ]]; then
+            PHP_FPM_SOCK="$candidate"
+            break
+        fi
+    done
+fi
+
+if [[ ! -S "$PHP_FPM_SOCK" ]]; then
+    echo "ERROR: PHP-FPM socket not found at $PHP_FPM_SOCK"
+    exit 1
 fi
 
 SITE_AVAILABLE="/etc/nginx/sites-available/$NGINX_SITE"
