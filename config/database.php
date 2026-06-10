@@ -3,6 +3,11 @@
 use Illuminate\Support\Str;
 use Pdo\Mysql;
 
+$centralDriver = env('CENTRAL_DB_DRIVER')
+    ?? env('DB_DRIVER')
+    ?? (in_array((string) env('DB_CONNECTION'), ['mysql', 'mariadb'], true) ? env('DB_CONNECTION') : null)
+    ?? (env('DB_DATABASE') ? 'mysql' : 'sqlite');
+
 return [
 
     /*
@@ -33,7 +38,7 @@ return [
     'connections' => [
 
         'central' => array_merge([
-            'driver' => ($centralDriver = env('CENTRAL_DB_DRIVER', env('DB_DRIVER', in_array(env('DB_CONNECTION'), ['mysql', 'mariadb'], true) ? env('DB_CONNECTION') : 'sqlite'))),
+            'driver' => $centralDriver,
             'url' => env('CENTRAL_DB_URL', env('DB_URL')),
             'host' => env('CENTRAL_DB_HOST', env('DB_HOST', '127.0.0.1')),
             'port' => env('CENTRAL_DB_PORT', env('DB_PORT', '3306')),
@@ -52,7 +57,7 @@ return [
             'strict' => true,
             'engine' => null,
             'foreign_key_constraints' => env('DB_FOREIGN_KEYS', true),
-        ], in_array(env('CENTRAL_DB_DRIVER', env('DB_DRIVER', 'sqlite')), ['mysql', 'mariadb'], true) ? [
+        ], in_array($centralDriver, ['mysql', 'mariadb'], true) ? [
             'options' => extension_loaded('pdo_mysql') ? array_filter([
                 Mysql::ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
             ]) : [],

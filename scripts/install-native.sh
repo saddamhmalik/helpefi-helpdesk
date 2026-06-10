@@ -227,6 +227,23 @@ set_env "REALTIME_WS_HOST" "127.0.0.1"
 set_env "REALTIME_WS_PORT" "8080"
 set_env "REALTIME_WS_URL" "ws://127.0.0.1:8080"
 
+if ! grep -q "^MAIL_MAILER=" "$ROOT/.env" 2>/dev/null; then
+    set_env "MAIL_MAILER" "${MAIL_MAILER:-log}"
+fi
+set_env "MAIL_FROM_ADDRESS" "noreply@${DOMAIN}"
+set_env "MAIL_FROM_NAME" "helpefi"
+set_env "CENTRAL_MAIL_FROM_ADDRESS" "noreply@${DOMAIN}"
+set_env "CENTRAL_MAIL_FROM_NAME" "helpefi"
+
+if [ -n "${MAIL_HOST:-}" ]; then
+    set_env "MAIL_MAILER" "smtp"
+    set_env "MAIL_HOST" "$MAIL_HOST"
+    set_env "MAIL_PORT" "${MAIL_PORT:-587}"
+    set_env "MAIL_USERNAME" "${MAIL_USERNAME:-}"
+    set_env "MAIL_PASSWORD" "${MAIL_PASSWORD:-}"
+    set_env "MAIL_SCHEME" "${MAIL_SCHEME:-tls}"
+fi
+
 sudo -u "$DEPLOY_USER" php "$ROOT/artisan" migrate --force
 sudo -u "$DEPLOY_USER" php "$ROOT/artisan" db:seed --class=Database\\Seeders\\CentralDatabaseSeeder --force
 sudo -u "$DEPLOY_USER" php "$ROOT/artisan" tenants:migrate --force || true

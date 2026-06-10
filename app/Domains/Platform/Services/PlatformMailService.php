@@ -3,9 +3,12 @@
 namespace App\Domains\Platform\Services;
 
 use App\Domains\Platform\Mail\PlatformTemplateMail;
+use App\Domains\Platform\Models\PlatformEmailTemplate;
 use App\Domains\Tenancy\Services\CentralSettingsService;
 use App\Domains\Tenancy\Services\TenantDomainService;
 use App\Models\Tenant;
+use Database\Seeders\PlatformEmailTemplateSeeder;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Throwable;
 
@@ -40,10 +43,24 @@ class PlatformMailService
 
     public function send(string $slug, string $to, array $variables): void
     {
+        $this->ensureSystemTemplates();
+
         $rendered = $this->templates->render($slug, $variables);
 
         if (! $rendered) {
+            Log::warning('Platform email not sent: template missing or inactive.', [
+                'slug' => $slug,
+                'to' => $to,
+            ]);
+
             return;
+        }
+
+        if (config('mail.default') === 'log') {
+            Log::info('Platform email queued to log mailer (not delivered to inbox).', [
+                'slug' => $slug,
+                'to' => $to,
+            ]);
         }
 
         try {
@@ -53,8 +70,34 @@ class PlatformMailService
                 bodyHtml: $rendered['body_html'],
             ));
         } catch (Throwable $exception) {
+            Log::error('Platform email send failed.', [
+                'slug' => $slug,
+                'to' => $to,
+                'mailer' => config('mail.default'),
+                'message' => $exception->getMessage(),
+            ]);
+
             report($exception);
         }
+    }
+
+    private function ensureSystemTemplates(): void
+    {
+        $hasRegistration = PlatformEmailTemplate::query()
+            ->where('slug', PlatformEmailTemplate::SLUG_REGISTRATION)
+            ->where('is_active', true)
+            ->exists();
+
+        $hasWelcome = PlatformEmailTemplate::query()
+            ->where('slug', PlatformEmailTemplate::SLUG_WORKSPACE_WELCOME)
+            ->where('is_active', true)
+            ->exists();
+
+        if ($hasRegistration && $hasWelcome) {
+            return;
+        }
+
+        app(PlatformEmailTemplateSeeder::class)->run();
     }
 
     private function variables(Tenant $tenant, string $adminName, string $adminEmail): array
