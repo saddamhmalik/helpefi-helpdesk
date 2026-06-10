@@ -110,6 +110,16 @@ ensure_php_cli_symlink() {
     fi
 }
 
+install_php_extension() {
+    local package="$1"
+
+    if apt-cache show "$package" >/dev/null 2>&1; then
+        apt-get install -y "$package"
+    else
+        echo "Skipping optional package $package (not in repos; often bundled in php-cli)."
+    fi
+}
+
 apt-get update
 ensure_php_packages
 
@@ -123,17 +133,20 @@ apt-get install -y \
     supervisor \
     "php${PHP_VERSION}-fpm" \
     "php${PHP_VERSION}-cli" \
+    "php${PHP_VERSION}-common" \
     "php${PHP_VERSION}-mysql" \
-    "php${PHP_VERSION}-redis" \
     "php${PHP_VERSION}-zip" \
     "php${PHP_VERSION}-gd" \
     "php${PHP_VERSION}-intl" \
     "php${PHP_VERSION}-bcmath" \
     "php${PHP_VERSION}-mbstring" \
     "php${PHP_VERSION}-xml" \
-    "php${PHP_VERSION}-curl" \
-    "php${PHP_VERSION}-opcache" \
-    "php${PHP_VERSION}-pcntl"
+    "php${PHP_VERSION}-curl"
+
+install_php_extension "php${PHP_VERSION}-redis"
+install_php_extension "php-redis"
+install_php_extension "php${PHP_VERSION}-opcache"
+install_php_extension "php${PHP_VERSION}-pcntl"
 
 ensure_php_cli_symlink
 
