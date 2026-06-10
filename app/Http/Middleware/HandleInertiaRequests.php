@@ -131,8 +131,12 @@ class HandleInertiaRequests extends Middleware
             return config('app.timezone');
         }
 
-        return app(BusinessHoursRepository::class)->default()?->timezone
-            ?? config('app.timezone');
+        try {
+            return app(BusinessHoursRepository::class)->default()?->timezone
+                ?? config('app.timezone');
+        } catch (\Throwable) {
+            return config('app.timezone');
+        }
     }
 
     private function tenantFeature($user, callable $callback): mixed

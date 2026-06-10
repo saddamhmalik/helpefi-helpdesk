@@ -44,9 +44,21 @@ class SsoService
 
     public function loginOptions(): array
     {
-        $setting = $this->settings->current();
+        try {
+            $setting = $this->settings->current();
+        } catch (\Throwable) {
+            return ['enabled' => false];
+        }
 
-        if (! $setting->sso_enabled || ! $this->billing->canUseFeature('sso')) {
+        if (! $setting->sso_enabled) {
+            return ['enabled' => false];
+        }
+
+        try {
+            if (! $this->billing->canUseFeature('sso')) {
+                return ['enabled' => false];
+            }
+        } catch (\Throwable) {
             return ['enabled' => false];
         }
 
