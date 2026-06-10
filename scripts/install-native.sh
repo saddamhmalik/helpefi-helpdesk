@@ -169,11 +169,23 @@ fi
 mysql -e "CREATE DATABASE IF NOT EXISTS \`${DB_NAME}\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
 mysql -e "CREATE USER IF NOT EXISTS '${DB_USER}'@'localhost' IDENTIFIED BY '${DB_PASS}';"
 mysql -e "GRANT ALL PRIVILEGES ON \`${DB_NAME}\`.* TO '${DB_USER}'@'localhost';"
+mysql -e "GRANT ALL PRIVILEGES ON \`tenant_%\`.* TO '${DB_USER}'@'localhost';"
 mysql -e "GRANT CREATE ON *.* TO '${DB_USER}'@'localhost';"
 mysql -e "FLUSH PRIVILEGES;"
 
 DEPLOY_USER="${SUDO_USER:-$APP_USER}"
 chown -R "$DEPLOY_USER:$DEPLOY_USER" "$ROOT"
+
+set_app_permissions() {
+    chown -R "$DEPLOY_USER:$APP_USER" "$ROOT"
+    find "$ROOT" -type d -exec chmod 775 {} \;
+    find "$ROOT" -type f -exec chmod 664 {} \;
+    chmod -R ug+rwx "$ROOT/storage" "$ROOT/bootstrap/cache"
+    if [[ "$ROOT" == /home/* ]]; then
+        chmod o+x "$(echo "$ROOT" | cut -d/ -f1-3)"
+    fi
+    usermod -aG "$APP_USER" "$DEPLOY_USER" 2>/dev/null || true
+}
 
 sudo -u "$DEPLOY_USER" composer install --no-dev --optimize-autoloader --no-interaction -d "$ROOT"
 sudo -u "$DEPLOY_USER" npm ci --prefix "$ROOT"
@@ -223,7 +235,7 @@ sudo -u "$DEPLOY_USER" php "$ROOT/artisan" config:cache
 sudo -u "$DEPLOY_USER" php "$ROOT/artisan" route:cache
 sudo -u "$DEPLOY_USER" php "$ROOT/artisan" view:cache
 
-chown -R "$APP_USER:$APP_USER" "$ROOT/storage" "$ROOT/bootstrap/cache"
+set_app_permissions
 
 cat > /etc/nginx/sites-available/helpdesk <<NGINX
 server {
@@ -240,7 +252,9 @@ server {
     }
 
     location ~ \.php\$ {
+        try_files \$uri =404;
         include fastcgi_params;
+        fastcgi_index index.php;
         fastcgi_param SCRIPT_FILENAME \$realpath_root\$fastcgi_script_name;
         fastcgi_pass unix:/run/php/php${PHP_VERSION}-fpm.sock;
         fastcgi_read_timeout 120;

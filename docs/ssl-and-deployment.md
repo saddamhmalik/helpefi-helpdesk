@@ -168,9 +168,143 @@ Set `REALTIME_WS_URL=wss://rt.helpdesk.example.com` (no path, no port).
 
 | Symptom | Fix |
 |---------|-----|
+| **502 Bad Gateway** | PHP-FPM not running, wrong socket, or `www-data` cannot read the app under `/home/ubuntu`. See [502 fix](#502-bad-gateway) below. |
+| **File not found.** (plain text, not Laravel) | nginx `root` must end in `/public`, or PHP-FPM socket/path is wrong. See below. |
 | Redirect loop | `APP_URL` must match the hostname users visit. |
 | Session lost after login | Set `SESSION_SECURE_COOKIE=true` only when using HTTPS. |
 | Mixed content / WS fails | `REALTIME_WS_URL` must be `wss://`, not `ws://`. |
 | Tenant subdomain SSL error | Use `WILDCARD=true` or add each subdomain to the cert. |
 | OAuth redirect mismatch | Update provider console to `https://` callback URLs. |
 | `config:cache` stale | Run `php artisan config:clear && php artisan config:cache` after `.env` changes. |
+
+### 502 Bad Gateway
+
+nginx is up but cannot talk to PHP-FPM. On the server:
+
+```bash
+cd ~/helpefi-helpdesk   # or your app path
+
+# 1. Find the PHP-FPM socket
+ls -la /run/php/
+
+# 2. Start PHP-FPM (use the version you installed)
+sudo systemctl enable --now php8.5-fpm
+sudo systemctl status php8.5-fpm
+
+# 3. Check nginx points at the same socket
+sudo grep fastcgi_pass /etc/nginx/sites-enabled/helpdesk
+
+# 4. If socket is php8.5 but nginx says php8.4, fix and reload:
+sudo sed -i 's|php8.4-fpm.sock|php8.5-fpm.sock|g' /etc/nginx/sites-available/helpdesk
+sudo nginx -t && sudo systemctl reload nginx
+
+# 5. Or re-run the SSL script (auto-detects socket):
+sudo DOMAIN=helpefi.com EMAIL=you@helpefi.com WILDCARD=true \
+  REALTIME_DOMAIN=rt.helpefi.com ./scripts/install-ssl-native.sh
+
+# 6. Laravel writable dirs
+sudo chown -R www-data:www-data storage bootstrap/cache
+sudo chmod -R ug+rwx storage bootstrap/cache
+
+# 7. Read the real error
+sudo tail -30 /var/log/nginx/error.log
+sudo tail -30 /var/log/php8.5-fpm.log
+```
+
+Typical nginx error log lines:
+
+- `connect() to unix:/run/php/php8.4-fpm.sock failed` → wrong PHP version in nginx config
+- `No such file or directory` → PHP-FPM service not started
+- `Primary script unknown` → wrong `root` path in nginx (must be `.../public`)
+
+### App permissions (home directory)
+
+If the app lives in `/home/ubuntu/...`, PHP-FPM (`www-data`) cannot enter that folder by default. On the server:
+
+```bash
+cd ~/helpefi-helpdesk
+
+sudo chmod o+x /home/ubuntu
+sudo chown -R ubuntu:www-data .
+sudo find . -type d -exec chmod 775 {} \;
+sudo find . -type f -exec chmod 664 {} \;
+sudo chmod -R ug+rwx storage bootstrap/cache
+sudo usermod -aG www-data ubuntu
+
+php artisan config:clear
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
+
+sudo systemctl reload php8.5-fpm nginx
+```
+
+Run `php artisan` as **ubuntu**, not `www-data`. PHP-FPM only needs read access to the code plus write access to `storage/` and `bootstrap/cache/`.
+
+For production long-term, prefer `/var/www/helpefi-helpdesk` instead of a home directory.
+
+### Registration 500 / `SELECT command denied` on tenant tables
+
+The app DB user needs access to central **and** all tenant databases (`tenant_*`):
+
+```bash
+sudo mysql <<'SQL'
+GRANT ALL PRIVILEGES ON `helpdesk_central`.* TO 'helpdesk'@'localhost';
+GRANT ALL PRIVILEGES ON `tenant_%`.* TO 'helpdesk'@'localhost';
+GRANT CREATE ON *.* TO 'helpdesk'@'localhost';
+FLUSH PRIVILEGES;
+SQL
+```
+
+Replace `helpdesk` / `helpdesk_central` if your `.env` uses different names. Then retry registration.
+
+### "File not found." (plain text)
+
+PHP-FPM is running but cannot find `index.php`. On the server:
+
+```bash
+# Must exist:
+ls -la ~/helpefi-helpdesk/public/index.php
+
+# Check nginx root (must end in /public):
+sudo grep -E 'root |fastcgi_pass|server_name' /etc/nginx/sites-enabled/helpdesk
+
+# Fix if root is wrong (replace path if needed):
+APP_ROOT=/home/ubuntu/helpefi-helpdesk
+PHP_SOCK=/run/php/php8.5-fpm.sock
+
+sudo tee /etc/nginx/sites-available/helpdesk >/dev/null <<EOF
+server {
+    listen 80;
+    listen 443 ssl;
+    server_name helpefi.com *.helpefi.com;
+
+    root $APP_ROOT/public;
+    index index.php;
+
+    client_max_body_size 32M;
+
+    location / {
+        try_files \$uri \$uri/ /index.php?\$query_string;
+    }
+
+    location ~ \.php\$ {
+        try_files \$uri =404;
+        include fastcgi_params;
+        fastcgi_index index.php;
+        fastcgi_param SCRIPT_FILENAME \$realpath_root\$fastcgi_script_name;
+        fastcgi_pass unix:$PHP_SOCK;
+        fastcgi_read_timeout 120;
+    }
+
+    location ~ /\.(?!well-known).* {
+        deny all;
+    }
+}
+EOF
+
+sudo nginx -t && sudo systemctl reload nginx
+curl -I http://127.0.0.1 -H "Host: helpefi.com"
+```
+
+If you already have SSL certs from certbot, run `sudo certbot --nginx -d helpefi.com` after fixing the root path instead of overwriting the whole vhost.

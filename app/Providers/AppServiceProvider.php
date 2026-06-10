@@ -19,6 +19,7 @@ use App\Domains\Ai\Listeners\TriageTicketOnCreate;
 use Illuminate\Notifications\Events\NotificationSent;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -42,17 +43,30 @@ class AppServiceProvider extends ServiceProvider
 
         Ticket::observe(TicketCsatObserver::class);
 
+        Vite::createAssetPathsUsing(
+            fn (string $path, ?bool $secure = null) => '/'.ltrim($path, '/'),
+        );
+
+        if ($this->app->runningInConsole()) {
+            $this->forceAppUrl();
+        } elseif (in_array(request()->getHost(), config('tenancy.central_domains'), true)) {
+            $this->forceAppUrl();
+        }
+
+        try {
+            app(\App\Domains\Channels\Services\OutboundMailService::class)->applyGlobalConfig();
+        } catch (\Throwable) {
+        }
+    }
+
+    private function forceAppUrl(): void
+    {
         if ($appUrl = config('app.url')) {
             URL::forceRootUrl($appUrl);
 
             if ($scheme = parse_url($appUrl, PHP_URL_SCHEME)) {
                 URL::forceScheme($scheme);
             }
-        }
-
-        try {
-            app(\App\Domains\Channels\Services\OutboundMailService::class)->applyGlobalConfig();
-        } catch (\Throwable) {
         }
     }
 }

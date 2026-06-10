@@ -10,7 +10,7 @@ WILDCARD="${WILDCARD:-false}"
 REALTIME_DOMAIN="${REALTIME_DOMAIN:-}"
 ENV_FILE="${ENV_FILE:-.env}"
 NGINX_SITE="${NGINX_SITE:-helpdesk}"
-PHP_FPM_SOCK="${PHP_FPM_SOCK:-/run/php/php8.4-fpm.sock}"
+PHP_FPM_SOCK="${PHP_FPM_SOCK:-}"
 
 usage() {
     cat <<'EOF'
@@ -24,9 +24,9 @@ Optional:
   REALTIME_DOMAIN=rt.example.com
   ENV_FILE=.env
   NGINX_SITE=helpdesk
-  PHP_FPM_SOCK=/run/php/php8.4-fpm.sock
+  PHP_FPM_SOCK=/run/php/php8.5-fpm.sock
 
-Requires: Ubuntu/Debian with nginx, PHP 8.4-FPM, certbot installed.
+Requires: Ubuntu/Debian with nginx, PHP 8.5/8.4-FPM, certbot installed.
 Run ./scripts/install-native.sh first if the stack is not set up.
 
 EOF
@@ -55,7 +55,7 @@ if ! command -v certbot >/dev/null 2>&1; then
     apt-get install -y certbot python3-certbot-nginx
 fi
 
-if [[ ! -S "$PHP_FPM_SOCK" ]]; then
+if [[ -z "$PHP_FPM_SOCK" ]]; then
     for candidate in /run/php/php8.5-fpm.sock /run/php/php8.4-fpm.sock /run/php/php8.3-fpm.sock; do
         if [[ -S "$candidate" ]]; then
             PHP_FPM_SOCK="$candidate"
@@ -64,10 +64,13 @@ if [[ ! -S "$PHP_FPM_SOCK" ]]; then
     done
 fi
 
-if [[ ! -S "$PHP_FPM_SOCK" ]]; then
-    echo "ERROR: PHP-FPM socket not found at $PHP_FPM_SOCK"
+if [[ -z "$PHP_FPM_SOCK" || ! -S "$PHP_FPM_SOCK" ]]; then
+    echo "ERROR: PHP-FPM socket not found. Start FPM first, e.g.:"
+    echo "  sudo systemctl enable --now php8.5-fpm"
     exit 1
 fi
+
+echo "Using PHP-FPM socket: $PHP_FPM_SOCK"
 
 SITE_AVAILABLE="/etc/nginx/sites-available/$NGINX_SITE"
 SITE_ENABLED="/etc/nginx/sites-enabled/$NGINX_SITE"
@@ -87,7 +90,9 @@ server {
     }
 
     location ~ \.php\$ {
+        try_files \$uri =404;
         include fastcgi_params;
+        fastcgi_index index.php;
         fastcgi_param SCRIPT_FILENAME \$realpath_root\$fastcgi_script_name;
         fastcgi_pass unix:$PHP_FPM_SOCK;
         fastcgi_read_timeout 120;
