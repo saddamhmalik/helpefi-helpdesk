@@ -7,6 +7,7 @@ use App\Domains\Tenancy\Services\CentralSettingsService;
 use App\Domains\Tenancy\Services\TenantDomainService;
 use App\Models\Tenant;
 use Illuminate\Support\Facades\Mail;
+use Throwable;
 
 class PlatformMailService
 {
@@ -45,11 +46,15 @@ class PlatformMailService
             return;
         }
 
-        Mail::send(new PlatformTemplateMail(
-            recipientEmail: $to,
-            mailSubject: $rendered['subject'],
-            bodyHtml: $rendered['body_html'],
-        ));
+        try {
+            Mail::send(new PlatformTemplateMail(
+                recipientEmail: $to,
+                mailSubject: $rendered['subject'],
+                bodyHtml: $rendered['body_html'],
+            ));
+        } catch (Throwable $exception) {
+            report($exception);
+        }
     }
 
     private function variables(Tenant $tenant, string $adminName, string $adminEmail): array

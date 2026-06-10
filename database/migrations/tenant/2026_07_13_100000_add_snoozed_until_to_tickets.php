@@ -8,6 +8,10 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (! Schema::hasTable('tickets') || Schema::hasColumn('tickets', 'snoozed_until')) {
+            return;
+        }
+
         Schema::table('tickets', function (Blueprint $table) {
             $table->timestamp('snoozed_until')->nullable()->after('closed_at');
             $table->index('snoozed_until');
@@ -16,6 +20,10 @@ return new class extends Migration
 
     public function down(): void
     {
+        if (! Schema::hasTable('tickets') || ! Schema::hasColumn('tickets', 'snoozed_until')) {
+            return;
+        }
+
         Schema::table('tickets', function (Blueprint $table) {
             $table->dropIndex(['snoozed_until']);
             $table->dropColumn('snoozed_until');
