@@ -56,7 +56,7 @@ if ! command -v certbot >/dev/null 2>&1; then
 fi
 
 if [[ ! -S "$PHP_FPM_SOCK" ]]; then
-    for candidate in /run/php/php8.4-fpm.sock /run/php/php8.3-fpm.sock; do
+    for candidate in /run/php/php8.5-fpm.sock /run/php/php8.4-fpm.sock /run/php/php8.3-fpm.sock; do
         if [[ -S "$candidate" ]]; then
             PHP_FPM_SOCK="$candidate"
             break

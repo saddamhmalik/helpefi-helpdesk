@@ -9,7 +9,7 @@ DB_NAME="${DB_NAME:-helpdesk_central}"
 DB_USER="${DB_USER:-helpdesk}"
 DB_PASS="${DB_PASS:-}"
 APP_USER="${APP_USER:-www-data}"
-PHP_VERSION="${PHP_VERSION:-8.4}"
+PHP_VERSION="${PHP_VERSION:-}"
 
 usage() {
     cat <<'EOF'
@@ -22,7 +22,9 @@ Optional:
   DB_NAME=helpdesk_central
   DB_USER=helpdesk
   APP_USER=www-data
-  PHP_VERSION=8.4
+  PHP_VERSION=8.4   (auto-detected: 8.5, 8.4, or 8.3)
+
+Recommended OS: Ubuntu 24.04 LTS. Ubuntu Resolute uses distro PHP 8.5.
 
 After install:
   1. Copy/edit .env (APP_KEY is generated)
@@ -48,20 +50,63 @@ php_packages_available() {
     apt-cache show "php${PHP_VERSION}-fpm" >/dev/null 2>&1
 }
 
+resolve_php_version() {
+    local version
+    local candidates=()
+
+    if [[ -n "${PHP_VERSION}" ]]; then
+        candidates+=("${PHP_VERSION}")
+    fi
+
+    candidates+=(8.5 8.4 8.3)
+
+    for version in "${candidates[@]}"; do
+        if apt-cache show "php${version}-fpm" >/dev/null 2>&1; then
+            PHP_VERSION="$version"
+            echo "Using PHP ${PHP_VERSION}"
+            return 0
+        fi
+    done
+
+    return 1
+}
+
 ensure_php_packages() {
-    if php_packages_available; then
+    if resolve_php_version; then
         return
     fi
 
-    echo "PHP ${PHP_VERSION} not in default Ubuntu repos — adding ppa:ondrej/php..."
-    apt-get install -y software-properties-common ca-certificates lsb-release apt-transport-https
-    add-apt-repository -y ppa:ondrej/php
-    apt-get update
+    CODENAME="$(. /etc/os-release && echo "${VERSION_CODENAME}")"
 
-    if ! php_packages_available; then
-        echo "ERROR: php${PHP_VERSION}-fpm still unavailable after adding ppa:ondrej/php."
-        echo "Try: PHP_VERSION=8.4 sudo ./scripts/install-native.sh on Ubuntu 22.04/24.04 LTS."
+    case "$CODENAME" in
+        jammy|noble|focal)
+            echo "PHP not found in default repos — adding ppa:ondrej/php for ${CODENAME}..."
+            apt-get install -y software-properties-common ca-certificates lsb-release apt-transport-https
+            add-apt-repository -y ppa:ondrej/php
+            apt-get update
+            ;;
+        *)
+            echo "Non-LTS Ubuntu (${CODENAME}): ppa:ondrej/php is not supported."
+            echo "Install distro PHP packages manually, e.g. php8.5-fpm php8.5-cli ..."
+            ;;
+    esac
+
+    if ! resolve_php_version; then
+        echo "ERROR: No supported PHP-FPM package found (need 8.3+)."
+        echo "On Ubuntu Resolute+, try: sudo apt install php8.5-fpm php8.5-cli ..."
+        echo "Or use Ubuntu 24.04 LTS for production."
         exit 1
+    fi
+}
+
+ensure_php_cli_symlink() {
+    if command -v php >/dev/null 2>&1; then
+        return
+    fi
+
+    if [[ -x "/usr/bin/php${PHP_VERSION}" ]]; then
+        update-alternatives --install /usr/bin/php "php" "/usr/bin/php${PHP_VERSION}" 100 >/dev/null 2>&1 || \
+            ln -sf "/usr/bin/php${PHP_VERSION}" /usr/bin/php
     fi
 }
 
@@ -89,6 +134,15 @@ apt-get install -y \
     "php${PHP_VERSION}-curl" \
     "php${PHP_VERSION}-opcache" \
     "php${PHP_VERSION}-pcntl"
+
+ensure_php_cli_symlink
+
+if ! command -v php >/dev/null 2>&1; then
+    echo "ERROR: php CLI not available after installing php${PHP_VERSION}-cli"
+    exit 1
+fi
+
+php -v
 
 if ! command -v composer >/dev/null 2>&1; then
     curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
@@ -229,6 +283,7 @@ cat <<EOF
 
 Native install complete.
 
+PHP:   ${PHP_VERSION}
 HTTP:  http://$DOMAIN  (add DNS A record first)
 DB:    $DB_NAME / user $DB_USER
 
