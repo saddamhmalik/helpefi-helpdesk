@@ -1,8 +1,8 @@
 {
   "info": {
     "_postman_id": "helpdesk-api-v1",
-    "name": "Helpdesk API",
-    "description": "Helpdesk REST API v1. Login first to obtain a bearer token.",
+    "name": "helpefi API",
+    "description": "helpefi REST API v1. Login first to obtain a bearer token.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [

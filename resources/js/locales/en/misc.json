@@ -27,7 +27,7 @@
         "skip_sample_data": "Skip sample data",
         "finish_setup": "Finish setup",
         "welcome_to_workspace": "Welcome to {name}",
-        "helpdesk_live_at": "Your helpdesk is live at",
+        "helpdesk_live_at": "helpefi is live at",
         "complete_steps_below": "Complete the steps below to start supporting customers.",
         "load_realistic_sample": "Load realistic sample tickets and customers to explore the product, or start with an empty workspace for your own data.",
         "adds_demo_content": "Adds demo tickets, conversations, customers, tags, teams, and departments you can click through immediately.",

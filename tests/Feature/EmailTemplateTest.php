@@ -63,14 +63,14 @@ class EmailTemplateTest extends TenantTestCase
         app(EmailTemplateService::class)->ensureDefaults();
 
         $rendered = app(EmailTemplateService::class)->render(EmailTemplate::SLUG_TEAM_INVITATION, [
-            'app_name' => 'Acme Helpdesk',
+            'app_name' => 'Acme helpefi',
             'inviter_name' => 'Jane Admin',
             'role' => 'Agent',
             'accept_url' => 'https://example.test/invite',
             'expires_at' => 'Jan 1, 2027',
         ]);
 
-        $this->assertStringContainsString('Acme Helpdesk', $rendered['subject']);
+        $this->assertStringContainsString('Acme helpefi', $rendered['subject']);
         $this->assertStringContainsString('Jane Admin', $rendered['body_html']);
     }
 }

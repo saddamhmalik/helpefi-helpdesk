@@ -71,7 +71,7 @@
         "deal_value": "Deal value",
         "cancel": "Annuler",
         "sample_data_is_active_for_testing": "Sample data is active for testing",
-        "dummy_data_default_summary": "Explore the helpdesk with demo tickets and customers",
+        "dummy_data_default_summary": "Explore helpefi with demo tickets and customers",
         "dummy_data_remove_hint": ". Remove it in one click when you are ready for real data.",
         "dummy_data_summary": "{tickets} tickets · {customers} customers · {teams} teams",
         "remove_sample_data": "Remove sample data",

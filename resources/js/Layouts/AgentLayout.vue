@@ -1,6 +1,7 @@
 <script setup>
 import AgentTopBar from '../Components/AgentTopBar.vue';
 import AppAvatar from '../Components/AppAvatar.vue';
+import AppLogo from '../Components/AppLogo.vue';
 import DummyDataBanner from '../Components/DummyDataBanner.vue';
 import PlatformNoticeBanner from '../Components/PlatformNoticeBanner.vue';
 import SetupWarningBanner from '../Components/SetupWarningBanner.vue';
@@ -64,17 +65,7 @@ const iconWrapClass = (href) => isActive(href)
                 :class="isOpen ? 'justify-start' : 'justify-center'"
             >
                 <Link :href="homeHref" class="flex min-w-0 items-center gap-3">
-                    <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-blue-600">
-                        <svg class="h-4 w-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                    </span>
-                    <span
-                        class="sidebar-label truncate text-[15px] font-semibold text-white"
-                        :class="{ 'sidebar-label--open': isOpen }"
-                    >
-                        {{ t('app.name') }}
-                    </span>
+                    <AppLogo :mark-only="!isOpen" :size="isOpen ? 'md' : 'sm'" />
                 </Link>
             </div>
 

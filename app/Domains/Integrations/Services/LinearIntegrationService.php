@@ -191,6 +191,6 @@ class LinearIntegrationService
         $url = url("/tickets/{$ticket->id}");
         $body = strip_tags((string) ($ticket->description ?: 'No description provided.'));
 
-        return Str::limit($body, 3000)."\n\nHelpdesk ticket: {$url}";
+        return Str::limit($body, 3000)."\n\nhelpefi ticket: {$url}";
     }
 }

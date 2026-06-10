@@ -14,7 +14,7 @@ PHP_FPM_SOCK="${PHP_FPM_SOCK:-/run/php/php8.4-fpm.sock}"
 
 usage() {
     cat <<'EOF'
-Install Let's Encrypt SSL for Helpdesk (native / non-Docker).
+Install Let's Encrypt SSL for helpefi (native / non-Docker).
 
 Usage:
   DOMAIN=helpdesk.example.com EMAIL=admin@example.com ./scripts/install-ssl-native.sh

@@ -1,6 +1,6 @@
 # Docker
 
-Run the full Helpdesk stack (Laravel, MySQL, Redis, queue, scheduler, realtime WebSocket).
+Run the full helpefi stack (Laravel, MySQL, Redis, queue, scheduler, realtime WebSocket).
 
 ## Quick start (local development)
 

@@ -6,7 +6,7 @@ import CentralSeoHead from '../../Components/CentralSeoHead.vue';
 import { useI18n } from 'vue-i18n';
 
 const props = defineProps({
-    brand: { type: String, default: 'Helpdesk' },
+    brand: { type: String, default: 'helpefi' },
     trialDays: { type: Number, default: 14 },
     centralDomain: { type: String, default: '' },
     seo: { type: Object, default: () => ({}) },
@@ -40,13 +40,15 @@ const form = useForm({
 const slugTouched = ref(false);
 const provisioningStep = ref(0);
 
-const provisioningSteps = [
+const platformName = computed(() => t('app.name'));
+
+const provisioningSteps = computed(() => [
     'Creating your workspace database',
     'Configuring channels and email',
     'Setting up SLA policies',
     'Preparing your admin account',
-    'Launching your helpdesk',
-];
+    `Launching ${platformName.value}`,
+]);
 
 const passwordStrength = computed(() => {
     const value = form.password;
@@ -88,7 +90,7 @@ watch(() => form.processing, (processing) => {
     if (processing) {
         provisioningStep.value = 0;
         stepTimer = setInterval(() => {
-            provisioningStep.value = (provisioningStep.value + 1) % provisioningSteps.length;
+            provisioningStep.value = (provisioningStep.value + 1) % provisioningSteps.value.length;
         }, 1400);
         return;
     }
@@ -118,8 +120,8 @@ const inputClass = 'w-full rounded-xl border border-slate-200 bg-white px-3.5 py
 </script>
 
 <template>
-    <CentralSeoHead page="register" :brand="brand" :trial-days="trialDays" :seo="seo" />
-    <CentralLayout :brand="brand" :trial-days="trialDays" :show-footer="false">
+    <CentralSeoHead page="register" :brand="platformName" :trial-days="trialDays" :seo="seo" />
+    <CentralLayout :brand="platformName" :trial-days="trialDays" :show-footer="false">
         <div class="min-h-[calc(100vh-4rem)] bg-slate-50">
             <div class="mx-auto grid max-w-6xl lg:min-h-[calc(100vh-4rem)] lg:grid-cols-2">
                 <aside class="relative hidden overflow-hidden bg-slate-950 px-10 py-12 text-white lg:flex lg:flex-col lg:justify-between">
@@ -133,7 +135,7 @@ const inputClass = 'w-full rounded-xl border border-slate-200 bg-white px-3.5 py
                             {{ trialDays }}-day free trial · No credit card
                         </div>
                         <h1 class="mt-6 text-3xl font-semibold leading-tight tracking-tight">
-                            Create your {{ brand }} workspace
+                            Create your {{ platformName }} workspace
                         </h1>
                         <p class="mt-4 max-w-md text-sm leading-relaxed text-slate-400">
                             Get full access during your trial — tickets, chat, KB, service catalog, automation, and more. Upgrade to Enterprise for Service Desk ITSM, SSO, and AI.

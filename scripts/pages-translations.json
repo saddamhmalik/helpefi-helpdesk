@@ -534,7 +534,7 @@
     "knowledge.show_back_to_knowledge_base": "← Zurück zur Wissensdatenbank",
     "knowledge.published": "Veröffentlicht",
     "knowledge.version_author_unknown": "Unbekannt",
-    "reports.page_description": "Helpdesk-Berichte ausführen, speichern und exportieren.",
+    "reports.page_description": "helpefi-Berichte ausführen, speichern und exportieren.",
     "reports.email_schedule_title": "E-Mail-Planung",
     "reports.deliver_to_inbox": "«{name}» in Ihren Posteingang liefern.",
     "reports.enable_scheduled_delivery": "Geplante Zustellung aktivieren",

@@ -47,6 +47,6 @@ class InvitationAcceptController extends Controller
 
         $this->authService->attemptLogin($user->email, $data['password']);
 
-        return redirect($this->authService->homeRoute())->with('success', 'Welcome to Helpdesk.');
+        return redirect($this->authService->homeRoute())->with('success', 'Welcome to helpefi.');
     }
 }

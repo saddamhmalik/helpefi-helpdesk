@@ -1,6 +1,6 @@
 {
     "app": {
-        "name": "Helpdesk"
+        "name": "helpefi"
     },
     "common": {
         "save": "Save",
@@ -159,7 +159,7 @@
         "descriptions": {
             "overview": "Browse all workspace settings in one place.",
             "api_docs": "Explore REST API endpoints and authentication.",
-            "custom_domain": "Use your own domain for the helpdesk portal.",
+            "custom_domain": "Use your own domain for helpefi portal.",
             "brands": "Manage multiple brands and their appearance.",
             "usage_billing": "View plan usage, seats, and invoices.",
             "change_plan": "Upgrade, downgrade, or change your subscription.",
@@ -223,7 +223,7 @@
         "password_description": "Change the password you use to sign in.",
         "security_title": "Two-factor authentication",
         "security_description": "Add an extra layer of security with an authenticator app.",
-        "mfa_required": "Two-factor authentication is required for your account. Enable it below to continue using the helpdesk.",
+        "mfa_required": "Two-factor authentication is required for your account. Enable it below to continue using helpefi.",
         "name": "Name",
         "email": "Email",
         "language": "Language",

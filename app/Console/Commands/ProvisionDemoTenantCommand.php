@@ -22,7 +22,7 @@ class ProvisionDemoTenantCommand extends Command
         }
 
         $tenant = $provisioning->provision(
-            organizationName: 'Demo Helpdesk',
+            organizationName: 'Demo helpefi',
             slug: $slug,
             adminName: 'Admin User',
             adminEmail: 'admin@helpdesk.test',

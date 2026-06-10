@@ -8,7 +8,7 @@ class CentralSeoService
     {
         return [
             'siteUrl' => $this->siteUrl(),
-            'siteName' => config('app.name', 'Helpdesk'),
+            'siteName' => config('app.name', 'helpefi'),
             'ogImage' => $this->ogImageUrl(),
         ];
     }
@@ -26,7 +26,7 @@ class CentralSeoService
             return $configured;
         }
 
-        return $this->siteUrl().'/og-image.svg';
+        return $this->siteUrl().'/og-image.png';
     }
 
     public function sitemapEntries(): array

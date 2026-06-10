@@ -1,6 +1,7 @@
 <script setup>
 import { Link, usePage } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
+import AppLogo from '../Components/AppLogo.vue';
 import PlatformUserMenu from '../Components/Platform/PlatformUserMenu.vue';
 import { usePlatformAdmin } from '../composables/usePlatformAdmin.js';
 
@@ -28,8 +29,8 @@ const navLinkClass = (item) => (
                 <aside class="slide-over-panel absolute inset-y-0 left-0 flex w-72 flex-col bg-white shadow-xl">
                 <div class="flex items-center justify-between border-b border-slate-200 px-5 py-4">
                     <div>
-                        <p class="text-xs font-semibold uppercase tracking-wider text-blue-600">{{ $t('app.name') }}</p>
-                        <p class="font-semibold text-slate-900">{{ $t('layouts.admin.platform_admin') }}</p>
+                        <AppLogo size="sm" />
+                        <p class="mt-2 font-semibold text-slate-900">{{ $t('layouts.admin.platform_admin') }}</p>
                     </div>
                     <button type="button" class="rounded-lg p-2 text-slate-500 hover:bg-slate-100" @click="mobileNavOpen = false">
                         <span class="sr-only">{{ $t('layouts.admin.close_menu') }}</span>
@@ -72,8 +73,8 @@ const navLinkClass = (item) => (
         <div class="flex min-h-screen">
             <aside class="hidden w-64 shrink-0 border-r border-slate-200 bg-white lg:sticky lg:top-0 lg:flex lg:h-screen lg:flex-col lg:overflow-hidden lg:self-start">
                 <div class="shrink-0 border-b border-slate-200 px-6 py-5">
-                    <p class="text-xs font-semibold uppercase tracking-wider text-blue-600">{{ $t('app.name') }}</p>
-                    <p class="mt-0.5 text-lg font-semibold text-slate-900">{{ $t('layouts.admin.platform_admin') }}</p>
+                    <AppLogo size="sm" />
+                    <p class="mt-2 text-lg font-semibold text-slate-900">{{ $t('layouts.admin.platform_admin') }}</p>
                 </div>
                 <nav class="sidebar-nav-scroll flex-1 space-y-6 overflow-y-auto overflow-x-hidden p-4">
                     <div v-for="group in navGroups" :key="group.label">

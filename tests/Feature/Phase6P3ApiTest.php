@@ -61,7 +61,7 @@ class Phase6P3ApiTest extends TenantTestCase
         $this->tenantGetJson('/api/v1/openapi.json')
             ->assertOk()
             ->assertJsonPath('openapi', '3.1.0')
-            ->assertJsonPath('info.title', 'Helpdesk API');
+            ->assertJsonPath('info.title', 'helpefi API');
     }
 
     public function test_api_docs_page_loads(): void

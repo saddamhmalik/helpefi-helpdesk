@@ -1,16 +1,21 @@
 <script setup>
 import { Link, useForm } from '@inertiajs/vue3';
+import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import CentralLayout from '../../Layouts/CentralLayout.vue';
 import CentralSeoHead from '../../Components/CentralSeoHead.vue';
 
 const props = defineProps({
-    brand: { type: String, default: 'Helpdesk' },
+    brand: { type: String, default: 'helpefi' },
     trialDays: { type: Number, default: 14 },
     centralDomain: { type: String, default: '' },
     prefillSlug: { type: String, default: '' },
     prefillEmail: { type: String, default: '' },
     seo: { type: Object, default: () => ({}) },
 });
+
+const { t } = useI18n();
+const platformName = computed(() => t('app.name'));
 
 const form = useForm({
     slug: props.prefillSlug ?? '',
@@ -25,8 +30,8 @@ const inputClass = 'w-full rounded-xl border border-slate-200 bg-white px-3.5 py
 </script>
 
 <template>
-    <CentralSeoHead page="login" :brand="brand" :trial-days="trialDays" :seo="seo" />
-    <CentralLayout :brand="brand" :trial-days="trialDays" :show-footer="false">
+    <CentralSeoHead page="login" :brand="platformName" :trial-days="trialDays" :seo="seo" />
+    <CentralLayout :brand="platformName" :trial-days="trialDays" :show-footer="false">
         <div class="min-h-[calc(100vh-4rem)] bg-slate-50 px-4 py-12 sm:px-6">
             <div class="mx-auto grid max-w-4xl overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm lg:grid-cols-5">
                 <aside class="hidden bg-slate-950 p-8 text-white lg:col-span-2 lg:flex lg:flex-col lg:justify-between">

@@ -13,7 +13,7 @@ PHP_VERSION="${PHP_VERSION:-8.4}"
 
 usage() {
     cat <<'EOF'
-Install Helpdesk on Ubuntu/Debian without Docker.
+Install helpefi on Ubuntu/Debian without Docker.
 
 Usage:
   sudo DOMAIN=helpdesk.example.com DB_PASS='strong-secret' ./scripts/install-native.sh

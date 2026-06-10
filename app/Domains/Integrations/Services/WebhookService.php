@@ -115,7 +115,7 @@ class WebhookService
         $webhook = $this->webhooks->find($id);
 
         $result = $this->deliver($webhook, Webhook::EVENT_TEST, [
-            'message' => 'Helpdesk webhook test delivery',
+            'message' => 'helpefi webhook test delivery',
         ]);
 
         $this->audit->record('webhook.tested', $webhook, [

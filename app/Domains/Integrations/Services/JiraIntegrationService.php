@@ -153,7 +153,7 @@ class JiraIntegrationService
                 [
                     'type' => 'paragraph',
                     'content' => [
-                        ['type' => 'text', 'text' => 'Helpdesk ticket: '.$url],
+                        ['type' => 'text', 'text' => 'helpefi ticket: '.$url],
                     ],
                 ],
             ],

@@ -7,7 +7,7 @@ class PlatformEmailPlaceholders
     public static function definitions(): array
     {
         return [
-            ['key' => 'brand', 'label' => 'Platform name', 'example' => 'Helpdesk'],
+            ['key' => 'brand', 'label' => 'Platform name', 'example' => 'helpefi'],
             ['key' => 'admin_name', 'label' => 'Registrant name', 'example' => 'Jane Admin'],
             ['key' => 'admin_email', 'label' => 'Registrant email', 'example' => 'jane@company.com'],
             ['key' => 'organization_name', 'label' => 'Organization name', 'example' => 'Acme Support'],

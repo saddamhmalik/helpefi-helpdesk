@@ -27,7 +27,7 @@ class ProductKnowledgeSeeder extends Seeder
 
         $collections = [
             [
-                'name' => 'Helpdesk product guide',
+                'name' => 'helpefi product guide',
                 'slug' => 'product-guide',
                 'description' => 'Complete documentation for the helpdesk platform',
                 'sort_order' => 1,
@@ -78,7 +78,7 @@ class ProductKnowledgeSeeder extends Seeder
 
         return [
             array_merge($published, [
-                'title' => 'Helpdesk platform overview',
+                'title' => 'helpefi platform overview',
                 'slug' => 'helpdesk-platform-overview',
                 'knowledge_category_id' => $categoryIds['product-documentation'],
                 'knowledge_collection_id' => $collectionIds['product-guide'],
@@ -340,7 +340,7 @@ Key endpoints:
 - Service catalog, assets, discovery scans
 - Billing, security, notifications, CSAT, roles
 
-Import the Postman collection from postman/Helpdesk.postman_collection.json for full examples.
+Import the Postman collection from postman/helpefi.postman_collection.json for full examples.
 TEXT),
             ]),
             array_merge($published, [

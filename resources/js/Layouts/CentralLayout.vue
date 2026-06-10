@@ -1,32 +1,18 @@
 <script setup>
 import { Link } from '@inertiajs/vue3';
-import { computed, onMounted, onUnmounted, ref } from 'vue';
+import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
+import AppLogo from '../Components/AppLogo.vue';
 
 defineProps({
-    brand: { type: String, default: 'Helpdesk' },
+    brand: { type: String, default: 'helpefi' },
     trialDays: { type: Number, default: 14 },
-    transparentNav: { type: Boolean, default: false },
     showFooter: { type: Boolean, default: true },
     showPromoBar: { type: Boolean, default: true },
 });
 
 const { t } = useI18n();
 const mobileOpen = ref(false);
-const scrolled = ref(false);
-
-const onScroll = () => {
-    scrolled.value = window.scrollY > 24;
-};
-
-onMounted(() => {
-    window.addEventListener('scroll', onScroll, { passive: true });
-    onScroll();
-});
-
-onUnmounted(() => {
-    window.removeEventListener('scroll', onScroll);
-});
 
 const navLinks = computed(() => [
     { href: '/#product', label: t('layouts.central.product') },
@@ -51,30 +37,10 @@ const navLinks = computed(() => [
                 Start now →
             </Link>
         </div>
-        <header
-            class="sticky top-0 z-40 border-b backdrop-blur-xl transition-all duration-300"
-            :class="[
-                transparentNav && !scrolled
-                    ? 'border-white/10 bg-slate-950/60'
-                    : transparentNav && scrolled
-                        ? 'border-slate-200/80 bg-white/95 shadow-sm'
-                        : 'border-slate-200/80 bg-white/95 shadow-sm',
-            ]"
-        >
+        <header class="sticky top-0 z-40 border-b border-slate-200/80 bg-white shadow-sm">
             <div class="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-                <Link href="/" class="flex items-center gap-2.5">
-                    <span
-                        class="flex h-9 w-9 items-center justify-center rounded-xl text-sm font-bold shadow-sm"
-                        :class="transparentNav && !scrolled ? 'bg-blue-500 text-white' : 'bg-slate-900 text-white'"
-                    >
-                        {{ brand.charAt(0) }}
-                    </span>
-                    <span
-                        class="text-base font-semibold tracking-tight"
-                        :class="transparentNav && !scrolled ? 'text-white' : 'text-slate-900'"
-                    >
-                        {{ brand }}
-                    </span>
+                <Link href="/" class="flex items-center">
+                    <AppLogo size="md" />
                 </Link>
 
                 <nav class="hidden items-center gap-1 lg:flex">
@@ -82,8 +48,7 @@ const navLinks = computed(() => [
                         v-for="link in navLinks"
                         :key="link.href"
                         :href="link.href"
-                        class="rounded-lg px-3 py-2 text-sm font-medium transition"
-                        :class="transparentNav && !scrolled ? 'text-slate-300 hover:bg-white/10 hover:text-white' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'"
+                        class="rounded-lg px-3 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-100 hover:text-slate-900"
                     >
                         {{ link.label }}
                     </a>
@@ -92,17 +57,13 @@ const navLinks = computed(() => [
                 <div class="hidden items-center gap-2 sm:flex">
                     <Link
                         href="/login"
-                        class="rounded-lg px-3 py-2 text-sm font-medium transition"
-                        :class="transparentNav && !scrolled ? 'text-slate-200 hover:text-white' : 'text-slate-600 hover:text-slate-900'"
+                        class="rounded-lg px-3 py-2 text-sm font-medium text-slate-600 transition hover:text-slate-900"
                     >
                         {{ $t('layouts.central.sign_in') }}
                     </Link>
                     <Link
                         href="/register"
-                        class="rounded-xl px-4 py-2 text-sm font-bold shadow-lg transition"
-                        :class="transparentNav && !scrolled
-                            ? 'bg-white text-slate-900 shadow-white/20 hover:bg-blue-50'
-                            : 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-blue-600/30 hover:from-blue-500 hover:to-indigo-500'"
+                        class="rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-2 text-sm font-bold text-white shadow-lg shadow-blue-600/30 transition hover:from-blue-500 hover:to-indigo-500"
                     >
                         {{ $t('layouts.central.start_free_trial') }}
                     </Link>
@@ -110,8 +71,7 @@ const navLinks = computed(() => [
 
                 <button
                     type="button"
-                    class="rounded-lg p-2 lg:hidden"
-                    :class="transparentNav && !scrolled ? 'text-white' : 'text-slate-700'"
+                    class="rounded-lg p-2 text-slate-700 lg:hidden"
                     @click="mobileOpen = !mobileOpen"
                 >
                     <svg v-if="!mobileOpen" class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -126,27 +86,25 @@ const navLinks = computed(() => [
             <Transition name="fade">
                 <div
                     v-if="mobileOpen"
-                    class="border-t px-4 py-4 lg:hidden"
-                    :class="transparentNav && !scrolled ? 'border-white/10 bg-slate-950' : 'border-slate-200 bg-white'"
+                    class="border-t border-slate-200 bg-white px-4 py-4 lg:hidden"
                 >
-                <nav class="flex flex-col gap-1">
-                    <a
-                        v-for="link in navLinks"
-                        :key="link.href"
-                        :href="link.href"
-                        class="rounded-lg px-3 py-2.5 text-sm font-medium"
-                        :class="transparentNav && !scrolled ? 'text-slate-200' : 'text-slate-700'"
-                        @click="mobileOpen = false"
-                    >
-                        {{ link.label }}
-                    </a>
-                    <Link href="/login" class="rounded-lg px-3 py-2.5 text-sm font-medium text-slate-600" @click="mobileOpen = false">
-                        {{ $t('layouts.central.sign_in') }}
-                    </Link>
-                    <Link href="/register" class="mt-2 rounded-xl bg-blue-600 px-3 py-2.5 text-center text-sm font-semibold text-white" @click="mobileOpen = false">
-                        {{ $t('layouts.central.start_free_trial') }}
-                    </Link>
-                </nav>
+                    <nav class="flex flex-col gap-1">
+                        <a
+                            v-for="link in navLinks"
+                            :key="link.href"
+                            :href="link.href"
+                            class="rounded-lg px-3 py-2.5 text-sm font-medium text-slate-700"
+                            @click="mobileOpen = false"
+                        >
+                            {{ link.label }}
+                        </a>
+                        <Link href="/login" class="rounded-lg px-3 py-2.5 text-sm font-medium text-slate-600" @click="mobileOpen = false">
+                            {{ $t('layouts.central.sign_in') }}
+                        </Link>
+                        <Link href="/register" class="mt-2 rounded-xl bg-blue-600 px-3 py-2.5 text-center text-sm font-semibold text-white" @click="mobileOpen = false">
+                            {{ $t('layouts.central.start_free_trial') }}
+                        </Link>
+                    </nav>
                 </div>
             </Transition>
         </header>
@@ -159,7 +117,7 @@ const navLinks = computed(() => [
             <div class="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
                 <div class="grid gap-10 md:grid-cols-2 lg:grid-cols-4">
                     <div class="lg:col-span-1">
-                        <p class="text-lg font-semibold text-white">{{ brand }}</p>
+                        <AppLogo size="md" surface="light" />
                         <p class="mt-3 text-sm leading-relaxed text-slate-400">
                             {{ $t('layouts.central.footer_tagline') }}
                         </p>

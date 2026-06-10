@@ -1,4 +1,4 @@
-# Helpdesk
+# helpefi
 
 Single-tenant helpdesk built with Laravel 13, Vue 3, and Inertia.js.
 

@@ -24,9 +24,9 @@ class TeamsIntegrationService
         $response = Http::post($webhookUrl, [
             '@type' => 'MessageCard',
             '@context' => 'https://schema.org/extensions',
-            'summary' => 'Helpdesk test',
+            'summary' => 'helpefi test',
             'themeColor' => '0076D7',
-            'title' => 'Helpdesk Teams integration',
+            'title' => 'helpefi Teams integration',
             'text' => 'Test notification from your helpdesk workspace.',
         ]);
 

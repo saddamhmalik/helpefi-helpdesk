@@ -301,7 +301,7 @@ class OutboundMailService
                 function ($mail) use ($to, $config) {
                     $mail->to($to)
                         ->from($config['from_address'], $config['from_name'] ?? config('app.name'))
-                        ->subject('Helpdesk test email');
+                        ->subject('helpefi test email');
                 },
             );
         } catch (TransportExceptionInterface $exception) {
@@ -332,7 +332,7 @@ class OutboundMailService
                 function ($mail) use ($to, $config, $inbox) {
                     $mail->to($to)
                         ->from($config['from_address'], $inbox->name)
-                        ->subject('Helpdesk inbox SMTP test');
+                        ->subject('helpefi inbox SMTP test');
                 },
             );
         } catch (TransportExceptionInterface $exception) {

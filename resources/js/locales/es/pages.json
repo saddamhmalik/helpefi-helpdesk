@@ -410,7 +410,7 @@
     },
     "reports": {
         "reports": "Informes",
-        "run_save_and_export_helpdesk_reports": "Ejecute, guarde y exporte informes del helpdesk.",
+        "run_save_and_export_helpdesk_reports": "Ejecute, guarde y exporte informes dhelpefi.",
         "email_schedule": "Programación por correo",
         "frequency": "Frecuencia",
         "day": "Día",
@@ -464,7 +464,7 @@
         "scheduled": "Programado",
         "fr": "FR",
         "res": "RES",
-        "page_description": "Ejecute, guarde y exporte informes del helpdesk.",
+        "page_description": "Ejecute, guarde y exporte informes dhelpefi.",
         "email_schedule_title": "Programación por correo",
         "deliver_to_inbox": "Entregar «{name}» a su bandeja de entrada.",
         "enable_scheduled_delivery": "Habilitar entrega programada",

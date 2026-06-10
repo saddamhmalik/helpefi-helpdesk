@@ -1,6 +1,6 @@
 # SSL and deployment
 
-Helpdesk runs over HTTP in local Docker (`:8081`). Production needs HTTPS for sessions, OAuth redirects, Stripe webhooks, and secure cookies.
+helpefi runs over HTTP in local Docker (`:8081`). Production needs HTTPS for sessions, OAuth redirects, Stripe webhooks, and secure cookies.
 
 ## Quick reference
 

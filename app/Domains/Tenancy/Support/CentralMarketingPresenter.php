@@ -10,7 +10,7 @@ class CentralMarketingPresenter
     public static function shared(): array
     {
         return [
-            'brand' => config('app.name', 'Helpdesk'),
+            'brand' => config('app.name', 'helpefi'),
             'trialDays' => app(CentralSettingsService::class)->trialDays(),
             'centralDomain' => config('tenancy.central_app_domain'),
             'currency' => app(CentralSettingsService::class)->currencyMeta(),

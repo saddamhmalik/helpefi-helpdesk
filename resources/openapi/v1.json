@@ -1,9 +1,9 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "Helpdesk API",
+    "title": "helpefi API",
     "version": "1.0.0",
-    "description": "REST API for the Helpdesk workspace. Authenticate via POST /auth/login to obtain a bearer token."
+    "description": "REST API for the helpefi workspace. Authenticate via POST /auth/login to obtain a bearer token."
   },
   "servers": [
     {
@@ -22,7 +22,7 @@
     { "name": "Ticket statuses", "description": "Custom workflow statuses" },
     { "name": "Workspace", "description": "Agent inbox and realtime polling" },
     { "name": "Contacts", "description": "Customers and organizations" },
-    { "name": "Settings", "description": "Helpdesk configuration" },
+    { "name": "Settings", "description": "helpefi configuration" },
     { "name": "Security", "description": "Security, audit, SSO" },
     { "name": "Messaging", "description": "WhatsApp and SMS via Twilio" },
     { "name": "Integrations", "description": "Webhooks and marketplace connectors" },
@@ -247,7 +247,7 @@
       }
     },
     "/settings/helpdesk": {
-      "get": { "tags": ["Settings"], "summary": "Helpdesk settings", "responses": { "200": { "description": "Settings snapshot" } } },
+      "get": { "tags": ["Settings"], "summary": "helpefi settings", "responses": { "200": { "description": "Settings snapshot" } } },
       "put": { "tags": ["Settings"], "summary": "Update helpdesk settings", "responses": { "200": { "description": "Updated settings" } } }
     },
     "/security": {

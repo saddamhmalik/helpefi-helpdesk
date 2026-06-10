@@ -1,6 +1,6 @@
 {
     "app": {
-        "name": "Helpdesk"
+        "name": "helpefi"
     },
     "common": {
         "save": "Speichern",
@@ -159,7 +159,7 @@
         "descriptions": {
             "overview": "Alle Workspace-Einstellungen an einem Ort durchsuchen.",
             "api_docs": "REST-API-Endpunkte und Authentifizierung erkunden.",
-            "custom_domain": "Eigene Domain für das Helpdesk-Portal verwenden.",
+            "custom_domain": "Eigene Domain für das helpefi-Portal verwenden.",
             "brands": "Mehrere Marken und deren Erscheinungsbild verwalten.",
             "usage_billing": "Plannutzung, Lizenzen und Rechnungen einsehen.",
             "change_plan": "Abonnement upgraden, downgraden oder ändern.",
@@ -223,7 +223,7 @@
         "password_description": "Ändern Sie das Passwort für die Anmeldung.",
         "security_title": "Zwei-Faktor-Authentifizierung",
         "security_description": "Fügen Sie mit einer Authenticator-App eine zusätzliche Sicherheitsebene hinzu.",
-        "mfa_required": "Zwei-Faktor-Authentifizierung ist für Ihr Konto erforderlich. Aktivieren Sie sie unten, um das Helpdesk weiter zu nutzen.",
+        "mfa_required": "Zwei-Faktor-Authentifizierung ist für Ihr Konto erforderlich. Aktivieren Sie sie unten, um das helpefi weiter zu nutzen.",
         "name": "Name",
         "email": "E-Mail",
         "language": "Sprache",

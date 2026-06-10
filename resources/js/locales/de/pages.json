@@ -410,7 +410,7 @@
     },
     "reports": {
         "reports": "Berichte",
-        "run_save_and_export_helpdesk_reports": "Helpdesk-Berichte ausführen, speichern und exportieren.",
+        "run_save_and_export_helpdesk_reports": "helpefi-Berichte ausführen, speichern und exportieren.",
         "email_schedule": "E-Mail-Zeitplan",
         "frequency": "Häufigkeit",
         "day": "Tag",
@@ -464,7 +464,7 @@
         "scheduled": "Geplant",
         "fr": "FR",
         "res": "RES",
-        "page_description": "Helpdesk-Berichte ausführen, speichern und exportieren.",
+        "page_description": "helpefi-Berichte ausführen, speichern und exportieren.",
         "email_schedule_title": "E-Mail-Planung",
         "deliver_to_inbox": "«{name}» in Ihren Posteingang liefern.",
         "enable_scheduled_delivery": "Geplante Zustellung aktivieren",

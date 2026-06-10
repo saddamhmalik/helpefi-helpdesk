@@ -9,7 +9,7 @@ class PlatformEmailTemplateSeeder extends Seeder
 {
     public function run(): void
     {
-        $brand = config('app.name', 'Helpdesk');
+        $brand = config('app.name', 'helpefi');
 
         PlatformEmailTemplate::query()->updateOrCreate(
             ['slug' => PlatformEmailTemplate::SLUG_REGISTRATION],

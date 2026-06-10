@@ -75,7 +75,7 @@ class SlackIntegrationService
 
         try {
             $response = Http::timeout(5)->post($webhookUrl, [
-                'text' => 'Helpdesk Slack integration test — notifications are working.',
+                'text' => 'helpefi Slack integration test — notifications are working.',
             ]);
 
             $successful = $response->successful();

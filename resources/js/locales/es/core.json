@@ -1,6 +1,6 @@
 {
     "app": {
-        "name": "Helpdesk"
+        "name": "helpefi"
     },
     "common": {
         "save": "Guardar",
@@ -223,7 +223,7 @@
         "password_description": "Cambia la contraseña que usas para iniciar sesión.",
         "security_title": "Autenticación de dos factores",
         "security_description": "Añade una capa extra de seguridad con una app de autenticación.",
-        "mfa_required": "La autenticación de dos factores es obligatoria para tu cuenta. Actívala abajo para seguir usando el helpdesk.",
+        "mfa_required": "La autenticación de dos factores es obligatoria para tu cuenta. Actívala abajo para seguir usando helpefi.",
         "name": "Nombre",
         "email": "Correo",
         "language": "Idioma",

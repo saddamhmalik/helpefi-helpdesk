@@ -413,7 +413,7 @@
     },
     "reports": {
         "reports": "Reports",
-        "run_save_and_export_helpdesk_reports": "Run, save, and export helpdesk reports.",
+        "run_save_and_export_helpdesk_reports": "Run, save, and export helpefi reports.",
         "email_schedule": "Email schedule",
         "frequency": "Frequency",
         "day": "Day",
@@ -467,7 +467,7 @@
         "scheduled": "Scheduled",
         "fr": "FR",
         "res": "RES",
-        "page_description": "Run, save, and export helpdesk reports.",
+        "page_description": "Run, save, and export helpefi reports.",
         "email_schedule_title": "Email schedule",
         "deliver_to_inbox": "Deliver \"{name}\" to your inbox.",
         "enable_scheduled_delivery": "Enable scheduled delivery",

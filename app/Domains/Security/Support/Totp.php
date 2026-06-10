@@ -11,7 +11,7 @@ class Totp
         return $this->base32Encode(random_bytes($bytes));
     }
 
-    public function provisioningUri(string $secret, string $email, string $issuer = 'Helpdesk'): string
+    public function provisioningUri(string $secret, string $email, string $issuer = 'helpefi'): string
     {
         $label = rawurlencode($issuer.':'.$email);
 

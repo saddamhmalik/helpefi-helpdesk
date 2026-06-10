@@ -163,7 +163,7 @@ class EmailTest extends TestCase
                 'use_inbox_smtp' => false,
                 'driver' => 'smtp',
                 'from_address' => 'noreply@helpdesk.test',
-                'from_name' => 'Helpdesk',
+                'from_name' => 'helpefi',
                 'host' => 'smtp.mailtrap.io',
                 'port' => 587,
                 'encryption' => 'tls',

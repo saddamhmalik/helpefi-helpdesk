@@ -70,6 +70,6 @@ return [
         'settings.ai_updated' => 'AI settings updated',
         'settings.notifications_updated' => 'Notification settings updated',
         'settings.csat_updated' => 'CSAT settings updated',
-        'settings.helpdesk_updated' => 'Helpdesk settings updated',
+        'settings.helpdesk_updated' => 'helpefi settings updated',
     ],
 ];

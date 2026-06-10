@@ -11,11 +11,20 @@ import { useBillingInterval } from '../../composables/useBillingInterval.js';
 const { t } = useI18n();
 
 const props = defineProps({
-    brand: { type: String, default: 'Helpdesk' },
+    brand: { type: String, default: 'helpefi' },
     trialDays: { type: Number, default: 14 },
     plans: { type: Array, default: () => [] },
     currency: { type: Object, default: () => ({ code: 'USD', symbol: '$', name: 'US Dollar' }) },
     seo: { type: Object, default: () => ({}) },
+    centralDomain: { type: String, default: '' },
+});
+
+const platformName = computed(() => t('app.name'));
+
+const workspaceDomainExample = computed(() => {
+    const domain = props.centralDomain || 'helpefi.com';
+
+    return `your-company.${domain}`;
 });
 
 const { formatPrice } = useCurrency(() => props.currency);
@@ -199,10 +208,10 @@ const differentiators = computed(() => differentiatorDefs.map((item) => ({
     icon: item.icon,
 })));
 
-const builtDifferentSubtitle = computed(() => t('central.built_different_subtitle', { brand: props.brand }));
+const builtDifferentSubtitle = computed(() => t('central.built_different_subtitle', { brand: platformName.value }));
 
 const steps = [
-    { title: t('central.create_your_workspace'), body: 'Pick a subdomain, register in seconds, and get a dedicated environment for your team — no credit card required.', detail: 'Your workspace lives at your-company.helpdesk.test with isolated data, roles, and admin access.' },
+    { title: t('central.create_your_workspace'), body: 'Pick a subdomain, register in seconds, and get a dedicated environment for your team — no credit card required.', detail: 'Your workspace lives on its own subdomain with isolated data, roles, and admin access.' },
     { title: t('central.connect_your_channels'), body: 'Follow the guided setup wizard to configure email, chat widget, SMS, portal branding, SLA policies, and service catalog.', detail: 'Inbound email, outbound SMTP, chat embed code, and Twilio SMS — configured step by step.' },
     { title: t('central.invite_your_team_go_live'), body: 'Add agents, assign roles, publish your knowledge base, and start resolving tickets from day one.', detail: 'Full platform access during your free trial. Upgrade to Enterprise for Service Desk ITSM when you need it.' },
 ];
@@ -453,8 +462,8 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
 </script>
 
 <template>
-    <CentralSeoHead page="home" :brand="brand" :trial-days="trialDays" :seo="seo" />
-    <CentralLayout :brand="brand" :trial-days="trialDays" transparent-nav>
+    <CentralSeoHead page="home" :brand="platformName" :trial-days="trialDays" :seo="seo" />
+    <CentralLayout :brand="platformName" :trial-days="trialDays">
         <section class="relative overflow-hidden bg-slate-950 text-white">
             <div class="pointer-events-none absolute inset-0">
                 <div class="absolute -left-40 top-0 h-[36rem] w-[36rem] rounded-full bg-blue-600/30 blur-3xl" />
@@ -483,7 +492,7 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
                         </h1>
 
                         <p class="mt-6 text-lg leading-relaxed text-slate-300 sm:text-xl">
-                            {{ brand }} replaces your inbox, chat, knowledge base, SLAs, AI assist, and ITSM — in one beautiful workspace your team will actually love using.
+                            {{ platformName }} replaces your inbox, chat, knowledge base, SLAs, AI assist, and ITSM — in one beautiful workspace your team will actually love using.
                         </p>
 
                         <div class="mt-9 flex flex-col gap-3 sm:flex-row sm:items-center">
@@ -541,7 +550,7 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
                                     <span class="h-2.5 w-2.5 rounded-full bg-red-400/90" />
                                     <span class="h-2.5 w-2.5 rounded-full bg-amber-400/90" />
                                     <span class="h-2.5 w-2.5 rounded-full bg-emerald-400/90" />
-                                    <span class="ml-2 text-xs text-slate-500">your-team.{{ brand.toLowerCase() }}.com</span>
+                                    <span class="ml-2 text-xs text-slate-500">{{ workspaceDomainExample }}</span>
                                 </div>
                                 <div class="flex flex-wrap gap-1 border-b border-white/10 bg-slate-950/60 px-3 py-2">
                                     <button
@@ -684,7 +693,7 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
                         From tool chaos to one calm workspace
                     </h2>
                     <p class="mt-4 text-lg text-slate-600">
-                        Most teams pay for 3–5 separate products and still lose context. {{ brand }} replaces the stack — not adds to it.
+                        Most teams pay for 3–5 separate products and still lose context. {{ platformName }} replaces the stack — not adds to it.
                     </p>
                 </div>
 
@@ -740,7 +749,7 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
                             <div class="relative">
                                 <span class="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-xs font-bold uppercase tracking-wide text-white ring-1 ring-white/25">
                                     <span class="h-1.5 w-1.5 rounded-full bg-emerald-400" />
-                                    With {{ brand }}
+                                    With {{ platformName }}
                                 </span>
                                 <p class="mt-4 text-lg font-semibold">One workspace. Full picture.</p>
                                 <p class="mt-2 text-sm leading-relaxed text-blue-100">
@@ -750,7 +759,7 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
                                 <div class="mt-8 overflow-hidden rounded-2xl border border-white/20 bg-white/10 p-4 backdrop-blur-sm">
                                     <div class="flex items-center gap-2 border-b border-white/10 pb-3">
                                         <span class="h-2 w-2 rounded-full bg-emerald-400" />
-                                        <span class="text-[10px] font-medium text-white/70">{{ brand }} workspace</span>
+                                        <span class="text-[10px] font-medium text-white/70">{{ platformName }} workspace</span>
                                     </div>
                                     <div class="mt-3 grid grid-cols-3 gap-2">
                                         <div class="rounded-lg bg-white/10 px-2 py-2 text-center">
@@ -854,7 +863,7 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
                         Everything your team needs — nothing they don't
                     </h2>
                     <p class="mt-4 text-lg leading-relaxed text-slate-600">
-                        From the first customer message to resolution and feedback — {{ brand }} gives agents the context, tools, and automation they need without switching tabs or paying for add-ons.
+                        From the first customer message to resolution and feedback — {{ platformName }} gives agents the context, tools, and automation they need without switching tabs or paying for add-ons.
                     </p>
                 </div>
                 <div class="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -939,7 +948,7 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
                     <p class="text-sm font-semibold uppercase tracking-wider text-blue-600">{{ $t('central.deep_dive') }}</p>
                     <h2 class="mt-3 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">{{ $t('central.explore_by_capability') }}</h2>
                     <p class="mt-4 text-lg leading-relaxed text-slate-600">
-                        Pick a workflow area to see how {{ brand }} handles it — from first contact through ITSM resolution.
+                        Pick a workflow area to see how {{ platformName }} handles it — from first contact through ITSM resolution.
                     </p>
                 </div>
 
@@ -1116,7 +1125,7 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
             <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                 <div class="text-center">
                     <p class="text-sm font-semibold uppercase tracking-wider text-blue-400">{{ $t('central.why_teams_switch') }}</p>
-                    <h2 class="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">{{ brand }} vs. pieced-together tools</h2>
+                    <h2 class="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">{{ platformName }} vs. pieced-together tools</h2>
                     <p class="mx-auto mt-4 max-w-2xl text-base text-slate-400">One workspace for support and IT — without stacking separate inbox, KB, and ITSM products.</p>
                 </div>
                 <div class="mt-12 space-y-3 lg:hidden">
@@ -1128,7 +1137,7 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
                         <p class="text-sm font-medium text-slate-200">{{ row.feature }}</p>
                         <div class="mt-3 grid grid-cols-2 gap-3 text-center text-xs">
                             <div class="rounded-xl bg-blue-500/10 px-3 py-2 ring-1 ring-blue-500/20">
-                                <p class="font-semibold text-blue-300">{{ brand }}</p>
+                                <p class="font-semibold text-blue-300">{{ platformName }}</p>
                                 <p class="mt-1 text-lg">
                                     <span v-if="row.us === true" class="text-emerald-400">✓</span>
                                     <span v-else class="text-slate-300">{{ row.us }}</span>
@@ -1150,7 +1159,7 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
                         <thead>
                             <tr class="border-b border-white/10 bg-white/5">
                                 <th class="px-6 py-4 text-left font-medium text-slate-400">{{ $t('central.capability') }}</th>
-                                <th class="px-6 py-4 text-center font-semibold text-blue-400">{{ brand }}</th>
+                                <th class="px-6 py-4 text-center font-semibold text-blue-400">{{ platformName }}</th>
                                 <th class="px-6 py-4 text-center font-medium text-slate-400">{{ $t('central.typical_stack') }}</th>
                             </tr>
                         </thead>

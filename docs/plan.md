@@ -1,5 +1,5 @@
 ---
-name: Helpdesk Platform Build
+name: helpefi Platform Build
 overview: Single-tenant helpdesk on Laravel 13 with Vue 3 + Inertia. Phases 1–4 complete. Phase 5 closes market gaps vs Zendesk, Freshdesk, and Help Scout (agent productivity, scale, omnichannel, enterprise).
 todos:
   - id: phase-0-scaffold
@@ -146,7 +146,7 @@ todos:
 isProject: true
 ---
 
-# Helpdesk Platform — Implementation Plan (Single-Tenant)
+# helpefi Platform — Implementation Plan (Single-Tenant)
 
 ## Current State (June 2026)
 
@@ -382,7 +382,7 @@ Track under `phase5-11-api-parity` — **complete**:
 - Organizations CRUD API — done
 - Ticket PDF/email export API — done
 - SLA escalation rule CRUD API — done (`GET/POST/DELETE /api/v1/sla/escalations`, `GET /api/v1/sla/escalations/meta`)
-- Helpdesk/ticket settings API — done (`GET/PUT /api/v1/settings/helpdesk`)
+- helpefi/ticket settings API — done (`GET/PUT /api/v1/settings/helpdesk`)
 - Global search API — done (`GET /api/v1/search?q=`)
 
 ---

@@ -55,7 +55,7 @@ class PlatformMailService
     private function variables(Tenant $tenant, string $adminName, string $adminEmail): array
     {
         return [
-            'brand' => config('app.name', 'Helpdesk'),
+            'brand' => config('app.name', 'helpefi'),
             'admin_name' => $adminName,
             'admin_email' => $adminEmail,
             'organization_name' => $tenant->name,

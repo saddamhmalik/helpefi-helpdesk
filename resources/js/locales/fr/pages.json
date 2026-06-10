@@ -410,7 +410,7 @@
     },
     "reports": {
         "reports": "Rapports",
-        "run_save_and_export_helpdesk_reports": "Exécutez, enregistrez et exportez les rapports helpdesk.",
+        "run_save_and_export_helpdesk_reports": "Exécutez, enregistrez et exportez les rapports helpefi.",
         "email_schedule": "Planification par e-mail",
         "frequency": "Fréquence",
         "day": "Jour",
@@ -464,7 +464,7 @@
         "scheduled": "Planifié",
         "fr": "FR",
         "res": "RES",
-        "page_description": "Exécutez, enregistrez et exportez des rapports du helpdesk.",
+        "page_description": "Exécutez, enregistrez et exportez des rapports de helpefi.",
         "email_schedule_title": "Planification par e-mail",
         "deliver_to_inbox": "Livrer « {name} » dans votre boîte de réception.",
         "enable_scheduled_delivery": "Activer la livraison planifiée",

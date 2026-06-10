@@ -13,7 +13,7 @@ COMPOSE_FILES="-f docker-compose.prod.yml -f docker-compose.ssl.yml"
 
 usage() {
     cat <<'EOF'
-Install Let's Encrypt SSL for Helpdesk (Docker production).
+Install Let's Encrypt SSL for helpefi (Docker production).
 
 Usage:
   DOMAIN=helpdesk.example.com EMAIL=admin@example.com ./scripts/install-ssl-docker.sh

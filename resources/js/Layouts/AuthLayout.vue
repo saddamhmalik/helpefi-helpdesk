@@ -2,6 +2,7 @@
 import { Link, usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
+import AppLogo from '../Components/AppLogo.vue';
 import HelpCenterSearch from '../Components/HelpCenterSearch.vue';
 
 defineProps({
@@ -29,13 +30,8 @@ const helpCenter = computed(() => usePage().props.helpCenter);
 
         <header class="relative border-b border-slate-200/70 bg-white/80 backdrop-blur-xl">
             <div class="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-6 py-4">
-                <Link href="/login" class="flex items-center gap-2.5 transition-opacity hover:opacity-90">
-                    <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 text-white shadow-md shadow-blue-600/20">
-                        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
-                        </svg>
-                    </div>
-                    <span class="text-lg font-semibold tracking-tight text-slate-900">{{ t('app.name') }}</span>
+                <Link href="/login" class="flex items-center transition-opacity hover:opacity-90">
+                    <AppLogo size="md" />
                 </Link>
 
                 <div v-if="helpCenter" class="flex flex-1 flex-wrap items-center justify-end gap-3 sm:gap-4">

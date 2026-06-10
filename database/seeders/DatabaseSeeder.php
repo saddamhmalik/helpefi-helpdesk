@@ -110,7 +110,7 @@ class DatabaseSeeder extends Seeder
                 'knowledge_category_id' => $category->id,
                 'knowledge_collection_id' => $collection->id,
                 'author_id' => $admin->id,
-                'title' => 'Welcome to Helpdesk',
+                'title' => 'Welcome to helpefi',
                 'slug' => 'welcome-to-helpdesk',
                 'excerpt' => 'A quick start guide for agents.',
                 'body' => 'Use tickets to track customer issues, contacts to manage people, and the knowledge base for self-service articles.',

@@ -102,7 +102,7 @@ wss.on('error', (error) => {
 });
 
 wss.on('listening', () => {
-    console.log(`Helpdesk realtime server listening on ws://${host}:${port}`);
+    console.log(`helpefi realtime server listening on ws://${host}:${port}`);
 });
 
 wss.on('connection', (ws, request) => {

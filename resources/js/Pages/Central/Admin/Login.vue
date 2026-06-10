@@ -1,6 +1,7 @@
 <script setup>
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import { useI18n } from 'vue-i18n';
+import AppLogo from '../../../Components/AppLogo.vue';
 
 const { t } = useI18n();
 
@@ -19,7 +20,10 @@ const submit = () => {
     <Head :title="$t('central.platform_admin')" />
     <div class="flex min-h-screen items-center justify-center bg-slate-950 px-4">
         <div class="w-full max-w-sm rounded-2xl border border-white/10 bg-white p-8 shadow-2xl">
-            <h1 class="text-xl font-semibold text-slate-900">{{ $t('central.platform_admin') }}</h1>
+            <div class="flex justify-center">
+                <AppLogo size="lg" />
+            </div>
+            <h1 class="mt-6 text-xl font-semibold text-slate-900">{{ $t('central.platform_admin') }}</h1>
             <p class="mt-2 text-sm text-slate-600">{{ $t('central.sign_in_to_manage_workspaces_and_platform_settings') }}</p>
             <form class="mt-6 space-y-4" @submit.prevent="submit">
                 <div>
