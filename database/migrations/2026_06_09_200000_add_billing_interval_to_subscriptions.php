@@ -8,6 +8,10 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (! Schema::connection('central')->hasTable('subscriptions')) {
+            return;
+        }
+
         Schema::connection('central')->table('subscriptions', function (Blueprint $table) {
             if (! Schema::connection('central')->hasColumn('subscriptions', 'billing_interval')) {
                 $table->string('billing_interval', 10)->default('month')->after('plan');
@@ -17,6 +21,10 @@ return new class extends Migration
 
     public function down(): void
     {
+        if (! Schema::connection('central')->hasTable('subscriptions')) {
+            return;
+        }
+
         Schema::connection('central')->table('subscriptions', function (Blueprint $table) {
             if (Schema::connection('central')->hasColumn('subscriptions', 'billing_interval')) {
                 $table->dropColumn('billing_interval');

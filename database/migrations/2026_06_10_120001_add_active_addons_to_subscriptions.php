@@ -8,6 +8,10 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (! Schema::hasTable('subscriptions')) {
+            return;
+        }
+
         if (! Schema::hasColumn('subscriptions', 'active_addons')) {
             Schema::table('subscriptions', function (Blueprint $table) {
                 $table->json('active_addons')->nullable()->after('billing_interval');
@@ -23,6 +27,10 @@ return new class extends Migration
 
     public function down(): void
     {
+        if (! Schema::hasTable('subscriptions')) {
+            return;
+        }
+
         Schema::table('subscriptions', function (Blueprint $table) {
             if (Schema::hasColumn('subscriptions', 'stripe_addon_items')) {
                 $table->dropColumn('stripe_addon_items');

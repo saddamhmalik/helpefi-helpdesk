@@ -19,6 +19,12 @@ return new class extends Migration
             });
         }
 
+        if (! Schema::hasColumn('central_settings', 'addon_catalog')) {
+            Schema::table('central_settings', function (Blueprint $table) {
+                $table->json('addon_catalog')->nullable()->after('plan_catalog');
+            });
+        }
+
         $row = DB::table('central_settings')->first();
 
         if (! $row || $row->plan_catalog) {

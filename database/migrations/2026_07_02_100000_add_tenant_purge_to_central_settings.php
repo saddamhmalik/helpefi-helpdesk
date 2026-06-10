@@ -8,6 +8,10 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (! Schema::connection('central')->hasTable('central_settings')) {
+            return;
+        }
+
         Schema::connection('central')->table('central_settings', function (Blueprint $table) {
             if (! Schema::connection('central')->hasColumn('central_settings', 'tenant_purge_grace_days')) {
                 $table->unsignedSmallInteger('tenant_purge_grace_days')->default(15)->after('trial_days');
@@ -21,6 +25,10 @@ return new class extends Migration
 
     public function down(): void
     {
+        if (! Schema::connection('central')->hasTable('central_settings')) {
+            return;
+        }
+
         Schema::connection('central')->table('central_settings', function (Blueprint $table) {
             if (Schema::connection('central')->hasColumn('central_settings', 'tenant_purge_enabled')) {
                 $table->dropColumn('tenant_purge_enabled');

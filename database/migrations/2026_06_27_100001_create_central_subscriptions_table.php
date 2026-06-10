@@ -20,6 +20,9 @@ return new class extends Migration
             $table->id();
             $table->string('tenant_id');
             $table->string('plan');
+            $table->string('billing_interval', 10)->default('month');
+            $table->json('active_addons')->nullable();
+            $table->json('stripe_addon_items')->nullable();
             $table->string('status')->default('active');
             $table->timestamp('renews_at')->nullable();
             $table->timestamps();
