@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Domains\Tenancy\Support\CentralDomain;
 use App\Domains\Ai\Services\AiAssistService;
 use App\Domains\Auth\Services\UserPreferenceService;
 use App\Domains\Billing\Services\BillingService;
@@ -25,7 +26,7 @@ class HandleInertiaRequests extends Middleware
 
     public function share(Request $request): array
     {
-        $user = $request->user();
+        $user = CentralDomain::isCentralHost($request->getHost()) ? null : $request->user();
 
         return array_merge(parent::share($request), [
             'csrf_token' => fn () => csrf_token(),

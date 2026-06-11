@@ -44,6 +44,7 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
 
         $middleware->web(append: [
+            \App\Http\Middleware\ForgetTenantWebAuthOnCentral::class,
             \App\Http\Middleware\SetUserLocale::class,
             \App\Http\Middleware\HandleInertiaRequests::class,
         ]);

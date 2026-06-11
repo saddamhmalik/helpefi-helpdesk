@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Domains\Auth\Services\UserPreferenceService;
+use App\Domains\Tenancy\Support\CentralDomain;
 use App\Models\User;
 use Closure;
 use Illuminate\Http\Request;
@@ -17,6 +18,10 @@ class SetUserLocale
 
     public function handle(Request $request, Closure $next): Response
     {
+        if (CentralDomain::isCentralHost($request->getHost())) {
+            return $next($request);
+        }
+
         $user = $request->user();
 
         if ($user instanceof User) {

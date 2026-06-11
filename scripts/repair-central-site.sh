@@ -142,6 +142,12 @@ if [[ ! -f "$ENV_FILE" ]]; then
     ENV_OK=false
 fi
 
+if grep -q '^SESSION_DOMAIN=\.' "$ENV_FILE" 2>/dev/null; then
+    echo "WARNING: SESSION_DOMAIN is set to a wildcard (.${DOMAIN})."
+    echo "         Tenant login cookies leak to central and can cause 500 on ${DOMAIN}."
+    echo "         Remove SESSION_DOMAIN from .env or leave it empty."
+fi
+
 for required in "CENTRAL_APP_DOMAIN=${DOMAIN}" "DB_CONNECTION=central" "DB_DRIVER=mysql" "CENTRAL_DB_DRIVER=mysql"; do
     if ! grep -q "^${required}\$" "$ENV_FILE" 2>/dev/null; then
         echo "WARNING: .env should contain ${required}"
