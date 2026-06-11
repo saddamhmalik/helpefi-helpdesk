@@ -38,6 +38,7 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
 
         $middleware->web(prepend: [
+            \App\Http\Middleware\RedirectCentralWww::class,
             \App\Http\Middleware\InitializeTenancyWhenNotCentral::class,
             \App\Http\Middleware\RewriteUnscopedPortalUrl::class,
         ]);

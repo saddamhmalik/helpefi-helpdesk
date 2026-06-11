@@ -28,6 +28,7 @@ return [
         '127.0.0.1',
         'localhost',
         env('CENTRAL_APP_DOMAIN', 'helpdesk.test'),
+        env('CENTRAL_APP_DOMAIN') ? 'www.'.env('CENTRAL_APP_DOMAIN') : null,
     ]))),
 
     /**

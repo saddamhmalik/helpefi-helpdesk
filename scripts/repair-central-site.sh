@@ -100,6 +100,34 @@ server {
 NGINX
 fi
 
+WWW_SITE="/etc/nginx/sites-available/${NGINX_SITE}-www-redirect"
+if [[ "$HAS_CERT" == "true" ]]; then
+    cat > "$WWW_SITE" <<NGINX
+server {
+    listen 80;
+    listen 443 ssl;
+    server_name www.${DOMAIN};
+
+    ssl_certificate ${CERT_DIR}/fullchain.pem;
+    ssl_certificate_key ${CERT_DIR}/privkey.pem;
+    include /etc/letsencrypt/options-ssl-nginx.conf;
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
+
+    return 301 https://${DOMAIN}\$request_uri;
+}
+NGINX
+else
+    cat > "$WWW_SITE" <<NGINX
+server {
+    listen 80;
+    server_name www.${DOMAIN};
+    return 301 http://${DOMAIN}\$request_uri;
+}
+NGINX
+fi
+
+ln -sf "$WWW_SITE" "/etc/nginx/sites-enabled/${NGINX_SITE}-www-redirect"
+
 ln -sf "$SITE_AVAILABLE" "/etc/nginx/sites-enabled/${NGINX_SITE}"
 nginx -t
 systemctl reload nginx
