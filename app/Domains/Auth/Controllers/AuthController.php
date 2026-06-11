@@ -19,6 +19,8 @@ class AuthController extends Controller
 
     public function showLogin(): Response
     {
+        $this->authService->forgetCrossHostIntendedUrl();
+
         return Inertia::render('Auth/Login', [
             'sso' => $this->sso->loginOptions(),
         ]);
@@ -36,7 +38,7 @@ class AuthController extends Controller
             return redirect()->route('two-factor.challenge');
         }
 
-        return redirect()->intended($this->authService->homeRoute());
+        return redirect()->to($this->authService->resolvePostLoginRedirect($this->authService->homeRoute()));
     }
 
     public function showRegister(): Response

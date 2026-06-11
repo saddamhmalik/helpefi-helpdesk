@@ -35,7 +35,7 @@ class TwoFactorController extends Controller
 
         $this->twoFactor->completePendingLogin($request->string('code')->toString());
 
-        return redirect()->intended($this->auth->homeRoute());
+        return redirect()->to($this->auth->resolvePostLoginRedirect($this->auth->homeRoute()));
     }
 
     public function setup(Request $request): RedirectResponse

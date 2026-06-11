@@ -37,7 +37,7 @@ class SsoController extends Controller
             return redirect()->route('two-factor.challenge');
         }
 
-        return redirect()->intended($this->auth->homeRoute());
+        return redirect()->to($this->auth->resolvePostLoginRedirect($this->auth->homeRoute()));
     }
 
     public function acs(Request $request): RedirectResponse
@@ -49,7 +49,7 @@ class SsoController extends Controller
             return redirect()->route('two-factor.challenge');
         }
 
-        return redirect()->intended($this->auth->homeRoute());
+        return redirect()->to($this->auth->resolvePostLoginRedirect($this->auth->homeRoute()));
     }
 
     public function metadata(): Response

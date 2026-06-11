@@ -70,6 +70,38 @@ class AuthService
         return route('dashboard');
     }
 
+    public function resolvePostLoginRedirect(string $default): string
+    {
+        $intended = session()->pull('url.intended');
+
+        if (! is_string($intended) || $intended === '') {
+            return $default;
+        }
+
+        $intendedHost = parse_url($intended, PHP_URL_HOST);
+
+        if (is_string($intendedHost) && $intendedHost !== '' && strcasecmp($intendedHost, request()->getHost()) !== 0) {
+            return $default;
+        }
+
+        return $intended;
+    }
+
+    public function forgetCrossHostIntendedUrl(): void
+    {
+        $intended = session()->get('url.intended');
+
+        if (! is_string($intended) || $intended === '') {
+            return;
+        }
+
+        $intendedHost = parse_url($intended, PHP_URL_HOST);
+
+        if (is_string($intendedHost) && $intendedHost !== '' && strcasecmp($intendedHost, request()->getHost()) !== 0) {
+            session()->forget('url.intended');
+        }
+    }
+
     public function register(string $name, string $email, string $password): User
     {
         $user = User::query()->create([
