@@ -164,11 +164,16 @@ else
     echo "Skipped config:cache and route:cache until .env is fixed."
 fi
 
-if [[ -f "$ROOT/bootstrap/cache/config.php" ]]; then
-    if grep -q "'driver' => 'sqlite'" "$ROOT/bootstrap/cache/config.php" 2>/dev/null; then
-        echo "ERROR: Cached config still uses sqlite for central DB."
-        echo "       Run: php artisan config:clear"
-    fi
+CACHED_CENTRAL_DRIVER="$(sudo -u "$DEPLOY_USER" php -r "
+require '${ROOT}/vendor/autoload.php';
+\$app = require '${ROOT}/bootstrap/app.php';
+\$app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();
+echo config('database.connections.central.driver');
+" 2>/dev/null || true)"
+
+if [[ -n "$CACHED_CENTRAL_DRIVER" && "$CACHED_CENTRAL_DRIVER" != "mysql" ]]; then
+    echo "ERROR: Central DB driver is ${CACHED_CENTRAL_DRIVER} (expected mysql)."
+    echo "       Run: php artisan config:clear && fix .env, then config:cache"
 fi
 
 if [[ -f "$ROOT/artisan" ]]; then

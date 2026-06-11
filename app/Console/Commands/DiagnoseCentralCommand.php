@@ -30,7 +30,8 @@ class DiagnoseCentralCommand extends Command
 
         $this->line('Central DB driver: '.$driver);
         $this->line('Central DB name: '.$database);
-        $this->line('PDO drivers: '.implode(', ', PDO::getAvailableDrivers()) ?: '(none)');
+        $pdoDrivers = \PDO::getAvailableDrivers();
+        $this->line('PDO drivers: '.($pdoDrivers !== [] ? implode(', ', $pdoDrivers) : '(none)'));
 
         if ($driver === 'sqlite') {
             $this->error('Central DB is set to sqlite. Tenants may still work via MySQL tenant DBs.');
@@ -38,7 +39,7 @@ class DiagnoseCentralCommand extends Command
             $this->line('Then: php artisan config:clear && php artisan config:cache');
         }
 
-        if ($driver === 'mysql' && ! in_array('mysql', PDO::getAvailableDrivers(), true)) {
+        if ($driver === 'mysql' && ! in_array('mysql', $pdoDrivers, true)) {
             $this->error('Central DB driver is mysql but pdo_mysql is not loaded for CLI PHP.');
             $this->line('Install: sudo apt install php-mysql (match your PHP version)');
         }
@@ -48,7 +49,7 @@ class DiagnoseCentralCommand extends Command
             $this->line('Set CENTRAL_APP_DOMAIN in .env to match your apex domain, then rebuild config cache.');
         }
 
-        if ($driver === 'mysql' && in_array('mysql', PDO::getAvailableDrivers(), true)) {
+        if ($driver === 'mysql' && in_array('mysql', $pdoDrivers, true)) {
             try {
                 DB::connection('central')->getPdo();
                 $tenants = DB::connection('central')->table('tenants')->count();
