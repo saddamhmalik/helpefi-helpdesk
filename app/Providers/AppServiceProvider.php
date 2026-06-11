@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Domains\Tenancy\Support\CentralDomain;
 use App\Domains\Ai\Clients\HttpAiClient;
 use App\Domains\Ai\Clients\OpenAiEmbeddingClient;
 use App\Domains\Ai\Contracts\AiCompletionClient;
@@ -49,7 +50,7 @@ class AppServiceProvider extends ServiceProvider
 
         if ($this->app->runningInConsole()) {
             $this->forceAppUrl();
-        } elseif (in_array(request()->getHost(), config('tenancy.central_domains'), true)) {
+        } elseif (CentralDomain::isCentralHost(request()->getHost())) {
             $this->forceAppUrl();
         }
 

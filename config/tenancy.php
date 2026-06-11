@@ -5,9 +5,11 @@ declare(strict_types=1);
 use App\Models\Tenant;
 use App\Models\TenantDomain;
 
+$centralAppDomain = env('CENTRAL_APP_DOMAIN', 'helpdesk.test');
+
 return [
     'tenant_model' => Tenant::class,
-    'central_app_domain' => env('CENTRAL_APP_DOMAIN', 'helpdesk.test'),
+    'central_app_domain' => $centralAppDomain,
     'central_og_image' => env('CENTRAL_OG_IMAGE_URL'),
     'central_admin_password' => env('CENTRAL_ADMIN_PASSWORD'),
     'id_generator' => Stancl\Tenancy\UUIDGenerator::class,
@@ -27,8 +29,8 @@ return [
     'central_domains' => array_values(array_filter(array_unique([
         '127.0.0.1',
         'localhost',
-        env('CENTRAL_APP_DOMAIN', 'helpdesk.test'),
-        env('CENTRAL_APP_DOMAIN') ? 'www.'.env('CENTRAL_APP_DOMAIN') : null,
+        $centralAppDomain,
+        $centralAppDomain ? 'www.'.$centralAppDomain : null,
     ]))),
 
     /**

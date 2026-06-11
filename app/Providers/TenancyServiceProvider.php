@@ -132,7 +132,20 @@ class TenancyServiceProvider extends ServiceProvider
     protected function mapRoutes()
     {
         $this->app->booted(function () {
-            Route::domain(config('tenancy.central_app_domain'))
+            $central = (string) config('tenancy.central_app_domain');
+
+            if ($central !== '') {
+                Route::domain('www.'.$central)
+                    ->middleware('web')
+                    ->any('{path?}', function (?string $path = null) use ($central) {
+                        $uri = request()->getRequestUri();
+
+                        return redirect()->away(request()->getScheme().'://'.$central.$uri, 301);
+                    })
+                    ->where('path', '.*');
+            }
+
+            Route::domain($central)
                 ->middleware('web')
                 ->group(base_path('routes/web.php'));
 

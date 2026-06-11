@@ -133,6 +133,12 @@ nginx -t
 systemctl reload nginx
 
 cd "$ROOT"
+
+if ! grep -q "^CENTRAL_APP_DOMAIN=${DOMAIN}\$" "$ROOT/.env" 2>/dev/null; then
+    echo "WARNING: .env should contain CENTRAL_APP_DOMAIN=${DOMAIN}"
+    echo "         Wrong value causes ${DOMAIN} to return 500 after config:cache."
+fi
+
 sudo -u "$DEPLOY_USER" php artisan config:clear
 sudo -u "$DEPLOY_USER" php artisan route:clear
 sudo -u "$DEPLOY_USER" php artisan view:clear

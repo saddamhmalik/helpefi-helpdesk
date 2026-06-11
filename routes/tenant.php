@@ -79,8 +79,8 @@ use Stancl\Tenancy\Middleware\PreventAccessFromCentralDomains;
 
 Route::middleware([
     'web',
-    InitializeTenancyByDomain::class,
     PreventAccessFromCentralDomains::class,
+    InitializeTenancyByDomain::class,
     'tenant.not_blocked',
     'tenant.custom_domain_redirect',
 ])->group(function () {

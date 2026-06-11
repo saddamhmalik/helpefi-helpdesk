@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Domains\Tenancy\Support\CentralDomain;
 use Closure;
 use Illuminate\Http\Request;
 use Stancl\Tenancy\Middleware\InitializeTenancyByDomain;
@@ -16,7 +17,7 @@ class InitializeTenancyWhenNotCentral
 
     public function handle(Request $request, Closure $next): Response
     {
-        if (in_array($request->getHost(), config('tenancy.central_domains'), true)) {
+        if (CentralDomain::isCentralHost($request->getHost())) {
             return $next($request);
         }
 

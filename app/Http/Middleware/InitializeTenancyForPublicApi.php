@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Domains\Tenancy\Support\CentralDomain;
 use App\Domains\Tenancy\Models\TenantRouteMapping;
 use App\Domains\Tenancy\Services\TenantRouteRegistryService;
 use App\Models\Tenant;
@@ -62,6 +63,6 @@ class InitializeTenancyForPublicApi
 
     private function isCentralDomain(Request $request): bool
     {
-        return in_array($request->getHost(), config('tenancy.central_domains'), true);
+        return CentralDomain::isCentralHost($request->getHost());
     }
 }
