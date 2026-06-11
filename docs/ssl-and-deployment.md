@@ -49,7 +49,47 @@ REALTIME_WS_URL=wss://rt.helpdesk.example.com
 | `A` or `CNAME` `rt.helpdesk.example.com` | WebSocket proxy (optional but recommended) |
 | `TXT` `_acme-challenge...` | Only when using wildcard cert (`WILDCARD=true`) |
 
-Tenant **custom domains** (e.g. `support.customer.com`) need their own certificate or a reverse proxy that terminates SSL per host.
+Tenant **custom domains** (e.g. `help.customer.com`) need their own Let's Encrypt certificate on your server. A wildcard cert for `*.helpefi.com` does **not** cover customer-owned domains.
+
+### Custom domain SSL (native / EC2)
+
+Prerequisites:
+
+1. Custom domain verified in **Settings → Custom domain**
+2. CNAME `help` → `tenants.helpefi.com` (or your `TENANCY_CUSTOM_DOMAIN_CNAME`)
+3. `tenants.helpefi.com` resolves to the same server as the main app
+4. Ports **80** and **443** open on the server
+
+**Option A — helper script**
+
+```bash
+cd ~/helpefi-helpdesk
+chmod +x scripts/issue-custom-domain-ssl.sh
+
+sudo CUSTOM_DOMAIN=help.codikal.com EMAIL=hello@helpefi.com \
+  ./scripts/issue-custom-domain-ssl.sh
+```
+
+**Option B — certbot only**
+
+```bash
+sudo certbot --nginx -d help.codikal.com \
+  --email hello@helpefi.com --agree-tos --no-eff-email --redirect
+```
+
+If certbot cannot find an nginx `server_name` for the domain, add one first (HTTP on port 80 pointing at `.../public`), reload nginx, then run certbot again.
+
+**Verify**
+
+```bash
+curl -I https://help.codikal.com/login
+```
+
+Browser should show a valid padlock (no “Not Secure”).
+
+Renewal is automatic via `certbot renew` (systemd timer). Each custom domain gets its own certificate file under `/etc/letsencrypt/live/`.
+
+**Cloudflare alternative:** If the customer puts their domain behind Cloudflare proxy (orange cloud), Cloudflare can terminate SSL at the edge. Your origin server still needs HTTPS or Cloudflare “Full” SSL mode with a valid origin cert.
 
 ### Third-party services to update
 
