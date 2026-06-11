@@ -5,10 +5,12 @@ namespace App\Domains\Security\Controllers;
 use App\Domains\Auth\Services\AuthService;
 use App\Domains\Security\Services\TwoFactorService;
 use App\Http\Controllers\Controller;
+use App\Support\InertiaAuthRedirect;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
+use Symfony\Component\HttpFoundation\Response as HttpResponse;
 
 class TwoFactorController extends Controller
 {
@@ -27,7 +29,7 @@ class TwoFactorController extends Controller
         return Inertia::render('Auth/TwoFactorChallenge');
     }
 
-    public function verifyChallenge(Request $request): RedirectResponse
+    public function verifyChallenge(Request $request): HttpResponse|RedirectResponse
     {
         $request->validate([
             'code' => ['required', 'string'],
@@ -35,7 +37,10 @@ class TwoFactorController extends Controller
 
         $this->twoFactor->completePendingLogin($request->string('code')->toString());
 
-        return redirect()->to($this->auth->resolvePostLoginRedirect($this->auth->homeRoute()));
+        return InertiaAuthRedirect::to(
+            $request,
+            $this->auth->resolvePostLoginRedirect($this->auth->homeRoute()),
+        );
     }
 
     public function setup(Request $request): RedirectResponse

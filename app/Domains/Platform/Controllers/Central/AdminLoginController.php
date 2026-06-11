@@ -4,10 +4,12 @@ namespace App\Domains\Platform\Controllers\Central;
 
 use App\Domains\Platform\Services\PlatformAuthService;
 use App\Http\Controllers\Controller;
+use App\Support\InertiaAuthRedirect;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
+use Symfony\Component\HttpFoundation\Response as HttpResponse;
 
 class AdminLoginController extends Controller
 {
@@ -20,7 +22,7 @@ class AdminLoginController extends Controller
         return Inertia::render('Central/Admin/Login');
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request): HttpResponse|RedirectResponse
     {
         $credentials = $request->validate([
             'email' => ['required', 'email'],
@@ -34,7 +36,7 @@ class AdminLoginController extends Controller
             $request->boolean('remember'),
         );
 
-        return redirect()->route('central.admin.dashboard');
+        return InertiaAuthRedirect::to($request, route('central.admin.dashboard'));
     }
 
     public function destroy(Request $request): RedirectResponse

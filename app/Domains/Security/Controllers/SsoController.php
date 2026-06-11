@@ -8,10 +8,12 @@ use App\Domains\Security\Services\OidcAuthService;
 use App\Domains\Security\Services\SamlAuthService;
 use App\Domains\Security\Services\SsoService;
 use App\Http\Controllers\Controller;
+use App\Support\InertiaAuthRedirect;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Validation\Rule;
+use Symfony\Component\HttpFoundation\Response as HttpResponse;
 
 class SsoController extends Controller
 {
@@ -28,7 +30,7 @@ class SsoController extends Controller
         return redirect()->away($this->sso->redirectUrl());
     }
 
-    public function callback(): RedirectResponse
+    public function callback(Request $request): RedirectResponse|HttpResponse
     {
         try {
             $identity = $this->oidc->handleCallback();
@@ -37,10 +39,13 @@ class SsoController extends Controller
             return redirect()->route('two-factor.challenge');
         }
 
-        return redirect()->to($this->auth->resolvePostLoginRedirect($this->auth->homeRoute()));
+        return InertiaAuthRedirect::to(
+            $request,
+            $this->auth->resolvePostLoginRedirect($this->auth->homeRoute()),
+        );
     }
 
-    public function acs(Request $request): RedirectResponse
+    public function acs(Request $request): RedirectResponse|HttpResponse
     {
         try {
             $identity = $this->saml->handleAcs($request->all());
@@ -49,7 +54,10 @@ class SsoController extends Controller
             return redirect()->route('two-factor.challenge');
         }
 
-        return redirect()->to($this->auth->resolvePostLoginRedirect($this->auth->homeRoute()));
+        return InertiaAuthRedirect::to(
+            $request,
+            $this->auth->resolvePostLoginRedirect($this->auth->homeRoute()),
+        );
     }
 
     public function metadata(): Response

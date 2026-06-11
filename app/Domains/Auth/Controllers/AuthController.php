@@ -7,9 +7,12 @@ use App\Domains\Auth\Requests\RegisterRequest;
 use App\Domains\Auth\Services\AuthService;
 use App\Domains\Security\Exceptions\TwoFactorRequiredException;
 use App\Http\Controllers\Controller;
+use App\Support\InertiaAuthRedirect;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
+use Symfony\Component\HttpFoundation\Response as HttpResponse;
 
 class AuthController extends Controller
 {
@@ -26,7 +29,7 @@ class AuthController extends Controller
         ]);
     }
 
-    public function login(LoginRequest $request): RedirectResponse
+    public function login(LoginRequest $request): HttpResponse|RedirectResponse
     {
         try {
             $this->authService->attemptLogin(
@@ -35,10 +38,13 @@ class AuthController extends Controller
                 $request->boolean('remember'),
             );
         } catch (TwoFactorRequiredException) {
-            return redirect()->route('two-factor.challenge');
+            return InertiaAuthRedirect::to($request, route('two-factor.challenge'));
         }
 
-        return redirect()->to($this->authService->resolvePostLoginRedirect($this->authService->homeRoute()));
+        return InertiaAuthRedirect::to(
+            $request,
+            $this->authService->resolvePostLoginRedirect($this->authService->homeRoute()),
+        );
     }
 
     public function showRegister(): Response
@@ -46,7 +52,7 @@ class AuthController extends Controller
         return Inertia::render('Auth/Register');
     }
 
-    public function register(RegisterRequest $request): RedirectResponse
+    public function register(RegisterRequest $request): HttpResponse|RedirectResponse
     {
         $this->authService->register(
             $request->validated('name'),
@@ -59,7 +65,7 @@ class AuthController extends Controller
             $request->validated('password'),
         );
 
-        return redirect($this->authService->homeRoute());
+        return InertiaAuthRedirect::to($request, $this->authService->homeRoute());
     }
 
     public function logout(): RedirectResponse
