@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Domains\Auth\Services\PasswordResetMailService;
 use App\Domains\Contacts\Models\Contact;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -49,5 +50,10 @@ class User extends Authenticatable
     public function skills(): BelongsToMany
     {
         return $this->belongsToMany(\App\Domains\Workforce\Models\Skill::class);
+    }
+
+    public function sendPasswordResetNotification($token): void
+    {
+        app(PasswordResetMailService::class)->send($this, $token);
     }
 }

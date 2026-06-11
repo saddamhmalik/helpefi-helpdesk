@@ -134,16 +134,46 @@ systemctl reload nginx
 
 cd "$ROOT"
 
-if ! grep -q "^CENTRAL_APP_DOMAIN=${DOMAIN}\$" "$ROOT/.env" 2>/dev/null; then
-    echo "WARNING: .env should contain CENTRAL_APP_DOMAIN=${DOMAIN}"
-    echo "         Wrong value causes ${DOMAIN} to return 500 after config:cache."
+ENV_FILE="$ROOT/.env"
+ENV_OK=true
+
+if [[ ! -f "$ENV_FILE" ]]; then
+    echo "ERROR: Missing .env at ${ENV_FILE}"
+    ENV_OK=false
+fi
+
+for required in "CENTRAL_APP_DOMAIN=${DOMAIN}" "DB_CONNECTION=central" "DB_DRIVER=mysql" "CENTRAL_DB_DRIVER=mysql"; do
+    if ! grep -q "^${required}\$" "$ENV_FILE" 2>/dev/null; then
+        echo "WARNING: .env should contain ${required}"
+        ENV_OK=false
+    fi
+done
+
+if [[ "$ENV_OK" != "true" ]]; then
+    echo "Fix .env before caching config or central ${DOMAIN} will return 500."
 fi
 
 sudo -u "$DEPLOY_USER" php artisan config:clear
 sudo -u "$DEPLOY_USER" php artisan route:clear
 sudo -u "$DEPLOY_USER" php artisan view:clear
-sudo -u "$DEPLOY_USER" php artisan config:cache
-sudo -u "$DEPLOY_USER" php artisan route:cache
+
+if [[ "$ENV_OK" == "true" ]]; then
+    sudo -u "$DEPLOY_USER" php artisan config:cache
+    sudo -u "$DEPLOY_USER" php artisan route:cache
+else
+    echo "Skipped config:cache and route:cache until .env is fixed."
+fi
+
+if [[ -f "$ROOT/bootstrap/cache/config.php" ]]; then
+    if grep -q "'driver' => 'sqlite'" "$ROOT/bootstrap/cache/config.php" 2>/dev/null; then
+        echo "ERROR: Cached config still uses sqlite for central DB."
+        echo "       Run: php artisan config:clear"
+    fi
+fi
+
+if [[ -f "$ROOT/artisan" ]]; then
+    sudo -u "$DEPLOY_USER" php artisan platform:diagnose-central "$DOMAIN" 2>/dev/null || true
+fi
 
 echo ""
 echo "Repaired nginx site: ${NGINX_SITE}"

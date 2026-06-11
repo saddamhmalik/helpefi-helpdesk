@@ -12,6 +12,7 @@ use App\Domains\Assets\Controllers\AssetTypeController;
 use App\Domains\Ai\Controllers\AiAssistController;
 use App\Domains\Ai\Controllers\AiSettingController;
 use App\Domains\Auth\Controllers\AuthController;
+use App\Domains\Auth\Controllers\PasswordResetController;
 use App\Domains\Security\Controllers\SsoController;
 use App\Domains\Brands\Controllers\BrandController;
 use App\Domains\Brands\Services\BrandService;
@@ -92,6 +93,10 @@ Route::get('/workspace-blocked', [\App\Domains\Tenancy\Controllers\TenantBlocked
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
     Route::post('/login', [AuthController::class, 'login']);
+    Route::get('/forgot-password', [PasswordResetController::class, 'showForgot'])->name('password.request');
+    Route::post('/forgot-password', [PasswordResetController::class, 'sendLink'])->name('password.email');
+    Route::get('/reset-password/{token}', [PasswordResetController::class, 'showReset'])->name('password.reset');
+    Route::post('/reset-password', [PasswordResetController::class, 'reset'])->name('password.update');
     Route::get('/auth/sso/redirect', [SsoController::class, 'redirect'])->name('sso.redirect');
     Route::get('/auth/sso/callback', [SsoController::class, 'callback'])->name('sso.callback');
     Route::post('/auth/sso/acs', [SsoController::class, 'acs'])->name('sso.acs');

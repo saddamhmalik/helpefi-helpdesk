@@ -94,7 +94,12 @@ const inputClass = 'w-full rounded-xl border border-slate-200 bg-white px-3.5 py
             </div>
 
             <div>
-                <label class="mb-1.5 block text-sm font-medium text-slate-700" for="password">{{ $t('auth.password') }}</label>
+                <div class="mb-1.5 flex items-center justify-between gap-3">
+                    <label class="block text-sm font-medium text-slate-700" for="password">{{ $t('auth.password') }}</label>
+                    <Link href="/forgot-password" class="text-sm font-medium text-blue-600 transition hover:text-blue-700">
+                        {{ $t('auth.forgot_password') }}
+                    </Link>
+                </div>
                 <input
                     id="password"
                     v-model="form.password"

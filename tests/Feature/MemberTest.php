@@ -77,10 +77,10 @@ class MemberTest extends TestCase
         Queue::assertPushed(\App\Domains\Auth\Jobs\SendTeamInvitationJob::class);
     }
 
-    public function test_password_reset_routes_are_not_available(): void
+    public function test_password_reset_routes_are_available_to_guests(): void
     {
-        $this->get('/reset-password/test-token')->assertNotFound();
-        $this->post('/reset-password')->assertNotFound();
+        $this->get('/forgot-password')->assertOk();
+        $this->get('/reset-password/test-token')->assertOk();
     }
 
     public function test_agent_cannot_access_members_page(): void
