@@ -206,7 +206,12 @@ const cnameHost = () => {
                         <span class="flex h-8 w-8 items-center justify-center rounded-full bg-slate-900 text-sm font-semibold text-white">1</span>
                         <div>
                             <h2 class="text-sm font-semibold text-slate-900">{{ $t('settings_custom_domain.route_traffic_to_helpdesk') }}</h2>
-                            <p class="text-sm text-slate-600">{{ $t('settings_custom_domain.add_this_cname_record_in_your_dns_provider') }}</p>
+                            <p class="text-sm text-slate-600">
+                                {{ $t('settings_custom_domain.add_this_cname_record_in_your_dns_provider') }}
+                                <span v-if="customDomain.instructions.dns_zone" class="font-medium text-slate-800">
+                                    ({{ customDomain.instructions.dns_zone }})
+                                </span>
+                            </p>
                         </div>
                     </div>
                     <div class="mt-4 grid gap-3 sm:grid-cols-3">
@@ -217,8 +222,8 @@ const cnameHost = () => {
                         <div class="rounded-lg border border-slate-200 bg-slate-50 p-3">
                             <p class="text-xs font-semibold uppercase text-slate-500">{{ $t('settings_custom_domain.host') }}</p>
                             <div class="mt-1 flex items-center justify-between gap-2">
-                                <p class="font-mono text-sm text-slate-900">{{ cnameHost() }}</p>
-                                <button type="button" class="text-xs font-medium text-blue-600 hover:text-blue-700" @click="copyValue('cname-host', cnameHost())">
+                                <p class="font-mono text-sm text-slate-900">{{ customDomain.instructions.cname_dns_name }}</p>
+                                <button type="button" class="text-xs font-medium text-blue-600 hover:text-blue-700" @click="copyValue('cname-host', customDomain.instructions.cname_dns_name)">
                                     {{ copiedField === 'cname-host' ? 'Copied' : 'Copy' }}
                                 </button>
                             </div>
@@ -240,18 +245,26 @@ const cnameHost = () => {
                         <span class="flex h-8 w-8 items-center justify-center rounded-full bg-slate-900 text-sm font-semibold text-white">2</span>
                         <div>
                             <h2 class="text-sm font-semibold text-slate-900">{{ $t('settings_custom_domain.verify_domain_ownership') }}</h2>
-                            <p class="text-sm text-slate-600">{{ $t('settings_custom_domain.dns_updates_may_take_up_to_an_hour_to_propagate') }}</p>
+                            <p class="text-sm text-slate-600">
+                                {{ $t('settings_custom_domain.dns_txt_instructions') }}
+                                <span v-if="customDomain.instructions.dns_zone" class="font-medium text-slate-800">
+                                    {{ customDomain.instructions.dns_zone }}
+                                </span>
+                            </p>
                         </div>
                     </div>
                     <div class="mt-4 space-y-3">
                         <div class="rounded-lg border border-slate-200 bg-slate-50 p-3">
-                            <p class="text-xs font-semibold uppercase text-slate-500">{{ $t('settings_custom_domain.txt_host') }}</p>
+                            <p class="text-xs font-semibold uppercase text-slate-500">{{ $t('settings_custom_domain.txt_dns_name') }}</p>
                             <div class="mt-1 flex items-start justify-between gap-3">
-                                <p class="break-all font-mono text-sm text-slate-900">{{ customDomain.custom_domain.verification_host }}</p>
-                                <button type="button" class="shrink-0 text-xs font-medium text-blue-600 hover:text-blue-700" @click="copyValue('txt-host', customDomain.custom_domain.verification_host)">
-                                    {{ copiedField === 'txt-host' ? 'Copied' : 'Copy' }}
+                                <p class="break-all font-mono text-sm text-slate-900">{{ customDomain.instructions.txt_dns_name }}</p>
+                                <button type="button" class="shrink-0 text-xs font-medium text-blue-600 hover:text-blue-700" @click="copyValue('txt-dns-name', customDomain.instructions.txt_dns_name)">
+                                    {{ copiedField === 'txt-dns-name' ? 'Copied' : 'Copy' }}
                                 </button>
                             </div>
+                            <p class="mt-2 text-xs text-slate-500">
+                                {{ $t('settings_custom_domain.txt_fqdn') }}: {{ customDomain.custom_domain.verification_host }}
+                            </p>
                         </div>
                         <div class="rounded-lg border border-slate-200 bg-slate-50 p-3">
                             <p class="text-xs font-semibold uppercase text-slate-500">{{ $t('settings_custom_domain.txt_value') }}</p>

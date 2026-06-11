@@ -35,7 +35,12 @@ class SendPlatformTestMailCommand extends Command
         }
 
         if ($mailer === 'smtp') {
+            $username = (string) config('mail.mailers.smtp.username');
+            $maskedUser = $username !== '' ? preg_replace('/(^.).*(@.*$)/', '$1***$2', $username) : '(empty)';
+
             $this->line('SMTP host: '.config('mail.mailers.smtp.host').':'.config('mail.mailers.smtp.port'));
+            $this->line('SMTP scheme: '.(config('mail.mailers.smtp.scheme') ?: '(none — set MAIL_SCHEME=tls for Zoho port 587)'));
+            $this->line('SMTP username: '.$maskedUser);
         }
 
         $this->info('Sending test email to '.$recipient.'...');

@@ -109,7 +109,7 @@ class TenantDomainService
         } else {
             $this->domains->markFailed($custom);
             throw ValidationException::withMessages([
-                'domain' => 'DNS verification failed. Confirm the TXT record and try again in a few minutes.',
+                'domain' => $this->verificationFailureMessage($custom),
             ]);
         }
 
@@ -209,18 +209,65 @@ class TenantDomainService
     {
         $cnameTarget = (string) config('tenancy.custom_domain.cname_target');
         $prefix = (string) config('tenancy.custom_domain.verification_prefix', '_helpdesk-verify');
+        $customHost = $custom?->domain;
+        $txtFqdn = $customHost ? $this->verificationHost($customHost) : "{$prefix}.support.example.com";
 
         return [
             'cname_target' => $cnameTarget,
             'verification_prefix' => $prefix,
-            'txt_host' => $custom ? $this->verificationHost($custom->domain) : "{$prefix}.support.example.com",
+            'txt_host' => $txtFqdn,
             'txt_value' => $custom?->verification_token,
+            'dns_zone' => $customHost ? $this->dnsZoneName($customHost) : 'example.com',
+            'txt_dns_name' => $customHost ? $this->dnsTxtRecordName($customHost, $txtFqdn) : $txtFqdn,
+            'cname_dns_name' => $customHost ? $this->dnsCnameRecordName($customHost) : 'support',
             'platform_operator_notes' => [
                 'Accept custom hostnames on your load balancer or web server.',
                 'Issue TLS certificates for verified customer domains.',
                 'Keep SESSION_DOMAIN unset so cookies stay scoped to each hostname.',
             ],
         ];
+    }
+
+    private function verificationFailureMessage(TenantDomain $custom): string
+    {
+        $fqdn = $this->verificationHost($custom->domain);
+        $zone = $this->dnsZoneName($custom->domain);
+        $dnsName = $this->dnsTxtRecordName($custom->domain, $fqdn);
+        $found = $this->dns->txtRecordsFor($fqdn);
+
+        $foundSummary = $found === []
+            ? 'no TXT record was found at that hostname yet'
+            : 'found TXT value(s): '.implode('; ', $found);
+
+        return "DNS verification failed. In your {$zone} DNS zone, add a TXT record with Name \"{$dnsName}\" (not @) and Value \"{$custom->verification_token}\". We looked up {$fqdn} and {$foundSummary}. DNS changes can take up to an hour to propagate.";
+    }
+
+    private function dnsZoneName(string $customDomain): string
+    {
+        $parts = explode('.', $customDomain);
+
+        if (count($parts) < 2) {
+            return $customDomain;
+        }
+
+        return implode('.', array_slice($parts, 1));
+    }
+
+    private function dnsTxtRecordName(string $customDomain, string $verificationFqdn): string
+    {
+        $zone = $this->dnsZoneName($customDomain);
+        $suffix = '.'.$zone;
+
+        if (str_ends_with($verificationFqdn, $suffix)) {
+            return substr($verificationFqdn, 0, -strlen($suffix));
+        }
+
+        return $verificationFqdn;
+    }
+
+    private function dnsCnameRecordName(string $customDomain): string
+    {
+        return explode('.', $customDomain)[0];
     }
 
     private function verificationHost(string $domain): string
