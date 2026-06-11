@@ -38,6 +38,8 @@ class PlatformAuthService
         $authenticated = Auth::guard('platform')->user();
         assert($authenticated instanceof PlatformUser);
 
+        request()->session()->regenerate();
+
         $this->audit->record(
             'platform.auth.login',
             $authenticated->id,

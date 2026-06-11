@@ -14,6 +14,7 @@ class DiagnoseCentralCommand extends Command
 
     public function handle(): int
     {
+        $request = request();
         $host = (string) ($this->argument('host') ?: config('tenancy.central_app_domain'));
         $configCached = file_exists(base_path('bootstrap/cache/config.php'));
 
@@ -30,6 +31,11 @@ class DiagnoseCentralCommand extends Command
 
         $this->line('Central DB driver: '.$driver);
         $this->line('Central DB name: '.$database);
+        $this->line('Session driver: '.config('session.driver'));
+        $this->line('Session connection: '.config('session.connection'));
+        $this->line('Session cookie domain: '.(config('session.domain') ?: '(host only)'));
+        $this->line('Session secure cookie: '.(config('session.secure') ? 'yes' : 'no'));
+        $this->line('Request is secure: '.($request->isSecure() ? 'yes' : 'no'));
         $pdoDrivers = \PDO::getAvailableDrivers();
         $this->line('PDO drivers: '.($pdoDrivers !== [] ? implode(', ', $pdoDrivers) : '(none)'));
 

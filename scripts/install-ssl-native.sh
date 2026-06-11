@@ -158,6 +158,7 @@ update_env() {
 update_env "APP_URL" "https://$DOMAIN"
 update_env "CENTRAL_APP_DOMAIN" "$DOMAIN"
 update_env "SESSION_SECURE_COOKIE" "true"
+update_env "SESSION_DOMAIN" ""
 update_env "REALTIME_WS_URL" "$REALTIME_WS_URL"
 update_env "APP_ENV" "production"
 update_env "APP_DEBUG" "false"

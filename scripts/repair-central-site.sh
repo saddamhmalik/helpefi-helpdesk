@@ -143,9 +143,17 @@ if [[ ! -f "$ENV_FILE" ]]; then
 fi
 
 if grep -q '^SESSION_DOMAIN=\.' "$ENV_FILE" 2>/dev/null; then
-    echo "WARNING: SESSION_DOMAIN is set to a wildcard (.${DOMAIN})."
-    echo "         Tenant login cookies leak to central and can cause 500 on ${DOMAIN}."
-    echo "         Remove SESSION_DOMAIN from .env or leave it empty."
+    echo "WARNING: SESSION_DOMAIN uses a wildcard (.${DOMAIN})."
+    echo "         This breaks login on custom domains and can cause central 500 errors."
+    echo "         Run: sed -i 's/^SESSION_DOMAIN=.*/SESSION_DOMAIN=/' \"$ENV_FILE\""
+fi
+
+if ! grep -q '^SESSION_SECURE_COOKIE=true$' "$ENV_FILE" 2>/dev/null; then
+    echo "WARNING: SESSION_SECURE_COOKIE should be true when using HTTPS."
+fi
+
+if ! grep -q '^SESSION_CONNECTION=central$' "$ENV_FILE" 2>/dev/null; then
+    echo "WARNING: SESSION_CONNECTION should be central for multi-tenant sessions."
 fi
 
 for required in "CENTRAL_APP_DOMAIN=${DOMAIN}" "DB_CONNECTION=central" "DB_DRIVER=mysql" "CENTRAL_DB_DRIVER=mysql"; do

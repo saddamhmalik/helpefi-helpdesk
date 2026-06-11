@@ -15,6 +15,10 @@ class RedirectToCustomDomain
 
     public function handle(Request $request, Closure $next): Response
     {
+        if (! in_array($request->getMethod(), ['GET', 'HEAD'], true)) {
+            return $next($request);
+        }
+
         $tenant = tenant();
 
         if ($tenant && $this->domains->shouldRedirectToPrimary($tenant, $request->getHost())) {

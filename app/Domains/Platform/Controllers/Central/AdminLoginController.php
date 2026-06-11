@@ -34,9 +34,7 @@ class AdminLoginController extends Controller
             $request->boolean('remember'),
         );
 
-        $request->session()->regenerate();
-
-        return redirect()->route('central.admin.tenants.index');
+        return redirect()->route('central.admin.dashboard');
     }
 
     public function destroy(Request $request): RedirectResponse
