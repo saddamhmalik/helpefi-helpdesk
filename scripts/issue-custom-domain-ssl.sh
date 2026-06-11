@@ -98,8 +98,12 @@ cat <<EOF
 
 SSL installed for custom domain: https://$CUSTOM_DOMAIN
 
-Certificate renews automatically via: certbot renew
+This script adds a separate nginx vhost and does NOT modify your main
+${NGINX_SITE} config for ${DOMAIN:-helpefi.com}.
 
-Add more custom domains by running this script again with a different CUSTOM_DOMAIN.
+If the central site breaks after certbot, repair it with:
+  sudo DOMAIN=helpefi.com ./scripts/repair-central-site.sh
+
+Certificate renews automatically via: certbot renew
 
 EOF
