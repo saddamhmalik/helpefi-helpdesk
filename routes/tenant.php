@@ -328,6 +328,7 @@ Route::middleware('auth')->group(function () {
         Route::delete('/settings/macros/{cannedResponse}', [CannedResponseController::class, 'destroy'])->name('settings.macros.destroy');
 
         Route::get('/global-search', GlobalSearchController::class)->name('global-search');
+        Route::post('/ai/copilot/ask', [AgentCopilotController::class, 'ask'])->name('ai.copilot.ask');
 
         Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
         Route::get('/notifications/summary', [NotificationController::class, 'summary'])->name('notifications.summary');

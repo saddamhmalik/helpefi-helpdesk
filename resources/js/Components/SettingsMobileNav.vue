@@ -32,13 +32,13 @@ const navLinkClass = (href) => {
     const active = isSettingsNavActive(href, currentUrl.value);
 
     if (active) {
-        return 'border-blue-600 bg-blue-50 text-blue-900';
+        return 'text-slate-900 font-medium';
     }
 
-    return 'border-transparent text-slate-700 hover:bg-slate-50';
+    return 'text-slate-700 hover:bg-slate-50';
 };
 
-const iconClass = (href) => (isSettingsNavActive(href, currentUrl.value) ? 'text-blue-600' : 'text-slate-400');
+const iconClass = (href) => (isSettingsNavActive(href, currentUrl.value) ? 'text-slate-700' : 'text-slate-400');
 
 const close = () => {
     open.value = false;
@@ -137,7 +137,7 @@ useEscapeKey(open, close);
                                 <li v-for="item in group.items" :key="item.href">
                                     <Link
                                         :href="item.href"
-                                        class="flex items-center gap-2.5 rounded-lg border-l-2 px-2.5 py-2.5 text-sm font-medium transition"
+                                        class="flex items-center gap-2.5 rounded-md px-2.5 py-2 text-sm transition"
                                         :class="navLinkClass(item.href)"
                                         :aria-label="item.locked ? `${item.label} (${item.lockedLabel})` : item.label"
                                         @click="close"

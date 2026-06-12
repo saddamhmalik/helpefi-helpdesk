@@ -15,6 +15,8 @@ export function useSettingsNavFilter(settingsNavGroups, query) {
                     item.label.toLowerCase().includes(term)
                     || item.description?.toLowerCase().includes(term)
                     || group.label.toLowerCase().includes(term)
+                    || item.href.toLowerCase().includes(term.replace(/\s+/g, '-'))
+                    || item.href.toLowerCase().includes(term.replace(/\s+/g, ''))
                 )),
             }))
             .filter((group) => group.items.length > 0);

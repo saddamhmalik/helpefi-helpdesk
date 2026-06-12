@@ -37,4 +37,15 @@ class AgentCopilotController extends Controller
 
         return response()->json(['cleared' => true]);
     }
+
+    public function ask(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'message' => ['required', 'string', 'max:4000'],
+        ]);
+
+        return response()->json(
+            $this->copilot->askWorkspace($request->user()->id, $data['message'])
+        );
+    }
 }
