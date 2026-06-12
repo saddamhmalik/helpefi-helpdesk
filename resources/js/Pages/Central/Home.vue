@@ -558,7 +558,7 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
                                 <span
                                     v-for="pill in heroAiPills"
                                     :key="pill.label"
-                                    class="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-white/10 bg-white dark:bg-slate-900/5 px-3 py-1.5 text-[11px] font-medium text-slate-200 sm:text-xs"
+                                    class="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-[11px] font-medium text-slate-200 sm:text-xs"
                                 >
                                     <svg class="h-3.5 w-3.5 shrink-0 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" :d="pill.icon" /></svg>
                                     {{ pill.label }}
@@ -652,7 +652,7 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
                                 AI Copilot live
                             </div>
                             <div class="pointer-events-none absolute -inset-4 rounded-3xl bg-gradient-to-r from-blue-600/20 via-indigo-500/20 to-violet-600/20 blur-2xl" />
-                            <div class="relative rounded-2xl border border-white/15 bg-white dark:bg-slate-900/5 p-2 shadow-2xl shadow-black/60 backdrop-blur-xl ring-1 ring-white/10">
+                            <div class="relative rounded-2xl border border-white/15 bg-white/5 p-2 shadow-2xl shadow-black/60 backdrop-blur-xl ring-1 ring-white/10">
                                 <div class="overflow-hidden rounded-xl bg-slate-900 ring-1 ring-white/10">
                                 <div class="flex items-center gap-2 border-b border-white/10 px-3 py-2.5 sm:px-4 sm:py-3">
                                     <span class="h-2.5 w-2.5 rounded-full bg-red-400/90" />
@@ -697,12 +697,12 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
                                             <span class="rounded-full bg-amber-500/20 px-2 py-0.5 text-[10px] font-medium text-amber-300">{{ $t('central.high_sla_18m') }}</span>
                                         </div>
                                         <div class="mt-4 space-y-3">
-                                            <div class="rounded-lg bg-white dark:bg-slate-900/5 p-3"><p class="text-xs text-slate-300">{{ $t('central.hi_my_subscription_payment_failed_but_i_was_still_charged') }}</p></div>
+                                            <div class="rounded-lg bg-white/5 p-3"><p class="text-xs text-slate-300">{{ $t('central.hi_my_subscription_payment_failed_but_i_was_still_charged') }}</p></div>
                                             <div class="rounded-lg bg-blue-600/25 p-3 ring-1 ring-blue-500/30"><p class="text-xs text-blue-100">{{ $t('central.i_can_see_the_duplicate_charge_refunding_now_and_extending_your_plan_b') }}</p></div>
                                         </div>
                                         <div class="mt-4 flex flex-wrap gap-2">
                                             <span class="rounded-md bg-violet-500/20 px-2 py-1 text-[10px] text-violet-200">{{ $t('central.ai_draft_ready') }}</span>
-                                            <span class="rounded-md bg-white dark:bg-slate-900/5 px-2 py-1 text-[10px] text-slate-400 dark:text-slate-500">{{ $t('central.billing') }}</span>
+                                            <span class="rounded-md bg-white/5 px-2 py-1 text-[10px] text-slate-400 dark:text-slate-500">{{ $t('central.billing') }}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -712,7 +712,7 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
                                         <p class="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Ticket #1042</p>
                                         <p class="mt-2 text-xs font-medium text-white">Payment failed — need help</p>
                                         <div class="mt-4 space-y-2">
-                                            <div class="rounded-lg bg-white dark:bg-slate-900/5 px-3 py-2"><p class="text-[10px] text-slate-300">Customer: charged twice after failed payment</p></div>
+                                            <div class="rounded-lg bg-white/5 px-3 py-2"><p class="text-[10px] text-slate-300">Customer: charged twice after failed payment</p></div>
                                             <div class="rounded-lg bg-blue-600/20 px-3 py-2 ring-1 ring-blue-500/30"><p class="text-[10px] text-blue-100">Agent: refund initiated, plan extended</p></div>
                                         </div>
                                         <span class="mt-4 inline-flex rounded-md bg-violet-500/20 px-2 py-1 text-[10px] text-violet-200">AI draft ready</span>
@@ -724,7 +724,7 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
                                         </div>
                                         <div class="mt-3 flex-1 space-y-2">
                                             <div class="ml-auto max-w-[90%] rounded-xl rounded-br-sm bg-violet-600/50 px-3 py-2"><p class="text-[10px] text-violet-50">Summarize and suggest next steps</p></div>
-                                            <div class="max-w-[95%] rounded-xl rounded-bl-sm border border-violet-500/20 bg-white dark:bg-slate-900/5 px-3 py-2"><p class="text-[10px] leading-relaxed text-slate-200">Duplicate charge confirmed. Refund queued; subscription extended 30 days. Send confirmation email and close when refund clears.</p></div>
+                                            <div class="max-w-[95%] rounded-xl rounded-bl-sm border border-violet-500/20 bg-white/5 px-3 py-2"><p class="text-[10px] leading-relaxed text-slate-200">Duplicate charge confirmed. Refund queued; subscription extended 30 days. Send confirmation email and close when refund clears.</p></div>
                                         </div>
                                         <p class="mt-3 text-[9px] text-violet-300/70">3 KB articles matched · Insert draft →</p>
                                     </div>
@@ -739,9 +739,9 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
                                         </div>
                                     </div>
                                     <div class="mt-4 space-y-3">
-                                        <div class="max-w-[80%] rounded-2xl rounded-bl-md bg-white dark:bg-slate-900/10 px-3 py-2"><p class="text-xs text-slate-200">Do you offer annual billing?</p></div>
+                                        <div class="max-w-[80%] rounded-2xl rounded-bl-md bg-white/10 px-3 py-2"><p class="text-xs text-slate-200">Do you offer annual billing?</p></div>
                                         <div class="ml-auto max-w-[80%] rounded-2xl rounded-br-md bg-blue-600/40 px-3 py-2"><p class="text-xs text-blue-50">{{ $t('central.yes_annual_plans_save_20_i_can_send_details_to_your_email') }}</p></div>
-                                        <div class="max-w-[80%] rounded-2xl rounded-bl-md bg-white dark:bg-slate-900/10 px-3 py-2"><p class="text-xs text-slate-200">{{ $t('central.perfect_please_do') }}</p></div>
+                                        <div class="max-w-[80%] rounded-2xl rounded-bl-md bg-white/10 px-3 py-2"><p class="text-xs text-slate-200">{{ $t('central.perfect_please_do') }}</p></div>
                                     </div>
                                     <p class="mt-4 text-center text-[10px] text-slate-500 dark:text-slate-400">{{ $t('central.conversation_saved_as_ticket_1042') }}</p>
                                 </div>
@@ -780,9 +780,9 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
 
                                 <div v-else class="p-4">
                                     <div class="grid grid-cols-3 gap-3">
-                                        <div class="rounded-lg bg-white dark:bg-slate-900/5 p-3"><p class="text-[10px] text-slate-500 dark:text-slate-400">{{ $t('central.first_response') }}</p><p class="mt-1 text-lg font-bold text-emerald-400">{{ $t('central.4_2m') }}</p><p class="text-[10px] text-emerald-400/80">{{ $t('central.18_vs_last_week') }}</p></div>
-                                        <div class="rounded-lg bg-white dark:bg-slate-900/5 p-3"><p class="text-[10px] text-slate-500 dark:text-slate-400">{{ $t('central.csat_score') }}</p><p class="mt-1 text-lg font-bold text-white">94%</p><p class="text-[10px] text-slate-400 dark:text-slate-500">{{ $t('central.128_responses') }}</p></div>
-                                        <div class="rounded-lg bg-white dark:bg-slate-900/5 p-3"><p class="text-[10px] text-slate-500 dark:text-slate-400">{{ $t('central.resolved_today') }}</p><p class="mt-1 text-lg font-bold text-white">47</p><p class="text-[10px] text-slate-400 dark:text-slate-500">{{ $t('central.6_open') }}</p></div>
+                                        <div class="rounded-lg bg-white/5 p-3"><p class="text-[10px] text-slate-500 dark:text-slate-400">{{ $t('central.first_response') }}</p><p class="mt-1 text-lg font-bold text-emerald-400">{{ $t('central.4_2m') }}</p><p class="text-[10px] text-emerald-400/80">{{ $t('central.18_vs_last_week') }}</p></div>
+                                        <div class="rounded-lg bg-white/5 p-3"><p class="text-[10px] text-slate-500 dark:text-slate-400">{{ $t('central.csat_score') }}</p><p class="mt-1 text-lg font-bold text-white">94%</p><p class="text-[10px] text-slate-400 dark:text-slate-500">{{ $t('central.128_responses') }}</p></div>
+                                        <div class="rounded-lg bg-white/5 p-3"><p class="text-[10px] text-slate-500 dark:text-slate-400">{{ $t('central.resolved_today') }}</p><p class="mt-1 text-lg font-bold text-white">47</p><p class="text-[10px] text-slate-400 dark:text-slate-500">{{ $t('central.6_open') }}</p></div>
                                     </div>
                                     <div class="mt-4 h-24 rounded-lg bg-gradient-to-t from-blue-600/20 to-transparent p-3">
                                         <div class="flex h-full items-end gap-1">
@@ -875,7 +875,7 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
                         </div>
 
                         <div class="relative overflow-hidden bg-gradient-to-br from-blue-600 via-indigo-600 to-violet-700 p-8 text-white sm:p-10">
-                            <div class="pointer-events-none absolute -right-10 -top-10 h-48 w-48 rounded-full bg-white dark:bg-slate-900/10 blur-2xl" />
+                            <div class="pointer-events-none absolute -right-10 -top-10 h-48 w-48 rounded-full bg-white/10 blur-2xl" />
                             <div class="pointer-events-none absolute -bottom-8 -left-8 h-40 w-40 rounded-full bg-violet-400/20 blur-2xl" />
                             <div class="relative">
                                 <span class="inline-flex items-center gap-2 rounded-full bg-white dark:bg-slate-900/15 px-3 py-1 text-xs font-bold uppercase tracking-wide text-white ring-1 ring-white/25">
@@ -887,21 +887,21 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
                                     Every channel, ticket, and IT workflow lives together — with AI and SLAs built in.
                                 </p>
 
-                                <div class="mt-8 overflow-hidden rounded-2xl border border-white/20 bg-white dark:bg-slate-900/10 p-4 backdrop-blur-sm">
+                                <div class="mt-8 overflow-hidden rounded-2xl border border-white/20 bg-white/10 p-4 backdrop-blur-sm">
                                     <div class="flex items-center gap-2 border-b border-white/10 pb-3">
                                         <span class="h-2 w-2 rounded-full bg-emerald-400" />
                                         <span class="text-[10px] font-medium text-white/70">{{ platformName }} workspace</span>
                                     </div>
                                     <div class="mt-3 grid grid-cols-3 gap-2">
-                                        <div class="rounded-lg bg-white dark:bg-slate-900/10 px-2 py-2 text-center">
+                                        <div class="rounded-lg bg-white/10 px-2 py-2 text-center">
                                             <p class="text-lg font-bold">12</p>
                                             <p class="text-[9px] text-white/60">Open</p>
                                         </div>
-                                        <div class="rounded-lg bg-white dark:bg-slate-900/10 px-2 py-2 text-center">
+                                        <div class="rounded-lg bg-white/10 px-2 py-2 text-center">
                                             <p class="text-lg font-bold text-emerald-300">4m</p>
                                             <p class="text-[9px] text-white/60">Avg reply</p>
                                         </div>
-                                        <div class="rounded-lg bg-white dark:bg-slate-900/10 px-2 py-2 text-center">
+                                        <div class="rounded-lg bg-white/10 px-2 py-2 text-center">
                                             <p class="text-lg font-bold">94%</p>
                                             <p class="text-[9px] text-white/60">CSAT</p>
                                         </div>
@@ -912,7 +912,7 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
                                     <li
                                         v-for="item in painPoints"
                                         :key="item.gain"
-                                        class="flex items-start gap-3 rounded-xl border border-white/15 bg-white dark:bg-slate-900/10 px-4 py-3 backdrop-blur-sm"
+                                        class="flex items-start gap-3 rounded-xl border border-white/15 bg-white/10 px-4 py-3 backdrop-blur-sm"
                                     >
                                         <span class="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white dark:bg-slate-900/15">
                                             <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" :d="item.icon" /></svg>
@@ -923,7 +923,7 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
                                                 <span
                                                     v-for="tool in item.oldTools"
                                                     :key="tool"
-                                                    class="rounded-md bg-white dark:bg-slate-900/10 px-1.5 py-0.5 text-[10px] text-white/60 line-through"
+                                                    class="rounded-md bg-white/10 px-1.5 py-0.5 text-[10px] text-white/60 line-through"
                                                 >
                                                     {{ tool }}
                                                 </span>
@@ -1180,7 +1180,7 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
                     <div class="lg:col-span-8 xl:col-span-9">
                         <div class="overflow-hidden rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm">
                             <div class="relative overflow-hidden bg-gradient-to-br px-8 py-10 text-white sm:px-10" :class="activeTheme.gradient">
-                                <div class="pointer-events-none absolute -right-8 -top-8 h-40 w-40 rounded-full bg-white dark:bg-slate-900/10 blur-2xl" />
+                                <div class="pointer-events-none absolute -right-8 -top-8 h-40 w-40 rounded-full bg-white/10 blur-2xl" />
                                 <div class="relative">
                                     <span v-if="featureCategory === 'itsm'" class="mb-3 inline-flex rounded-full bg-white dark:bg-slate-900/15 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-white/90 ring-1 ring-white/20">
                                         Enterprise add-on
@@ -1323,7 +1323,7 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
                     <article
                         v-for="row in comparisons"
                         :key="row.feature"
-                        class="rounded-2xl border border-white/10 bg-white dark:bg-slate-900/5 p-4"
+                        class="rounded-2xl border border-white/10 bg-white/5 p-4"
                     >
                         <p class="text-sm font-medium text-slate-200">{{ row.feature }}</p>
                         <div class="mt-3 grid grid-cols-2 gap-3 text-center text-xs">
@@ -1334,7 +1334,7 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
                                     <span v-else class="text-slate-300">{{ row.us }}</span>
                                 </p>
                             </div>
-                            <div class="rounded-xl bg-white dark:bg-slate-900/5 px-3 py-2 ring-1 ring-white/10">
+                            <div class="rounded-xl bg-white/5 px-3 py-2 ring-1 ring-white/10">
                                 <p class="font-semibold text-slate-400 dark:text-slate-500">{{ $t('central.typical_stack') }}</p>
                                 <p class="mt-1 text-lg">
                                     <span v-if="row.them === false" class="text-slate-600 dark:text-slate-400">—</span>
@@ -1348,7 +1348,7 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
                 <div class="mt-12 hidden overflow-hidden rounded-2xl border border-white/10 lg:block">
                     <table class="w-full text-sm">
                         <thead>
-                            <tr class="border-b border-white/10 bg-white dark:bg-slate-900/5">
+                            <tr class="border-b border-white/10 bg-white/5">
                                 <th class="px-6 py-4 text-left font-medium text-slate-400 dark:text-slate-500">{{ $t('central.capability') }}</th>
                                 <th class="px-6 py-4 text-center font-semibold text-blue-400">{{ platformName }}</th>
                                 <th class="px-6 py-4 text-center font-medium text-slate-400 dark:text-slate-500">{{ $t('central.typical_stack') }}</th>
@@ -1423,17 +1423,17 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
                     <p class="mx-auto mt-4 max-w-2xl text-lg text-slate-400 dark:text-slate-500">
                         Start with a {{ trialDays }}-day free trial on any plan. Most teams save thousands by replacing multiple tools with one workspace.
                     </p>
-                    <div class="mt-8 inline-flex rounded-xl border border-white/10 bg-white dark:bg-slate-900/5 p-1 backdrop-blur">
+                    <div class="mt-8 inline-flex rounded-xl border border-white/10 bg-white/5 p-1 backdrop-blur">
                         <button
                             type="button"
                             class="rounded-lg px-5 py-2.5 text-sm font-semibold transition"
-                            :class="billingInterval === 'month' ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 shadow-lg' : 'text-slate-300 hover:text-white'"
+                            :class="billingInterval === 'month' ? 'bg-white text-slate-900 shadow-lg' : 'text-slate-300 hover:text-white'"
                             @click="billingInterval = 'month'"
                         >{{ $t('central.monthly') }}</button>
                         <button
                             type="button"
                             class="rounded-lg px-5 py-2.5 text-sm font-semibold transition"
-                            :class="billingInterval === 'year' ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 shadow-lg' : 'text-slate-300 hover:text-white'"
+                            :class="billingInterval === 'year' ? 'bg-white text-slate-900 shadow-lg' : 'text-slate-300 hover:text-white'"
                             @click="billingInterval = 'year'"
                         >{{ $t('central.yearly') }}</button>
                     </div>
@@ -1446,7 +1446,7 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
                         class="relative flex flex-col rounded-3xl border p-6 sm:p-8 transition"
                         :class="plan.slug === 'professional'
                             ? 'border-blue-500/50 bg-gradient-to-b from-blue-600/20 to-slate-900/80 shadow-2xl shadow-blue-600/20 ring-2 ring-blue-500/40 lg:scale-105'
-                            : 'border-white/10 bg-white dark:bg-slate-900/5 backdrop-blur hover:border-white/20'"
+                            : 'border-white/10 bg-white/5 backdrop-blur hover:border-white/20'"
                     >
                         <span v-if="plan.slug === 'professional'" class="absolute -top-3.5 left-1/2 -translate-x-1/2 rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 px-4 py-1 text-xs font-bold text-white shadow-lg">{{ $t('central.most_popular') }}</span>
                         <h3 class="text-xl font-bold text-white">{{ plan.name }}</h3>
@@ -1468,7 +1468,7 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
                             href="/register"
                             class="mt-8 block rounded-2xl py-3.5 text-center text-sm font-bold transition"
                             :class="plan.slug === 'professional'
-                                ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 shadow-xl hover:bg-slate-100 dark:hover:bg-slate-800'
+                                ? 'bg-white text-slate-900 shadow-xl hover:bg-slate-100'
                                 : 'border border-white/20 text-white hover:bg-white/10'"
                         >
                             Start {{ trialDays }}-day free trial

@@ -3,7 +3,6 @@ import { Link } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import AppLogo from '../Components/AppLogo.vue';
-import ThemeToggle from '../Components/ThemeToggle.vue';
 import { useBodyScrollLock } from '../composables/useModal.js';
 
 defineProps({
@@ -60,7 +59,6 @@ useBodyScrollLock(mobileOpen);
                 </nav>
 
                 <div class="hidden items-center gap-2 sm:flex">
-                    <ThemeToggle persist="local" />
                     <Link
                         href="/login"
                         class="rounded-lg px-3 py-2 text-sm font-medium agent-text-muted transition hover:text-slate-900 dark:text-slate-100 dark:hover:text-slate-100"
@@ -76,9 +74,6 @@ useBodyScrollLock(mobileOpen);
                 </div>
 
                 <div class="flex items-center gap-2 lg:hidden">
-                    <div class="sm:hidden">
-                        <ThemeToggle persist="local" />
-                    </div>
                     <Link
                         href="/register"
                         class="rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-bold text-white shadow-sm sm:hidden"

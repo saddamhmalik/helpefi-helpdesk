@@ -1,8 +1,9 @@
 <!DOCTYPE html>
 @php
-    $appearance = 'system';
+    $isMarketingPage = request()->routeIs('central.home', 'central.login', 'central.register');
+    $appearance = 'light';
 
-    if (auth()->check()) {
+    if (! $isMarketingPage && auth()->check()) {
         $appearance = app(\App\Domains\Auth\Services\UserPreferenceService::class)->appearance(auth()->user());
     }
 @endphp
@@ -18,6 +19,12 @@
         <title inertia>{{ config('app.name', 'helpefi') }}</title>
         <script>
             (function () {
+                var isMarketing = @json($isMarketingPage);
+
+                if (isMarketing) {
+                    return;
+                }
+
                 var pref = @json($appearance);
 
                 if (!@json(auth()->check())) {

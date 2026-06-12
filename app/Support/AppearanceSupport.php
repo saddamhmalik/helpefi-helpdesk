@@ -6,7 +6,7 @@ class AppearanceSupport
 {
     public const MODES = ['light', 'dark', 'system'];
 
-    public const DEFAULT = 'system';
+    public const DEFAULT = 'light';
 
     public static function resolve(?string $appearance): string
     {

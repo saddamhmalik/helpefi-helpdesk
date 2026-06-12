@@ -68,7 +68,7 @@ class HandleInertiaRequests extends Middleware
                 : $this->helpdeskTimezone(),
             'appearance' => fn () => $user instanceof User
                 ? app(UserPreferenceService::class)->appearance($user)
-                : 'system',
+                : 'light',
             'ai' => fn () => $this->tenantFeature($user, fn () => app(AiAssistService::class)->status()),
             'billing' => fn () => $this->tenantFeature($user, fn () => app(BillingService::class)->snapshot()),
             'notifications' => fn () => $this->tenantFeature($user, fn () => app(NotificationService::class)->inboxSummary($user)),
