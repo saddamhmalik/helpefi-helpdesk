@@ -20,6 +20,7 @@ class ProfileTest extends TestCase
                 'email' => $user->email,
                 'locale' => 'en',
                 'timezone' => 'America/New_York',
+                'appearance' => 'dark',
             ])
             ->assertRedirect();
 
@@ -28,6 +29,27 @@ class ProfileTest extends TestCase
             'name' => 'New Name',
             'locale' => 'en',
             'timezone' => 'America/New_York',
+            'appearance' => 'dark',
+        ]);
+    }
+
+    public function test_user_can_update_appearance_to_system(): void
+    {
+        $user = User::factory()->create(['appearance' => 'dark']);
+
+        $this->actingAs($user)
+            ->put('/settings/profile', [
+                'name' => $user->name,
+                'email' => $user->email,
+                'locale' => 'en',
+                'timezone' => '',
+                'appearance' => 'system',
+            ])
+            ->assertRedirect();
+
+        $this->assertDatabaseHas('users', [
+            'id' => $user->id,
+            'appearance' => 'system',
         ]);
     }
 
@@ -44,6 +66,7 @@ class ProfileTest extends TestCase
                 'email' => $user->email,
                 'locale' => 'ar',
                 'timezone' => '',
+                'appearance' => 'system',
             ])
             ->assertRedirect();
 

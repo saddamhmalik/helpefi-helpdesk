@@ -6,6 +6,7 @@ use App\Domains\Platform\Models\PlatformNotice;
 use App\Domains\Platform\Repositories\PlatformNoticeDismissalRepository;
 use App\Domains\Platform\Repositories\PlatformNoticeRepository;
 use App\Domains\Platform\Support\PlatformNoticeUrlGenerator;
+use App\Domains\Tickets\Support\MessageBodySanitizer;
 use App\Models\User;
 
 class TenantPlatformNoticeService
@@ -79,7 +80,9 @@ class TenantPlatformNoticeService
         return [
             'id' => $notice->id,
             'title' => $notice->title,
-            'body_html' => $notice->body_html,
+            'body_html' => $notice->body_html
+                ? MessageBodySanitizer::sanitize($notice->body_html)
+                : null,
             'notice_type' => $notice->notice_type,
             'priority' => $notice->priority,
             'dismissible' => $notice->dismissible,

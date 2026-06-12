@@ -161,18 +161,18 @@ const greeting = computed(() => {
     <Head :title="$t('dashboard.dashboard')" />
     <AgentLayout>
         <div class="space-y-6 pb-8">
-            <div class="relative overflow-hidden rounded-2xl border border-slate-200/60 bg-white/60 px-5 py-6 sm:px-6 sm:py-8">
+            <div class="relative overflow-hidden rounded-2xl border border-slate-200/60 agent-panel px-5 py-6 sm:px-6 sm:py-8 dark:border-slate-700/60">
                 <div class="pointer-events-none absolute inset-0 bg-gradient-to-br from-blue-600/[0.07] via-violet-500/[0.04] to-transparent" />
 
                 <div class="relative flex flex-wrap items-start justify-between gap-4">
                     <div>
-                        <h1 class="text-3xl font-bold tracking-tight text-slate-900">{{ greeting }}, {{ userName }}</h1>
-                        <p class="mt-1.5 max-w-xl text-sm text-slate-500">{{ $t('dashboard.real-time_overview_of_tickets_team_workload_and_customer_satisfaction') }}</p>
+                        <h1 class="text-3xl font-bold tracking-tight agent-text">{{ greeting }}, {{ userName }}</h1>
+                        <p class="mt-1.5 max-w-xl text-sm agent-text-subtle">{{ $t('dashboard.real-time_overview_of_tickets_team_workload_and_customer_satisfaction') }}</p>
                     </div>
                     <div class="flex flex-wrap items-center gap-2">
                         <Link
                             href="/workspace"
-                            class="inline-flex items-center gap-2 rounded-xl border border-slate-200/80 bg-white/80 px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm backdrop-blur transition hover:bg-white hover:shadow-md"
+                            class="inline-flex items-center gap-2 rounded-xl border border-slate-200/80 agent-panel px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm backdrop-blur transition agent-hover-surface dark:border-slate-700/80 dark:text-slate-200"
                         >
                             <svg class="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h7" />
@@ -181,7 +181,7 @@ const greeting = computed(() => {
                         </Link>
                         <Link
                             href="/reports"
-                            class="inline-flex items-center gap-2 rounded-xl border border-slate-200/80 bg-white/80 px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm backdrop-blur transition hover:bg-white hover:shadow-md"
+                            class="inline-flex items-center gap-2 rounded-xl border border-slate-200/80 agent-panel px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm backdrop-blur transition agent-hover-surface dark:border-slate-700/80 dark:text-slate-200"
                         >
                             <svg class="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
@@ -197,7 +197,7 @@ const greeting = computed(() => {
                     v-for="card in statCards"
                     :key="card.label"
                     :href="card.href"
-                    class="group relative overflow-hidden rounded-2xl border border-white/60 bg-white p-5 shadow-sm ring-1 backdrop-blur transition hover:-translate-y-0.5 hover:shadow-lg"
+                    class="group relative overflow-hidden rounded-2xl border border-white/60 agent-panel p-5 shadow-sm ring-1 backdrop-blur transition hover:-translate-y-0.5 hover:shadow-lg dark:border-slate-700/60"
                     :class="toneClasses[card.tone].ring"
                 >
                     <div class="absolute -right-4 -top-4 h-20 w-20 rounded-full opacity-60 blur-2xl transition group-hover:opacity-80" :class="toneClasses[card.tone].bg" />
@@ -206,7 +206,7 @@ const greeting = computed(() => {
                             <p class="text-xs font-medium uppercase tracking-wide text-slate-500">{{ card.label }}</p>
                             <p
                                 class="mt-2 text-3xl font-bold tabular-nums tracking-tight"
-                                :class="card.alert ? 'text-red-600' : card.tone === 'emerald' ? 'text-emerald-600' : 'text-slate-900'"
+                                :class="card.alert ? 'text-red-600' : card.tone === 'emerald' ? 'text-emerald-600' : 'agent-text'"
                             >
                                 {{ card.value }}
                             </p>
@@ -236,11 +236,11 @@ const greeting = computed(() => {
             </div>
 
             <div class="grid gap-6 lg:grid-cols-12">
-                <div class="rounded-2xl border border-white/60 bg-white/90 p-6 shadow-sm ring-1 ring-slate-100 backdrop-blur lg:col-span-5">
+                <div class="rounded-2xl border border-white/60 agent-panel p-6 shadow-sm ring-1 ring-slate-100 backdrop-blur dark:border-slate-700/60 dark:ring-slate-800 lg:col-span-5">
                     <div class="flex items-start justify-between gap-4">
                         <div>
-                            <h2 class="text-base font-semibold text-slate-900">{{ $t('dashboard.ticket_volume') }}</h2>
-                            <p class="mt-0.5 text-sm text-slate-500">{{ $t('dashboard.last_7_days') }}</p>
+                            <h2 class="text-base font-semibold agent-text">{{ $t('dashboard.ticket_volume') }}</h2>
+                            <p class="mt-0.5 text-sm agent-text-subtle">{{ $t('dashboard.last_7_days') }}</p>
                         </div>
                         <div class="rounded-xl bg-blue-50 px-3 py-1.5 text-right">
                             <p class="text-lg font-bold tabular-nums text-blue-700">{{ totalVolume }}</p>
@@ -285,9 +285,9 @@ const greeting = computed(() => {
                     </div>
                 </div>
 
-                <div class="rounded-2xl border border-white/60 bg-white/90 p-6 shadow-sm ring-1 ring-slate-100 backdrop-blur lg:col-span-3">
-                    <h2 class="text-base font-semibold text-slate-900">{{ $t('dashboard.csat_score') }}</h2>
-                    <p class="mt-0.5 text-sm text-slate-500">{{ $t('dashboard.last_30_days') }}</p>
+                <div class="rounded-2xl border border-white/60 agent-panel p-6 shadow-sm ring-1 ring-slate-100 backdrop-blur dark:border-slate-700/60 dark:ring-slate-800 lg:col-span-3">
+                    <h2 class="text-base font-semibold agent-text">{{ $t('dashboard.csat_score') }}</h2>
+                    <p class="mt-0.5 text-sm agent-text-subtle">{{ $t('dashboard.last_30_days') }}</p>
 
                     <div class="mt-6 flex items-end gap-4">
                         <div>

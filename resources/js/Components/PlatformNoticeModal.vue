@@ -2,7 +2,10 @@
 import { router, usePage } from '@inertiajs/vue3';
 import { computed, onMounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { readSessionJson, storageKey, writeSessionItem, writeSessionJson } from '../support/sessionStorage.js';
+import { useAccessibleDialog } from '../composables/useModal.js';
+import { readSessionJson, removeSessionItem, storageKey, writeSessionItem, writeSessionJson } from '../support/sessionStorage.js';
+
+const DISMISS_NOTICE_PATH = (noticeId) => `/platform-notices/${noticeId}/dismiss`;
 
 const page = usePage();
 const { t } = useI18n();
@@ -14,7 +17,10 @@ const completeStorageKey = computed(() => storageKey('platform-notices-modal-com
 const modalOpen = ref(false);
 const queue = ref([]);
 const dismissing = ref(false);
+const dismissError = ref(false);
 const totalInQueue = ref(0);
+const dialogRef = ref(null);
+const primaryButtonRef = ref(null);
 
 const styles = {
     maintenance: {
@@ -60,6 +66,8 @@ const typeLabelKeys = {
 
 const current = computed(() => queue.value[0] ?? null);
 
+const dialogOpen = computed(() => modalOpen.value && !!current.value);
+
 const currentIndex = computed(() => Math.max(1, totalInQueue.value - queue.value.length + 1));
 
 const styleFor = (notice) => styles[notice?.notice_type] ?? styles.general;
@@ -92,11 +100,16 @@ const buildQueue = () => {
     });
 
     totalInQueue.value = queue.value.length;
-    modalOpen.value = queue.value.length > 0;
+    dismissError.value = false;
 
-    if (!queue.value.length) {
-        markQueueComplete();
+    if (queue.value.length > 0) {
+        removeSessionItem(completeStorageKey.value);
+        modalOpen.value = true;
+
+        return;
     }
+
+    modalOpen.value = false;
 };
 
 const closeModal = () => {
@@ -123,14 +136,21 @@ const dismiss = async (notice) => {
         return;
     }
 
+    dismissError.value = false;
+
     if (notice.dismissible) {
         dismissing.value = true;
 
-        router.post(`/platform-notices/${notice.id}/dismiss`, {}, {
+        router.post(DISMISS_NOTICE_PATH(notice.id), {}, {
             preserveScroll: true,
+            onSuccess: () => {
+                advanceQueue();
+            },
+            onError: () => {
+                dismissError.value = true;
+            },
             onFinish: () => {
                 dismissing.value = false;
-                advanceQueue();
             },
         });
 
@@ -140,6 +160,15 @@ const dismiss = async (notice) => {
     markSeen(notice.id);
     advanceQueue();
 };
+
+useAccessibleDialog(dialogOpen, dialogRef, {
+    initialFocusRef: primaryButtonRef,
+    onEscape: () => {
+        if (current.value && !dismissing.value) {
+            dismiss(current.value);
+        }
+    },
+});
 
 onMounted(buildQueue);
 
@@ -163,7 +192,7 @@ watch(() => page.props.platformNotices, buildQueue, { deep: true });
                 aria-modal="true"
                 :aria-label="current.title"
             >
-                <div class="w-full max-w-lg overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl">
+                <div ref="dialogRef" class="w-full max-w-lg overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl">
                     <div class="border-b px-5 py-4" :class="styleFor(current).header">
                         <div class="flex items-start gap-3">
                             <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl" :class="styleFor(current).icon">
@@ -205,14 +234,19 @@ watch(() => page.props.platformNotices, buildQueue, { deep: true });
                     </div>
 
                     <div class="flex items-center justify-between gap-3 border-t border-slate-100 px-5 py-4">
-                        <p v-if="totalInQueue > 1" class="text-xs text-slate-400">
-                            {{ t('components.notice_queue_progress', { current: currentIndex, total: totalInQueue }) }}
-                        </p>
-                        <span v-else />
+                        <div class="min-w-0">
+                            <p v-if="totalInQueue > 1" class="text-xs text-slate-400">
+                                {{ t('components.notice_queue_progress', { current: currentIndex, total: totalInQueue }) }}
+                            </p>
+                            <p v-if="dismissError" class="text-xs text-red-600">
+                                {{ t('components.deflection_error') }}
+                            </p>
+                        </div>
 
                         <button
+                            ref="primaryButtonRef"
                             type="button"
-                            class="rounded-lg px-4 py-2 text-sm font-semibold text-white transition disabled:opacity-60"
+                            class="shrink-0 rounded-lg px-4 py-2 text-sm font-semibold text-white transition disabled:opacity-60"
                             :class="styleFor(current).button"
                             :disabled="dismissing"
                             @click="dismiss(current)"

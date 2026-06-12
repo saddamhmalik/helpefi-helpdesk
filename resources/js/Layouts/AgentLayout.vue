@@ -51,7 +51,7 @@ const iconWrapClass = (href) => isActive(href)
 </script>
 
 <template>
-    <div class="h-screen overflow-hidden bg-slate-50 lg:flex">
+    <div class="h-screen overflow-hidden agent-page-bg lg:flex">
         <aside
             class="sidebar-shell group/sidebar fixed left-0 top-0 z-40 hidden h-screen flex-col overflow-hidden transition-sidebar lg:flex"
             :class="[
@@ -61,7 +61,7 @@ const iconWrapClass = (href) => isActive(href)
             @mouseleave="expanded = false"
         >
             <div
-                class="flex h-14 shrink-0 items-center border-b border-white/[0.06] px-3 transition-sidebar"
+                class="flex h-16 shrink-0 items-center border-b border-white/[0.06] px-3 transition-sidebar"
                 :class="isOpen ? 'justify-start' : 'justify-center'"
             >
                 <Link :href="homeHref" class="flex min-w-0 items-center gap-3">
@@ -150,20 +150,20 @@ const iconWrapClass = (href) => isActive(href)
         <div class="flex h-screen max-h-screen min-w-0 flex-1 flex-col overflow-hidden lg:pl-[4.25rem]">
             <AgentTopBar />
 
-            <nav class="flex gap-1 overflow-x-auto border-b border-slate-200 bg-white px-3 py-2 lg:hidden">
+            <nav class="flex gap-1 overflow-x-auto border-b agent-border agent-panel px-3 py-2 lg:hidden">
                 <Link
                     v-for="item in mobileNav"
                     :key="item.href"
                     :href="item.href"
                     class="whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-ui"
-                    :class="isActive(item.href) ? 'bg-slate-900 text-white' : 'text-slate-600'"
+                    :class="isActive(item.href) ? 'bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900' : 'agent-text-muted'"
                 >
                     {{ item.label }}
                 </Link>
             </nav>
 
-            <main class="flex min-h-0 flex-1 flex-col overflow-hidden p-4 sm:p-6">
-                <div class="mb-3 shrink-0 space-y-2">
+            <main class="flex min-h-0 flex-1 flex-col overflow-hidden px-4 pb-4 sm:px-6 sm:pb-6">
+                <div class="mb-3 shrink-0 space-y-2 empty:mb-0 empty:hidden">
                     <TrialBanner />
                     <CancellationGraceBanner />
                     <DummyDataBanner />

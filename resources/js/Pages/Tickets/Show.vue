@@ -150,14 +150,14 @@ const sidebarProps = computed(() => ({
 
         <div class="flex h-0 min-h-0 flex-1 basis-0">
             <div class="flex min-h-0 min-w-0 flex-1">
-                <section class="flex min-h-0 min-w-0 flex-1 basis-0 flex-col overflow-hidden bg-white">
-                    <div class="flex shrink-0 items-center gap-2 border-b border-slate-200 bg-white px-3 py-2">
+                <section class="flex min-h-0 min-w-0 flex-1 basis-0 flex-col overflow-hidden agent-panel">
+                    <div class="flex shrink-0 items-center gap-2 border-b agent-border agent-panel px-3 py-2">
                         <Link href="/tickets" class="shrink-0 text-xs font-medium text-blue-600 hover:text-blue-700" :title="$t('tickets.back_to_tickets')">
                             ←
                         </Link>
                         <span class="shrink-0 font-mono text-xs font-semibold text-blue-600">{{ ticket.number }}</span>
-                        <span class="hidden h-3.5 w-px bg-slate-200 sm:block" />
-                        <h1 class="min-w-0 flex-1 truncate text-sm font-semibold text-slate-900" :title="ticket.subject">
+                        <span class="hidden h-3.5 w-px bg-slate-200 dark:bg-slate-700 sm:block" />
+                        <h1 class="min-w-0 flex-1 truncate text-sm font-semibold agent-text" :title="ticket.subject">
                             {{ ticket.subject }}
                         </h1>
                         <span v-if="ticket.channel" class="hidden shrink-0 text-[10px] text-slate-400 lg:inline">· {{ ticket.channel.name }}</span>
@@ -175,7 +175,7 @@ const sidebarProps = computed(() => ({
 
                     <TicketCollisionBanner :viewers="viewers" />
 
-                    <div class="relative min-h-0 flex-1 overflow-hidden bg-[#e5ddd5]/30 px-3 py-2">
+                    <div class="relative min-h-0 flex-1 overflow-hidden bg-[#e5ddd5]/30 px-3 py-2 dark:bg-slate-900/40">
                         <TicketConversation
                             :messages="messages"
                             :current-user-id="currentUserId"
@@ -183,7 +183,7 @@ const sidebarProps = computed(() => ({
                         />
                     </div>
 
-                    <form class="shrink-0 border-t border-slate-200 bg-white px-2 pb-3 pt-1" @submit.prevent="reply" @keydown="onReplyKeydown">
+                    <form class="shrink-0 border-t agent-border agent-panel px-2 pb-3 pt-1" @submit.prevent="reply" @keydown="onReplyKeydown">
                         <TicketComposerDock
                             v-model:body="replyForm.body"
                             v-model:attachments="replyForm.attachments"
@@ -199,16 +199,16 @@ const sidebarProps = computed(() => ({
                     </form>
                 </section>
 
-                <aside class="hidden min-h-0 w-72 shrink-0 flex-col overflow-hidden border-l border-slate-200 bg-white xl:flex">
+                <aside class="hidden min-h-0 w-72 shrink-0 flex-col overflow-hidden border-l agent-border agent-panel xl:flex">
                     <TicketDetailsSidebar embedded v-bind="sidebarProps" />
                 </aside>
             </div>
         </div>
 
-        <div class="shrink-0 border-t border-slate-200 bg-white xl:hidden">
+        <div class="shrink-0 border-t agent-border agent-panel xl:hidden">
             <button
                 type="button"
-                class="flex w-full items-center justify-between px-4 py-2.5 text-sm font-medium text-slate-700"
+                class="flex w-full items-center justify-between px-4 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-300"
                 @click="mobileDetailsOpen = !mobileDetailsOpen"
             >
                 <span>{{ $t('tickets.ticket_details') }}</span>

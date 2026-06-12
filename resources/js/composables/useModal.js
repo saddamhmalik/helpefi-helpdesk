@@ -1,4 +1,14 @@
-import { onUnmounted, watch } from 'vue';
+import { nextTick, onUnmounted, watch } from 'vue';
+
+const FOCUSABLE_SELECTOR = 'a[href], button:not([disabled]), textarea, input, select, [tabindex]:not([tabindex="-1"])';
+
+function focusableElements(root) {
+    if (!root) {
+        return [];
+    }
+
+    return [...root.querySelectorAll(FOCUSABLE_SELECTOR)].filter((element) => element.offsetParent !== null);
+}
 
 export function useBodyScrollLock(openRef) {
     watch(openRef, (open) => {
@@ -27,5 +37,62 @@ export function useEscapeKey(openRef, onClose) {
 
     onUnmounted(() => {
         window.removeEventListener('keydown', handler);
+    });
+}
+
+export function useAccessibleDialog(openRef, dialogRef, { onEscape, initialFocusRef } = {}) {
+    let previousFocus = null;
+
+    const handleKeydown = (event) => {
+        if (!openRef.value || !dialogRef.value) {
+            return;
+        }
+
+        if (event.key === 'Escape') {
+            onEscape?.();
+
+            return;
+        }
+
+        if (event.key !== 'Tab') {
+            return;
+        }
+
+        const elements = focusableElements(dialogRef.value);
+
+        if (!elements.length) {
+            return;
+        }
+
+        const first = elements[0];
+        const last = elements[elements.length - 1];
+
+        if (event.shiftKey && document.activeElement === first) {
+            event.preventDefault();
+            last.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+            event.preventDefault();
+            first.focus();
+        }
+    };
+
+    watch(openRef, async (open) => {
+        if (open) {
+            previousFocus = document.activeElement;
+            await nextTick();
+            const target = initialFocusRef?.value ?? focusableElements(dialogRef.value).at(-1);
+            target?.focus();
+            window.addEventListener('keydown', handleKeydown);
+
+            return;
+        }
+
+        window.removeEventListener('keydown', handleKeydown);
+        previousFocus?.focus?.();
+        previousFocus = null;
+    });
+
+    onUnmounted(() => {
+        window.removeEventListener('keydown', handleKeydown);
     });
 }
