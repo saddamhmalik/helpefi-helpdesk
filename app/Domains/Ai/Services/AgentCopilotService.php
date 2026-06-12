@@ -10,6 +10,7 @@ use App\Domains\Ai\Repositories\TicketAiRepository;
 use App\Domains\Billing\Services\BillingService;
 use App\Domains\Brands\Services\BrandService;
 use App\Domains\Tickets\Models\Ticket;
+use App\Models\User;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Collection;
 use Illuminate\Validation\ValidationException;
@@ -30,6 +31,8 @@ class AgentCopilotService
     public function history(int $ticketId, int $userId): array
     {
         $this->assertEnabled();
+        $this->assertAgent($userId);
+        $this->tickets->forTicket($ticketId);
 
         return [
             'messages' => $this->copilot->history($ticketId, $userId)
@@ -58,11 +61,10 @@ class AgentCopilotService
         }
 
         $ticket = $this->tickets->forTicket($ticketId);
+        $this->assertAgent($userId);
         $history = $this->copilot->history($ticketId, $userId, 18);
         $articles = $this->knowledge->searchPublished(trim($ticket->subject.' '.$message), 5);
         $messages = $this->buildProviderMessages($ticket, $history, $message, $articles);
-
-        $this->copilot->store($ticketId, $userId, 'user', $message);
 
         if ($this->client->available()) {
             $reply = $this->client->chat($messages);
@@ -72,6 +74,7 @@ class AgentCopilotService
             $source = 'local';
         }
 
+        $this->copilot->store($ticketId, $userId, 'user', $message);
         $stored = $this->copilot->store($ticketId, $userId, 'assistant', $reply);
 
         return [
@@ -89,6 +92,8 @@ class AgentCopilotService
     public function clear(int $ticketId, int $userId): void
     {
         $this->assertEnabled();
+        $this->assertAgent($userId);
+        $this->tickets->forTicket($ticketId);
         $this->copilot->clear($ticketId, $userId);
     }
 
@@ -202,6 +207,19 @@ class AgentCopilotService
 
         if (! $this->settings->current()->enabled) {
             throw new AuthorizationException('AI assistance is disabled.');
+        }
+    }
+
+    private function assertAgent(int $userId): void
+    {
+        $user = User::query()->findOrFail($userId);
+
+        if ($user->hasRole('customer')) {
+            throw new AuthorizationException('Only agents can use AI Copilot.');
+        }
+
+        if (! $user->hasAnyRole(['admin', 'agent']) && ! $user->can('access.agent')) {
+            throw new AuthorizationException('Only agents can use AI Copilot.');
         }
     }
 }

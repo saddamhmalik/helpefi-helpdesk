@@ -1,5 +1,6 @@
 <script setup>
 import { ref } from 'vue';
+import { csrfHeaders } from '../support/csrf.js';
 
 const props = defineProps({
     enabled: { type: Boolean, default: true },
@@ -38,6 +39,7 @@ const ask = async (text) => {
                 'Content-Type': 'application/json',
                 Accept: 'application/json',
                 'X-Requested-With': 'XMLHttpRequest',
+                ...csrfHeaders(),
             },
             body: JSON.stringify({ query: question }),
         });

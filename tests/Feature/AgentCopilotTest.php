@@ -4,12 +4,14 @@ namespace Tests\Feature;
 
 use App\Domains\Ai\Models\AiCopilotMessage;
 use App\Domains\Ai\Models\AiSetting;
+use App\Domains\Ai\Services\AgentCopilotService;
 use App\Domains\Contacts\Models\Contact;
 use App\Domains\Tickets\Models\Ticket;
 use App\Domains\Tickets\Models\TicketMessage;
 use App\Domains\Tickets\Models\TicketPriority;
 use App\Domains\Tickets\Models\TicketStatus;
 use App\Models\User;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
@@ -131,5 +133,75 @@ class AgentCopilotTest extends TestCase
             ->assertJsonPath('message.content', 'The customer was double charged and needs billing review.');
 
         Http::assertSent(fn ($request) => $request->url() === 'https://api.groq.com/openai/v1/chat/completions');
+    }
+
+    public function test_copilot_history_returns_404_for_missing_ticket(): void
+    {
+        $this->seedTicketWithMessage();
+        AiSetting::query()->create(['enabled' => true]);
+
+        $this->getJson('/workspace/tickets/99999/ai/copilot')
+            ->assertNotFound();
+    }
+
+    public function test_copilot_history_returns_most_recent_messages(): void
+    {
+        $ticket = $this->seedTicketWithMessage();
+        AiSetting::query()->create(['enabled' => true]);
+        $agent = auth()->user();
+
+        for ($index = 1; $index <= 22; $index++) {
+            AiCopilotMessage::query()->create([
+                'ticket_id' => $ticket->id,
+                'user_id' => $agent->id,
+                'role' => $index % 2 === 0 ? 'assistant' : 'user',
+                'content' => "Message {$index}",
+                'created_at' => now()->addSeconds($index),
+            ]);
+        }
+
+        $response = $this->getJson("/workspace/tickets/{$ticket->id}/ai/copilot")
+            ->assertOk();
+
+        $messages = $response->json('messages');
+        $this->assertCount(20, $messages);
+        $this->assertSame('Message 3', $messages[0]['content']);
+        $this->assertSame('Message 22', $messages[19]['content']);
+    }
+
+    public function test_customer_cannot_use_copilot(): void
+    {
+        $ticket = $this->seedTicketWithMessage();
+        AiSetting::query()->create(['enabled' => true]);
+        $customer = User::factory()->customer()->create();
+
+        $this->expectException(AuthorizationException::class);
+
+        app(AgentCopilotService::class)->chat($ticket->id, $customer->id, 'Summarize this ticket.');
+    }
+
+    public function test_provider_failure_does_not_persist_orphan_user_message(): void
+    {
+        config([
+            'ai.provider' => 'openai',
+            'ai.api_key' => 'test-key',
+            'ai.base_url' => 'https://api.openai.com/v1',
+        ]);
+
+        Http::fake([
+            'https://api.openai.com/v1/chat/completions' => Http::response([], 500),
+        ]);
+
+        $ticket = $this->seedTicketWithMessage();
+        AiSetting::query()->create(['enabled' => true]);
+
+        $this->postJson("/workspace/tickets/{$ticket->id}/ai/copilot", [
+            'message' => 'Summarize this ticket.',
+        ])->assertStatus(500);
+
+        $this->assertDatabaseMissing('ai_copilot_messages', [
+            'ticket_id' => $ticket->id,
+            'role' => 'user',
+        ]);
     }
 }

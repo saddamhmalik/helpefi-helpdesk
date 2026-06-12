@@ -36,6 +36,8 @@ class OutboundMailerResolutionTest extends TenantTestCase
         $this->assertSame(config('mail.bootstrap_default', 'log'), $outbound->resolveMailerName());
         $this->assertArrayNotHasKey(OutboundMailService::MAILER, config('mail.mailers'));
         $this->assertSame(config('mail.bootstrap_default', 'log'), config('mail.default'));
+        $this->assertSame(config('mail.bootstrap_from_address'), config('mail.from.address'));
+        $this->assertSame(config('mail.bootstrap_from_name'), config('mail.from.name'));
     }
 
     public function test_resolve_mailer_name_clears_stale_tenant_mailer_when_invalid(): void

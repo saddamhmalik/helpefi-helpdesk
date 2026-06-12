@@ -94,6 +94,8 @@ class OutboundMailService
     private function clearTenantMailer(): void
     {
         Config::set('mail.default', $this->fallbackMailerName());
+        Config::set('mail.from.address', (string) config('mail.bootstrap_from_address'));
+        Config::set('mail.from.name', (string) config('mail.bootstrap_from_name'));
 
         $mailers = config('mail.mailers', []);
 

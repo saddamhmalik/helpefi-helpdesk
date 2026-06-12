@@ -16,7 +16,11 @@ return [
 
     'default' => env('MAIL_MAILER', 'log'),
 
-    'bootstrap_default' => env('MAIL_MAILER', 'log'),
+    'bootstrap_default' => env('MAIL_BOOTSTRAP_MAILER', 'log'),
+
+    'bootstrap_from_address' => env('MAIL_FROM_ADDRESS', 'hello@example.com'),
+
+    'bootstrap_from_name' => env('MAIL_FROM_NAME', 'helpefi'),
 
     /*
     |--------------------------------------------------------------------------

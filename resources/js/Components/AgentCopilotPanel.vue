@@ -40,9 +40,20 @@ const toggle = () => {
 
 const submit = async () => {
     const message = draft.value;
+
+    if (!message.trim() || loading.value) {
+        return;
+    }
+
     draft.value = '';
 
     await sendMessage(message);
+
+    if (error.value) {
+        draft.value = message;
+        return;
+    }
+
     await nextTick();
     scrollRef.value?.scrollTo({ top: scrollRef.value.scrollHeight, behavior: 'smooth' });
 };
@@ -88,6 +99,7 @@ watch(open, async (isOpen) => {
                     </button>
                     <button
                         type="button"
+                        aria-label="Close copilot"
                         class="rounded-md p-1 text-violet-100 transition hover:bg-white/10"
                         @click="open = false"
                     >

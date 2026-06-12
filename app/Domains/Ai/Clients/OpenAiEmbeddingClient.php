@@ -15,7 +15,22 @@ class OpenAiEmbeddingClient implements AiEmbeddingClient
 
     public function embed(string $text): array
     {
-        $client = OpenAI::client(config('ai.embedding_api_key'), config('ai.organization'));
+        $factory = OpenAI::factory()
+            ->withApiKey((string) config('ai.embedding_api_key'));
+
+        $organization = config('ai.organization');
+
+        if (is_string($organization) && $organization !== '') {
+            $factory = $factory->withOrganization($organization);
+        }
+
+        $baseUrl = config('ai.embedding_base_url');
+
+        if (is_string($baseUrl) && $baseUrl !== '') {
+            $factory = $factory->withBaseUri(rtrim($baseUrl, '/'));
+        }
+
+        $client = $factory->make();
 
         $response = $client->embeddings()->create([
             'model' => config('ai.embedding_model'),

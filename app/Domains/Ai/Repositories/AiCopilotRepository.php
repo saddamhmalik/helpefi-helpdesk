@@ -12,9 +12,11 @@ class AiCopilotRepository
         return AiCopilotMessage::query()
             ->where('ticket_id', $ticketId)
             ->where('user_id', $userId)
-            ->orderBy('created_at')
+            ->orderByDesc('created_at')
             ->limit($limit)
-            ->get(['id', 'role', 'content', 'created_at']);
+            ->get(['id', 'role', 'content', 'created_at'])
+            ->reverse()
+            ->values();
     }
 
     public function store(int $ticketId, int $userId, string $role, string $content): AiCopilotMessage
