@@ -155,6 +155,12 @@ class TenantDomainService
             return false;
         }
 
+        $custom = $this->domains->customDomain($tenant);
+
+        if (! $custom?->isVerified()) {
+            return false;
+        }
+
         $platform = $this->domains->platformDomain($tenant);
         $primary = $this->domains->primaryDomain($tenant);
 
@@ -166,7 +172,7 @@ class TenantDomainService
             return false;
         }
 
-        return $primary->isVerified();
+        return $primary->isCustom() && $primary->isVerified();
     }
 
     public function redirectUrl(Tenant $tenant, string $requestUri = '/'): ?string
