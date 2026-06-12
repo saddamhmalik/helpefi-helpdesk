@@ -57,26 +57,26 @@ const removePortalAccess = () => {
     <Head :title="contact.name" />
     <AgentLayout>
         <div class="mb-4">
-            <Link href="/contacts" class="text-sm text-blue-600 hover:text-blue-700">← Back to customers</Link>
+            <Link href="/contacts" class="text-sm text-blue-600 hover:text-blue-700 dark:hover:text-blue-300 dark:text-blue-300">← Back to customers</Link>
         </div>
 
         <div class="grid gap-6 xl:grid-cols-3">
             <div class="xl:col-span-2 space-y-6">
-                <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+                <div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm">
                     <div class="flex flex-wrap items-start justify-between gap-3">
                         <div>
-                            <h1 class="text-2xl font-semibold text-slate-900">{{ contact.name }}</h1>
-                            <p v-if="contact.email" class="mt-1 text-sm text-slate-500">{{ contact.email }}</p>
+                            <h1 class="text-2xl font-semibold text-slate-900 dark:text-slate-100">{{ contact.name }}</h1>
+                            <p v-if="contact.email" class="mt-1 text-sm text-slate-500 dark:text-slate-400">{{ contact.email }}</p>
                         </div>
                         <span
                             v-if="contact.portal_user"
-                            class="inline-flex items-center gap-1 rounded-full bg-indigo-50 px-2.5 py-1 text-xs font-medium text-indigo-700 ring-1 ring-inset ring-indigo-600/15"
+                            class="inline-flex items-center gap-1 rounded-full bg-indigo-50 dark:bg-indigo-950/40 px-2.5 py-1 text-xs font-medium text-indigo-700 dark:text-indigo-300 ring-1 ring-inset ring-indigo-600/15"
                         >
                             {{ $t('contacts.portal_access') }}
                         </span>
                         <span
                             v-else
-                            class="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-600"
+                            class="inline-flex items-center rounded-full bg-slate-100 dark:bg-slate-900 px-2.5 py-1 text-xs font-medium text-slate-600 dark:text-slate-400"
                         >
                             {{ $t('contacts.guest_only') }}
                         </span>
@@ -85,31 +85,31 @@ const removePortalAccess = () => {
                     <form class="mt-6 space-y-4" @submit.prevent="submit">
                         <div class="grid gap-4 sm:grid-cols-2">
                             <div>
-                                <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('contacts.name') }}</label>
-                                <input v-model="form.name" type="text" class="w-full rounded-lg border border-slate-300 px-3 py-2" required />
+                                <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('contacts.name') }}</label>
+                                <input v-model="form.name" type="text" class="w-full rounded-lg border border-slate-300 dark:border-slate-700 px-3 py-2" required />
                             </div>
                             <div>
-                                <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('contacts.email') }}</label>
-                                <input v-model="form.email" type="email" class="w-full rounded-lg border border-slate-300 px-3 py-2" />
+                                <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('contacts.email') }}</label>
+                                <input v-model="form.email" type="email" class="w-full rounded-lg border border-slate-300 dark:border-slate-700 px-3 py-2" />
                             </div>
                         </div>
                         <div class="grid gap-4 sm:grid-cols-2">
                             <div>
-                                <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('contacts.phone') }}</label>
-                                <input v-model="form.phone" type="text" class="w-full rounded-lg border border-slate-300 px-3 py-2" />
+                                <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('contacts.phone') }}</label>
+                                <input v-model="form.phone" type="text" class="w-full rounded-lg border border-slate-300 dark:border-slate-700 px-3 py-2" />
                             </div>
                             <div>
-                                <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('contacts.organization') }}</label>
-                                <select v-model="form.organization_id" class="w-full rounded-lg border border-slate-300 px-3 py-2">
+                                <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('contacts.organization') }}</label>
+                                <select v-model="form.organization_id" class="w-full rounded-lg border border-slate-300 dark:border-slate-700 px-3 py-2">
                                     <option value="">{{ $t('contacts.none') }}</option>
                                     <option v-for="org in organizations" :key="org.id" :value="org.id">{{ org.name }}</option>
                                 </select>
                             </div>
                         </div>
                         <div>
-                            <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('contacts.tags') }}</label>
+                            <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('contacts.tags') }}</label>
                             <div class="flex flex-wrap gap-2">
-                                <label v-for="tag in tags" :key="tag.id" class="flex items-center gap-1 rounded-lg border border-slate-200 px-2 py-1 text-sm">
+                                <label v-for="tag in tags" :key="tag.id" class="flex items-center gap-1 rounded-lg border border-slate-200 dark:border-slate-800 px-2 py-1 text-sm">
                                     <input v-model="form.tag_ids" type="checkbox" :value="tag.id" class="rounded" />
                                     {{ tag.name }}
                                 </label>
@@ -126,79 +126,79 @@ const removePortalAccess = () => {
 
                 <ContactTimeline :events="timeline" />
 
-                <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-                    <h2 class="text-lg font-semibold text-slate-900">{{ $t('contacts.notes') }}</h2>
+                <div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm">
+                    <h2 class="text-lg font-semibold text-slate-900 dark:text-slate-100">{{ $t('contacts.notes') }}</h2>
                     <form class="mt-4 space-y-3" @submit.prevent="addNote">
                         <AppRichTextEditor
                             v-model="noteForm.body"
                             form
                             :placeholder="$t('contacts.add_an_internal_note_ellipsis')"
                         />
-                        <button type="submit" class="rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-50" :disabled="noteForm.processing || isEmptyRichText(noteForm.body)">{{ $t('contacts.add_note') }}</button>
+                        <button type="submit" class="rounded-lg border border-slate-300 dark:border-slate-700 px-3 py-1.5 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800" :disabled="noteForm.processing || isEmptyRichText(noteForm.body)">{{ $t('contacts.add_note') }}</button>
                     </form>
                     <ul class="mt-4 space-y-3">
-                        <li v-for="note in contact.notes" :key="note.id" class="rounded-lg border border-slate-100 p-3">
+                        <li v-for="note in contact.notes" :key="note.id" class="rounded-lg border border-slate-100 dark:border-slate-800 p-3">
                             <TicketMessageContent :body="note.body" />
-                            <p class="mt-1 text-xs text-slate-500">{{ note.user?.name }} · {{ formatDateTime(note.created_at) }}</p>
+                            <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">{{ note.user?.name }} · {{ formatDateTime(note.created_at) }}</p>
                         </li>
-                        <li v-if="!contact.notes?.length" class="text-sm text-slate-500">{{ $t('contacts.no_notes_yet') }}</li>
+                        <li v-if="!contact.notes?.length" class="text-sm text-slate-500 dark:text-slate-400">{{ $t('contacts.no_notes_yet') }}</li>
                     </ul>
                 </div>
             </div>
 
             <div class="space-y-6">
-                <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-                    <h2 class="text-lg font-semibold text-slate-900">{{ $t('contacts.portal_access') }}</h2>
+                <div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm">
+                    <h2 class="text-lg font-semibold text-slate-900 dark:text-slate-100">{{ $t('contacts.portal_access') }}</h2>
                     <template v-if="contact.portal_user">
-                        <p class="mt-2 text-sm text-slate-600">
+                        <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">
                             {{ $t('contacts.this_customer_can_sign_in_at_the_customer_portal_to_view_tickets_submi') }}
                         </p>
                         <dl class="mt-4 space-y-2 text-sm">
                             <div class="flex justify-between gap-3">
-                                <dt class="text-slate-500">{{ $t('contacts.login_email') }}</dt>
-                                <dd class="font-medium text-slate-800">{{ contact.portal_user.email }}</dd>
+                                <dt class="text-slate-500 dark:text-slate-400">{{ $t('contacts.login_email') }}</dt>
+                                <dd class="font-medium text-slate-800 dark:text-slate-200">{{ contact.portal_user.email }}</dd>
                             </div>
                             <div class="flex justify-between gap-3">
-                                <dt class="text-slate-500">{{ $t('contacts.registered') }}</dt>
-                                <dd class="text-slate-800">{{ formatDate(contact.portal_user.created_at) }}</dd>
+                                <dt class="text-slate-500 dark:text-slate-400">{{ $t('contacts.registered') }}</dt>
+                                <dd class="text-slate-800 dark:text-slate-200">{{ formatDate(contact.portal_user.created_at) }}</dd>
                             </div>
                         </dl>
                         <button
                             v-if="isAdmin()"
                             type="button"
-                            class="mt-4 w-full rounded-lg border border-red-200 px-3 py-2 text-sm font-medium text-red-700 transition hover:bg-red-50"
+                            class="mt-4 w-full rounded-lg border border-red-200 dark:border-red-900/60 px-3 py-2 text-sm font-medium text-red-700 dark:text-red-300 transition hover:bg-red-50 dark:bg-red-950/40"
                             @click="removePortalAccess"
                         >{{ $t('contacts.revoke_portal_access') }}</button>
                     </template>
                     <template v-else>
-                        <p class="mt-2 text-sm text-slate-600">
+                        <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">
                             {{ $t('contacts.this_customer_has_no_login_they_reach_support_by_email_or_the_guest_po') }}
                         </p>
-                        <p class="mt-3 text-xs text-slate-500">
+                        <p class="mt-3 text-xs text-slate-500 dark:text-slate-400">
                             Portal accounts are created when a customer registers at <span class="font-medium">/portal/register</span>.
                         </p>
                     </template>
                 </div>
 
-                <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-                    <h2 class="text-lg font-semibold text-slate-900">{{ $t('contacts.assigned_assets') }}</h2>
+                <div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm">
+                    <h2 class="text-lg font-semibold text-slate-900 dark:text-slate-100">{{ $t('contacts.assigned_assets') }}</h2>
                     <ul class="mt-4 space-y-2">
                         <li v-for="asset in contact.assets" :key="asset.id">
-                            <Link :href="`/assets/${asset.id}`" class="text-sm text-blue-600 hover:text-blue-700">{{ asset.asset_tag }} — {{ asset.name }}</Link>
-                            <span class="ml-2 text-xs text-slate-500">{{ asset.type?.name }}</span>
+                            <Link :href="`/assets/${asset.id}`" class="text-sm text-blue-600 hover:text-blue-700 dark:hover:text-blue-300 dark:text-blue-300">{{ asset.asset_tag }} — {{ asset.name }}</Link>
+                            <span class="ml-2 text-xs text-slate-500 dark:text-slate-400">{{ asset.type?.name }}</span>
                         </li>
-                        <li v-if="!contact.assets?.length" class="text-sm text-slate-500">{{ $t('contacts.no_assigned_assets') }}</li>
+                        <li v-if="!contact.assets?.length" class="text-sm text-slate-500 dark:text-slate-400">{{ $t('contacts.no_assigned_assets') }}</li>
                     </ul>
                 </div>
 
-                <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-                    <h2 class="text-lg font-semibold text-slate-900">{{ $t('contacts.tickets') }}</h2>
+                <div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm">
+                    <h2 class="text-lg font-semibold text-slate-900 dark:text-slate-100">{{ $t('contacts.tickets') }}</h2>
                     <ul class="mt-4 space-y-3">
                         <li v-for="ticket in contact.tickets" :key="ticket.id">
-                            <Link :href="`/tickets/${ticket.id}`" class="text-sm text-blue-600 hover:text-blue-700">{{ ticket.number }} — {{ ticket.subject }}</Link>
-                            <span class="ml-2 text-xs text-slate-500">{{ ticket.status?.name }}</span>
+                            <Link :href="`/tickets/${ticket.id}`" class="text-sm text-blue-600 hover:text-blue-700 dark:hover:text-blue-300 dark:text-blue-300">{{ ticket.number }} — {{ ticket.subject }}</Link>
+                            <span class="ml-2 text-xs text-slate-500 dark:text-slate-400">{{ ticket.status?.name }}</span>
                         </li>
-                        <li v-if="!contact.tickets?.length" class="text-sm text-slate-500">{{ $t('contacts.no_tickets_yet') }}</li>
+                        <li v-if="!contact.tickets?.length" class="text-sm text-slate-500 dark:text-slate-400">{{ $t('contacts.no_tickets_yet') }}</li>
                     </ul>
                 </div>
             </div>

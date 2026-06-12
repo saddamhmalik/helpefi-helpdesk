@@ -47,11 +47,11 @@ const toggleExpanded = () => {
 <template>
     <div
         v-if="showBanner"
-        class="mb-3 overflow-hidden rounded-lg border border-amber-200/80 bg-amber-50"
+        class="mb-3 overflow-hidden rounded-lg border border-amber-200 dark:border-amber-900/60/80 bg-amber-50 dark:bg-amber-950/40"
         role="alert"
     >
         <div class="flex items-center gap-2 px-3 py-2" :title="summary">
-            <svg class="h-4 w-4 shrink-0 text-amber-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="h-4 w-4 shrink-0 text-amber-700 dark:text-amber-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
             </svg>
 
@@ -95,7 +95,7 @@ const toggleExpanded = () => {
             leave-from-class="opacity-100 translate-y-0"
             leave-to-class="opacity-0 -translate-y-1"
         >
-            <div v-if="expanded" class="border-t border-amber-200/60 px-3 pb-3 pt-2">
+            <div v-if="expanded" class="border-t border-amber-200 dark:border-amber-900/60/60 px-3 pb-3 pt-2">
                 <div class="grid gap-1.5 sm:grid-cols-2">
                     <Link
                         v-for="warning in warnings"
@@ -103,10 +103,10 @@ const toggleExpanded = () => {
                         :href="warning.url"
                         class="group flex items-center gap-2 rounded-md border border-amber-100 bg-white/80 px-2.5 py-2 transition hover:border-amber-200 hover:bg-white"
                     >
-                        <svg class="h-3.5 w-3.5 shrink-0 text-amber-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="h-3.5 w-3.5 shrink-0 text-amber-700 dark:text-amber-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" :d="iconPath(warning.key)" />
                         </svg>
-                        <span class="min-w-0 flex-1 truncate text-xs font-medium text-slate-900">{{ warning.title }}</span>
+                        <span class="min-w-0 flex-1 truncate text-xs font-medium text-slate-900 dark:text-slate-100">{{ warning.title }}</span>
                         <svg
                             class="h-3 w-3 shrink-0 text-slate-300 transition group-hover:translate-x-0.5 group-hover:text-amber-600"
                             fill="none"

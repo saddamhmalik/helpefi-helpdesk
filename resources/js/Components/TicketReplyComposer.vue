@@ -123,9 +123,9 @@ onBeforeUnmount(() => {
 
 <template>
     <div
-        class="relative overflow-hidden bg-white transition duration-200"
+        class="relative overflow-hidden bg-white dark:bg-slate-900 transition duration-200"
         :class="[
-            compact && !expanded ? 'rounded-lg ring-1 ring-slate-200' : '',
+            compact && !expanded ? 'rounded-lg ring-1 ring-slate-200 dark:ring-slate-700' : '',
             isDragging ? 'border-blue-400 ring-2 ring-blue-200' : '',
         ]"
         @dragenter="onDragEnter"
@@ -135,10 +135,10 @@ onBeforeUnmount(() => {
     >
         <div
             v-if="isDragging"
-            class="pointer-events-none absolute inset-0 z-10 flex items-center justify-center bg-blue-50/90 backdrop-blur-[1px]"
+            class="pointer-events-none absolute inset-0 z-10 flex items-center justify-center bg-blue-50 dark:bg-blue-950/40/90 backdrop-blur-[1px]"
         >
-            <div class="rounded-xl border border-dashed border-blue-300 bg-white px-4 py-3 text-center shadow-sm">
-                <p class="text-sm font-semibold text-blue-700">{{ $t('components.drop_files_to_attach') }}</p>
+            <div class="rounded-xl border border-dashed border-blue-300 bg-white dark:bg-slate-900 px-4 py-3 text-center shadow-sm">
+                <p class="text-sm font-semibold text-blue-700 dark:text-blue-300">{{ $t('components.drop_files_to_attach') }}</p>
                 <p class="mt-1 text-xs text-blue-600/80">{{ $t('components.up_to_5_files_10mb_each') }}</p>
             </div>
         </div>
@@ -163,8 +163,8 @@ onBeforeUnmount(() => {
                 <button
                     type="button"
                     :title="$t('components.attach_files')"
-                    class="inline-flex items-center justify-center rounded transition hover:bg-slate-100 hover:text-slate-900"
-                    :class="expanded ? 'gap-1.5 px-2.5 py-1 text-xs font-semibold text-slate-600' : 'gap-1 px-2 py-1 text-xs font-semibold text-slate-600'"
+                    class="inline-flex items-center justify-center rounded transition hover:bg-slate-100 dark:bg-slate-900 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100 dark:text-slate-100"
+                    :class="expanded ? 'gap-1.5 px-2.5 py-1 text-xs font-semibold text-slate-600 dark:text-slate-400' : 'gap-1 px-2 py-1 text-xs font-semibold text-slate-600 dark:text-slate-400'"
                     @mousedown.prevent
                     @click="fileInput?.click()"
                 >
@@ -176,11 +176,11 @@ onBeforeUnmount(() => {
             </template>
         </AppRichTextEditor>
 
-        <div v-if="attachments.length" class="flex flex-wrap gap-1.5 border-t border-slate-100 bg-slate-50/60 p-2">
+        <div v-if="attachments.length" class="flex flex-wrap gap-1.5 border-t border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/60 p-2">
             <div
                 v-for="(file, index) in attachments"
                 :key="`${file.name}-${file.size}-${index}`"
-                class="group relative overflow-hidden rounded-md border border-slate-200 bg-white transition hover:border-slate-300"
+                class="group relative overflow-hidden rounded-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 transition hover:border-slate-300 dark:hover:border-slate-600 dark:border-slate-700"
             >
                 <button
                     type="button"
@@ -197,12 +197,12 @@ onBeforeUnmount(() => {
                     <img :src="rememberPreview(file)" :alt="file.name" class="h-full w-full object-cover" />
                 </div>
                 <div v-else class="flex max-w-[9rem] items-center gap-1.5 px-2 py-1.5">
-                    <div class="flex h-7 w-7 shrink-0 items-center justify-center rounded bg-slate-100 text-[9px] font-bold uppercase text-slate-600">
+                    <div class="flex h-7 w-7 shrink-0 items-center justify-center rounded bg-slate-100 dark:bg-slate-900 text-[9px] font-bold uppercase text-slate-600 dark:text-slate-400">
                         {{ extension(file.name) }}
                     </div>
                     <div class="min-w-0">
-                        <p class="truncate text-[11px] font-medium text-slate-800">{{ file.name }}</p>
-                        <p class="text-[10px] text-slate-500">{{ formatFileSize(file.size) }}</p>
+                        <p class="truncate text-[11px] font-medium text-slate-800 dark:text-slate-200">{{ file.name }}</p>
+                        <p class="text-[10px] text-slate-500 dark:text-slate-400">{{ formatFileSize(file.size) }}</p>
                     </div>
                 </div>
             </div>

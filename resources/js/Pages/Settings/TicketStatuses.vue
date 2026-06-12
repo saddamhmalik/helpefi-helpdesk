@@ -82,9 +82,9 @@ const canDelete = (status) => !protectedSlugs.includes(status.slug);
             <button type="button" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700" @click="openCreate">{{ $t('settings_ticket_statuses.add_status') }}</button>
         </template>
 
-        <div class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-            <table class="min-w-full divide-y divide-slate-200 text-sm">
-                <thead class="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+        <div class="overflow-hidden rounded-xl border agent-border agent-panel shadow-sm">
+            <table class="min-w-full divide-y divide-slate-200 dark:divide-slate-800 dark:divide-slate-700 text-sm">
+                <thead class="agent-panel-muted text-left text-xs font-semibold uppercase tracking-wide agent-text-subtle">
                     <tr>
                         <th class="px-4 py-3">{{ $t('profile.name') }}</th>
                         <th class="px-4 py-3">{{ $t('settings_ticket_statuses.color') }}</th>
@@ -93,15 +93,15 @@ const canDelete = (status) => !protectedSlugs.includes(status.slug);
                         <th class="px-4 py-3 text-right">{{ $t('settings_ticket_statuses.actions') }}</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-slate-100">
+                <tbody class="divide-y agent-table-divider">
                     <tr v-for="status in statuses" :key="status.id">
-                        <td class="px-4 py-3 font-medium text-slate-900">
+                        <td class="px-4 py-3 font-medium agent-text">
                             {{ status.name }}
-                            <span class="ml-1 text-xs text-slate-400">{{ status.slug }}</span>
+                            <span class="ml-1 text-xs text-slate-400 dark:text-slate-500">{{ status.slug }}</span>
                         </td>
-                        <td class="px-4 py-3 capitalize text-slate-600">{{ status.color }}</td>
-                        <td class="px-4 py-3 text-slate-600">{{ status.is_closed ? 'Yes' : 'No' }}</td>
-                        <td class="px-4 py-3 text-slate-600">{{ status.sort_order }}</td>
+                        <td class="px-4 py-3 capitalize agent-text-muted">{{ status.color }}</td>
+                        <td class="px-4 py-3 agent-text-muted">{{ status.is_closed ? 'Yes' : 'No' }}</td>
+                        <td class="px-4 py-3 agent-text-muted">{{ status.sort_order }}</td>
                         <td class="px-4 py-3 text-right">
                             <AppRowActions>
                                 <AppEditAction :label="$t('settings_ticket_statuses.edit')" @click="openEdit(status)" />
@@ -119,27 +119,27 @@ const canDelete = (status) => !protectedSlugs.includes(status.slug);
 
         <AppModal :show="showForm" @close="showForm = false">
             <form class="space-y-4" @submit.prevent="save">
-                <h2 class="text-lg font-semibold text-slate-900">{{ editingStatus ? 'Edit status' : 'New status' }}</h2>
+                <h2 class="text-lg font-semibold agent-text">{{ editingStatus ? 'Edit status' : 'New status' }}</h2>
                 <div>
-                    <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('profile.name') }}</label>
+                    <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('profile.name') }}</label>
                     <input v-model="form.name" type="text" :class="formInputClass" required />
                 </div>
                 <div>
-                    <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('settings_ticket_statuses.color') }}</label>
+                    <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('settings_ticket_statuses.color') }}</label>
                     <select v-model="form.color" :class="formInputClass">
                         <option v-for="color in colorOptions" :key="color" :value="color">{{ color }}</option>
                     </select>
                 </div>
                 <div v-if="editingStatus">
-                    <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('settings_ticket_statuses.sort_order') }}</label>
+                    <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('settings_ticket_statuses.sort_order') }}</label>
                     <input v-model.number="form.sort_order" type="number" min="0" :class="formInputClass" />
                 </div>
-                <label class="flex items-center gap-2 text-sm text-slate-700">
-                    <input v-model="form.is_closed" type="checkbox" class="rounded border-slate-300" />
+                <label class="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
+                    <input v-model="form.is_closed" type="checkbox" class="rounded agent-border" />
                     Counts as closed (stops SLA, triggers CSAT)
                 </label>
                 <div class="flex justify-end gap-2 pt-2">
-                    <button type="button" class="rounded-lg border border-slate-200 px-4 py-2 text-sm" @click="showForm = false">{{ $t('common.cancel') }}</button>
+                    <button type="button" class="rounded-lg border agent-border px-4 py-2 text-sm" @click="showForm = false">{{ $t('common.cancel') }}</button>
                     <button type="submit" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700" :disabled="form.processing">{{ $t('common.save') }}</button>
                 </div>
             </form>

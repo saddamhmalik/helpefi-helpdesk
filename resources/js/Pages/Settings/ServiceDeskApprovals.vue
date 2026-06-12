@@ -43,21 +43,21 @@ const save = () => {
     >
         <PlanFeatureBanner feature="service_desk" />
 
-        <form class="max-w-3xl space-y-6 rounded-xl border border-slate-200 bg-white p-6 shadow-sm" @submit.prevent="save">
+        <form class="max-w-3xl space-y-6 agent-card" @submit.prevent="save">
             <AppToggle v-model="form.change_requires_approval" :label="$t('settings_service_desk_approvals.require_approval_for_change_tickets')" />
-            <p class="text-sm text-slate-600">
+            <p class="text-sm agent-text-muted">
                 Applies when agents create tickets with type <span class="font-medium">{{ $t('settings_service_desk_approvals.change') }}</span> outside the service catalog.
             </p>
 
             <div v-if="form.change_requires_approval">
-                <p class="mb-2 text-sm font-medium text-slate-700">{{ $t('settings_service_desk_approvals.approvers_in_order') }}</p>
+                <p class="mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('settings_service_desk_approvals.approvers_in_order') }}</p>
                 <div class="flex flex-wrap gap-2">
                     <button
                         v-for="agent in agents"
                         :key="agent.id"
                         type="button"
                         class="rounded-full px-3 py-1 text-xs font-medium transition"
-                        :class="form.change_approver_user_ids.includes(agent.id) ? 'bg-violet-700 text-white' : 'bg-slate-100 text-slate-700 ring-1 ring-slate-200'"
+                        :class="form.change_approver_user_ids.includes(agent.id) ? 'bg-violet-700 text-white' : 'bg-slate-100 dark:bg-slate-900 text-slate-700 dark:text-slate-300 ring-1 agent-border'"
                         @click="toggleApprover(agent.id)"
                     >
                         {{ agent.name }}

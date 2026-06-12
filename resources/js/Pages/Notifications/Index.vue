@@ -101,14 +101,14 @@ const hasReadItems = computed(() => props.notifications.data?.some((item) => ite
                     <button
                         v-if="hasReadItems"
                         type="button"
-                        class="inline-flex items-center rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                        class="inline-flex items-center rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
                         @click="clearRead"
                     >
                         {{ $t('notifications.clear_read') }}
                     </button>
                     <button
                         type="button"
-                        class="inline-flex items-center rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                        class="inline-flex items-center rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
                         @click="markAllRead"
                     >
                         {{ $t('notifications.mark_all_read') }}
@@ -125,7 +125,7 @@ const hasReadItems = computed(() => props.notifications.data?.some((item) => ite
                 class="rounded-full px-3 py-1.5 text-xs font-medium transition"
                 :class="activeTab === tab.key
                     ? 'bg-slate-900 text-white'
-                    : 'bg-white text-slate-600 ring-1 ring-slate-200 hover:bg-slate-50'"
+                    : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 ring-1 ring-slate-200 dark:ring-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800'"
                 @click="applyFilter(tab)"
             >
                 {{ tab.label }}
@@ -136,8 +136,8 @@ const hasReadItems = computed(() => props.notifications.data?.some((item) => ite
             <div
                 v-for="item in notifications.data"
                 :key="item.id"
-                class="flex items-center gap-4 border-b border-slate-100 px-4 py-4 last:border-b-0"
-                :class="item.read_at ? '' : 'bg-blue-50/40'"
+                class="flex items-center gap-4 border-b border-slate-100 dark:border-slate-800 px-4 py-4 last:border-b-0"
+                :class="item.read_at ? '' : 'bg-blue-50 dark:bg-blue-950/40/40'"
             >
                 <NotificationTypeIcon :type="item.type" />
                 <div class="min-w-0 flex-1">
@@ -148,17 +148,17 @@ const hasReadItems = computed(() => props.notifications.data?.some((item) => ite
                         >
                             {{ typeLabel(item.type) }}
                         </span>
-                        <span v-if="item.ticket_number" class="font-mono text-xs text-slate-500">{{ item.ticket_number }}</span>
+                        <span v-if="item.ticket_number" class="font-mono text-xs text-slate-500 dark:text-slate-400">{{ item.ticket_number }}</span>
                         <span v-if="!item.read_at" class="h-2 w-2 rounded-full bg-blue-500" />
                     </div>
-                    <p class="mt-1 text-sm font-medium leading-snug text-slate-900">{{ item.message }}</p>
-                    <p class="mt-1 text-xs text-slate-500">{{ relativeTime(item.created_at) }}</p>
+                    <p class="mt-1 text-sm font-medium leading-snug text-slate-900 dark:text-slate-100">{{ item.message }}</p>
+                    <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">{{ relativeTime(item.created_at) }}</p>
                 </div>
                 <div class="flex shrink-0 items-center gap-2">
                     <button
                         v-if="!item.read_at"
                         type="button"
-                        class="hidden rounded-lg px-2.5 py-1.5 text-xs font-medium text-slate-500 hover:bg-slate-100 hover:text-slate-700 sm:inline-flex"
+                        class="hidden rounded-lg px-2.5 py-1.5 text-xs font-medium text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-300 dark:text-slate-300 sm:inline-flex"
                         @click="markRead(item.id)"
                     >
                         {{ $t('notifications.mark_read') }}
@@ -166,14 +166,14 @@ const hasReadItems = computed(() => props.notifications.data?.some((item) => ite
                     <button
                         v-if="item.url"
                         type="button"
-                        class="inline-flex items-center rounded-lg border border-blue-200 bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-700 hover:bg-blue-100"
+                        class="inline-flex items-center rounded-lg border border-blue-200 dark:border-blue-900/60 bg-blue-50 dark:bg-blue-950/40 px-3 py-1.5 text-xs font-semibold text-blue-700 dark:text-blue-300 hover:bg-blue-100"
                         @click="openNotification(item)"
                     >
                         {{ $t('common.open') }}
                     </button>
                 </div>
             </div>
-            <p v-if="!notifications.data?.length" class="py-12 text-center text-sm text-slate-500">
+            <p v-if="!notifications.data?.length" class="py-12 text-center text-sm text-slate-500 dark:text-slate-400">
                 {{ $t('notifications.no_notifications_yet') }}
             </p>
 

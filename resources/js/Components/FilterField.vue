@@ -7,8 +7,8 @@ defineProps({
 
 <template>
     <div>
-        <label v-if="label" class="mb-1.5 block text-sm font-medium text-slate-700">{{ label }}</label>
+        <label v-if="label" class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ label }}</label>
         <slot />
-        <p v-if="hint" class="mt-1 text-xs text-slate-500">{{ hint }}</p>
+        <p v-if="hint" class="mt-1 text-xs agent-text-subtle">{{ hint }}</p>
     </div>
 </template>

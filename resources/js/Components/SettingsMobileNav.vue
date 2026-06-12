@@ -32,13 +32,13 @@ const navLinkClass = (href) => {
     const active = isSettingsNavActive(href, currentUrl.value);
 
     if (active) {
-        return 'text-slate-900 font-medium';
+        return 'agent-text font-medium';
     }
 
-    return 'text-slate-700 hover:bg-slate-50';
+    return 'agent-text-muted agent-hover-surface';
 };
 
-const iconClass = (href) => (isSettingsNavActive(href, currentUrl.value) ? 'text-slate-700' : 'text-slate-400');
+const iconClass = (href) => (isSettingsNavActive(href, currentUrl.value) ? 'text-slate-700 dark:text-slate-300' : 'text-slate-400 dark:text-slate-500');
 
 const close = () => {
     open.value = false;
@@ -51,33 +51,33 @@ useEscapeKey(open, close);
 
 <template>
     <div class="lg:hidden">
-        <div class="sticky top-0 z-20 -mx-4 mb-4 border-b border-slate-200/80 bg-white/95 px-4 py-2 backdrop-blur supports-[backdrop-filter]:bg-white/80 sm:-mx-6 sm:px-6">
+        <div class="sticky top-0 z-20 -mx-4 mb-4 border-b agent-border bg-white/95 px-4 py-2 backdrop-blur supports-[backdrop-filter]:bg-white/80 dark:bg-slate-900/95 dark:supports-[backdrop-filter]:bg-slate-900/80 sm:-mx-6 sm:px-6">
             <div class="flex items-stretch gap-2">
                 <button
                     type="button"
-                    class="flex min-w-0 flex-1 items-center gap-2.5 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-left shadow-sm transition active:bg-slate-100"
+                    class="flex min-w-0 flex-1 items-center gap-2.5 rounded-xl border agent-border agent-panel-muted px-3 py-2.5 text-left shadow-sm transition active:opacity-80"
                     :aria-expanded="open"
                     @click="open = true"
                 >
-                    <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white text-slate-500 ring-1 ring-slate-200">
+                    <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg agent-panel text-slate-500 dark:text-slate-400 ring-1 agent-border">
                         <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                         </svg>
                     </span>
                     <span class="min-w-0 flex-1">
-                        <span v-if="currentGroup" class="block truncate text-[10px] font-semibold uppercase tracking-wide text-slate-400">
+                        <span v-if="currentGroup" class="block truncate text-[10px] font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500">
                             {{ currentGroup }}
                         </span>
-                        <span class="block truncate text-sm font-semibold text-slate-900">{{ currentLabel }}</span>
+                        <span class="block truncate text-sm font-semibold agent-text">{{ currentLabel }}</span>
                     </span>
-                    <svg class="h-4 w-4 shrink-0 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="h-4 w-4 shrink-0 text-slate-400 dark:text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                     </svg>
                 </button>
 
                 <Link
                     href="/settings"
-                    class="flex shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white px-3 text-slate-600 shadow-sm transition hover:bg-slate-50"
+                    class="flex shrink-0 items-center justify-center rounded-xl border agent-border agent-panel px-3 agent-text-muted shadow-sm transition agent-hover-surface"
                     :title="t('common.all_settings')"
                 >
                     <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -92,15 +92,15 @@ useEscapeKey(open, close);
                 <div v-if="open" class="fixed inset-0 z-50 lg:hidden">
                     <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-[1px]" @click="close" />
 
-                    <aside class="slide-over-panel absolute inset-y-0 left-0 flex w-[min(100vw-2.5rem,20rem)] flex-col bg-white shadow-2xl">
-                    <div class="flex shrink-0 items-center justify-between border-b border-slate-200 px-4 py-3">
+                    <aside class="slide-over-panel absolute inset-y-0 left-0 flex w-[min(100vw-2.5rem,20rem)] flex-col agent-panel shadow-2xl">
+                    <div class="flex shrink-0 items-center justify-between border-b agent-border px-4 py-3">
                         <div class="min-w-0">
-                            <p class="text-xs font-semibold uppercase tracking-wide text-blue-600">{{ t('common.settings') }}</p>
-                            <p class="truncate text-sm font-semibold text-slate-900">{{ t('common.browse_settings') }}</p>
+                            <p class="text-xs font-semibold uppercase tracking-wide text-blue-600 dark:text-blue-400">{{ t('common.settings') }}</p>
+                            <p class="truncate text-sm font-semibold agent-text">{{ t('common.browse_settings') }}</p>
                         </div>
                         <button
                             type="button"
-                            class="rounded-lg p-2 text-slate-500 transition hover:bg-slate-100"
+                            class="rounded-lg p-2 agent-text-subtle transition agent-hover-surface"
                             @click="close"
                         >
                             <span class="sr-only">{{ t('common.close') }}</span>
@@ -110,27 +110,27 @@ useEscapeKey(open, close);
                         </button>
                     </div>
 
-                    <div class="shrink-0 border-b border-slate-100 px-4 py-3">
+                    <div class="shrink-0 border-b agent-border-subtle px-4 py-3">
                         <div class="relative">
-                            <svg class="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 dark:text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                             </svg>
                             <input
                                 v-model="query"
                                 type="search"
                                 :placeholder="t('settings_overview.search_settings')"
-                                class="w-full rounded-lg border border-slate-200 bg-slate-50 py-2 pl-9 pr-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-100"
+                                class="w-full rounded-lg border agent-border agent-panel-muted py-2 pl-9 pr-3 text-sm agent-input"
                             />
                         </div>
                     </div>
 
                     <nav class="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain px-3 py-3">
-                        <p v-if="query && filteredGroups.length === 0" class="px-2 py-6 text-center text-sm text-slate-500">
+                        <p v-if="query && filteredGroups.length === 0" class="px-2 py-6 text-center text-sm agent-text-subtle">
                             {{ t('settings_overview.no_settings_matched') }}
                         </p>
 
                         <div v-for="group in filteredGroups" :key="group.id">
-                            <p class="mb-1 px-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-400">
+                            <p class="mb-1 px-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-400 dark:text-slate-500">
                                 {{ group.label }}
                             </p>
                             <ul class="space-y-0.5">
@@ -148,7 +148,7 @@ useEscapeKey(open, close);
                                         <span class="min-w-0 flex-1 truncate">{{ item.label }}</span>
                                         <span
                                             v-if="item.locked"
-                                            class="shrink-0 rounded-full bg-amber-50 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-amber-700"
+                                            class="shrink-0 rounded-full bg-amber-50 dark:bg-amber-950/40 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-amber-700 dark:bg-amber-950/50 dark:text-amber-300"
                                         >
                                             {{ item.lockedLabel }}
                                         </span>
@@ -158,10 +158,10 @@ useEscapeKey(open, close);
                         </div>
                     </nav>
 
-                    <div class="shrink-0 border-t border-slate-200 p-3">
+                    <div class="shrink-0 border-t agent-border p-3">
                         <Link
                             href="/dashboard"
-                            class="flex items-center gap-2 rounded-lg px-2.5 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-50"
+                            class="flex items-center gap-2 rounded-lg px-2.5 py-2 text-sm font-medium agent-text-muted transition agent-hover-surface"
                             @click="close"
                         >
                             <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

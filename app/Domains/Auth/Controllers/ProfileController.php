@@ -63,6 +63,17 @@ class ProfileController extends Controller
         return back()->with('success', __('messages.profile_updated'));
     }
 
+    public function updateAppearance(Request $request): RedirectResponse
+    {
+        $data = $request->validate([
+            'appearance' => ['required', 'string', Rule::in(AppearanceSupport::MODES)],
+        ]);
+
+        $this->profileService->updateAppearance($request->user(), $data['appearance']);
+
+        return back();
+    }
+
     public function updatePassword(Request $request): RedirectResponse
     {
         $data = $request->validate([

@@ -74,7 +74,7 @@ const relativeTime = (value) => formatRelativeTime(value, locale.value);
     <div ref="root" class="relative">
         <button
             type="button"
-            class="relative rounded-lg p-2 text-slate-500 hover:bg-slate-100 hover:text-slate-700"
+            class="relative rounded-lg p-2 agent-text-subtle transition agent-hover-surface hover:text-slate-700 dark:hover:text-slate-300 dark:text-slate-300 dark:hover:text-slate-200"
             :aria-label="$t('components.notifications')"
             :aria-expanded="open"
             @click="toggle"
@@ -93,19 +93,19 @@ const relativeTime = (value) => formatRelativeTime(value, locale.value);
         <Transition name="dropdown">
             <div
                 v-if="open"
-                class="absolute right-0 z-50 mt-2 w-96 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xl"
+                class="absolute right-0 z-50 mt-2 w-96 overflow-hidden rounded-xl border agent-border agent-panel shadow-xl"
             >
-            <div class="flex items-center justify-between border-b border-slate-100 px-4 py-3">
+            <div class="flex items-center justify-between border-b agent-border-subtle px-4 py-3">
                 <div>
-                    <p class="text-sm font-semibold text-slate-900">{{ $t('components.notifications') }}</p>
-                    <p v-if="summary.unread_count > 0" class="text-xs text-slate-500">
+                    <p class="text-sm font-semibold agent-text">{{ $t('components.notifications') }}</p>
+                    <p v-if="summary.unread_count > 0" class="text-xs agent-text-subtle">
                         {{ $t('components.unread_count', { count: summary.unread_count }) }}
                     </p>
                 </div>
                 <button
                     v-if="summary.unread_count > 0"
                     type="button"
-                    class="text-xs font-medium text-blue-600 hover:text-blue-700"
+                    class="text-xs font-medium text-blue-600 hover:text-blue-700 dark:hover:text-blue-300 dark:text-blue-300"
                     @click="markAllRead"
                 >
                     {{ $t('components.mark_all_read') }}
@@ -117,8 +117,8 @@ const relativeTime = (value) => formatRelativeTime(value, locale.value);
                     v-for="item in summary.recent"
                     :key="item.id"
                     type="button"
-                    class="flex w-full items-center gap-3 border-b border-slate-50 px-4 py-3 text-left transition hover:bg-slate-50"
-                    :class="item.read_at ? 'opacity-75' : 'bg-blue-50/30'"
+                    class="flex w-full items-center gap-3 border-b agent-border-subtle px-4 py-3 text-left transition agent-hover-row"
+                    :class="item.read_at ? 'opacity-75' : 'bg-blue-50 dark:bg-blue-950/40/30 dark:bg-blue-950/30'"
                     @click="markRead(item)"
                 >
                     <NotificationTypeIcon :type="item.type" size-class="h-4 w-4" box-class="h-9 w-9" />
@@ -130,25 +130,25 @@ const relativeTime = (value) => formatRelativeTime(value, locale.value);
                             >
                                 {{ typeLabel(item.type) }}
                             </span>
-                            <span v-if="item.ticket_number" class="font-mono text-[10px] text-slate-500">
+                            <span v-if="item.ticket_number" class="font-mono text-[10px] text-slate-500 dark:text-slate-400">
                                 {{ item.ticket_number }}
                             </span>
                             <span v-if="!item.read_at" class="h-2 w-2 rounded-full bg-blue-500" />
                         </div>
-                        <p class="mt-1 line-clamp-2 text-sm font-medium leading-snug text-slate-800">{{ item.message }}</p>
-                        <p class="mt-1 text-xs text-slate-500">{{ relativeTime(item.created_at) }}</p>
+                        <p class="mt-1 line-clamp-2 text-sm font-medium leading-snug text-slate-800 dark:text-slate-200">{{ item.message }}</p>
+                        <p class="mt-1 text-xs agent-text-subtle">{{ relativeTime(item.created_at) }}</p>
                     </div>
                     <svg class="h-4 w-4 shrink-0 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                     </svg>
                 </button>
-                <p v-if="!summary.recent.length" class="px-4 py-8 text-center text-sm text-slate-500">
+                <p v-if="!summary.recent.length" class="px-4 py-8 text-center text-sm agent-text-subtle">
                     {{ $t('components.no_notifications_yet') }}
                 </p>
             </div>
 
-            <div class="border-t border-slate-100 px-4 py-2.5">
-                <Link href="/notifications" class="text-xs font-medium text-blue-600 hover:text-blue-700" @click="close">
+            <div class="border-t agent-border-subtle px-4 py-2.5">
+                <Link href="/notifications" class="text-xs font-medium text-blue-600 hover:text-blue-700 dark:text-blue-300 dark:text-blue-400 dark:hover:text-blue-300" @click="close">
                     {{ $t('components.view_all') }}
                 </Link>
             </div>

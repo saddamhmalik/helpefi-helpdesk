@@ -46,13 +46,13 @@ const segments = computed(() => {
 
 const htmlClass = computed(() => [
     'ticket-message-html break-words text-sm [&_a]:underline [&_li]:ml-4 [&_ol]:list-decimal [&_ol]:pl-4 [&_p]:my-1 [&_ul]:list-disc [&_ul]:pl-4',
-    props.inverted ? 'text-white [&_a]:text-blue-100' : 'text-slate-800 [&_a]:text-blue-600',
+    props.inverted ? 'text-white [&_a]:text-blue-100' : 'text-slate-800 dark:text-slate-200 [&_a]:text-blue-600',
 ]);
 </script>
 
 <template>
     <div v-if="isHtml" :class="htmlClass" v-html="normalizedBody" />
-    <p v-else class="whitespace-pre-wrap break-words" :class="inverted ? 'text-white' : 'text-slate-800'">
+    <p v-else class="whitespace-pre-wrap break-words" :class="inverted ? 'text-white' : 'text-slate-800 dark:text-slate-200'">
         <template v-for="(segment, index) in segments" :key="index">
             <a
                 v-if="segment.type === 'link'"
@@ -60,7 +60,7 @@ const htmlClass = computed(() => [
                 target="_blank"
                 rel="noopener noreferrer"
                 class="underline"
-                :class="inverted ? 'text-blue-100 hover:text-white' : 'text-blue-600 hover:text-blue-700'"
+                :class="inverted ? 'text-blue-100 hover:text-white' : 'text-blue-600 hover:text-blue-700 dark:hover:text-blue-300 dark:text-blue-300'"
             >{{ segment.value }}</a>
             <span v-else>{{ segment.value }}</span>
         </template>

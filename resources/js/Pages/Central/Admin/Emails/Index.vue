@@ -55,35 +55,35 @@ const placeholderTag = (key) => `{{${key}}}`;
                 </template>
             </PageHeader>
 
-            <div class="mb-6 rounded-2xl border border-blue-200 bg-blue-50 p-5">
+            <div class="mb-6 rounded-2xl border border-blue-200 dark:border-blue-900/60 bg-blue-50 dark:bg-blue-950/40 p-5">
                 <p class="text-sm font-semibold text-blue-900">{{ $t('central.available_placeholders') }}</p>
                 <div class="mt-3 flex flex-wrap gap-2">
-                    <code v-for="item in placeholders" :key="item.key" class="rounded-lg bg-white px-2.5 py-1 text-xs text-blue-800 ring-1 ring-blue-200">{{ placeholderTag(item.key) }}</code>
+                    <code v-for="item in placeholders" :key="item.key" class="rounded-lg bg-white dark:bg-slate-900 px-2.5 py-1 text-xs text-blue-800 ring-1 ring-blue-200">{{ placeholderTag(item.key) }}</code>
                 </div>
             </div>
 
-            <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-                <table class="min-w-full divide-y divide-slate-200 text-sm">
+            <div class="overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm">
+                <table class="min-w-full divide-y divide-slate-200 dark:divide-slate-800 text-sm">
                     <thead class="bg-slate-50">
                         <tr>
-                            <th class="px-5 py-3.5 text-left font-medium text-slate-600">{{ $t('central.template') }}</th>
-                            <th class="px-5 py-3.5 text-left font-medium text-slate-600">{{ $t('central.subject') }}</th>
-                            <th class="px-5 py-3.5 text-left font-medium text-slate-600">{{ $t('central.trigger') }}</th>
-                            <th class="px-5 py-3.5 text-left font-medium text-slate-600">{{ $t('central.status') }}</th>
-                            <th class="px-5 py-3.5 text-right font-medium text-slate-600">{{ $t('central.actions') }}</th>
+                            <th class="px-5 py-3.5 text-left font-medium text-slate-600 dark:text-slate-400">{{ $t('central.template') }}</th>
+                            <th class="px-5 py-3.5 text-left font-medium text-slate-600 dark:text-slate-400">{{ $t('central.subject') }}</th>
+                            <th class="px-5 py-3.5 text-left font-medium text-slate-600 dark:text-slate-400">{{ $t('central.trigger') }}</th>
+                            <th class="px-5 py-3.5 text-left font-medium text-slate-600 dark:text-slate-400">{{ $t('central.status') }}</th>
+                            <th class="px-5 py-3.5 text-right font-medium text-slate-600 dark:text-slate-400">{{ $t('central.actions') }}</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-slate-100">
-                        <tr v-for="template in templates" :key="template.id" class="hover:bg-slate-50/80">
+                    <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+                        <tr v-for="template in templates" :key="template.id" class="hover:bg-slate-50 dark:bg-slate-950 dark:hover:bg-slate-800/80">
                             <td class="px-5 py-4 align-top">
-                                <p class="font-medium text-slate-900">{{ template.name }}</p>
-                                <p class="mt-0.5 font-mono text-xs text-slate-500">{{ template.slug }}</p>
-                                <span v-if="template.is_system" class="mt-2 inline-flex rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-600">{{ $t('central.system') }}</span>
+                                <p class="font-medium text-slate-900 dark:text-slate-100">{{ template.name }}</p>
+                                <p class="mt-0.5 font-mono text-xs text-slate-500 dark:text-slate-400">{{ template.slug }}</p>
+                                <span v-if="template.is_system" class="mt-2 inline-flex rounded-full bg-slate-100 dark:bg-slate-900 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-600 dark:text-slate-400">{{ $t('central.system') }}</span>
                             </td>
-                            <td class="max-w-xs px-5 py-4 align-top text-slate-600">{{ template.subject }}</td>
-                            <td class="px-5 py-4 align-top text-slate-600">{{ eventLabel(template.slug) }}</td>
+                            <td class="max-w-xs px-5 py-4 align-top text-slate-600 dark:text-slate-400">{{ template.subject }}</td>
+                            <td class="px-5 py-4 align-top text-slate-600 dark:text-slate-400">{{ eventLabel(template.slug) }}</td>
                             <td class="px-5 py-4 align-top">
-                                <span class="inline-flex rounded-full px-2.5 py-1 text-xs font-medium" :class="template.is_active ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600'">
+                                <span class="inline-flex rounded-full px-2.5 py-1 text-xs font-medium" :class="template.is_active ? 'bg-emerald-100 text-emerald-700 dark:text-emerald-300' : 'bg-slate-100 dark:bg-slate-900 text-slate-600 dark:text-slate-400'">
                                     {{ template.is_active ? 'Active' : 'Disabled' }}
                                 </span>
                             </td>

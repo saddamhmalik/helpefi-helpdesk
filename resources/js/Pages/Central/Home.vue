@@ -425,12 +425,12 @@ const categoryHighlightIcons = {
 
 const activeCategory = computed(() => categoryContent[featureCategory.value]);
 const categoryThemes = {
-    operations: { gradient: 'from-blue-600 via-blue-700 to-indigo-700', iconBg: 'bg-blue-600', iconBgMuted: 'bg-blue-100 text-blue-700' },
-    channels: { gradient: 'from-emerald-600 via-teal-600 to-cyan-700', iconBg: 'bg-emerald-600', iconBgMuted: 'bg-emerald-100 text-emerald-700' },
-    selfservice: { gradient: 'from-violet-600 via-purple-600 to-indigo-700', iconBg: 'bg-violet-600', iconBgMuted: 'bg-violet-100 text-violet-700' },
+    operations: { gradient: 'from-blue-600 via-blue-700 to-indigo-700', iconBg: 'bg-blue-600', iconBgMuted: 'bg-blue-100 text-blue-700 dark:text-blue-300' },
+    channels: { gradient: 'from-emerald-600 via-teal-600 to-cyan-700', iconBg: 'bg-emerald-600', iconBgMuted: 'bg-emerald-100 text-emerald-700 dark:text-emerald-300' },
+    selfservice: { gradient: 'from-violet-600 via-purple-600 to-indigo-700', iconBg: 'bg-violet-600', iconBgMuted: 'bg-violet-100 text-violet-700 dark:text-violet-300' },
     automation: { gradient: 'from-amber-500 via-orange-500 to-red-600', iconBg: 'bg-amber-500', iconBgMuted: 'bg-amber-100 text-amber-800' },
-    itsm: { gradient: 'from-red-600 via-rose-600 to-orange-700', iconBg: 'bg-red-600', iconBgMuted: 'bg-red-100 text-red-700' },
-    platform: { gradient: 'from-slate-700 via-slate-800 to-slate-900', iconBg: 'bg-slate-800', iconBgMuted: 'bg-slate-200 text-slate-700' },
+    itsm: { gradient: 'from-red-600 via-rose-600 to-orange-700', iconBg: 'bg-red-600', iconBgMuted: 'bg-red-100 text-red-700 dark:text-red-300' },
+    platform: { gradient: 'from-slate-700 via-slate-800 to-slate-900', iconBg: 'bg-slate-800', iconBgMuted: 'bg-slate-200 text-slate-700 dark:text-slate-300' },
 };
 
 const categoryHints = {
@@ -558,7 +558,7 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
                                 <span
                                     v-for="pill in heroAiPills"
                                     :key="pill.label"
-                                    class="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-[11px] font-medium text-slate-200 sm:text-xs"
+                                    class="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-white/10 bg-white dark:bg-slate-900/5 px-3 py-1.5 text-[11px] font-medium text-slate-200 sm:text-xs"
                                 >
                                     <svg class="h-3.5 w-3.5 shrink-0 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" :d="pill.icon" /></svg>
                                     {{ pill.label }}
@@ -568,7 +568,7 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
                                 <div v-for="stat in heroAiStats" :key="stat.label" class="text-center sm:text-left">
                                     <p class="text-base font-extrabold text-white sm:text-lg">{{ stat.value }}</p>
                                     <p class="text-[10px] font-medium text-violet-200 sm:text-xs">{{ stat.label }}</p>
-                                    <p class="hidden text-[10px] text-slate-500 sm:block">{{ stat.detail }}</p>
+                                    <p class="hidden text-[10px] text-slate-500 dark:text-slate-400 sm:block">{{ stat.detail }}</p>
                                 </div>
                             </div>
                         </div>
@@ -592,7 +592,7 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
                         </div>
 
                         <div class="mt-8 flex flex-wrap gap-x-5 gap-y-2">
-                            <span v-for="badge in trustBadges" :key="badge" class="inline-flex items-center gap-1.5 text-xs text-slate-400">
+                            <span v-for="badge in trustBadges" :key="badge" class="inline-flex items-center gap-1.5 text-xs text-slate-400 dark:text-slate-500">
                                 <svg class="h-3.5 w-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" /></svg>
                                 {{ badge }}
                             </span>
@@ -613,7 +613,7 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
                                 <div class="flex items-center gap-0.5">
                                     <svg v-for="n in 5" :key="n" class="h-4 w-4 text-amber-400" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>
                                 </div>
-                                <p class="mt-0.5 text-sm text-slate-400">
+                                <p class="mt-0.5 text-sm text-slate-400 dark:text-slate-500">
                                     <span class="font-semibold text-white">Trusted by support & IT teams</span> worldwide
                                 </p>
                             </div>
@@ -646,19 +646,19 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
                         <div class="relative mt-6 hidden md:block lg:mt-0">
                             <div class="pointer-events-none absolute -right-2 -top-3 z-10 flex items-center gap-1.5 rounded-full border border-violet-400/40 bg-violet-600/90 px-3 py-1.5 text-[11px] font-bold text-white shadow-lg shadow-violet-900/40 backdrop-blur">
                                 <span class="relative flex h-1.5 w-1.5">
-                                    <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-white opacity-75" />
-                                    <span class="relative inline-flex h-1.5 w-1.5 rounded-full bg-white" />
+                                    <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-white dark:bg-slate-900 opacity-75" />
+                                    <span class="relative inline-flex h-1.5 w-1.5 rounded-full bg-white dark:bg-slate-900" />
                                 </span>
                                 AI Copilot live
                             </div>
                             <div class="pointer-events-none absolute -inset-4 rounded-3xl bg-gradient-to-r from-blue-600/20 via-indigo-500/20 to-violet-600/20 blur-2xl" />
-                            <div class="relative rounded-2xl border border-white/15 bg-white/5 p-2 shadow-2xl shadow-black/60 backdrop-blur-xl ring-1 ring-white/10">
+                            <div class="relative rounded-2xl border border-white/15 bg-white dark:bg-slate-900/5 p-2 shadow-2xl shadow-black/60 backdrop-blur-xl ring-1 ring-white/10">
                                 <div class="overflow-hidden rounded-xl bg-slate-900 ring-1 ring-white/10">
                                 <div class="flex items-center gap-2 border-b border-white/10 px-3 py-2.5 sm:px-4 sm:py-3">
                                     <span class="h-2.5 w-2.5 rounded-full bg-red-400/90" />
                                     <span class="h-2.5 w-2.5 rounded-full bg-amber-400/90" />
                                     <span class="h-2.5 w-2.5 rounded-full bg-emerald-400/90" />
-                                    <span class="ml-2 min-w-0 truncate text-[10px] text-slate-500 sm:text-xs">{{ workspaceDomainExample }}</span>
+                                    <span class="ml-2 min-w-0 truncate text-[10px] text-slate-500 dark:text-slate-400 sm:text-xs">{{ workspaceDomainExample }}</span>
                                 </div>
                                 <div class="flex gap-1 overflow-x-auto border-b border-white/10 bg-slate-950/60 px-2 py-2 sm:flex-wrap sm:px-3">
                                     <button
@@ -675,11 +675,11 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
 
                                 <div v-if="previewTab === 'inbox'" class="grid grid-cols-5">
                                     <div class="col-span-2 border-r border-white/10 bg-slate-950/90 p-4">
-                                        <p class="text-[10px] font-semibold uppercase tracking-wider text-slate-500">{{ $t('central.open_tickets_12') }}</p>
+                                        <p class="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">{{ $t('central.open_tickets_12') }}</p>
                                         <div class="mt-3 space-y-2">
                                             <div class="rounded-lg bg-blue-500/20 px-3 py-2 ring-1 ring-blue-500/40">
                                                 <p class="text-xs font-medium text-white">{{ $t('central.payment_failed_need_help') }}</p>
-                                                <p class="mt-0.5 text-[10px] text-slate-400">{{ $t('central.sarah_sla_18m_assigned_to_you') }}</p>
+                                                <p class="mt-0.5 text-[10px] text-slate-400 dark:text-slate-500">{{ $t('central.sarah_sla_18m_assigned_to_you') }}</p>
                                             </div>
                                             <div class="rounded-lg px-3 py-2 hover:bg-white/5">
                                                 <p class="text-xs text-slate-300">{{ $t('central.chat_shipping_question') }}</p>
@@ -687,7 +687,7 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
                                             </div>
                                             <div class="rounded-lg px-3 py-2 hover:bg-white/5">
                                                 <p class="text-xs text-slate-300">{{ $t('central.api_rate_limit_error') }}</p>
-                                                <p class="mt-0.5 text-[10px] text-slate-500">{{ $t('central.dev_team_14m_ago') }}</p>
+                                                <p class="mt-0.5 text-[10px] text-slate-500 dark:text-slate-400">{{ $t('central.dev_team_14m_ago') }}</p>
                                             </div>
                                         </div>
                                     </div>
@@ -697,22 +697,22 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
                                             <span class="rounded-full bg-amber-500/20 px-2 py-0.5 text-[10px] font-medium text-amber-300">{{ $t('central.high_sla_18m') }}</span>
                                         </div>
                                         <div class="mt-4 space-y-3">
-                                            <div class="rounded-lg bg-white/5 p-3"><p class="text-xs text-slate-300">{{ $t('central.hi_my_subscription_payment_failed_but_i_was_still_charged') }}</p></div>
+                                            <div class="rounded-lg bg-white dark:bg-slate-900/5 p-3"><p class="text-xs text-slate-300">{{ $t('central.hi_my_subscription_payment_failed_but_i_was_still_charged') }}</p></div>
                                             <div class="rounded-lg bg-blue-600/25 p-3 ring-1 ring-blue-500/30"><p class="text-xs text-blue-100">{{ $t('central.i_can_see_the_duplicate_charge_refunding_now_and_extending_your_plan_b') }}</p></div>
                                         </div>
                                         <div class="mt-4 flex flex-wrap gap-2">
                                             <span class="rounded-md bg-violet-500/20 px-2 py-1 text-[10px] text-violet-200">{{ $t('central.ai_draft_ready') }}</span>
-                                            <span class="rounded-md bg-white/5 px-2 py-1 text-[10px] text-slate-400">{{ $t('central.billing') }}</span>
+                                            <span class="rounded-md bg-white dark:bg-slate-900/5 px-2 py-1 text-[10px] text-slate-400 dark:text-slate-500">{{ $t('central.billing') }}</span>
                                         </div>
                                     </div>
                                 </div>
 
                                 <div v-else-if="previewTab === 'ai'" class="grid grid-cols-5">
                                     <div class="col-span-2 border-r border-white/10 bg-slate-950/90 p-4">
-                                        <p class="text-[10px] font-semibold uppercase tracking-wider text-slate-500">Ticket #1042</p>
+                                        <p class="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Ticket #1042</p>
                                         <p class="mt-2 text-xs font-medium text-white">Payment failed — need help</p>
                                         <div class="mt-4 space-y-2">
-                                            <div class="rounded-lg bg-white/5 px-3 py-2"><p class="text-[10px] text-slate-300">Customer: charged twice after failed payment</p></div>
+                                            <div class="rounded-lg bg-white dark:bg-slate-900/5 px-3 py-2"><p class="text-[10px] text-slate-300">Customer: charged twice after failed payment</p></div>
                                             <div class="rounded-lg bg-blue-600/20 px-3 py-2 ring-1 ring-blue-500/30"><p class="text-[10px] text-blue-100">Agent: refund initiated, plan extended</p></div>
                                         </div>
                                         <span class="mt-4 inline-flex rounded-md bg-violet-500/20 px-2 py-1 text-[10px] text-violet-200">AI draft ready</span>
@@ -724,7 +724,7 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
                                         </div>
                                         <div class="mt-3 flex-1 space-y-2">
                                             <div class="ml-auto max-w-[90%] rounded-xl rounded-br-sm bg-violet-600/50 px-3 py-2"><p class="text-[10px] text-violet-50">Summarize and suggest next steps</p></div>
-                                            <div class="max-w-[95%] rounded-xl rounded-bl-sm border border-violet-500/20 bg-white/5 px-3 py-2"><p class="text-[10px] leading-relaxed text-slate-200">Duplicate charge confirmed. Refund queued; subscription extended 30 days. Send confirmation email and close when refund clears.</p></div>
+                                            <div class="max-w-[95%] rounded-xl rounded-bl-sm border border-violet-500/20 bg-white dark:bg-slate-900/5 px-3 py-2"><p class="text-[10px] leading-relaxed text-slate-200">Duplicate charge confirmed. Refund queued; subscription extended 30 days. Send confirmation email and close when refund clears.</p></div>
                                         </div>
                                         <p class="mt-3 text-[9px] text-violet-300/70">3 KB articles matched · Insert draft →</p>
                                     </div>
@@ -739,11 +739,11 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
                                         </div>
                                     </div>
                                     <div class="mt-4 space-y-3">
-                                        <div class="max-w-[80%] rounded-2xl rounded-bl-md bg-white/10 px-3 py-2"><p class="text-xs text-slate-200">Do you offer annual billing?</p></div>
+                                        <div class="max-w-[80%] rounded-2xl rounded-bl-md bg-white dark:bg-slate-900/10 px-3 py-2"><p class="text-xs text-slate-200">Do you offer annual billing?</p></div>
                                         <div class="ml-auto max-w-[80%] rounded-2xl rounded-br-md bg-blue-600/40 px-3 py-2"><p class="text-xs text-blue-50">{{ $t('central.yes_annual_plans_save_20_i_can_send_details_to_your_email') }}</p></div>
-                                        <div class="max-w-[80%] rounded-2xl rounded-bl-md bg-white/10 px-3 py-2"><p class="text-xs text-slate-200">{{ $t('central.perfect_please_do') }}</p></div>
+                                        <div class="max-w-[80%] rounded-2xl rounded-bl-md bg-white dark:bg-slate-900/10 px-3 py-2"><p class="text-xs text-slate-200">{{ $t('central.perfect_please_do') }}</p></div>
                                     </div>
-                                    <p class="mt-4 text-center text-[10px] text-slate-500">{{ $t('central.conversation_saved_as_ticket_1042') }}</p>
+                                    <p class="mt-4 text-center text-[10px] text-slate-500 dark:text-slate-400">{{ $t('central.conversation_saved_as_ticket_1042') }}</p>
                                 </div>
 
                                 <div v-else-if="previewTab === 'servicedesk'" class="p-4">
@@ -753,43 +753,43 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
                                     </div>
                                     <div class="grid grid-cols-2 gap-2">
                                         <div class="rounded-lg bg-red-500/10 p-2 ring-1 ring-red-500/20">
-                                            <p class="text-[10px] text-slate-400">{{ $t('central.incidents') }}</p>
+                                            <p class="text-[10px] text-slate-400 dark:text-slate-500">{{ $t('central.incidents') }}</p>
                                             <p class="text-lg font-bold text-white">8</p>
                                             <p class="text-[10px] text-red-300">{{ $t('central.2_major') }}</p>
                                         </div>
                                         <div class="rounded-lg bg-violet-500/10 p-2 ring-1 ring-violet-500/20">
-                                            <p class="text-[10px] text-slate-400">{{ $t('central.changes') }}</p>
+                                            <p class="text-[10px] text-slate-400 dark:text-slate-500">{{ $t('central.changes') }}</p>
                                             <p class="text-lg font-bold text-white">3</p>
                                             <p class="text-[10px] text-violet-300">{{ $t('central.1_pending_approval') }}</p>
                                         </div>
                                         <div class="rounded-lg bg-amber-500/10 p-2 ring-1 ring-amber-500/20">
-                                            <p class="text-[10px] text-slate-400">{{ $t('central.problems') }}</p>
+                                            <p class="text-[10px] text-slate-400 dark:text-slate-500">{{ $t('central.problems') }}</p>
                                             <p class="text-lg font-bold text-white">2</p>
                                         </div>
                                         <div class="rounded-lg bg-blue-500/10 p-2 ring-1 ring-blue-500/20">
-                                            <p class="text-[10px] text-slate-400">{{ $t('central.approvals') }}</p>
+                                            <p class="text-[10px] text-slate-400 dark:text-slate-500">{{ $t('central.approvals') }}</p>
                                             <p class="text-lg font-bold text-white">4</p>
                                             <p class="text-[10px] text-blue-300">{{ $t('central.awaiting_you') }}</p>
                                         </div>
                                     </div>
                                     <div class="mt-3 rounded-lg border border-red-500/30 bg-red-950/40 px-3 py-2">
                                         <p class="text-xs font-medium text-red-100">{{ $t('central.hd-93001_email_outage') }}</p>
-                                        <p class="mt-0.5 text-[10px] text-slate-400">{{ $t('central.coordinators_3_declared_12m_ago') }}</p>
+                                        <p class="mt-0.5 text-[10px] text-slate-400 dark:text-slate-500">{{ $t('central.coordinators_3_declared_12m_ago') }}</p>
                                     </div>
                                 </div>
 
                                 <div v-else class="p-4">
                                     <div class="grid grid-cols-3 gap-3">
-                                        <div class="rounded-lg bg-white/5 p-3"><p class="text-[10px] text-slate-500">{{ $t('central.first_response') }}</p><p class="mt-1 text-lg font-bold text-emerald-400">{{ $t('central.4_2m') }}</p><p class="text-[10px] text-emerald-400/80">{{ $t('central.18_vs_last_week') }}</p></div>
-                                        <div class="rounded-lg bg-white/5 p-3"><p class="text-[10px] text-slate-500">{{ $t('central.csat_score') }}</p><p class="mt-1 text-lg font-bold text-white">94%</p><p class="text-[10px] text-slate-400">{{ $t('central.128_responses') }}</p></div>
-                                        <div class="rounded-lg bg-white/5 p-3"><p class="text-[10px] text-slate-500">{{ $t('central.resolved_today') }}</p><p class="mt-1 text-lg font-bold text-white">47</p><p class="text-[10px] text-slate-400">{{ $t('central.6_open') }}</p></div>
+                                        <div class="rounded-lg bg-white dark:bg-slate-900/5 p-3"><p class="text-[10px] text-slate-500 dark:text-slate-400">{{ $t('central.first_response') }}</p><p class="mt-1 text-lg font-bold text-emerald-400">{{ $t('central.4_2m') }}</p><p class="text-[10px] text-emerald-400/80">{{ $t('central.18_vs_last_week') }}</p></div>
+                                        <div class="rounded-lg bg-white dark:bg-slate-900/5 p-3"><p class="text-[10px] text-slate-500 dark:text-slate-400">{{ $t('central.csat_score') }}</p><p class="mt-1 text-lg font-bold text-white">94%</p><p class="text-[10px] text-slate-400 dark:text-slate-500">{{ $t('central.128_responses') }}</p></div>
+                                        <div class="rounded-lg bg-white dark:bg-slate-900/5 p-3"><p class="text-[10px] text-slate-500 dark:text-slate-400">{{ $t('central.resolved_today') }}</p><p class="mt-1 text-lg font-bold text-white">47</p><p class="text-[10px] text-slate-400 dark:text-slate-500">{{ $t('central.6_open') }}</p></div>
                                     </div>
                                     <div class="mt-4 h-24 rounded-lg bg-gradient-to-t from-blue-600/20 to-transparent p-3">
                                         <div class="flex h-full items-end gap-1">
                                             <div v-for="(h, i) in [40, 55, 35, 70, 50, 85, 60, 75, 90, 65]" :key="i" class="flex-1 rounded-t bg-blue-500/60" :style="{ height: `${h}%` }" />
                                         </div>
                                     </div>
-                                    <p class="mt-2 text-center text-[10px] text-slate-500">{{ $t('central.ticket_volume_last_10_days') }}</p>
+                                    <p class="mt-2 text-center text-[10px] text-slate-500 dark:text-slate-400">{{ $t('central.ticket_volume_last_10_days') }}</p>
                                 </div>
                             </div>
                             </div>
@@ -799,61 +799,61 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
             </div>
         </section>
 
-        <section class="border-b border-slate-200 bg-white py-10 sm:py-14">
+        <section class="border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 py-10 sm:py-14">
             <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                 <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
                     <div
                         v-for="stat in outcomeStats"
                         :key="stat.label"
-                        class="rounded-2xl border border-slate-100 bg-gradient-to-br from-slate-50 to-white p-6 text-center shadow-sm"
+                        class="rounded-2xl border border-slate-100 dark:border-slate-800 bg-gradient-to-br from-slate-50 to-white p-6 text-center shadow-sm"
                     >
-                        <p class="text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">{{ stat.value }}</p>
-                        <p class="mt-1 text-sm font-semibold text-slate-800">{{ stat.label }}</p>
-                        <p class="mt-1 text-xs text-slate-500">{{ stat.detail }}</p>
+                        <p class="text-3xl font-extrabold tracking-tight text-slate-900 dark:text-slate-100 sm:text-4xl">{{ stat.value }}</p>
+                        <p class="mt-1 text-sm font-semibold text-slate-800 dark:text-slate-200">{{ stat.label }}</p>
+                        <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">{{ stat.detail }}</p>
                     </div>
                 </div>
             </div>
         </section>
 
-        <section class="relative overflow-hidden bg-white py-16 sm:py-24">
+        <section class="relative overflow-hidden bg-white dark:bg-slate-900 py-16 sm:py-24">
             <div class="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-50 via-white to-white" />
             <div class="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                 <div class="mx-auto max-w-3xl text-center">
                     <p class="text-sm font-semibold uppercase tracking-wider text-blue-600">Why teams switch</p>
-                    <h2 class="mt-3 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl lg:text-5xl">
+                    <h2 class="mt-3 text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100 sm:text-4xl lg:text-5xl">
                         From tool chaos to one calm workspace
                     </h2>
-                    <p class="mt-4 text-lg text-slate-600">
+                    <p class="mt-4 text-lg text-slate-600 dark:text-slate-400">
                         Most teams pay for 3–5 separate products and still lose context. {{ platformName }} replaces the stack — not adds to it.
                     </p>
                 </div>
 
                 <div class="relative mt-16">
                     <div class="absolute left-1/2 top-1/2 z-10 hidden -translate-x-1/2 -translate-y-1/2 lg:block">
-                        <span class="flex h-14 w-14 items-center justify-center rounded-full bg-white text-slate-900 shadow-xl ring-4 ring-slate-100">
+                        <span class="flex h-14 w-14 items-center justify-center rounded-full bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 shadow-xl ring-4 ring-slate-100 dark:ring-slate-800">
                             <svg class="h-6 w-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
                         </span>
                     </div>
 
-                    <div class="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-2xl shadow-slate-200/60 lg:grid lg:grid-cols-2">
-                        <div class="relative border-b border-slate-200 bg-slate-50 p-8 sm:p-10 lg:border-b-0 lg:border-r">
+                    <div class="overflow-hidden rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xl shadow-slate-200/60 lg:grid lg:grid-cols-2">
+                        <div class="relative border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 p-8 sm:p-10 lg:border-b-0 lg:border-r">
                             <div class="absolute inset-0 opacity-[0.03]" style="background-image: radial-gradient(circle, #64748b 1px, transparent 1px); background-size: 20px 20px;" />
                             <div class="relative">
-                                <span class="inline-flex items-center gap-2 rounded-full bg-red-50 px-3 py-1 text-xs font-bold uppercase tracking-wide text-red-600 ring-1 ring-red-100">
+                                <span class="inline-flex items-center gap-2 rounded-full bg-red-50 dark:bg-red-950/40 px-3 py-1 text-xs font-bold uppercase tracking-wide text-red-600 ring-1 ring-red-100">
                                     <span class="h-1.5 w-1.5 rounded-full bg-red-500" />
                                     The old way
                                 </span>
-                                <p class="mt-4 text-lg font-semibold text-slate-800">Five tabs. Zero context.</p>
-                                <p class="mt-2 text-sm leading-relaxed text-slate-500">
+                                <p class="mt-4 text-lg font-semibold text-slate-800 dark:text-slate-200">Five tabs. Zero context.</p>
+                                <p class="mt-2 text-sm leading-relaxed text-slate-500 dark:text-slate-400">
                                     Agents hunt across disconnected tools while customers wait — and nothing syncs.
                                 </p>
 
                                 <div class="mt-8 flex flex-wrap gap-2 sm:relative sm:h-36">
-                                    <span class="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-600 shadow-md sm:absolute sm:left-0 sm:top-0 sm:rotate-[-6deg]">Email</span>
-                                    <span class="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-600 shadow-md sm:absolute sm:left-24 sm:top-6 sm:rotate-[3deg]">Slack</span>
-                                    <span class="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-600 shadow-md sm:absolute sm:right-8 sm:top-0 sm:rotate-[6deg]">Spreadsheet</span>
-                                    <span class="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-600 shadow-md sm:absolute sm:bottom-4 sm:left-8 sm:rotate-[-3deg]">Legacy ITSM</span>
-                                    <span class="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-600 shadow-md sm:absolute sm:bottom-0 sm:right-12 sm:rotate-[2deg]">Add-on KB</span>
+                                    <span class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-2 text-xs font-semibold text-slate-600 dark:text-slate-400 shadow-md sm:absolute sm:left-0 sm:top-0 sm:rotate-[-6deg]">Email</span>
+                                    <span class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-2 text-xs font-semibold text-slate-600 dark:text-slate-400 shadow-md sm:absolute sm:left-24 sm:top-6 sm:rotate-[3deg]">Slack</span>
+                                    <span class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-2 text-xs font-semibold text-slate-600 dark:text-slate-400 shadow-md sm:absolute sm:right-8 sm:top-0 sm:rotate-[6deg]">Spreadsheet</span>
+                                    <span class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-2 text-xs font-semibold text-slate-600 dark:text-slate-400 shadow-md sm:absolute sm:bottom-4 sm:left-8 sm:rotate-[-3deg]">Legacy ITSM</span>
+                                    <span class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-2 text-xs font-semibold text-slate-600 dark:text-slate-400 shadow-md sm:absolute sm:bottom-0 sm:right-12 sm:rotate-[2deg]">Add-on KB</span>
                                     <svg class="hidden h-full w-full text-slate-300 sm:absolute sm:inset-0 sm:block" fill="none" viewBox="0 0 300 120">
                                         <path d="M40 20 L120 50 M120 50 L220 25 M80 90 L160 60 M160 60 L240 85" stroke="currentColor" stroke-dasharray="4 4" stroke-width="1.5" />
                                     </svg>
@@ -863,22 +863,22 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
                                     <li
                                         v-for="item in painPoints"
                                         :key="item.pain"
-                                        class="flex items-start gap-3 rounded-xl border border-red-100 bg-red-50/50 px-4 py-3"
+                                        class="flex items-start gap-3 rounded-xl border border-red-100 bg-red-50 dark:bg-red-950/40/50 px-4 py-3"
                                     >
                                         <span class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-red-100 text-red-500">
                                             <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12" /></svg>
                                         </span>
-                                        <span class="text-sm text-slate-600 line-through decoration-red-300/60">{{ item.pain }}</span>
+                                        <span class="text-sm text-slate-600 dark:text-slate-400 line-through decoration-red-300/60">{{ item.pain }}</span>
                                     </li>
                                 </ul>
                             </div>
                         </div>
 
                         <div class="relative overflow-hidden bg-gradient-to-br from-blue-600 via-indigo-600 to-violet-700 p-8 text-white sm:p-10">
-                            <div class="pointer-events-none absolute -right-10 -top-10 h-48 w-48 rounded-full bg-white/10 blur-2xl" />
+                            <div class="pointer-events-none absolute -right-10 -top-10 h-48 w-48 rounded-full bg-white dark:bg-slate-900/10 blur-2xl" />
                             <div class="pointer-events-none absolute -bottom-8 -left-8 h-40 w-40 rounded-full bg-violet-400/20 blur-2xl" />
                             <div class="relative">
-                                <span class="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-xs font-bold uppercase tracking-wide text-white ring-1 ring-white/25">
+                                <span class="inline-flex items-center gap-2 rounded-full bg-white dark:bg-slate-900/15 px-3 py-1 text-xs font-bold uppercase tracking-wide text-white ring-1 ring-white/25">
                                     <span class="h-1.5 w-1.5 rounded-full bg-emerald-400" />
                                     With {{ platformName }}
                                 </span>
@@ -887,21 +887,21 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
                                     Every channel, ticket, and IT workflow lives together — with AI and SLAs built in.
                                 </p>
 
-                                <div class="mt-8 overflow-hidden rounded-2xl border border-white/20 bg-white/10 p-4 backdrop-blur-sm">
+                                <div class="mt-8 overflow-hidden rounded-2xl border border-white/20 bg-white dark:bg-slate-900/10 p-4 backdrop-blur-sm">
                                     <div class="flex items-center gap-2 border-b border-white/10 pb-3">
                                         <span class="h-2 w-2 rounded-full bg-emerald-400" />
                                         <span class="text-[10px] font-medium text-white/70">{{ platformName }} workspace</span>
                                     </div>
                                     <div class="mt-3 grid grid-cols-3 gap-2">
-                                        <div class="rounded-lg bg-white/10 px-2 py-2 text-center">
+                                        <div class="rounded-lg bg-white dark:bg-slate-900/10 px-2 py-2 text-center">
                                             <p class="text-lg font-bold">12</p>
                                             <p class="text-[9px] text-white/60">Open</p>
                                         </div>
-                                        <div class="rounded-lg bg-white/10 px-2 py-2 text-center">
+                                        <div class="rounded-lg bg-white dark:bg-slate-900/10 px-2 py-2 text-center">
                                             <p class="text-lg font-bold text-emerald-300">4m</p>
                                             <p class="text-[9px] text-white/60">Avg reply</p>
                                         </div>
-                                        <div class="rounded-lg bg-white/10 px-2 py-2 text-center">
+                                        <div class="rounded-lg bg-white dark:bg-slate-900/10 px-2 py-2 text-center">
                                             <p class="text-lg font-bold">94%</p>
                                             <p class="text-[9px] text-white/60">CSAT</p>
                                         </div>
@@ -912,9 +912,9 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
                                     <li
                                         v-for="item in painPoints"
                                         :key="item.gain"
-                                        class="flex items-start gap-3 rounded-xl border border-white/15 bg-white/10 px-4 py-3 backdrop-blur-sm"
+                                        class="flex items-start gap-3 rounded-xl border border-white/15 bg-white dark:bg-slate-900/10 px-4 py-3 backdrop-blur-sm"
                                     >
-                                        <span class="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white/15">
+                                        <span class="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white dark:bg-slate-900/15">
                                             <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" :d="item.icon" /></svg>
                                         </span>
                                         <div class="min-w-0">
@@ -923,7 +923,7 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
                                                 <span
                                                     v-for="tool in item.oldTools"
                                                     :key="tool"
-                                                    class="rounded-md bg-white/10 px-1.5 py-0.5 text-[10px] text-white/60 line-through"
+                                                    class="rounded-md bg-white dark:bg-slate-900/10 px-1.5 py-0.5 text-[10px] text-white/60 line-through"
                                                 >
                                                     {{ tool }}
                                                 </span>
@@ -941,10 +941,10 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
                     <div
                         v-for="item in stackSavings"
                         :key="item.label"
-                        class="rounded-2xl border border-slate-200 bg-white px-4 py-5 text-center shadow-sm"
+                        class="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-5 text-center shadow-sm"
                     >
-                        <p class="text-2xl font-extrabold tracking-tight text-slate-900">{{ item.value }}</p>
-                        <p class="mt-1 text-xs font-medium text-slate-500">{{ item.label }}</p>
+                        <p class="text-2xl font-extrabold tracking-tight text-slate-900 dark:text-slate-100">{{ item.value }}</p>
+                        <p class="mt-1 text-xs font-medium text-slate-500 dark:text-slate-400">{{ item.label }}</p>
                     </div>
                 </div>
 
@@ -956,12 +956,12 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
                         Ditch the stack — start free trial
                         <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
                     </Link>
-                    <p class="mt-3 text-sm text-slate-500">{{ trialDays }}-day trial · No credit card · Migrate in an afternoon</p>
+                    <p class="mt-3 text-sm text-slate-500 dark:text-slate-400">{{ trialDays }}-day trial · No credit card · Migrate in an afternoon</p>
                 </div>
             </div>
         </section>
 
-        <section id="ai" class="relative overflow-hidden border-b border-slate-200 bg-slate-950 py-16 sm:py-24 text-white">
+        <section id="ai" class="relative overflow-hidden border-b border-slate-200 dark:border-slate-800 bg-slate-950 py-16 sm:py-24 text-white">
             <div class="pointer-events-none absolute inset-0">
                 <div class="absolute -left-32 top-0 h-[28rem] w-[28rem] rounded-full bg-violet-600/25 blur-3xl" />
                 <div class="absolute bottom-0 right-0 h-96 w-96 rounded-full bg-indigo-600/20 blur-3xl" />
@@ -997,7 +997,7 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
                                         <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" :d="capability.icon" /></svg>
                                     </div>
                                     <h3 class="mt-4 text-base font-semibold text-white">{{ capability.title }}</h3>
-                                    <p class="mt-2 text-sm leading-relaxed text-slate-400">{{ capability.body }}</p>
+                                    <p class="mt-2 text-sm leading-relaxed text-slate-400 dark:text-slate-500">{{ capability.body }}</p>
                                 </div>
                             </article>
                         </div>
@@ -1010,7 +1010,7 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
                                 Start free trial
                                 <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
                             </Link>
-                            <p class="text-sm text-slate-500">Enterprise · AI included · No credit card</p>
+                            <p class="text-sm text-slate-500 dark:text-slate-400">Enterprise · AI included · No credit card</p>
                         </div>
                     </div>
 
@@ -1021,24 +1021,24 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
             </div>
         </section>
 
-        <section class="border-b border-slate-200 bg-white py-10 sm:py-12">
+        <section class="border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 py-10 sm:py-12">
             <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-                <p class="text-center text-xs font-semibold uppercase tracking-wider text-slate-400">{{ $t('central.works_with_your_stack') }}</p>
+                <p class="text-center text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">{{ $t('central.works_with_your_stack') }}</p>
                 <div class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                     <div
                         v-for="group in integrationGroups"
                         :key="group.label"
-                        class="rounded-2xl border border-slate-100 bg-slate-50/80 p-5 transition hover:border-blue-200 hover:shadow-md"
+                        class="rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/80 p-5 transition hover:border-blue-200 dark:border-blue-900/60 hover:shadow-md"
                     >
-                        <p class="text-[11px] font-semibold uppercase tracking-wide text-slate-500">{{ group.label }}</p>
+                        <p class="text-[11px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{{ group.label }}</p>
                         <div class="mt-4 grid grid-cols-2 gap-3">
                             <div
                                 v-for="item in group.items"
                                 :key="item.id"
-                                class="flex flex-col items-center gap-2 rounded-xl border border-slate-200/80 bg-white px-2 py-3 transition hover:border-blue-200 hover:shadow-sm"
+                                class="flex flex-col items-center gap-2 rounded-xl border border-slate-200 dark:border-slate-800/80 bg-white dark:bg-slate-900 px-2 py-3 transition hover:border-blue-200 dark:border-blue-900/60 hover:shadow-sm"
                             >
                                 <IntegrationStackIcon :id="item.id" />
-                                <span class="text-center text-[10px] font-semibold leading-tight text-slate-600">{{ item.name }}</span>
+                                <span class="text-center text-[10px] font-semibold leading-tight text-slate-600 dark:text-slate-400">{{ item.name }}</span>
                             </div>
                         </div>
                     </div>
@@ -1046,14 +1046,14 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
             </div>
         </section>
 
-        <section id="product" class="bg-slate-50 py-16 sm:py-24">
+        <section id="product" class="bg-slate-50 dark:bg-slate-950 py-16 sm:py-24">
             <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                 <div class="max-w-3xl">
                     <p class="text-sm font-semibold uppercase tracking-wider text-blue-600">{{ $t('central.platform_overview') }}</p>
-                    <h2 class="mt-3 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
+                    <h2 class="mt-3 text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100 sm:text-4xl">
                         Everything your team needs — nothing they don't
                     </h2>
-                    <p class="mt-4 text-lg leading-relaxed text-slate-600">
+                    <p class="mt-4 text-lg leading-relaxed text-slate-600 dark:text-slate-400">
                         From the first customer message to resolution and feedback — {{ platformName }} gives agents the context, tools, and automation they need without switching tabs or paying for add-ons.
                     </p>
                 </div>
@@ -1061,7 +1061,7 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
                     <article
                         v-for="item in bentoItems"
                         :key="item.title"
-                        class="group relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg"
+                        class="group relative overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg"
                         :class="item.span"
                     >
                         <div class="pointer-events-none absolute inset-0 bg-gradient-to-br opacity-60 transition group-hover:opacity-100" :class="item.accent" />
@@ -1069,23 +1069,23 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
                             <div class="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-900 text-white shadow-sm transition group-hover:scale-105">
                                 <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" :d="item.icon" /></svg>
                             </div>
-                            <h3 class="mt-4 text-lg font-semibold text-slate-900">{{ item.title }}</h3>
-                            <p class="mt-2 text-sm leading-relaxed text-slate-600">{{ item.body }}</p>
+                            <h3 class="mt-4 text-lg font-semibold text-slate-900 dark:text-slate-100">{{ item.title }}</h3>
+                            <p class="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-400">{{ item.body }}</p>
                         </div>
                     </article>
                 </div>
             </div>
         </section>
 
-        <section id="differentiators" class="relative overflow-hidden bg-white py-16 sm:py-24">
+        <section id="differentiators" class="relative overflow-hidden bg-white dark:bg-slate-900 py-16 sm:py-24">
             <div class="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-blue-50 via-white to-white" />
             <div class="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                 <div class="mx-auto max-w-3xl text-center">
                     <p class="text-sm font-semibold uppercase tracking-wider text-blue-600">{{ $t('central.built_different_eyebrow') }}</p>
-                    <h2 class="mt-3 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl lg:text-5xl">
+                    <h2 class="mt-3 text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100 sm:text-4xl lg:text-5xl">
                         {{ $t('central.built_different_title') }}
                     </h2>
-                    <p class="mt-4 text-lg leading-relaxed text-slate-600">
+                    <p class="mt-4 text-lg leading-relaxed text-slate-600 dark:text-slate-400">
                         {{ builtDifferentSubtitle }}
                     </p>
                 </div>
@@ -1094,7 +1094,7 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
                     <article
                         v-for="item in differentiators"
                         :key="item.title"
-                        class="group relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition duration-300 hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-lg"
+                        class="group relative overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm transition duration-300 hover:-translate-y-0.5 hover:border-slate-300 dark:hover:border-slate-600 dark:border-slate-700 hover:shadow-lg"
                     >
                         <div
                             class="pointer-events-none absolute inset-0 bg-gradient-to-br opacity-70 transition group-hover:opacity-100"
@@ -1109,13 +1109,13 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
                                 </div>
                                 <span
                                     v-if="item.badge"
-                                    class="shrink-0 rounded-full bg-white/90 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-slate-600 ring-1 ring-slate-200"
+                                    class="shrink-0 rounded-full bg-white dark:bg-slate-900/90 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-slate-600 dark:text-slate-400 ring-1 ring-slate-200 dark:ring-slate-700"
                                 >
                                     {{ item.badge }}
                                 </span>
                             </div>
-                            <h3 class="mt-5 text-lg font-semibold text-slate-900">{{ item.title }}</h3>
-                            <p class="mt-2 text-sm leading-relaxed text-slate-600">{{ item.body }}</p>
+                            <h3 class="mt-5 text-lg font-semibold text-slate-900 dark:text-slate-100">{{ item.title }}</h3>
+                            <p class="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-400">{{ item.body }}</p>
                         </div>
                     </article>
                 </div>
@@ -1128,17 +1128,17 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
                         Try everything — start free trial
                         <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
                     </Link>
-                    <p class="mt-3 text-sm text-slate-500">{{ trialDays }}-day trial · No credit card · Cloud-hosted workspace</p>
+                    <p class="mt-3 text-sm text-slate-500 dark:text-slate-400">{{ trialDays }}-day trial · No credit card · Cloud-hosted workspace</p>
                 </div>
             </div>
         </section>
 
-        <section id="features" class="border-y border-slate-200 bg-slate-50 py-16 sm:py-24">
+        <section id="features" class="border-y border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 py-16 sm:py-24">
             <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                 <div class="max-w-3xl">
                     <p class="text-sm font-semibold uppercase tracking-wider text-blue-600">{{ $t('central.deep_dive') }}</p>
-                    <h2 class="mt-3 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">{{ $t('central.explore_by_capability') }}</h2>
-                    <p class="mt-4 text-lg leading-relaxed text-slate-600">
+                    <h2 class="mt-3 text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100 sm:text-4xl">{{ $t('central.explore_by_capability') }}</h2>
+                    <p class="mt-4 text-lg leading-relaxed text-slate-600 dark:text-slate-400">
                         Pick a workflow area to see how {{ platformName }} handles it — from first contact through ITSM resolution.
                     </p>
                 </div>
@@ -1152,8 +1152,8 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
                                 type="button"
                                 class="group flex min-w-[11rem] shrink-0 items-center gap-3 rounded-2xl border px-3 py-3 text-left transition sm:min-w-[220px] sm:px-4 sm:py-3.5 lg:min-w-0 lg:w-full"
                                 :class="featureCategory === cat.id
-                                    ? 'border-slate-200 bg-white shadow-md ring-1 ring-slate-200/80'
-                                    : 'border-transparent bg-white/60 hover:border-slate-200 hover:bg-white'"
+                                    ? 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-md ring-1 ring-slate-200 dark:ring-slate-700/80'
+                                    : 'border-transparent bg-slate-50 dark:bg-slate-950/80 dark:bg-slate-900/60 hover:border-slate-200 dark:border-slate-800 dark:hover:border-slate-700 hover:bg-white dark:hover:bg-slate-800'"
                                 @click="featureCategory = cat.id"
                             >
                                 <span
@@ -1163,11 +1163,11 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
                                     <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" :d="cat.icon" /></svg>
                                 </span>
                                 <span class="min-w-0 flex-1">
-                                    <span class="block text-sm font-semibold text-slate-900">{{ cat.label }}</span>
-                                    <span class="mt-0.5 block truncate text-xs text-slate-500">{{ categoryHints[cat.id] }}</span>
+                                    <span class="block text-sm font-semibold text-slate-900 dark:text-slate-100">{{ cat.label }}</span>
+                                    <span class="mt-0.5 block truncate text-xs text-slate-500 dark:text-slate-400">{{ categoryHints[cat.id] }}</span>
                                 </span>
                                 <svg
-                                    class="hidden h-4 w-4 shrink-0 text-slate-400 lg:block"
+                                    class="hidden h-4 w-4 shrink-0 text-slate-400 dark:text-slate-500 lg:block"
                                     :class="featureCategory === cat.id ? 'text-blue-600' : ''"
                                     fill="none"
                                     stroke="currentColor"
@@ -1178,11 +1178,11 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
                     </nav>
 
                     <div class="lg:col-span-8 xl:col-span-9">
-                        <div class="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+                        <div class="overflow-hidden rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm">
                             <div class="relative overflow-hidden bg-gradient-to-br px-8 py-10 text-white sm:px-10" :class="activeTheme.gradient">
-                                <div class="pointer-events-none absolute -right-8 -top-8 h-40 w-40 rounded-full bg-white/10 blur-2xl" />
+                                <div class="pointer-events-none absolute -right-8 -top-8 h-40 w-40 rounded-full bg-white dark:bg-slate-900/10 blur-2xl" />
                                 <div class="relative">
-                                    <span v-if="featureCategory === 'itsm'" class="mb-3 inline-flex rounded-full bg-white/15 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-white/90 ring-1 ring-white/20">
+                                    <span v-if="featureCategory === 'itsm'" class="mb-3 inline-flex rounded-full bg-white dark:bg-slate-900/15 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-white/90 ring-1 ring-white/20">
                                         Enterprise add-on
                                     </span>
                                     <h3 class="text-2xl font-bold tracking-tight sm:text-3xl">{{ activeCategory.title }}</h3>
@@ -1195,7 +1195,7 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
                                     <article
                                         v-for="item in primaryHighlightItems"
                                         :key="item.text"
-                                        class="group flex items-start gap-3.5 rounded-2xl border border-slate-100 bg-white p-4 transition hover:border-slate-200 hover:shadow-md"
+                                        class="group flex items-start gap-3.5 rounded-2xl border border-slate-100 bg-white dark:bg-slate-900 p-4 transition hover:border-slate-200 dark:border-slate-800 hover:shadow-md"
                                     >
                                         <span
                                             class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl transition group-hover:scale-105"
@@ -1205,17 +1205,17 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" :d="item.icon" />
                                             </svg>
                                         </span>
-                                        <p class="pt-1.5 text-sm font-medium leading-snug text-slate-800">{{ item.text }}</p>
+                                        <p class="pt-1.5 text-sm font-medium leading-snug text-slate-800 dark:text-slate-200">{{ item.text }}</p>
                                     </article>
                                 </div>
 
-                                <div v-if="secondaryHighlights.length" class="mt-5 border-t border-slate-100 pt-5">
-                                    <p class="mb-3 text-[11px] font-semibold uppercase tracking-wide text-slate-400">Also included</p>
+                                <div v-if="secondaryHighlights.length" class="mt-5 border-t border-slate-100 dark:border-slate-800 pt-5">
+                                    <p class="mb-3 text-[11px] font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500">Also included</p>
                                     <div class="flex flex-wrap gap-2">
                                         <span
                                             v-for="item in secondaryHighlights"
                                             :key="item"
-                                            class="inline-flex items-center gap-1.5 rounded-full bg-slate-50 px-3 py-1.5 text-xs font-medium text-slate-600 ring-1 ring-slate-200"
+                                            class="inline-flex items-center gap-1.5 rounded-full bg-slate-50 dark:bg-slate-950 px-3 py-1.5 text-xs font-medium text-slate-600 dark:text-slate-400 ring-1 ring-slate-200 dark:ring-slate-700"
                                         >
                                             <svg class="h-3.5 w-3.5 shrink-0 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" /></svg>
                                             {{ item }}
@@ -1229,54 +1229,54 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
                             <article
                                 v-for="feature in categoryRelatedFeatures"
                                 :key="feature.title"
-                                class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm"
+                                class="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-sm"
                             >
                                 <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-slate-900 text-white">
                                     <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" :d="feature.icon" /></svg>
                                 </div>
-                                <h4 class="mt-3 text-sm font-semibold text-slate-900">{{ feature.title }}</h4>
-                                <p class="mt-1 line-clamp-2 text-xs leading-relaxed text-slate-500">{{ feature.description }}</p>
+                                <h4 class="mt-3 text-sm font-semibold text-slate-900 dark:text-slate-100">{{ feature.title }}</h4>
+                                <p class="mt-1 line-clamp-2 text-xs leading-relaxed text-slate-500 dark:text-slate-400">{{ feature.description }}</p>
                             </article>
                         </div>
                     </div>
                 </div>
 
-                <div class="relative mt-24 overflow-hidden rounded-[2rem] border border-slate-200/80 bg-gradient-to-b from-white via-slate-50/80 to-white p-6 shadow-xl shadow-slate-200/40 sm:p-10 lg:p-12">
+                <div class="relative mt-24 overflow-hidden rounded-[2rem] border border-slate-200 dark:border-slate-800/80 bg-gradient-to-b from-white via-slate-50/80 to-white p-6 shadow-xl shadow-slate-200/40 sm:p-10 lg:p-12">
                     <div class="pointer-events-none absolute -left-20 top-0 h-64 w-64 rounded-full bg-blue-400/10 blur-3xl" />
                     <div class="pointer-events-none absolute -right-20 bottom-0 h-64 w-64 rounded-full bg-violet-400/10 blur-3xl" />
 
                     <div class="relative flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
                         <div>
-                            <span class="inline-flex items-center gap-2 rounded-full bg-blue-50 px-3 py-1 text-xs font-bold uppercase tracking-wide text-blue-700 ring-1 ring-blue-100">
+                            <span class="inline-flex items-center gap-2 rounded-full bg-blue-50 dark:bg-blue-950/40 px-3 py-1 text-xs font-bold uppercase tracking-wide text-blue-700 dark:text-blue-300 ring-1 ring-blue-100">
                                 <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
                                 Everything included
                             </span>
-                            <h3 class="mt-4 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">Full platform feature list</h3>
-                            <p class="mt-3 max-w-xl text-base leading-relaxed text-slate-600">
+                            <h3 class="mt-4 text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100 sm:text-4xl">Full platform feature list</h3>
+                            <p class="mt-3 max-w-xl text-base leading-relaxed text-slate-600 dark:text-slate-400">
                                 All plans include core ticketing. Professional and Enterprise unlock automation, channels, AI, and ITSM capabilities.
                             </p>
                         </div>
-                        <div class="mt-5 flex w-full flex-wrap justify-center gap-4 sm:mt-8 sm:w-auto sm:shrink-0 sm:gap-6 rounded-2xl border border-slate-200/80 bg-white/80 px-4 py-3 backdrop-blur-sm sm:px-6 sm:py-4">
+                        <div class="mt-5 flex w-full flex-wrap justify-center gap-4 sm:mt-8 sm:w-auto sm:shrink-0 sm:gap-6 rounded-2xl border border-slate-200 dark:border-slate-800/80 bg-white dark:bg-slate-900/80 px-4 py-3 backdrop-blur-sm sm:px-6 sm:py-4">
                             <div class="text-center">
-                                <p class="text-2xl font-extrabold text-slate-900">{{ allFeatures.length }}</p>
-                                <p class="text-xs font-medium text-slate-500">Capabilities</p>
+                                <p class="text-2xl font-extrabold text-slate-900 dark:text-slate-100">{{ allFeatures.length }}</p>
+                                <p class="text-xs font-medium text-slate-500 dark:text-slate-400">Capabilities</p>
                             </div>
                             <div class="w-px bg-slate-200" />
                             <div class="text-center">
-                                <p class="text-2xl font-extrabold text-slate-900">4</p>
-                                <p class="text-xs font-medium text-slate-500">Workflow areas</p>
+                                <p class="text-2xl font-extrabold text-slate-900 dark:text-slate-100">4</p>
+                                <p class="text-xs font-medium text-slate-500 dark:text-slate-400">Workflow areas</p>
                             </div>
                         </div>
                     </div>
 
                     <div class="relative mt-12 space-y-14">
                         <div v-for="group in featureGroups" :key="group.label">
-                            <div class="mb-6 flex flex-wrap items-end justify-between gap-3 border-b border-slate-200/80 pb-4">
+                            <div class="mb-6 flex flex-wrap items-end justify-between gap-3 border-b border-slate-200 dark:border-slate-800/80 pb-4">
                                 <div>
-                                    <h4 class="text-lg font-bold text-slate-900">{{ group.label }}</h4>
-                                    <p class="mt-0.5 text-sm text-slate-500">{{ group.hint }}</p>
+                                    <h4 class="text-lg font-bold text-slate-900 dark:text-slate-100">{{ group.label }}</h4>
+                                    <p class="mt-0.5 text-sm text-slate-500 dark:text-slate-400">{{ group.hint }}</p>
                                 </div>
-                                <span class="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
+                                <span class="rounded-full bg-slate-100 dark:bg-slate-900 px-3 py-1 text-xs font-semibold text-slate-600 dark:text-slate-400">
                                     {{ group.features.length }} features
                                 </span>
                             </div>
@@ -1284,7 +1284,7 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
                                 <article
                                     v-for="feature in group.features"
                                     :key="feature.title"
-                                    class="group relative overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm ring-1 ring-slate-100/80 transition duration-300 hover:-translate-y-1 hover:border-slate-300 hover:shadow-lg"
+                                    class="group relative overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800/80 bg-white dark:bg-slate-900 p-5 shadow-sm ring-1 ring-slate-100 dark:ring-slate-800/80 transition duration-300 hover:-translate-y-1 hover:border-slate-300 dark:hover:border-slate-600 dark:border-slate-700 hover:shadow-lg"
                                 >
                                     <div
                                         class="pointer-events-none absolute -right-8 -top-8 h-28 w-28 rounded-full bg-gradient-to-br opacity-0 blur-2xl transition duration-300 group-hover:opacity-50"
@@ -1300,8 +1300,8 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
                                             </svg>
                                         </div>
                                         <div class="min-w-0 flex-1">
-                                            <h5 class="font-semibold leading-snug text-slate-900">{{ feature.title }}</h5>
-                                            <p class="mt-2 text-sm leading-relaxed text-slate-500">{{ feature.description }}</p>
+                                            <h5 class="font-semibold leading-snug text-slate-900 dark:text-slate-100">{{ feature.title }}</h5>
+                                            <p class="mt-2 text-sm leading-relaxed text-slate-500 dark:text-slate-400">{{ feature.description }}</p>
                                         </div>
                                     </div>
                                 </article>
@@ -1317,13 +1317,13 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
                 <div class="text-center">
                     <p class="text-sm font-semibold uppercase tracking-wider text-blue-400">{{ $t('central.why_teams_switch') }}</p>
                     <h2 class="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">{{ platformName }} vs. pieced-together tools</h2>
-                    <p class="mx-auto mt-4 max-w-2xl text-base text-slate-400">One workspace for support and IT — without stacking separate inbox, KB, and ITSM products.</p>
+                    <p class="mx-auto mt-4 max-w-2xl text-base text-slate-400 dark:text-slate-500">One workspace for support and IT — without stacking separate inbox, KB, and ITSM products.</p>
                 </div>
                 <div class="mt-12 space-y-3 lg:hidden">
                     <article
                         v-for="row in comparisons"
                         :key="row.feature"
-                        class="rounded-2xl border border-white/10 bg-white/5 p-4"
+                        class="rounded-2xl border border-white/10 bg-white dark:bg-slate-900/5 p-4"
                     >
                         <p class="text-sm font-medium text-slate-200">{{ row.feature }}</p>
                         <div class="mt-3 grid grid-cols-2 gap-3 text-center text-xs">
@@ -1334,12 +1334,12 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
                                     <span v-else class="text-slate-300">{{ row.us }}</span>
                                 </p>
                             </div>
-                            <div class="rounded-xl bg-white/5 px-3 py-2 ring-1 ring-white/10">
-                                <p class="font-semibold text-slate-400">{{ $t('central.typical_stack') }}</p>
+                            <div class="rounded-xl bg-white dark:bg-slate-900/5 px-3 py-2 ring-1 ring-white/10">
+                                <p class="font-semibold text-slate-400 dark:text-slate-500">{{ $t('central.typical_stack') }}</p>
                                 <p class="mt-1 text-lg">
-                                    <span v-if="row.them === false" class="text-slate-600">—</span>
+                                    <span v-if="row.them === false" class="text-slate-600 dark:text-slate-400">—</span>
                                     <span v-else-if="row.them === true" class="text-emerald-400">✓</span>
-                                    <span v-else class="text-slate-500">{{ row.them }}</span>
+                                    <span v-else class="text-slate-500 dark:text-slate-400">{{ row.them }}</span>
                                 </p>
                             </div>
                         </div>
@@ -1348,10 +1348,10 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
                 <div class="mt-12 hidden overflow-hidden rounded-2xl border border-white/10 lg:block">
                     <table class="w-full text-sm">
                         <thead>
-                            <tr class="border-b border-white/10 bg-white/5">
-                                <th class="px-6 py-4 text-left font-medium text-slate-400">{{ $t('central.capability') }}</th>
+                            <tr class="border-b border-white/10 bg-white dark:bg-slate-900/5">
+                                <th class="px-6 py-4 text-left font-medium text-slate-400 dark:text-slate-500">{{ $t('central.capability') }}</th>
                                 <th class="px-6 py-4 text-center font-semibold text-blue-400">{{ platformName }}</th>
-                                <th class="px-6 py-4 text-center font-medium text-slate-400">{{ $t('central.typical_stack') }}</th>
+                                <th class="px-6 py-4 text-center font-medium text-slate-400 dark:text-slate-500">{{ $t('central.typical_stack') }}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -1359,10 +1359,10 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
                                 <td class="px-6 py-4 text-slate-300">{{ row.feature }}</td>
                                 <td class="px-6 py-4 text-center">
                                     <span v-if="row.us === true" class="inline-flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500/20 text-emerald-400">✓</span>
-                                    <span v-else class="text-slate-400">{{ row.us }}</span>
+                                    <span v-else class="text-slate-400 dark:text-slate-500">{{ row.us }}</span>
                                 </td>
-                                <td class="px-6 py-4 text-center text-slate-500">
-                                    <span v-if="row.them === false" class="text-slate-600">—</span>
+                                <td class="px-6 py-4 text-center text-slate-500 dark:text-slate-400">
+                                    <span v-if="row.them === false" class="text-slate-600 dark:text-slate-400">—</span>
                                     <span v-else-if="row.them === true" class="text-emerald-400">✓</span>
                                     <span v-else>{{ row.them }}</span>
                                 </td>
@@ -1378,23 +1378,23 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
                         Get everything above — start free trial
                         <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
                     </Link>
-                    <p class="mt-3 text-sm text-slate-500">{{ trialDays }}-day trial · No credit card · Full access</p>
+                    <p class="mt-3 text-sm text-slate-500 dark:text-slate-400">{{ trialDays }}-day trial · No credit card · Full access</p>
                 </div>
             </div>
         </section>
 
-        <section id="how-it-works" class="bg-white py-16 sm:py-24">
+        <section id="how-it-works" class="bg-white dark:bg-slate-900 py-16 sm:py-24">
             <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                 <div class="text-center">
                     <p class="text-sm font-semibold uppercase tracking-wider text-blue-600">{{ $t('central.how_it_works') }}</p>
-                    <h2 class="mt-3 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">{{ $t('central.go_live_in_three_steps') }}</h2>
-                    <p class="mx-auto mt-4 max-w-2xl text-lg text-slate-600">Most teams complete setup during their {{ trialDays }}-day trial — guided every step of the way.</p>
+                    <h2 class="mt-3 text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100 sm:text-4xl">{{ $t('central.go_live_in_three_steps') }}</h2>
+                    <p class="mx-auto mt-4 max-w-2xl text-lg text-slate-600 dark:text-slate-400">Most teams complete setup during their {{ trialDays }}-day trial — guided every step of the way.</p>
                 </div>
                 <div class="mt-16 grid gap-8 lg:grid-cols-3 lg:gap-6">
                     <article
                         v-for="(step, index) in steps"
                         :key="step.title"
-                        class="relative rounded-2xl border border-slate-200 bg-slate-50 p-8 transition hover:border-blue-200 hover:shadow-lg"
+                        class="relative rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 p-8 transition hover:border-blue-200 dark:border-blue-900/60 hover:shadow-lg"
                     >
                         <div
                             v-if="index < steps.length - 1"
@@ -1402,9 +1402,9 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
                             aria-hidden="true"
                         />
                         <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-600 text-lg font-bold text-white shadow-lg shadow-blue-600/30">{{ index + 1 }}</div>
-                        <h3 class="mt-6 text-xl font-semibold text-slate-900">{{ step.title }}</h3>
-                        <p class="mt-3 text-sm leading-relaxed text-slate-600">{{ step.body }}</p>
-                        <p class="mt-4 rounded-lg bg-white px-3 py-2 text-xs leading-relaxed text-slate-500 ring-1 ring-slate-200">{{ step.detail }}</p>
+                        <h3 class="mt-6 text-xl font-semibold text-slate-900 dark:text-slate-100">{{ step.title }}</h3>
+                        <p class="mt-3 text-sm leading-relaxed text-slate-600 dark:text-slate-400">{{ step.body }}</p>
+                        <p class="mt-4 rounded-lg bg-white dark:bg-slate-900 px-3 py-2 text-xs leading-relaxed text-slate-500 dark:text-slate-400 ring-1 ring-slate-200 dark:ring-slate-700">{{ step.detail }}</p>
                     </article>
                 </div>
             </div>
@@ -1420,20 +1420,20 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
                     <h2 class="mt-3 text-3xl font-bold tracking-tight sm:text-4xl lg:text-5xl">
                         Simple pricing. Serious value.
                     </h2>
-                    <p class="mx-auto mt-4 max-w-2xl text-lg text-slate-400">
+                    <p class="mx-auto mt-4 max-w-2xl text-lg text-slate-400 dark:text-slate-500">
                         Start with a {{ trialDays }}-day free trial on any plan. Most teams save thousands by replacing multiple tools with one workspace.
                     </p>
-                    <div class="mt-8 inline-flex rounded-xl border border-white/10 bg-white/5 p-1 backdrop-blur">
+                    <div class="mt-8 inline-flex rounded-xl border border-white/10 bg-white dark:bg-slate-900/5 p-1 backdrop-blur">
                         <button
                             type="button"
                             class="rounded-lg px-5 py-2.5 text-sm font-semibold transition"
-                            :class="billingInterval === 'month' ? 'bg-white text-slate-900 shadow-lg' : 'text-slate-300 hover:text-white'"
+                            :class="billingInterval === 'month' ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 shadow-lg' : 'text-slate-300 hover:text-white'"
                             @click="billingInterval = 'month'"
                         >{{ $t('central.monthly') }}</button>
                         <button
                             type="button"
                             class="rounded-lg px-5 py-2.5 text-sm font-semibold transition"
-                            :class="billingInterval === 'year' ? 'bg-white text-slate-900 shadow-lg' : 'text-slate-300 hover:text-white'"
+                            :class="billingInterval === 'year' ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 shadow-lg' : 'text-slate-300 hover:text-white'"
                             @click="billingInterval = 'year'"
                         >{{ $t('central.yearly') }}</button>
                     </div>
@@ -1446,14 +1446,14 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
                         class="relative flex flex-col rounded-3xl border p-6 sm:p-8 transition"
                         :class="plan.slug === 'professional'
                             ? 'border-blue-500/50 bg-gradient-to-b from-blue-600/20 to-slate-900/80 shadow-2xl shadow-blue-600/20 ring-2 ring-blue-500/40 lg:scale-105'
-                            : 'border-white/10 bg-white/5 backdrop-blur hover:border-white/20'"
+                            : 'border-white/10 bg-white dark:bg-slate-900/5 backdrop-blur hover:border-white/20'"
                     >
                         <span v-if="plan.slug === 'professional'" class="absolute -top-3.5 left-1/2 -translate-x-1/2 rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 px-4 py-1 text-xs font-bold text-white shadow-lg">{{ $t('central.most_popular') }}</span>
                         <h3 class="text-xl font-bold text-white">{{ plan.name }}</h3>
-                        <p v-if="planTaglines[plan.slug]" class="mt-1 text-sm text-slate-400">{{ planTaglines[plan.slug] }}</p>
+                        <p v-if="planTaglines[plan.slug]" class="mt-1 text-sm text-slate-400 dark:text-slate-500">{{ planTaglines[plan.slug] }}</p>
                         <p class="mt-5 flex items-baseline gap-1">
                             <span class="text-4xl font-extrabold tracking-tight text-white sm:text-5xl">{{ formatPrice(planPrice(plan)) }}</span>
-                            <span class="text-slate-400">{{ intervalSuffix }}</span>
+                            <span class="text-slate-400 dark:text-slate-500">{{ intervalSuffix }}</span>
                         </p>
                         <p v-if="billingInterval === 'year' && yearlySavingsPercent(plan) > 0" class="mt-2 text-sm font-semibold text-emerald-400">
                             Save {{ yearlySavingsPercent(plan) }}% vs monthly
@@ -1468,31 +1468,31 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
                             href="/register"
                             class="mt-8 block rounded-2xl py-3.5 text-center text-sm font-bold transition"
                             :class="plan.slug === 'professional'
-                                ? 'bg-white text-slate-900 shadow-xl hover:bg-slate-100'
+                                ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 shadow-xl hover:bg-slate-100 dark:hover:bg-slate-800'
                                 : 'border border-white/20 text-white hover:bg-white/10'"
                         >
                             Start {{ trialDays }}-day free trial
                         </Link>
-                        <p class="mt-3 text-center text-xs text-slate-500">{{ $t('central.no_credit_card_required') }}</p>
+                        <p class="mt-3 text-center text-xs text-slate-500 dark:text-slate-400">{{ $t('central.no_credit_card_required') }}</p>
                     </article>
                 </div>
             </div>
         </section>
 
-        <section id="faq" class="bg-white py-16 sm:py-24">
+        <section id="faq" class="bg-white dark:bg-slate-900 py-16 sm:py-24">
             <div class="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
                 <div class="text-center">
                     <p class="text-sm font-semibold uppercase tracking-wider text-blue-600">{{ $t('central.faq') }}</p>
-                    <h2 class="mt-3 text-3xl font-bold tracking-tight text-slate-900">{{ $t('central.common_questions') }}</h2>
+                    <h2 class="mt-3 text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100">{{ $t('central.common_questions') }}</h2>
                 </div>
                 <div class="mt-12 space-y-3">
-                    <div v-for="(item, index) in faqs" :key="item.q" class="overflow-hidden rounded-2xl border border-slate-200 bg-slate-50 transition hover:border-slate-300">
+                    <div v-for="(item, index) in faqs" :key="item.q" class="overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 transition hover:border-slate-300 dark:hover:border-slate-600 dark:border-slate-700">
                         <button type="button" class="flex w-full items-center justify-between gap-3 px-4 py-4 text-left sm:gap-4 sm:px-6 sm:py-5" @click="toggleFaq(index)">
-                            <span class="text-sm font-semibold text-slate-900 sm:text-base">{{ item.q }}</span>
-                            <svg class="h-5 w-5 shrink-0 text-slate-400 transition" :class="openFaq === index ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                            <span class="text-sm font-semibold text-slate-900 dark:text-slate-100 sm:text-base">{{ item.q }}</span>
+                            <svg class="h-5 w-5 shrink-0 text-slate-400 dark:text-slate-500 transition" :class="openFaq === index ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
                         </button>
-                        <div v-show="openFaq === index" class="border-t border-slate-200 px-4 pb-4 pt-2 sm:px-6 sm:pb-5">
-                            <p class="text-sm leading-relaxed text-slate-600">{{ item.a }}</p>
+                        <div v-show="openFaq === index" class="border-t border-slate-200 dark:border-slate-800 px-4 pb-4 pt-2 sm:px-6 sm:pb-5">
+                            <p class="text-sm leading-relaxed text-slate-600 dark:text-slate-400">{{ item.a }}</p>
                         </div>
                     </div>
                 </div>
@@ -1529,7 +1529,7 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
                             Sign in to workspace
                         </Link>
                     </div>
-                    <div class="mt-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-slate-400">
+                    <div class="mt-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-slate-400 dark:text-slate-500">
                         <span v-for="badge in trustBadges" :key="badge" class="inline-flex items-center gap-1.5">
                             <svg class="h-3.5 w-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" /></svg>
                             {{ badge }}

@@ -59,6 +59,19 @@ class ProfileService
         return $user->fresh();
     }
 
+    public function updateAppearance(User $user, string $appearance): User
+    {
+        $user->update([
+            'appearance' => AppearanceSupport::resolve($appearance),
+        ]);
+
+        $this->audit->record('profile.appearance_updated', $user, [
+            'appearance' => $user->appearance,
+        ], $user->id);
+
+        return $user->fresh();
+    }
+
     public function updatePassword(User $user, string $currentPassword, string $newPassword): void
     {
         if (! Hash::check($currentPassword, $user->password)) {

@@ -142,7 +142,7 @@ const sidebarProps = computed(() => ({
         <div class="flex h-0 min-h-0 flex-1 flex-col">
         <div
             v-if="ticket.merged_into"
-            class="mb-3 shrink-0 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900"
+            class="mb-3 shrink-0 rounded-lg border border-amber-200 dark:border-amber-900/60 bg-amber-50 dark:bg-amber-950/40 px-3 py-2 text-sm text-amber-900"
         >
             {{ $t('tickets.merged_into') }}
             <Link :href="`/tickets/${ticket.merged_into.id}`" class="font-medium underline">{{ ticket.merged_into.number }}</Link>
@@ -152,7 +152,7 @@ const sidebarProps = computed(() => ({
             <div class="flex min-h-0 min-w-0 flex-1">
                 <section class="flex min-h-0 min-w-0 flex-1 basis-0 flex-col overflow-hidden agent-panel">
                     <div class="flex shrink-0 items-center gap-2 border-b agent-border agent-panel px-3 py-2">
-                        <Link href="/tickets" class="shrink-0 text-xs font-medium text-blue-600 hover:text-blue-700" :title="$t('tickets.back_to_tickets')">
+                        <Link href="/tickets" class="shrink-0 text-xs font-medium text-blue-600 hover:text-blue-700 dark:hover:text-blue-300 dark:text-blue-300" :title="$t('tickets.back_to_tickets')">
                             ←
                         </Link>
                         <span class="shrink-0 font-mono text-xs font-semibold text-blue-600">{{ ticket.number }}</span>
@@ -160,14 +160,14 @@ const sidebarProps = computed(() => ({
                         <h1 class="min-w-0 flex-1 truncate text-sm font-semibold agent-text" :title="ticket.subject">
                             {{ ticket.subject }}
                         </h1>
-                        <span v-if="ticket.channel" class="hidden shrink-0 text-[10px] text-slate-400 lg:inline">· {{ ticket.channel.name }}</span>
-                        <span v-if="messages.length" class="hidden shrink-0 text-[10px] text-slate-400 md:inline">· {{ messages.length }} {{ $t('tickets.message_count_suffix') }}</span>
+                        <span v-if="ticket.channel" class="hidden shrink-0 text-[10px] text-slate-400 dark:text-slate-500 lg:inline">· {{ ticket.channel.name }}</span>
+                        <span v-if="messages.length" class="hidden shrink-0 text-[10px] text-slate-400 dark:text-slate-500 md:inline">· {{ messages.length }} {{ $t('tickets.message_count_suffix') }}</span>
                         <div class="ml-auto flex shrink-0 items-center gap-1.5">
                             <TicketExportMenu
                                 :ticket-id="ticket.id"
                                 :default-email="ticket.contact?.email ?? ''"
                             />
-                            <span class="rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold text-emerald-700 ring-1 ring-inset ring-emerald-600/15">
+                            <span class="rounded-full bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 text-[10px] font-semibold text-emerald-700 dark:text-emerald-300 ring-1 ring-inset ring-emerald-600/15">
                                 {{ ticket.status?.name }}
                             </span>
                         </div>
@@ -212,12 +212,12 @@ const sidebarProps = computed(() => ({
                 @click="mobileDetailsOpen = !mobileDetailsOpen"
             >
                 <span>{{ $t('tickets.ticket_details') }}</span>
-                <svg class="h-4 w-4 text-slate-400 transition-transform duration-300 ease-out" :class="mobileDetailsOpen ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="h-4 w-4 text-slate-400 dark:text-slate-500 transition-transform duration-300 ease-out" :class="mobileDetailsOpen ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                 </svg>
             </button>
             <AppCollapse :open="mobileDetailsOpen">
-                <div class="max-h-[40vh] overflow-y-auto border-t border-slate-100">
+                <div class="max-h-[40vh] overflow-y-auto border-t border-slate-100 dark:border-slate-800">
                     <TicketDetailsSidebar v-bind="sidebarProps" />
                 </div>
             </AppCollapse>

@@ -163,74 +163,74 @@ const destroyTeam = (team) => {
 <template>
     <SettingsPage :title="$t('settings_workforce.departments_teams')" :description="$t('settings_workforce.organize_agents_into_departments_with_team_leads_and_department_heads')">
         <template #actions>
-            <button type="button" class="rounded-lg border border-slate-300 px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-50" @click="openCreateDepartment">{{ $t('settings_workforce.add_department') }}</button>
+            <button type="button" class="rounded-lg border agent-border px-4 py-2 text-sm text-slate-700 dark:text-slate-300 transition agent-hover-surface" @click="openCreateDepartment">{{ $t('settings_workforce.add_department') }}</button>
             <button type="button" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700" @click="openCreateTeam()">{{ $t('settings_workforce.add_team') }}</button>
         </template>
 
         <div class="mb-8 grid gap-4 sm:grid-cols-3">
-            <div class="rounded-2xl border border-slate-200 bg-white px-5 py-4 shadow-sm">
-                <p class="text-xs font-medium uppercase tracking-wide text-slate-500">{{ $t('nav.departments') }}</p>
-                <p class="mt-1 text-3xl font-bold tabular-nums text-slate-900">{{ departments.length }}</p>
+            <div class="rounded-2xl border agent-border agent-panel px-5 py-4 shadow-sm">
+                <p class="text-xs font-medium uppercase tracking-wide agent-text-subtle">{{ $t('nav.departments') }}</p>
+                <p class="mt-1 text-3xl font-bold tabular-nums agent-text">{{ departments.length }}</p>
             </div>
-            <div class="rounded-2xl border border-slate-200 bg-white px-5 py-4 shadow-sm">
-                <p class="text-xs font-medium uppercase tracking-wide text-slate-500">{{ $t('nav.teams') }}</p>
-                <p class="mt-1 text-3xl font-bold tabular-nums text-slate-900">{{ totalTeams }}</p>
+            <div class="rounded-2xl border agent-border agent-panel px-5 py-4 shadow-sm">
+                <p class="text-xs font-medium uppercase tracking-wide agent-text-subtle">{{ $t('nav.teams') }}</p>
+                <p class="mt-1 text-3xl font-bold tabular-nums agent-text">{{ totalTeams }}</p>
             </div>
-            <div class="rounded-2xl border border-slate-200 bg-white px-5 py-4 shadow-sm">
-                <p class="text-xs font-medium uppercase tracking-wide text-slate-500">{{ $t('settings.agents') }}</p>
-                <p class="mt-1 text-3xl font-bold tabular-nums text-slate-900">{{ totalAgents }}</p>
+            <div class="rounded-2xl border agent-border agent-panel px-5 py-4 shadow-sm">
+                <p class="text-xs font-medium uppercase tracking-wide agent-text-subtle">{{ $t('settings.agents') }}</p>
+                <p class="mt-1 text-3xl font-bold tabular-nums agent-text">{{ totalAgents }}</p>
             </div>
         </div>
 
         <div class="space-y-4">
-            <div v-for="department in departments" :key="department.id" class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+            <div v-for="department in departments" :key="department.id" class="overflow-hidden rounded-2xl border agent-border agent-panel shadow-sm">
                 <button
                     type="button"
-                    class="flex w-full items-start justify-between gap-4 px-6 py-5 text-left transition hover:bg-slate-50/60"
+                    class="flex w-full items-start justify-between gap-4 px-6 py-5 text-left transition agent-hover-surface/60"
                     @click="toggleDepartment(department.id)"
                 >
                     <div class="min-w-0 flex-1">
                         <div class="flex flex-wrap items-center gap-2">
-                            <h2 class="text-lg font-semibold text-slate-900">{{ department.name }}</h2>
-                            <span class="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-600">
+                            <h2 class="text-lg font-semibold agent-text">{{ department.name }}</h2>
+                            <span class="rounded-full bg-slate-100 dark:bg-slate-900 px-2.5 py-0.5 text-xs font-medium agent-text-muted">
                                 {{ department.teams_count ?? department.teams?.length ?? 0 }} teams
                             </span>
-                            <span class="rounded-full px-2 py-0.5 text-xs" :class="department.is_active ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-600'">
+                            <span class="rounded-full px-2 py-0.5 text-xs" :class="department.is_active ? 'bg-emerald-100 text-emerald-800 dark:text-emerald-200' : 'bg-slate-100 dark:bg-slate-900 agent-text-muted'">
                                 {{ department.is_active ? 'Active' : 'Hidden' }}
                             </span>
                         </div>
-                        <p v-if="department.description" class="mt-1 text-sm text-slate-600">{{ department.description }}</p>
-                        <p class="mt-2 text-xs text-slate-500">
-                            Head: <span class="font-medium text-slate-700">{{ department.head?.name ?? 'Not assigned' }}</span>
+                        <p v-if="department.description" class="mt-1 text-sm agent-text-muted">{{ department.description }}</p>
+                        <p class="mt-2 text-xs agent-text-subtle">
+                            Head: <span class="font-medium text-slate-700 dark:text-slate-300">{{ department.head?.name ?? 'Not assigned' }}</span>
                         </p>
                     </div>
                     <div class="flex shrink-0 items-center gap-2">
-                        <button type="button" class="rounded-lg border border-slate-300 px-3 py-1.5 text-sm text-slate-700 hover:bg-white" @click.stop="openCreateTeam(department.id)">{{ $t('settings_workforce.add_team') }}</button>
+                        <button type="button" class="rounded-lg border agent-border px-3 py-1.5 text-sm text-slate-700 dark:text-slate-300 agent-hover-surface" @click.stop="openCreateTeam(department.id)">{{ $t('settings_workforce.add_team') }}</button>
                         <AppRowActions>
                             <AppEditAction :label="$t('settings_workforce.edit')" @click.stop="openEditDepartment(department)" />
                             <AppDeleteAction :label="$t('settings_workforce.delete')" @click.stop="destroyDepartment(department)" />
                         </AppRowActions>
-                        <svg class="h-5 w-5 text-slate-400 transition" :class="isExpanded(department.id) ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <svg class="h-5 w-5 text-slate-400 dark:text-slate-500 transition" :class="isExpanded(department.id) ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                         </svg>
                     </div>
                 </button>
 
-                <div v-show="isExpanded(department.id)" class="border-t border-slate-100 bg-slate-50/40 px-6 py-4">
+                <div v-show="isExpanded(department.id)" class="border-t agent-border-subtle agent-panel-muted/40 px-6 py-4">
                     <div v-if="department.teams?.length" class="space-y-3">
-                        <div v-for="team in department.teams" :key="team.id" class="rounded-xl border border-slate-200 bg-white p-4">
+                        <div v-for="team in department.teams" :key="team.id" class="rounded-xl border agent-border agent-panel p-4">
                             <div class="flex flex-wrap items-start justify-between gap-3">
                                 <div>
                                     <div class="flex flex-wrap items-center gap-2">
-                                        <p class="font-medium text-slate-900">{{ team.name }}</p>
-                                        <span class="rounded-full bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-700">{{ team.members_count ?? team.members?.length ?? 0 }} members</span>
-                                        <span class="rounded-full bg-violet-50 px-2 py-0.5 text-xs font-medium text-violet-700">{{ team.tickets_count ?? 0 }} tickets</span>
-                                        <span v-if="!team.is_active" class="rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-500">{{ $t('settings_workforce.hidden') }}</span>
+                                        <p class="font-medium agent-text">{{ team.name }}</p>
+                                        <span class="rounded-full bg-blue-50 dark:bg-blue-950/40 px-2 py-0.5 text-xs font-medium text-blue-700 dark:text-blue-300">{{ team.members_count ?? team.members?.length ?? 0 }} members</span>
+                                        <span class="rounded-full bg-violet-50 dark:bg-violet-950/40 px-2 py-0.5 text-xs font-medium text-violet-700 dark:text-violet-300">{{ team.tickets_count ?? 0 }} tickets</span>
+                                        <span v-if="!team.is_active" class="rounded-full bg-slate-100 dark:bg-slate-900 px-2 py-0.5 text-xs agent-text-subtle">{{ $t('settings_workforce.hidden') }}</span>
                                     </div>
-                                    <p v-if="team.description" class="mt-1 text-sm text-slate-600">{{ team.description }}</p>
-                                    <p class="mt-2 text-xs text-slate-500">Lead: <span class="font-medium text-slate-700">{{ team.lead?.name ?? 'Not assigned' }}</span></p>
+                                    <p v-if="team.description" class="mt-1 text-sm agent-text-muted">{{ team.description }}</p>
+                                    <p class="mt-2 text-xs agent-text-subtle">Lead: <span class="font-medium text-slate-700 dark:text-slate-300">{{ team.lead?.name ?? 'Not assigned' }}</span></p>
                                     <div v-if="team.members?.length" class="mt-3 flex flex-wrap gap-1.5">
-                                        <span v-for="member in team.members" :key="member.id" class="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs text-slate-700">
+                                        <span v-for="member in team.members" :key="member.id" class="rounded-full bg-slate-100 dark:bg-slate-900 px-2.5 py-0.5 text-xs text-slate-700 dark:text-slate-300">
                                             {{ member.name }}
                                         </span>
                                     </div>
@@ -244,35 +244,35 @@ const destroyTeam = (team) => {
                             </div>
                         </div>
                     </div>
-                    <p v-else class="py-6 text-center text-sm text-slate-500">{{ $t('settings_workforce.no_teams_in_this_department_yet') }}</p>
+                    <p v-else class="py-6 text-center text-sm agent-text-subtle">{{ $t('settings_workforce.no_teams_in_this_department_yet') }}</p>
                 </div>
             </div>
 
-            <p v-if="!departments.length" class="rounded-2xl border border-dashed border-slate-300 px-6 py-16 text-center text-sm text-slate-500">
+            <p v-if="!departments.length" class="rounded-2xl border border-dashed agent-border px-6 py-16 text-center text-sm agent-text-subtle">
                 {{ $t('settings_workforce.no_departments_yet_create_one_to_start_organizing_your_team') }}
             </p>
         </div>
 
         <AppModal :open="showDepartmentForm" :title="editingDepartment ? 'Edit department' : 'Add department'" size="md" @close="showDepartmentForm = false">
             <form id="department-form" class="space-y-4" @submit.prevent="saveDepartment">
-                <input v-model="departmentForm.name" type="text" required :placeholder="$t('settings_workforce.department_name')" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
-                <textarea v-model="departmentForm.description" rows="2" :placeholder="$t('settings_workforce.description')" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+                <input v-model="departmentForm.name" type="text" required :placeholder="$t('settings_workforce.department_name')" class="w-full rounded-lg border agent-border px-3 py-2 text-sm" />
+                <textarea v-model="departmentForm.description" rows="2" :placeholder="$t('settings_workforce.description')" class="w-full rounded-lg border agent-border px-3 py-2 text-sm" />
                 <div>
-                    <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('settings_workforce.department_head') }}</label>
-                    <select v-model="departmentForm.head_user_id" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm">
+                    <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('settings_workforce.department_head') }}</label>
+                    <select v-model="departmentForm.head_user_id" class="w-full rounded-lg border agent-border px-3 py-2 text-sm">
                         <option value="">{{ $t('settings_workforce.select_head') }}</option>
                         <option v-for="agent in agents" :key="agent.id" :value="agent.id">{{ agent.name }}</option>
                     </select>
                 </div>
                 <div>
-                    <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('settings_workforce.sort_order') }}</label>
-                    <input v-model.number="departmentForm.sort_order" type="number" min="0" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+                    <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('settings_workforce.sort_order') }}</label>
+                    <input v-model.number="departmentForm.sort_order" type="number" min="0" class="w-full rounded-lg border agent-border px-3 py-2 text-sm" />
                 </div>
                 <AppToggle v-model="departmentForm.is_active" :label="$t('common.active')" />
             </form>
             <template #footer>
                 <div class="flex justify-end gap-2">
-                    <button type="button" class="rounded-lg border border-slate-300 px-4 py-2 text-sm" @click="showDepartmentForm = false">{{ $t('common.cancel') }}</button>
+                    <button type="button" class="rounded-lg border agent-border px-4 py-2 text-sm" @click="showDepartmentForm = false">{{ $t('common.cancel') }}</button>
                     <button type="submit" form="department-form" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white" :disabled="departmentForm.processing">{{ $t('common.save') }}</button>
                 </div>
             </template>
@@ -281,36 +281,36 @@ const destroyTeam = (team) => {
         <AppModal :open="showTeamForm" :title="editingTeam ? 'Edit team' : 'Add team'" variant="drawer" @close="showTeamForm = false">
             <form id="team-form" class="space-y-4" @submit.prevent="saveTeam">
                 <div>
-                    <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('settings_workforce.department') }}</label>
-                    <select v-model="teamForm.department_id" required class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm">
+                    <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('settings_workforce.department') }}</label>
+                    <select v-model="teamForm.department_id" required class="w-full rounded-lg border agent-border px-3 py-2 text-sm">
                         <option v-for="department in departments" :key="department.id" :value="department.id">{{ department.name }}</option>
                     </select>
                 </div>
-                <input v-model="teamForm.name" type="text" required :placeholder="$t('settings_workforce.team_name')" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
-                <textarea v-model="teamForm.description" rows="2" :placeholder="$t('settings_workforce.description')" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+                <input v-model="teamForm.name" type="text" required :placeholder="$t('settings_workforce.team_name')" class="w-full rounded-lg border agent-border px-3 py-2 text-sm" />
+                <textarea v-model="teamForm.description" rows="2" :placeholder="$t('settings_workforce.description')" class="w-full rounded-lg border agent-border px-3 py-2 text-sm" />
                 <div>
-                    <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('settings_workforce.team_lead') }}</label>
-                    <select v-model="teamForm.lead_user_id" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm">
+                    <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('settings_workforce.team_lead') }}</label>
+                    <select v-model="teamForm.lead_user_id" class="w-full rounded-lg border agent-border px-3 py-2 text-sm">
                         <option value="">{{ $t('settings_workforce.select_lead') }}</option>
                         <option v-for="agent in agents" :key="agent.id" :value="agent.id">{{ agent.name }}</option>
                     </select>
                 </div>
                 <div>
-                    <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('settings_workforce.sort_order') }}</label>
-                    <input v-model.number="teamForm.sort_order" type="number" min="0" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+                    <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('settings_workforce.sort_order') }}</label>
+                    <input v-model.number="teamForm.sort_order" type="number" min="0" class="w-full rounded-lg border agent-border px-3 py-2 text-sm" />
                 </div>
 
                 <div>
                     <div class="mb-2 flex items-center justify-between">
-                        <p class="text-sm font-medium text-slate-700">{{ $t('settings_workforce.members') }}</p>
+                        <p class="text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('settings_workforce.members') }}</p>
                         <button type="button" class="text-sm text-blue-600" @click="addMember">{{ $t('settings_workforce.add_member') }}</button>
                     </div>
                     <div v-for="(member, index) in teamForm.members" :key="index" class="mb-2 grid gap-2 sm:grid-cols-[1fr_1fr_auto]">
-                        <select v-model="member.user_id" required class="rounded-lg border border-slate-300 px-2 py-2 text-sm">
+                        <select v-model="member.user_id" required class="rounded-lg border agent-border px-2 py-2 text-sm">
                             <option value="">{{ $t('settings_workforce.select_agent') }}</option>
                             <option v-for="agent in agents" :key="agent.id" :value="agent.id">{{ agent.name }}</option>
                         </select>
-                        <select v-model="member.org_role" class="rounded-lg border border-slate-300 px-2 py-2 text-sm">
+                        <select v-model="member.org_role" class="rounded-lg border agent-border px-2 py-2 text-sm">
                             <option v-for="role in meta.org_roles" :key="role.value" :value="role.value">{{ role.label }}</option>
                         </select>
                         <button type="button" class="text-sm text-red-600" @click="removeMember(index)">{{ $t('settings_workforce.remove') }}</button>
@@ -321,7 +321,7 @@ const destroyTeam = (team) => {
             </form>
             <template #footer>
                 <div class="flex justify-end gap-2">
-                    <button type="button" class="rounded-lg border border-slate-300 px-4 py-2 text-sm" @click="showTeamForm = false">{{ $t('common.cancel') }}</button>
+                    <button type="button" class="rounded-lg border agent-border px-4 py-2 text-sm" @click="showTeamForm = false">{{ $t('common.cancel') }}</button>
                     <button type="submit" form="team-form" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white" :disabled="teamForm.processing">{{ $t('common.save') }}</button>
                 </div>
             </template>

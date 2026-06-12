@@ -43,24 +43,24 @@ const formatRole = (name) => name.split('_').map((part) => part.charAt(0).toUppe
                 </template>
             </PageHeader>
 
-            <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-                <table class="min-w-full divide-y divide-slate-200 text-sm">
+            <div class="overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm">
+                <table class="min-w-full divide-y divide-slate-200 dark:divide-slate-800 text-sm">
                     <thead class="bg-slate-50">
                         <tr>
-                            <th class="px-5 py-3.5 text-left font-medium text-slate-600">{{ $t('central.user') }}</th>
-                            <th class="px-5 py-3.5 text-left font-medium text-slate-600">{{ $t('central.roles') }}</th>
-                            <th class="px-5 py-3.5 text-left font-medium text-slate-600">{{ $t('central.status') }}</th>
-                            <th v-if="canManage" class="px-5 py-3.5 text-right font-medium text-slate-600">{{ $t('central.actions') }}</th>
+                            <th class="px-5 py-3.5 text-left font-medium text-slate-600 dark:text-slate-400">{{ $t('central.user') }}</th>
+                            <th class="px-5 py-3.5 text-left font-medium text-slate-600 dark:text-slate-400">{{ $t('central.roles') }}</th>
+                            <th class="px-5 py-3.5 text-left font-medium text-slate-600 dark:text-slate-400">{{ $t('central.status') }}</th>
+                            <th v-if="canManage" class="px-5 py-3.5 text-right font-medium text-slate-600 dark:text-slate-400">{{ $t('central.actions') }}</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-slate-100">
-                        <tr v-for="user in users.data" :key="user.id" class="hover:bg-slate-50/80">
+                    <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+                        <tr v-for="user in users.data" :key="user.id" class="hover:bg-slate-50 dark:bg-slate-950 dark:hover:bg-slate-800/80">
                             <td class="px-5 py-4">
                                 <div class="flex items-center gap-3">
                                     <AppAvatar :name="user.name" :email="user.email" size="sm" />
                                     <div>
-                                        <p class="font-medium text-slate-900">{{ user.name }}</p>
-                                        <p class="text-xs text-slate-500">{{ user.email }}</p>
+                                        <p class="font-medium text-slate-900 dark:text-slate-100">{{ user.name }}</p>
+                                        <p class="text-xs text-slate-500 dark:text-slate-400">{{ user.email }}</p>
                                     </div>
                                 </div>
                             </td>
@@ -69,15 +69,15 @@ const formatRole = (name) => name.split('_').map((part) => part.charAt(0).toUppe
                                     <span
                                         v-for="role in user.roles"
                                         :key="role.id"
-                                        class="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-700"
+                                        class="rounded-full bg-slate-100 dark:bg-slate-900 px-2.5 py-0.5 text-xs font-medium text-slate-700 dark:text-slate-300"
                                     >
                                         {{ formatRole(role.name) }}
                                     </span>
-                                    <span v-if="!user.roles?.length" class="text-slate-400">—</span>
+                                    <span v-if="!user.roles?.length" class="text-slate-400 dark:text-slate-500">—</span>
                                 </div>
                             </td>
                             <td class="px-5 py-4">
-                                <span class="rounded-full px-2.5 py-1 text-xs font-medium" :class="user.is_active ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600'">
+                                <span class="rounded-full px-2.5 py-1 text-xs font-medium" :class="user.is_active ? 'bg-emerald-100 text-emerald-700 dark:text-emerald-300' : 'bg-slate-100 dark:bg-slate-900 text-slate-600 dark:text-slate-400'">
                                     {{ user.is_active ? 'Active' : 'Inactive' }}
                                 </span>
                             </td>
@@ -89,7 +89,7 @@ const formatRole = (name) => name.split('_').map((part) => part.charAt(0).toUppe
                             </td>
                         </tr>
                         <tr v-if="!users.data.length">
-                            <td :colspan="canManage ? 4 : 3" class="px-5 py-12 text-center text-sm text-slate-500">
+                            <td :colspan="canManage ? 4 : 3" class="px-5 py-12 text-center text-sm text-slate-500 dark:text-slate-400">
                                 No platform users yet.
                             </td>
                         </tr>

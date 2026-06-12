@@ -86,11 +86,11 @@ const statusLabel = (tenant) => {
 
 const statusClass = (tenant) => {
     if (tenant.is_blocked) {
-        return 'bg-red-100 text-red-700 ring-red-200';
+        return 'bg-red-100 text-red-700 dark:text-red-300 ring-red-200';
     }
 
     if (tenant.subscription?.on_trial) {
-        return 'bg-blue-100 text-blue-700 ring-blue-200';
+        return 'bg-blue-100 text-blue-700 dark:text-blue-300 ring-blue-200';
     }
 
     if (tenant.subscription?.trial_expired) {
@@ -102,10 +102,10 @@ const statusClass = (tenant) => {
     }
 
     if (!tenant.subscription) {
-        return 'bg-slate-100 text-slate-700 ring-slate-200';
+        return 'bg-slate-100 dark:bg-slate-900 text-slate-700 dark:text-slate-300 ring-slate-200 dark:ring-slate-700';
     }
 
-    return 'bg-emerald-100 text-emerald-700 ring-emerald-200';
+    return 'bg-emerald-100 text-emerald-700 dark:text-emerald-300 ring-emerald-200';
 };
 
 const planLabel = (tenant) => {
@@ -220,7 +220,7 @@ const hasFilters = computed(() => Boolean(props.filters.q) || (props.filters.sta
 
             <div class="mb-4 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
                 <div class="relative max-w-md flex-1">
-                    <svg class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 dark:text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M10 18a8 8 0 100-16 8 8 0 000 16z" />
                     </svg>
                     <input
@@ -237,7 +237,7 @@ const hasFilters = computed(() => Boolean(props.filters.q) || (props.filters.sta
                         :key="item.value"
                         type="button"
                         class="rounded-full px-3 py-1.5 text-sm font-medium transition"
-                        :class="status === item.value ? 'bg-slate-900 text-white' : 'bg-white text-slate-600 ring-1 ring-slate-200 hover:bg-slate-50'"
+                        :class="status === item.value ? 'bg-slate-900 text-white' : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 ring-1 ring-slate-200 dark:ring-slate-700 hover:bg-slate-50 dark:bg-slate-950 dark:hover:bg-slate-800'"
                         @click="status = item.value"
                     >
                         {{ item.label }}
@@ -245,33 +245,33 @@ const hasFilters = computed(() => Boolean(props.filters.q) || (props.filters.sta
                 </div>
             </div>
 
-            <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+            <div class="overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm">
                 <div class="overflow-x-auto">
                     <table class="min-w-full text-sm">
-                        <thead class="border-b border-slate-200 bg-slate-50/80">
+                        <thead class="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/80">
                             <tr>
-                                <th class="px-5 py-3.5 text-left font-medium text-slate-600">{{ $t('settings.groups.workspace') }}</th>
-                                <th class="px-5 py-3.5 text-left font-medium text-slate-600">{{ $t('central.admin') }}</th>
-                                <th class="px-5 py-3.5 text-left font-medium text-slate-600">{{ $t('central.plan') }}</th>
-                                <th class="px-5 py-3.5 text-left font-medium text-slate-600">{{ $t('central.status') }}</th>
-                                <th class="px-5 py-3.5 text-left font-medium text-slate-600">{{ $t('central.created') }}</th>
-                                <th class="px-5 py-3.5 text-right font-medium text-slate-600">{{ $t('central.actions') }}</th>
+                                <th class="px-5 py-3.5 text-left font-medium text-slate-600 dark:text-slate-400">{{ $t('settings.groups.workspace') }}</th>
+                                <th class="px-5 py-3.5 text-left font-medium text-slate-600 dark:text-slate-400">{{ $t('central.admin') }}</th>
+                                <th class="px-5 py-3.5 text-left font-medium text-slate-600 dark:text-slate-400">{{ $t('central.plan') }}</th>
+                                <th class="px-5 py-3.5 text-left font-medium text-slate-600 dark:text-slate-400">{{ $t('central.status') }}</th>
+                                <th class="px-5 py-3.5 text-left font-medium text-slate-600 dark:text-slate-400">{{ $t('central.created') }}</th>
+                                <th class="px-5 py-3.5 text-right font-medium text-slate-600 dark:text-slate-400">{{ $t('central.actions') }}</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-slate-100">
-                            <tr v-for="tenant in tenants.data" :key="tenant.id" class="transition hover:bg-slate-50/70">
+                        <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+                            <tr v-for="tenant in tenants.data" :key="tenant.id" class="transition hover:bg-slate-50 dark:bg-slate-950 dark:hover:bg-slate-800/70">
                                 <td class="px-5 py-4">
                                     <div class="flex items-start gap-3">
                                         <AppAvatar :name="tenant.name" size="sm" />
                                         <div class="min-w-0">
-                                            <p class="font-medium text-slate-900">{{ tenant.name }}</p>
-                                            <p class="font-mono text-xs text-slate-500">{{ tenant.slug }}</p>
-                                            <p v-if="tenant.database" class="mt-0.5 font-mono text-[11px] text-slate-400">{{ tenant.database }}</p>
+                                            <p class="font-medium text-slate-900 dark:text-slate-100">{{ tenant.name }}</p>
+                                            <p class="font-mono text-xs text-slate-500 dark:text-slate-400">{{ tenant.slug }}</p>
+                                            <p v-if="tenant.database" class="mt-0.5 font-mono text-[11px] text-slate-400 dark:text-slate-500">{{ tenant.database }}</p>
                                             <a
                                                 v-if="tenant.url"
                                                 :href="tenant.url"
                                                 target="_blank"
-                                                class="mt-1.5 inline-flex items-center gap-1 text-xs font-medium text-blue-600 hover:text-blue-700"
+                                                class="mt-1.5 inline-flex items-center gap-1 text-xs font-medium text-blue-600 hover:text-blue-700 dark:hover:text-blue-300 dark:text-blue-300"
                                             >
                                                 {{ $t('central.open_workspace') }}
                                                 <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
@@ -281,20 +281,20 @@ const hasFilters = computed(() => Boolean(props.filters.q) || (props.filters.sta
                                 </td>
                                 <td class="px-5 py-4">
                                     <template v-if="tenant.admin_email">
-                                        <p class="font-medium text-slate-900">{{ tenant.admin_name || 'Admin' }}</p>
-                                        <p class="text-xs text-slate-500">{{ tenant.admin_email }}</p>
+                                        <p class="font-medium text-slate-900 dark:text-slate-100">{{ tenant.admin_name || 'Admin' }}</p>
+                                        <p class="text-xs text-slate-500 dark:text-slate-400">{{ tenant.admin_email }}</p>
                                     </template>
-                                    <span v-else class="text-slate-400">{{ $t('central.no_admin_found') }}</span>
+                                    <span v-else class="text-slate-400 dark:text-slate-500">{{ $t('central.no_admin_found') }}</span>
                                 </td>
                                 <td class="px-5 py-4">
-                                    <p class="font-medium text-slate-900">{{ planLabel(tenant) }}</p>
-                                    <p v-if="tenant.subscription?.plan_price && !tenant.subscription?.on_trial" class="text-xs text-slate-500">
+                                    <p class="font-medium text-slate-900 dark:text-slate-100">{{ planLabel(tenant) }}</p>
+                                    <p v-if="tenant.subscription?.plan_price && !tenant.subscription?.on_trial" class="text-xs text-slate-500 dark:text-slate-400">
                                         ${{ tenant.subscription.plan_price }}/mo
                                     </p>
                                     <p v-if="stripe_enabled && tenant.subscription?.has_stripe" class="mt-1 text-[10px] font-semibold uppercase tracking-wide text-violet-600">
                                         {{ $t('central.stripe_billing') }}
                                     </p>
-                                    <p v-if="tenant.subscription?.renews_at && !tenant.subscription?.on_trial" class="mt-1 text-xs text-slate-400">
+                                    <p v-if="tenant.subscription?.renews_at && !tenant.subscription?.on_trial" class="mt-1 text-xs text-slate-400 dark:text-slate-500">
                                         Renews {{ formatDate(tenant.subscription.renews_at) }}
                                     </p>
                                 </td>
@@ -302,11 +302,11 @@ const hasFilters = computed(() => Boolean(props.filters.q) || (props.filters.sta
                                     <span class="inline-flex rounded-full px-2.5 py-1 text-xs font-medium capitalize ring-1 ring-inset" :class="statusClass(tenant)">
                                         {{ statusLabel(tenant) }}
                                     </span>
-                                    <p v-if="tenant.subscription?.trial_ends_at && tenant.subscription?.on_trial" class="mt-1.5 text-xs text-slate-500">
+                                    <p v-if="tenant.subscription?.trial_ends_at && tenant.subscription?.on_trial" class="mt-1.5 text-xs text-slate-500 dark:text-slate-400">
                                         Ends {{ formatDate(tenant.subscription.trial_ends_at) }}
                                     </p>
                                 </td>
-                                <td class="px-5 py-4 text-slate-600">
+                                <td class="px-5 py-4 text-slate-600 dark:text-slate-400">
                                     {{ formatDate(tenant.created_at) }}
                                 </td>
                                 <td class="px-5 py-4 text-right">
@@ -314,14 +314,14 @@ const hasFilters = computed(() => Boolean(props.filters.q) || (props.filters.sta
                                         <button
                                             v-if="canManage"
                                             type="button"
-                                            class="rounded-lg px-3 py-1.5 text-xs font-medium text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50"
+                                            class="rounded-lg px-3 py-1.5 text-xs font-medium text-slate-700 dark:text-slate-300 ring-1 ring-slate-200 dark:ring-slate-700 hover:bg-slate-50 dark:bg-slate-950 dark:hover:bg-slate-800"
                                             @click="openManage(tenant)"
                                         >{{ $t('nav.sections.manage') }}</button>
                                         <a
                                             v-if="tenant.url"
                                             :href="tenant.url"
                                             target="_blank"
-                                            class="rounded-lg px-3 py-1.5 text-xs font-medium text-blue-600 ring-1 ring-blue-200 hover:bg-blue-50"
+                                            class="rounded-lg px-3 py-1.5 text-xs font-medium text-blue-600 ring-1 ring-blue-200 hover:bg-blue-50 dark:bg-blue-950/40"
                                         >
                                             {{ $t('central.visit') }}
                                         </a>
@@ -330,8 +330,8 @@ const hasFilters = computed(() => Boolean(props.filters.q) || (props.filters.sta
                             </tr>
                             <tr v-if="!tenants.data.length">
                                 <td colspan="6" class="px-5 py-16 text-center">
-                                    <p class="text-sm font-medium text-slate-900">{{ $t('central.no_workspaces_found') }}</p>
-                                    <p class="mt-1 text-sm text-slate-500">
+                                    <p class="text-sm font-medium text-slate-900 dark:text-slate-100">{{ $t('central.no_workspaces_found') }}</p>
+                                    <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
                                         {{ hasFilters ? 'Try adjusting your search or filters.' : 'New signups will appear here.' }}
                                     </p>
                                 </td>
@@ -359,18 +359,18 @@ const hasFilters = computed(() => Boolean(props.filters.q) || (props.filters.sta
             @close="closeManage"
         >
             <div v-if="manageTenant" class="space-y-5">
-                <div class="rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm">
-                    <p class="font-medium text-slate-900">{{ manageTenant.slug }}</p>
-                    <p v-if="manageTenant.database" class="mt-1 font-mono text-xs text-slate-500">{{ manageTenant.database }}</p>
-                    <p class="mt-1 text-slate-600">{{ manageTenant.admin_email || 'No admin email on file' }}</p>
-                    <p class="mt-2 text-xs text-slate-500">
+                <div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 p-4 text-sm">
+                    <p class="font-medium text-slate-900 dark:text-slate-100">{{ manageTenant.slug }}</p>
+                    <p v-if="manageTenant.database" class="mt-1 font-mono text-xs text-slate-500 dark:text-slate-400">{{ manageTenant.database }}</p>
+                    <p class="mt-1 text-slate-600 dark:text-slate-400">{{ manageTenant.admin_email || 'No admin email on file' }}</p>
+                    <p class="mt-2 text-xs text-slate-500 dark:text-slate-400">
                         {{ $t('central.platform_overrides_apply_immediately_and_do_not_charge_stripe') }}
                     </p>
                 </div>
 
                 <div
                     v-if="canManage && !manageTenant.subscription"
-                    class="rounded-xl border border-amber-200 bg-amber-50 p-4"
+                    class="rounded-xl border border-amber-200 dark:border-amber-900/60 bg-amber-50 dark:bg-amber-950/40 p-4"
                 >
                     <p class="text-sm font-medium text-amber-950">{{ $t('central.no_subscription_record') }}</p>
                     <p class="mt-1 text-sm text-amber-800">
@@ -387,7 +387,7 @@ const hasFilters = computed(() => Boolean(props.filters.q) || (props.filters.sta
                 </div>
 
                 <div v-if="canManage && manageTenant.subscription">
-                    <label class="mb-1.5 block text-sm font-medium text-slate-700">{{ $t('central.subscription_plan') }}</label>
+                    <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('central.subscription_plan') }}</label>
                     <select v-model="selectedPlan" :class="adminInputClass">
                         <option v-for="plan in plans" :key="plan.slug" :value="plan.slug">
                             {{ plan.name }} — ${{ plan.price }}/mo
@@ -403,24 +403,24 @@ const hasFilters = computed(() => Boolean(props.filters.q) || (props.filters.sta
                     </button>
                 </div>
 
-                <div class="border-t border-slate-200 pt-4">
+                <div class="border-t border-slate-200 dark:border-slate-800 pt-4">
                     <button
                         type="button"
                         class="w-full rounded-xl px-4 py-2.5 text-sm font-semibold transition"
-                        :class="manageTenant.is_blocked ? 'bg-emerald-600 text-white hover:bg-emerald-700' : 'bg-red-50 text-red-700 ring-1 ring-red-200 hover:bg-red-100'"
+                        :class="manageTenant.is_blocked ? 'bg-emerald-600 text-white hover:bg-emerald-700' : 'bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300 ring-1 ring-red-200 hover:bg-red-100'"
                         @click="toggleBlock(manageTenant)"
                     >
                         {{ manageTenant.is_blocked ? 'Unblock workspace' : 'Block workspace' }}
                     </button>
                 </div>
 
-                <div class="border-t border-slate-200 pt-4">
+                <div class="border-t border-slate-200 dark:border-slate-800 pt-4">
                     <button
                         type="button"
                         class="w-full rounded-xl bg-red-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-red-700"
                         @click="openDelete(manageTenant)"
                     >{{ $t('central.delete_workspace_permanently') }}</button>
-                    <p class="mt-2 text-xs text-slate-500">{{ $t('central.removes_the_workspace_record_and_drops_its_tenant_database') }}</p>
+                    <p class="mt-2 text-xs text-slate-500 dark:text-slate-400">{{ $t('central.removes_the_workspace_record_and_drops_its_tenant_database') }}</p>
                 </div>
             </div>
         </AppModal>
@@ -433,7 +433,7 @@ const hasFilters = computed(() => Boolean(props.filters.q) || (props.filters.sta
             @close="closeDelete"
         >
             <div v-if="deleteTenant" class="space-y-4">
-                <div class="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-900">
+                <div class="rounded-xl border border-red-200 dark:border-red-900/60 bg-red-50 dark:bg-red-950/40 p-4 text-sm text-red-900">
                     <p class="font-medium">Database: <span class="font-mono">{{ deleteTenant.database }}</span></p>
                     <p class="mt-2">Type <span class="font-mono font-semibold">{{ deleteTenant.slug }}</span> to confirm.</p>
                 </div>

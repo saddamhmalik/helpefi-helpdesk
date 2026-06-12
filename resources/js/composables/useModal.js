@@ -1,13 +1,23 @@
 import { nextTick, onUnmounted, watch } from 'vue';
 
-const FOCUSABLE_SELECTOR = 'a[href], button:not([disabled]), textarea, input, select, [tabindex]:not([tabindex="-1"])';
+const FOCUSABLE_SELECTOR = 'a[href], button:not([disabled]), textarea, input, select, [contenteditable="true"], [tabindex]:not([tabindex="-1"])';
+
+function isFocusable(element) {
+    if (element.getClientRects().length > 0) {
+        return true;
+    }
+
+    const style = window.getComputedStyle(element);
+
+    return style.position === 'fixed' && style.display !== 'none' && style.visibility !== 'hidden';
+}
 
 function focusableElements(root) {
     if (!root) {
         return [];
     }
 
-    return [...root.querySelectorAll(FOCUSABLE_SELECTOR)].filter((element) => element.offsetParent !== null);
+    return [...root.querySelectorAll(FOCUSABLE_SELECTOR)].filter(isFocusable);
 }
 
 export function useBodyScrollLock(openRef) {
@@ -80,7 +90,7 @@ export function useAccessibleDialog(openRef, dialogRef, { onEscape, initialFocus
         if (open) {
             previousFocus = document.activeElement;
             await nextTick();
-            const target = initialFocusRef?.value ?? focusableElements(dialogRef.value).at(-1);
+            const target = initialFocusRef?.value ?? focusableElements(dialogRef.value)[0];
             target?.focus();
             window.addEventListener('keydown', handleKeydown);
 

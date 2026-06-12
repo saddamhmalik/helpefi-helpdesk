@@ -3,6 +3,7 @@ import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import AuthLayout from '../../Layouts/AuthLayout.vue';
 import { useI18n } from 'vue-i18n';
+import { formInputClass } from '../../composables/useFormControls.js';
 
 const { t } = useI18n();
 const page = usePage();
@@ -14,8 +15,6 @@ const form = useForm({
 });
 
 const submit = () => form.post('/forgot-password');
-
-const inputClass = 'w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 shadow-sm transition placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20';
 </script>
 
 <template>
@@ -24,24 +23,24 @@ const inputClass = 'w-full rounded-xl border border-slate-200 bg-white px-3.5 py
         :aside-title="$t('auth.forgot_password_title')"
         :aside-description="$t('auth.forgot_password_description')"
     >
-        <h1 class="text-2xl font-semibold tracking-tight text-slate-900">{{ $t('auth.forgot_password') }}</h1>
-        <p class="mt-2 text-sm text-slate-600">{{ $t('auth.forgot_password_help') }}</p>
+        <h1 class="text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-100">{{ $t('auth.forgot_password') }}</h1>
+        <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">{{ $t('auth.forgot_password_help') }}</p>
 
         <div
             v-if="flashSuccess"
-            class="mt-6 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800"
+            class="mt-6 rounded-xl border border-emerald-200 dark:border-emerald-900/60 bg-emerald-50 dark:bg-emerald-950/40 px-4 py-3 text-sm text-emerald-800 dark:text-emerald-200"
         >
             {{ flashSuccess }}
         </div>
 
         <form class="mt-8 space-y-5" @submit.prevent="submit">
             <div>
-                <label class="mb-1.5 block text-sm font-medium text-slate-700" for="email">{{ $t('auth.email') }}</label>
+                <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300" for="email">{{ $t('auth.email') }}</label>
                 <input
                     id="email"
                     v-model="form.email"
                     type="email"
-                    :class="inputClass"
+                    :class="formInputClass"
                     :placeholder="$t('auth.email_placeholder')"
                     autocomplete="email"
                     autofocus
@@ -59,8 +58,8 @@ const inputClass = 'w-full rounded-xl border border-slate-200 bg-white px-3.5 py
             </button>
         </form>
 
-        <p class="mt-8 text-center text-sm text-slate-600">
-            <Link href="/login" class="font-semibold text-blue-600 transition hover:text-blue-700">{{ $t('auth.back_to_sign_in') }}</Link>
+        <p class="mt-8 text-center text-sm text-slate-600 dark:text-slate-400">
+            <Link href="/login" class="font-semibold text-blue-600 transition hover:text-blue-700 dark:hover:text-blue-300 dark:text-blue-300">{{ $t('auth.back_to_sign_in') }}</Link>
         </p>
     </AuthLayout>
 </template>

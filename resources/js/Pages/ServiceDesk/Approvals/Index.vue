@@ -19,11 +19,11 @@ const { t } = useI18n();
 
 const statusClass = (status) => {
     if (status === 'approved') {
-        return 'bg-emerald-100 text-emerald-800';
+        return 'bg-emerald-100 text-emerald-800 dark:text-emerald-200';
     }
 
     if (status === 'rejected') {
-        return 'bg-red-100 text-red-800';
+        return 'bg-red-100 text-red-800 dark:text-red-200';
     }
 
     return 'bg-amber-100 text-amber-800';
@@ -82,13 +82,13 @@ const applyFilter = (mine) => {
             <button
                 type="button"
                 class="rounded-lg px-3 py-1.5 text-sm font-medium transition"
-                :class="!filters.mine ? 'bg-slate-900 text-white' : 'bg-white text-slate-600 ring-1 ring-slate-200'"
+                :class="!filters.mine ? 'bg-slate-900 text-white' : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 ring-1 ring-slate-200 dark:ring-slate-700'"
                 @click="applyFilter(false)"
             >{{ $t('service_desk.all_pending') }}</button>
             <button
                 type="button"
                 class="rounded-lg px-3 py-1.5 text-sm font-medium transition"
-                :class="filters.mine ? 'bg-slate-900 text-white' : 'bg-white text-slate-600 ring-1 ring-slate-200'"
+                :class="filters.mine ? 'bg-slate-900 text-white' : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 ring-1 ring-slate-200 dark:ring-slate-700'"
                 @click="applyFilter(true)"
             >{{ $t('service_desk.assigned_to_me') }}</button>
         </div>
@@ -96,31 +96,31 @@ const applyFilter = (mine) => {
         <DataTable>
             <template #head>
                 <tr>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('service_desk.request') }}</th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('service_desk.requester') }}</th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('service_desk.status') }}</th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('service_desk.current_approver') }}</th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('service_desk.actions') }}</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{{ $t('service_desk.request') }}</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{{ $t('service_desk.requester') }}</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{{ $t('service_desk.status') }}</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{{ $t('service_desk.current_approver') }}</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{{ $t('service_desk.actions') }}</th>
                 </tr>
             </template>
             <template #body>
                 <tr v-if="approvals.data.length === 0">
-                    <td colspan="5" class="px-4 py-10 text-center text-sm text-slate-500">No approval requests match this view.</td>
+                    <td colspan="5" class="px-4 py-10 text-center text-sm text-slate-500 dark:text-slate-400">No approval requests match this view.</td>
                 </tr>
-                <tr v-for="approval in approvals.data" :key="approval.id" class="border-t border-slate-100">
+                <tr v-for="approval in approvals.data" :key="approval.id" class="border-t border-slate-100 dark:border-slate-800">
                     <td class="px-4 py-3">
-                        <Link :href="`/tickets/${approval.ticket_id}`" class="font-medium text-slate-900 hover:text-blue-600">
+                        <Link :href="`/tickets/${approval.ticket_id}`" class="font-medium text-slate-900 dark:text-slate-100 hover:text-blue-600 dark:hover:text-blue-400">
                             {{ approval.subject }}
                         </Link>
-                        <p class="text-xs text-slate-500">{{ approval.ticket?.number }}</p>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">{{ approval.ticket?.number }}</p>
                     </td>
-                    <td class="px-4 py-3 text-sm text-slate-700">{{ approval.ticket?.contact?.name || '—' }}</td>
+                    <td class="px-4 py-3 text-sm text-slate-700 dark:text-slate-300">{{ approval.ticket?.contact?.name || '—' }}</td>
                     <td class="px-4 py-3">
                         <span class="rounded-full px-2 py-0.5 text-xs font-medium capitalize" :class="statusClass(approval.status)">
                             {{ approval.status }}
                         </span>
                     </td>
-                    <td class="px-4 py-3 text-sm text-slate-700">{{ currentApprover(approval) }}</td>
+                    <td class="px-4 py-3 text-sm text-slate-700 dark:text-slate-300">{{ currentApprover(approval) }}</td>
                     <td class="px-4 py-3">
                         <div v-if="canDecide(approval)" class="flex flex-wrap gap-2">
                             <button
@@ -134,7 +134,7 @@ const applyFilter = (mine) => {
                                 @click="reject(approval.id)"
                             >{{ $t('service_desk.reject') }}</button>
                         </div>
-                        <Link v-else :href="`/tickets/${approval.ticket_id}`" class="text-sm text-blue-600 hover:text-blue-700">View ticket</Link>
+                        <Link v-else :href="`/tickets/${approval.ticket_id}`" class="text-sm text-blue-600 hover:text-blue-700 dark:hover:text-blue-300 dark:text-blue-300">View ticket</Link>
                     </td>
                 </tr>
             </template>

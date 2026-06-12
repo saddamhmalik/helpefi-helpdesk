@@ -68,10 +68,10 @@ const destroySkill = (skill) => {
         </template>
 
         <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            <div v-for="skill in skills" :key="skill.id" class="flex items-center justify-between rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
+            <div v-for="skill in skills" :key="skill.id" class="flex items-center justify-between rounded-xl border agent-border agent-panel px-4 py-3 shadow-sm">
                 <div>
-                    <p class="font-medium text-slate-900">{{ skill.name }}</p>
-                    <p class="text-xs text-slate-500">{{ skill.slug }}</p>
+                    <p class="font-medium agent-text">{{ skill.name }}</p>
+                    <p class="text-xs agent-text-subtle">{{ skill.slug }}</p>
                 </div>
                 <div class="flex gap-2">
                     <AppRowActions>
@@ -82,17 +82,17 @@ const destroySkill = (skill) => {
             </div>
         </div>
 
-        <div v-if="!skills.length" class="rounded-xl border border-dashed border-slate-300 bg-white px-6 py-12 text-center text-sm text-slate-500">
+        <div v-if="!skills.length" class="rounded-xl border border-dashed agent-border bg-white dark:bg-slate-900 px-6 py-12 text-center text-sm agent-text-subtle">
             No skills yet. Create skills like Billing, Technical, or Spanish to route tickets to qualified agents.
         </div>
 
         <AppModal :open="showForm" :title="editingSkill ? 'Edit skill' : 'Add skill'" size="sm" @close="showForm = false">
             <form id="skill-form" @submit.prevent="save">
-                <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('profile.name') }}</label>
+                <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('profile.name') }}</label>
                 <input v-model="form.name" type="text" required :class="formInputClass" />
             </form>
             <template #footer>
-                <button type="button" class="rounded-lg border border-slate-300 px-4 py-2 text-sm text-slate-700" @click="showForm = false">{{ $t('common.cancel') }}</button>
+                <button type="button" class="rounded-lg border agent-border px-4 py-2 text-sm text-slate-700 dark:text-slate-300" @click="showForm = false">{{ $t('common.cancel') }}</button>
                 <button type="submit" form="skill-form" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white" :disabled="form.processing">{{ $t('common.save') }}</button>
             </template>
         </AppModal>

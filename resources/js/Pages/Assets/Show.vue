@@ -52,14 +52,14 @@ const warrantyStatus = computed(() => {
     soon.setDate(soon.getDate() + 30);
 
     if (expires < now) {
-        return { label: t('assets.warranty_expired'), class: 'bg-red-50 text-red-700' };
+        return { label: t('assets.warranty_expired'), class: 'bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300' };
     }
 
     if (expires <= soon) {
-        return { label: t('assets.warranty_expiring_soon'), class: 'bg-amber-50 text-amber-700' };
+        return { label: t('assets.warranty_expiring_soon'), class: 'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300' };
     }
 
-    return { label: t('assets.under_warranty'), class: 'bg-emerald-50 text-emerald-700' };
+    return { label: t('assets.under_warranty'), class: 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300' };
 });
 
 const ticketCreateUrl = computed(() => {
@@ -97,9 +97,9 @@ const destroyAsset = () => {
     <Head :title="asset.asset_tag" />
     <AgentLayout>
         <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
-            <Link href="/assets" class="text-sm text-blue-600 hover:text-blue-700">← Back to assets</Link>
+            <Link href="/assets" class="text-sm text-blue-600 hover:text-blue-700 dark:hover:text-blue-300 dark:text-blue-300">← Back to assets</Link>
             <div class="flex flex-wrap items-center gap-2">
-                <Link :href="ticketCreateUrl" class="rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-50">
+                <Link :href="ticketCreateUrl" class="rounded-lg border border-slate-300 dark:border-slate-700 px-3 py-1.5 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800">
                     Report issue
                 </Link>
                 <AppDeleteAction :label="$t('assets.delete_asset')" @click="destroyAsset" />
@@ -110,12 +110,12 @@ const destroyAsset = () => {
 
         <div class="grid gap-6 xl:grid-cols-3">
             <div class="space-y-6 xl:col-span-2">
-                <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+                <div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm">
                     <div class="mb-4 flex flex-wrap items-start justify-between gap-3">
                         <div>
-                            <p class="text-sm font-medium text-slate-500">{{ asset.asset_tag }}</p>
-                            <h1 class="text-2xl font-semibold text-slate-900">{{ asset.name }}</h1>
-                            <p class="mt-1 text-sm text-slate-600">{{ asset.type?.name }} · {{ statusLabel(asset.status) }}</p>
+                            <p class="text-sm font-medium text-slate-500 dark:text-slate-400">{{ asset.asset_tag }}</p>
+                            <h1 class="text-2xl font-semibold text-slate-900 dark:text-slate-100">{{ asset.name }}</h1>
+                            <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">{{ asset.type?.name }} · {{ statusLabel(asset.status) }}</p>
                         </div>
                         <span
                             v-if="warrantyStatus"
@@ -129,100 +129,100 @@ const destroyAsset = () => {
                     <form class="space-y-4" @submit.prevent="submit">
                         <div class="grid gap-4 sm:grid-cols-2">
                             <div>
-                                <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('assets.type') }}</label>
-                                <select v-model="form.asset_type_id" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm">
+                                <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('assets.type') }}</label>
+                                <select v-model="form.asset_type_id" class="w-full rounded-lg border border-slate-300 dark:border-slate-700 px-3 py-2 text-sm">
                                     <option v-for="type in meta.types" :key="type.id" :value="type.id">{{ type.name }}</option>
                                 </select>
                             </div>
                             <div>
-                                <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('assets.status') }}</label>
-                                <select v-model="form.status" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm">
+                                <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('assets.status') }}</label>
+                                <select v-model="form.status" class="w-full rounded-lg border border-slate-300 dark:border-slate-700 px-3 py-2 text-sm">
                                     <option v-for="status in meta.statuses" :key="status.value" :value="status.value">{{ status.label }}</option>
                                 </select>
                             </div>
                         </div>
                         <div>
-                            <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('assets.name') }}</label>
-                            <input v-model="form.name" type="text" required class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+                            <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('assets.name') }}</label>
+                            <input v-model="form.name" type="text" required class="w-full rounded-lg border border-slate-300 dark:border-slate-700 px-3 py-2 text-sm" />
                         </div>
                         <div class="grid gap-4 sm:grid-cols-2">
                             <div>
-                                <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('assets.serial_number') }}</label>
-                                <input v-model="form.serial_number" type="text" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+                                <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('assets.serial_number') }}</label>
+                                <input v-model="form.serial_number" type="text" class="w-full rounded-lg border border-slate-300 dark:border-slate-700 px-3 py-2 text-sm" />
                             </div>
                             <div>
-                                <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('assets.location') }}</label>
-                                <input v-model="form.location" type="text" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+                                <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('assets.location') }}</label>
+                                <input v-model="form.location" type="text" class="w-full rounded-lg border border-slate-300 dark:border-slate-700 px-3 py-2 text-sm" />
                             </div>
                         </div>
                         <div class="grid gap-4 sm:grid-cols-3">
                             <div>
-                                <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('assets.ip_address') }}</label>
-                                <input v-model="form.ip_address" type="text" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+                                <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('assets.ip_address') }}</label>
+                                <input v-model="form.ip_address" type="text" class="w-full rounded-lg border border-slate-300 dark:border-slate-700 px-3 py-2 text-sm" />
                             </div>
                             <div>
-                                <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('assets.mac_address') }}</label>
-                                <input v-model="form.mac_address" type="text" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+                                <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('assets.mac_address') }}</label>
+                                <input v-model="form.mac_address" type="text" class="w-full rounded-lg border border-slate-300 dark:border-slate-700 px-3 py-2 text-sm" />
                             </div>
                             <div>
-                                <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('assets.hostname') }}</label>
-                                <input v-model="form.hostname" type="text" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+                                <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('assets.hostname') }}</label>
+                                <input v-model="form.hostname" type="text" class="w-full rounded-lg border border-slate-300 dark:border-slate-700 px-3 py-2 text-sm" />
                             </div>
                         </div>
                         <div class="grid gap-4 sm:grid-cols-3">
                             <div>
-                                <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('assets.manufacturer') }}</label>
-                                <input v-model="form.manufacturer" type="text" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+                                <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('assets.manufacturer') }}</label>
+                                <input v-model="form.manufacturer" type="text" class="w-full rounded-lg border border-slate-300 dark:border-slate-700 px-3 py-2 text-sm" />
                             </div>
                             <div>
-                                <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('assets.model') }}</label>
-                                <input v-model="form.model" type="text" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+                                <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('assets.model') }}</label>
+                                <input v-model="form.model" type="text" class="w-full rounded-lg border border-slate-300 dark:border-slate-700 px-3 py-2 text-sm" />
                             </div>
                             <div>
-                                <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('assets.vendor') }}</label>
-                                <input v-model="form.vendor" type="text" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+                                <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('assets.vendor') }}</label>
+                                <input v-model="form.vendor" type="text" class="w-full rounded-lg border border-slate-300 dark:border-slate-700 px-3 py-2 text-sm" />
                             </div>
                         </div>
                         <div class="grid gap-4 sm:grid-cols-2">
                             <div>
-                                <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('assets.assigned_contact') }}</label>
-                                <select v-model="form.contact_id" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm">
+                                <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('assets.assigned_contact') }}</label>
+                                <select v-model="form.contact_id" class="w-full rounded-lg border border-slate-300 dark:border-slate-700 px-3 py-2 text-sm">
                                     <option value="">{{ $t('assets.unassigned') }}</option>
                                     <option v-for="contact in contacts" :key="contact.id" :value="contact.id">{{ contact.name }}</option>
                                 </select>
                             </div>
                             <div>
-                                <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('assets.organization') }}</label>
-                                <select v-model="form.organization_id" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm">
+                                <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('assets.organization') }}</label>
+                                <select v-model="form.organization_id" class="w-full rounded-lg border border-slate-300 dark:border-slate-700 px-3 py-2 text-sm">
                                     <option value="">{{ $t('assets.none') }}</option>
                                     <option v-for="org in organizations" :key="org.id" :value="org.id">{{ org.name }}</option>
                                 </select>
                             </div>
                         </div>
                         <div>
-                            <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('assets.parent_asset') }}</label>
-                            <select v-model="form.parent_id" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm">
+                            <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('assets.parent_asset') }}</label>
+                            <select v-model="form.parent_id" class="w-full rounded-lg border border-slate-300 dark:border-slate-700 px-3 py-2 text-sm">
                                 <option value="">{{ $t('assets.none') }}</option>
                                 <option v-for="parent in parentOptions.filter((item) => item.id !== asset.id)" :key="parent.id" :value="parent.id">{{ parent.asset_tag }} — {{ parent.name }}</option>
                             </select>
                         </div>
                         <div class="grid gap-4 sm:grid-cols-3">
                             <div>
-                                <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('assets.purchase_cost') }}</label>
-                                <input v-model="form.purchase_cost" type="number" min="0" step="0.01" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+                                <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('assets.purchase_cost') }}</label>
+                                <input v-model="form.purchase_cost" type="number" min="0" step="0.01" class="w-full rounded-lg border border-slate-300 dark:border-slate-700 px-3 py-2 text-sm" />
                             </div>
                             <div>
-                                <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('assets.purchased') }}</label>
-                                <input v-model="form.purchased_at" type="date" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+                                <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('assets.purchased') }}</label>
+                                <input v-model="form.purchased_at" type="date" class="w-full rounded-lg border border-slate-300 dark:border-slate-700 px-3 py-2 text-sm" />
                             </div>
                             <div>
-                                <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('assets.warranty_expires') }}</label>
-                                <input v-model="form.warranty_expires_at" type="date" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+                                <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('assets.warranty_expires') }}</label>
+                                <input v-model="form.warranty_expires_at" type="date" class="w-full rounded-lg border border-slate-300 dark:border-slate-700 px-3 py-2 text-sm" />
                             </div>
                         </div>
                         <div>
-                            <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('assets.notes') }}</label>
-                            <textarea v-model="form.notes" rows="3" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+                            <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('assets.notes') }}</label>
+                            <textarea v-model="form.notes" rows="3" class="w-full rounded-lg border border-slate-300 dark:border-slate-700 px-3 py-2 text-sm" />
                         </div>
                         <button type="submit" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700" :disabled="form.processing">{{ $t('assets.save_changes') }}</button>
                     </form>
@@ -230,64 +230,64 @@ const destroyAsset = () => {
             </div>
 
             <div class="space-y-6">
-                <div v-if="asset.discovery_source || asset.last_seen_at" class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-                    <h2 class="text-lg font-semibold text-slate-900">{{ $t('assets.discovery') }}</h2>
+                <div v-if="asset.discovery_source || asset.last_seen_at" class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm">
+                    <h2 class="text-lg font-semibold text-slate-900 dark:text-slate-100">{{ $t('assets.discovery') }}</h2>
                     <dl class="mt-3 space-y-2 text-sm">
                         <div v-if="asset.discovery_source" class="flex justify-between gap-3">
-                            <dt class="text-slate-500">{{ $t('assets.source') }}</dt>
-                            <dd class="text-slate-900">{{ asset.discovery_source }}</dd>
+                            <dt class="text-slate-500 dark:text-slate-400">{{ $t('assets.source') }}</dt>
+                            <dd class="text-slate-900 dark:text-slate-100">{{ asset.discovery_source }}</dd>
                         </div>
                         <div v-if="asset.last_seen_at" class="flex justify-between gap-3">
-                            <dt class="text-slate-500">{{ $t('assets.last_seen') }}</dt>
-                            <dd class="text-slate-900">{{ asset.last_seen_at.slice(0, 16).replace('T', ' ') }}</dd>
+                            <dt class="text-slate-500 dark:text-slate-400">{{ $t('assets.last_seen') }}</dt>
+                            <dd class="text-slate-900 dark:text-slate-100">{{ asset.last_seen_at.slice(0, 16).replace('T', ' ') }}</dd>
                         </div>
                     </dl>
                 </div>
 
-                <div v-if="asset.parent" class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-                    <h2 class="text-lg font-semibold text-slate-900">{{ $t('assets.parent_asset') }}</h2>
-                    <Link :href="`/assets/${asset.parent.id}`" class="mt-2 block text-sm text-blue-600 hover:text-blue-700">
+                <div v-if="asset.parent" class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm">
+                    <h2 class="text-lg font-semibold text-slate-900 dark:text-slate-100">{{ $t('assets.parent_asset') }}</h2>
+                    <Link :href="`/assets/${asset.parent.id}`" class="mt-2 block text-sm text-blue-600 hover:text-blue-700 dark:hover:text-blue-300 dark:text-blue-300">
                         {{ asset.parent.asset_tag }} — {{ asset.parent.name }}
                     </Link>
                 </div>
 
-                <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-                    <h2 class="text-lg font-semibold text-slate-900">{{ $t('assets.child_assets') }}</h2>
+                <div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm">
+                    <h2 class="text-lg font-semibold text-slate-900 dark:text-slate-100">{{ $t('assets.child_assets') }}</h2>
                     <ul class="mt-3 space-y-2 text-sm">
                         <li v-for="child in asset.children" :key="child.id">
-                            <Link :href="`/assets/${child.id}`" class="text-blue-600 hover:text-blue-700">{{ child.asset_tag }} — {{ child.name }}</Link>
+                            <Link :href="`/assets/${child.id}`" class="text-blue-600 hover:text-blue-700 dark:hover:text-blue-300 dark:text-blue-300">{{ child.asset_tag }} — {{ child.name }}</Link>
                         </li>
-                        <li v-if="!asset.children?.length" class="text-slate-500">{{ $t('assets.no_child_assets') }}</li>
+                        <li v-if="!asset.children?.length" class="text-slate-500 dark:text-slate-400">{{ $t('assets.no_child_assets') }}</li>
                     </ul>
                 </div>
 
-                <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-                    <h2 class="text-lg font-semibold text-slate-900">{{ $t('assets.linked_tickets') }}</h2>
+                <div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm">
+                    <h2 class="text-lg font-semibold text-slate-900 dark:text-slate-100">{{ $t('assets.linked_tickets') }}</h2>
                     <ul class="mt-3 space-y-2 text-sm">
                         <li v-for="ticket in asset.tickets" :key="ticket.id">
-                            <Link :href="`/tickets/${ticket.id}`" class="text-blue-600 hover:text-blue-700">{{ ticket.number }}</Link>
+                            <Link :href="`/tickets/${ticket.id}`" class="text-blue-600 hover:text-blue-700 dark:hover:text-blue-300 dark:text-blue-300">{{ ticket.number }}</Link>
                             — {{ ticket.subject }}
                         </li>
-                        <li v-if="!asset.tickets?.length" class="text-slate-500">{{ $t('assets.no_linked_tickets') }}</li>
+                        <li v-if="!asset.tickets?.length" class="text-slate-500 dark:text-slate-400">{{ $t('assets.no_linked_tickets') }}</li>
                     </ul>
                 </div>
 
-                <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-                    <h2 class="text-lg font-semibold text-slate-900">{{ $t('assets.assignment_history') }}</h2>
+                <div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm">
+                    <h2 class="text-lg font-semibold text-slate-900 dark:text-slate-100">{{ $t('assets.assignment_history') }}</h2>
                     <ul class="mt-3 space-y-3 text-sm">
-                        <li v-for="log in asset.assignment_logs" :key="log.id" class="border-b border-slate-100 pb-3 last:border-0 last:pb-0">
-                            <p class="font-medium text-slate-900">{{ assignmentActionLabel(log.action) }}</p>
-                            <p class="text-slate-600">
+                        <li v-for="log in asset.assignment_logs" :key="log.id" class="border-b border-slate-100 dark:border-slate-800 pb-3 last:border-0 last:pb-0">
+                            <p class="font-medium text-slate-900 dark:text-slate-100">{{ assignmentActionLabel(log.action) }}</p>
+                            <p class="text-slate-600 dark:text-slate-400">
                                 <span v-if="log.contact">{{ log.contact.name }}</span>
                                 <span v-else>{{ $t('assets.unassigned') }}</span>
                                 <span v-if="log.organization"> · {{ log.organization.name }}</span>
                             </p>
-                            <p class="text-xs text-slate-500">
+                            <p class="text-xs text-slate-500 dark:text-slate-400">
                                 {{ log.created_at?.slice(0, 16).replace('T', ' ') }}
                                 <span v-if="log.changed_by"> · {{ log.changed_by.name }}</span>
                             </p>
                         </li>
-                        <li v-if="!asset.assignment_logs?.length" class="text-slate-500">{{ $t('assets.no_assignment_changes_yet') }}</li>
+                        <li v-if="!asset.assignment_logs?.length" class="text-slate-500 dark:text-slate-400">{{ $t('assets.no_assignment_changes_yet') }}</li>
                     </ul>
                 </div>
             </div>

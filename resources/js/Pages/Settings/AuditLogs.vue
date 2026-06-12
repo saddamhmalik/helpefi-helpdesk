@@ -76,30 +76,30 @@ const formatProperties = (properties) => {
             <div
                 v-for="(total, event) in summary"
                 :key="event"
-                class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"
+                class="rounded-xl border agent-border agent-panel p-4 shadow-sm"
             >
-                <p class="text-xs font-medium uppercase tracking-wide text-slate-500">{{ $t('settings_audit_logs.7_days') }}</p>
-                <p class="mt-1 text-sm font-medium text-slate-900">{{ eventLabel(event) }}</p>
-                <p class="mt-2 text-2xl font-semibold text-slate-900">{{ total }}</p>
+                <p class="text-xs font-medium uppercase tracking-wide agent-text-subtle">{{ $t('settings_audit_logs.7_days') }}</p>
+                <p class="mt-1 text-sm font-medium agent-text">{{ eventLabel(event) }}</p>
+                <p class="mt-2 text-2xl font-semibold agent-text">{{ total }}</p>
             </div>
-            <div v-if="!Object.keys(summary ?? {}).length" class="rounded-xl border border-slate-200 bg-white p-4 text-sm text-slate-500 shadow-sm sm:col-span-2 lg:col-span-4">
+            <div v-if="!Object.keys(summary ?? {}).length" class="rounded-xl border agent-border agent-panel p-4 text-sm agent-text-subtle shadow-sm sm:col-span-2 lg:col-span-4">
                 No audit events recorded in the last 7 days.
             </div>
         </div>
 
-        <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div class="agent-card">
             <div class="mb-4 flex flex-wrap items-end gap-3">
                 <div>
-                    <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('settings_audit_logs.event') }}</label>
-                    <input v-model="filterForm.event" type="text" class="rounded-lg border border-slate-300 px-3 py-2 text-sm" placeholder="ticket.updated" />
+                    <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('settings_audit_logs.event') }}</label>
+                    <input v-model="filterForm.event" type="text" class="rounded-lg border agent-border px-3 py-2 text-sm" placeholder="ticket.updated" />
                 </div>
                 <div>
-                    <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('common.search') }}</label>
-                    <input v-model="filterForm.search" type="text" class="rounded-lg border border-slate-300 px-3 py-2 text-sm" :placeholder="$t('settings_audit_logs.email_event_subject_id')" />
+                    <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('common.search') }}</label>
+                    <input v-model="filterForm.search" type="text" class="rounded-lg border agent-border px-3 py-2 text-sm" :placeholder="$t('settings_audit_logs.email_event_subject_id')" />
                 </div>
-                <button type="button" class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50" @click="applyFilters">{{ $t('settings_audit_logs.filter') }}</button>
-                <button type="button" class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50" @click="clearFilters">{{ $t('settings_audit_logs.clear') }}</button>
-                <a :href="exportUrl" class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">
+                <button type="button" class="agent-btn-secondary" @click="applyFilters">{{ $t('settings_audit_logs.filter') }}</button>
+                <button type="button" class="agent-btn-secondary" @click="clearFilters">{{ $t('settings_audit_logs.clear') }}</button>
+                <a :href="exportUrl" class="agent-btn-secondary">
                     {{ $t('settings_audit_logs.export_csv') }}
                 </a>
             </div>
@@ -107,7 +107,7 @@ const formatProperties = (properties) => {
             <div class="overflow-x-auto">
                 <table class="min-w-full text-sm">
                     <thead>
-                        <tr class="border-b border-slate-200 text-left text-slate-500">
+                        <tr class="border-b agent-border text-left agent-text-subtle">
                             <th class="px-3 py-2 font-medium">{{ $t('settings_audit_logs.when') }}</th>
                             <th class="px-3 py-2 font-medium">{{ $t('settings_audit_logs.event') }}</th>
                             <th class="px-3 py-2 font-medium">{{ $t('settings_audit_logs.actor') }}</th>
@@ -117,22 +117,22 @@ const formatProperties = (properties) => {
                         </tr>
                     </thead>
                     <tbody>
-                        <tr v-for="log in auditLogs.data" :key="log.id" class="border-b border-slate-100 align-top">
-                            <td class="px-3 py-2 whitespace-nowrap text-slate-600">{{ formatDateTime(log.created_at) }}</td>
+                        <tr v-for="log in auditLogs.data" :key="log.id" class="border-b agent-border-subtle align-top">
+                            <td class="px-3 py-2 whitespace-nowrap agent-text-muted">{{ formatDateTime(log.created_at) }}</td>
                             <td class="px-3 py-2">
-                                <p class="font-medium text-slate-900">{{ eventLabel(log.event) }}</p>
-                                <p class="text-xs text-slate-500">{{ log.event }}</p>
+                                <p class="font-medium agent-text">{{ eventLabel(log.event) }}</p>
+                                <p class="text-xs agent-text-subtle">{{ log.event }}</p>
                             </td>
-                            <td class="px-3 py-2 text-slate-600">{{ log.user?.name ?? log.user?.email ?? log.actor_email ?? 'System' }}</td>
-                            <td class="px-3 py-2 text-slate-600">{{ subjectLabel(log) }}</td>
+                            <td class="px-3 py-2 agent-text-muted">{{ log.user?.name ?? log.user?.email ?? log.actor_email ?? 'System' }}</td>
+                            <td class="px-3 py-2 agent-text-muted">{{ subjectLabel(log) }}</td>
                             <td class="px-3 py-2">
-                                <pre v-if="log.properties" class="max-w-md overflow-x-auto rounded bg-slate-50 p-2 text-xs text-slate-700">{{ formatProperties(log.properties) }}</pre>
-                                <span v-else class="text-slate-400">—</span>
+                                <pre v-if="log.properties" class="max-w-md overflow-x-auto rounded agent-panel-muted p-2 text-xs text-slate-700 dark:text-slate-300">{{ formatProperties(log.properties) }}</pre>
+                                <span v-else class="text-slate-400 dark:text-slate-500">—</span>
                             </td>
-                            <td class="px-3 py-2 text-slate-500">{{ log.ip_address ?? '—' }}</td>
+                            <td class="px-3 py-2 agent-text-subtle">{{ log.ip_address ?? '—' }}</td>
                         </tr>
                         <tr v-if="!auditLogs.data?.length">
-                            <td colspan="6" class="px-3 py-8 text-center text-slate-500">No audit logs match your filters.</td>
+                            <td colspan="6" class="px-3 py-8 text-center agent-text-subtle">No audit logs match your filters.</td>
                         </tr>
                     </tbody>
                 </table>
@@ -144,7 +144,7 @@ const formatProperties = (properties) => {
                     :key="link.label"
                     :href="link.url ?? '#'"
                     class="rounded border px-3 py-1 text-sm"
-                    :class="link.active ? 'border-blue-600 bg-blue-50 text-blue-700' : 'border-slate-200 text-slate-600 hover:bg-slate-50'"
+                    :class="link.active ? 'border-blue-600 bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300' : 'agent-border agent-text-muted agent-hover-surface'"
                     v-html="link.label"
                 />
             </div>

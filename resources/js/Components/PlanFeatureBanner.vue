@@ -55,7 +55,7 @@ const actionLabel = computed(() => {
 <template>
     <div
         v-if="!hasFeature"
-        class="mb-6 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950"
+        class="mb-6 rounded-xl border border-amber-200 dark:border-amber-900/60 bg-amber-50 dark:bg-amber-950/40 px-4 py-3 text-sm text-amber-950"
     >
         <p>{{ message }}</p>
         <Link

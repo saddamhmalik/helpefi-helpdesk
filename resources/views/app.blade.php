@@ -19,6 +19,17 @@
         <script>
             (function () {
                 var pref = @json($appearance);
+
+                if (!@json(auth()->check())) {
+                    try {
+                        var guest = localStorage.getItem('appearance:guest');
+
+                        if (guest === 'light' || guest === 'dark' || guest === 'system') {
+                            pref = guest;
+                        }
+                    } catch (e) {}
+                }
+
                 var dark = pref === 'dark' || (pref === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
 
                 if (dark) {

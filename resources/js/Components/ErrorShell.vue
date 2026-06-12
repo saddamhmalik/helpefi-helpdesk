@@ -84,9 +84,9 @@ function retry() {
 
 <template>
     <Head :title="title" />
-    <div class="relative flex min-h-screen items-center justify-center overflow-hidden bg-slate-950 px-4 py-16">
+    <div class="relative flex min-h-screen items-center justify-center overflow-hidden agent-page-bg px-4 py-16">
         <div
-            class="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(59,130,246,0.18),_transparent_55%),radial-gradient(circle_at_bottom_right,_rgba(14,165,233,0.12),_transparent_40%)]"
+            class="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(59,130,246,0.18),_transparent_55%),radial-gradient(circle_at_bottom_right,_rgba(14,165,233,0.12),_transparent_40%)] dark:bg-[radial-gradient(circle_at_top,_rgba(59,130,246,0.12),_transparent_55%),radial-gradient(circle_at_bottom_right,_rgba(14,165,233,0.08),_transparent_40%)]"
             aria-hidden="true"
         />
         <div
@@ -99,7 +99,7 @@ function retry() {
         />
 
         <div class="relative w-full max-w-lg">
-            <div class="rounded-3xl border border-white/10 bg-white/95 p-8 shadow-2xl shadow-slate-950/30 backdrop-blur sm:p-10">
+            <div class="rounded-3xl border agent-border agent-panel p-8 shadow-2xl shadow-slate-300/30 dark:shadow-black/40 backdrop-blur sm:p-10">
                 <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-600 to-cyan-500 text-white shadow-lg shadow-blue-600/30">
                     <svg v-if="variant === 'not_found'" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M11 18a7 7 0 100-14 7 7 0 000 14z" />
@@ -112,20 +112,20 @@ function retry() {
                     </svg>
                 </div>
 
-                <p class="mt-6 text-center text-sm font-semibold uppercase tracking-[0.2em] text-blue-600">
+                <p class="mt-6 text-center text-sm font-semibold uppercase tracking-[0.2em] text-blue-600 dark:text-blue-400">
                     {{ t('errors.error_label') }} {{ status }}
                 </p>
-                <h1 class="mt-3 text-center text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl">
+                <h1 class="mt-3 text-center text-2xl font-semibold tracking-tight agent-text sm:text-3xl">
                     {{ title }}
                 </h1>
-                <p class="mt-3 text-center text-sm leading-6 text-slate-600 sm:text-base">
+                <p class="mt-3 text-center text-sm leading-6 agent-text-muted sm:text-base">
                     {{ description }}
                 </p>
 
                 <div class="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">
                     <button
                         type="button"
-                        class="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-sm font-medium text-slate-700 transition hover:border-slate-300 hover:bg-slate-50"
+                        class="agent-btn-secondary inline-flex items-center justify-center px-5 py-2.5 text-sm"
                         @click="goBack"
                     >
                         {{ t('errors.go_back') }}
@@ -148,7 +148,7 @@ function retry() {
                 </div>
             </div>
 
-            <p class="mt-6 text-center text-xs text-slate-400">
+            <p class="mt-6 text-center text-xs agent-text-subtle">
                 {{ t('errors.support_hint') }}
             </p>
         </div>

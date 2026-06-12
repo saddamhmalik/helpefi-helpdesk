@@ -45,54 +45,54 @@ const save = () => {
         <PlanFeatureBanner feature="ai" />
 
         <div class="space-y-6">
-            <div class="max-w-2xl rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-                <h2 class="text-base font-semibold text-slate-900">{{ $t('settings_ai.agent_assist') }}</h2>
-                <div class="mb-6 mt-4 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700">
+            <div class="max-w-2xl agent-card">
+                <h2 class="text-base font-semibold agent-text">{{ $t('settings_ai.agent_assist') }}</h2>
+                <div class="mb-6 mt-4 rounded-lg border agent-border agent-panel-muted px-4 py-3 text-sm text-slate-700 dark:text-slate-300">
                     <p>
                         Mode:
                         <span class="font-medium">{{ providerLabel }}</span>
                     </p>
-                    <p v-if="settings.mode === 'local'" class="mt-1 text-xs text-slate-500">
+                    <p v-if="settings.mode === 'local'" class="mt-1 text-xs agent-text-subtle">
                         {{ $t('settings_ai.openai_is_not_enabled_for_this_workspace_ai_features_use_a_built-in_fa') }}
                     </p>
                 </div>
 
                 <form class="space-y-4" @submit.prevent="save">
-                    <label class="flex items-center gap-2 text-sm text-slate-700">
-                        <input v-model="form.enabled" type="checkbox" class="rounded border-slate-300" />
+                    <label class="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
+                        <input v-model="form.enabled" type="checkbox" class="rounded agent-border" />
                         Enable AI features for agents
                     </label>
 
                     <div>
-                        <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('settings_ai.model_override') }}</label>
+                        <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('settings_ai.model_override') }}</label>
                         <input
                             v-model="form.model"
                             type="text"
-                            class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                            class="w-full rounded-lg border agent-border px-3 py-2 text-sm"
                             placeholder="gpt-4o-mini"
                         />
                     </div>
 
-                    <label class="flex items-center gap-2 text-sm text-slate-700">
-                        <input v-model="form.triage_enabled" type="checkbox" class="rounded border-slate-300" :disabled="!form.enabled" />
+                    <label class="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
+                        <input v-model="form.triage_enabled" type="checkbox" class="rounded agent-border" :disabled="!form.enabled" />
                         Auto-triage new tickets (set priority from subject)
                     </label>
 
-                    <div class="border-t border-slate-100 pt-5">
-                        <h3 class="text-sm font-semibold text-slate-900">{{ $t('settings_ai.customer_deflection') }}</h3>
-                        <p class="mt-1 text-sm text-slate-500">{{ $t('settings_ai.answer_questions_from_the_knowledge_base_before_creating_tickets') }}</p>
+                    <div class="border-t agent-border-subtle pt-5">
+                        <h3 class="text-sm font-semibold agent-text">{{ $t('settings_ai.customer_deflection') }}</h3>
+                        <p class="mt-1 text-sm agent-text-subtle">{{ $t('settings_ai.answer_questions_from_the_knowledge_base_before_creating_tickets') }}</p>
 
                         <div class="mt-4 space-y-3">
-                            <label class="flex items-center gap-2 text-sm text-slate-700">
-                                <input v-model="form.deflection_enabled" type="checkbox" class="rounded border-slate-300" />
+                            <label class="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
+                                <input v-model="form.deflection_enabled" type="checkbox" class="rounded agent-border" />
                                 Enable AI deflection bot
                             </label>
-                            <label class="flex items-center gap-2 text-sm text-slate-700">
-                                <input v-model="form.deflection_portal_enabled" type="checkbox" class="rounded border-slate-300" :disabled="!form.deflection_enabled" />
+                            <label class="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
+                                <input v-model="form.deflection_portal_enabled" type="checkbox" class="rounded agent-border" :disabled="!form.deflection_enabled" />
                                 Show on customer portal
                             </label>
-                            <label class="flex items-center gap-2 text-sm text-slate-700">
-                                <input v-model="form.deflection_widget_enabled" type="checkbox" class="rounded border-slate-300" :disabled="!form.deflection_enabled" />
+                            <label class="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
+                                <input v-model="form.deflection_widget_enabled" type="checkbox" class="rounded agent-border" :disabled="!form.deflection_enabled" />
                                 Show on live chat widget
                             </label>
                         </div>

@@ -1,6 +1,7 @@
 <script setup>
 import { Head, useForm } from '@inertiajs/vue3';
-import AppLayout from '../../Layouts/AppLayout.vue';
+import AuthLayout from '../../Layouts/AuthLayout.vue';
+import { formInputClass } from '../../composables/useFormControls.js';
 import { useI18n } from 'vue-i18n';
 
 const { t } = useI18n();
@@ -14,32 +15,36 @@ const submit = () => form.post('/two-factor-challenge');
 
 <template>
     <Head :title="$t('auth.two-factor_authentication')" />
-    <AppLayout>
-        <div class="mx-auto max-w-md rounded-xl border border-slate-200 bg-white p-8 shadow-sm">
-            <h1 class="text-2xl font-semibold text-slate-900">{{ $t('auth.authentication_code') }}</h1>
-            <p class="mt-2 text-sm text-slate-600">{{ $t('auth.enter_the_6-digit_code_from_your_authenticator_app_or_a_recovery_code') }}</p>
+    <AuthLayout
+        :aside-title="$t('auth.two-factor_authentication')"
+        :aside-description="$t('auth.enter_the_6-digit_code_from_your_authenticator_app_or_a_recovery_code')"
+    >
+        <h1 class="text-2xl font-semibold tracking-tight agent-text">{{ $t('auth.authentication_code') }}</h1>
+        <p class="mt-2 text-sm agent-text-muted">{{ $t('auth.enter_the_6-digit_code_from_your_authenticator_app_or_a_recovery_code') }}</p>
 
-            <form class="mt-6 space-y-4" @submit.prevent="submit">
-                <div>
-                    <label class="mb-1 block text-sm font-medium text-slate-700" for="code">{{ $t('auth.code') }}</label>
-                    <input
-                        id="code"
-                        v-model="form.code"
-                        type="text"
-                        inputmode="numeric"
-                        autocomplete="one-time-code"
-                        class="w-full rounded-lg border border-slate-300 px-3 py-2 tracking-widest focus:border-blue-500 focus:outline-none"
-                        required
-                    />
-                    <p v-if="form.errors.code" class="mt-1 text-sm text-red-600">{{ form.errors.code }}</p>
-                </div>
+        <form class="mt-8 space-y-5" @submit.prevent="submit">
+            <div>
+                <label class="mb-1.5 block text-sm font-medium agent-text-muted" for="code">{{ $t('auth.code') }}</label>
+                <input
+                    id="code"
+                    v-model="form.code"
+                    type="text"
+                    inputmode="numeric"
+                    autocomplete="one-time-code"
+                    :class="`${formInputClass} tracking-widest`"
+                    required
+                    autofocus
+                />
+                <p v-if="form.errors.code" class="mt-1.5 text-xs text-red-600">{{ form.errors.code }}</p>
+            </div>
 
-                <button
-                    type="submit"
-                    class="w-full rounded-lg bg-blue-600 px-4 py-2 font-medium text-white hover:bg-blue-700 disabled:opacity-50"
-                    :disabled="form.processing"
-                >{{ $t('auth.verify') }}</button>
-            </form>
-        </div>
-    </AppLayout>
+            <button
+                type="submit"
+                class="w-full rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-3 text-sm font-semibold text-white shadow-md shadow-blue-600/25 transition hover:from-blue-700 hover:to-indigo-700 disabled:opacity-60"
+                :disabled="form.processing"
+            >
+                {{ $t('auth.verify') }}
+            </button>
+        </form>
+    </AuthLayout>
 </template>

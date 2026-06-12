@@ -3,6 +3,7 @@ import { Link } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import AppLogo from '../Components/AppLogo.vue';
+import ThemeToggle from '../Components/ThemeToggle.vue';
 import { useBodyScrollLock } from '../composables/useModal.js';
 
 defineProps({
@@ -41,7 +42,7 @@ useBodyScrollLock(mobileOpen);
                 </Link>
             </div>
         </div>
-        <header class="sticky top-0 z-40 border-b border-slate-200/80 bg-white shadow-sm">
+        <header class="sticky top-0 z-40 border-b agent-border bg-white shadow-sm dark:bg-slate-900/95 dark:backdrop-blur">
             <div class="mx-auto flex h-14 min-w-0 max-w-7xl items-center justify-between gap-3 px-4 sm:h-16 sm:px-6 lg:px-8">
                 <Link href="/" class="flex min-w-0 shrink items-center">
                     <AppLogo size="md" />
@@ -52,16 +53,17 @@ useBodyScrollLock(mobileOpen);
                         v-for="link in navLinks"
                         :key="link.href"
                         :href="link.href"
-                        class="rounded-lg px-3 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-100 hover:text-slate-900"
+                        class="rounded-lg px-3 py-2 text-sm font-medium agent-text-muted transition hover:bg-slate-100 dark:bg-slate-900 hover:text-slate-900 dark:text-slate-100 dark:hover:bg-slate-800 dark:hover:text-slate-100"
                     >
                         {{ link.label }}
                     </a>
                 </nav>
 
                 <div class="hidden items-center gap-2 sm:flex">
+                    <ThemeToggle persist="local" />
                     <Link
                         href="/login"
-                        class="rounded-lg px-3 py-2 text-sm font-medium text-slate-600 transition hover:text-slate-900"
+                        class="rounded-lg px-3 py-2 text-sm font-medium agent-text-muted transition hover:text-slate-900 dark:text-slate-100 dark:hover:text-slate-100"
                     >
                         {{ $t('layouts.central.sign_in') }}
                     </Link>
@@ -74,6 +76,9 @@ useBodyScrollLock(mobileOpen);
                 </div>
 
                 <div class="flex items-center gap-2 lg:hidden">
+                    <div class="sm:hidden">
+                        <ThemeToggle persist="local" />
+                    </div>
                     <Link
                         href="/register"
                         class="rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-bold text-white shadow-sm sm:hidden"
@@ -82,7 +87,7 @@ useBodyScrollLock(mobileOpen);
                     </Link>
                     <button
                         type="button"
-                        class="rounded-lg p-2 text-slate-700"
+                        class="rounded-lg p-2 agent-text"
                         :aria-expanded="mobileOpen"
                         aria-label="Toggle menu"
                         @click="mobileOpen = !mobileOpen"
@@ -108,19 +113,19 @@ useBodyScrollLock(mobileOpen);
             <Transition name="fade">
                 <div
                     v-if="mobileOpen"
-                    class="absolute left-0 right-0 z-40 max-h-[calc(100dvh-3.5rem)] overflow-y-auto border-t border-slate-200 bg-white px-4 py-4 shadow-lg sm:max-h-[calc(100dvh-4rem)] lg:hidden"
+                    class="absolute left-0 right-0 z-40 max-h-[calc(100dvh-3.5rem)] overflow-y-auto border-t agent-border agent-panel px-4 py-4 shadow-lg sm:max-h-[calc(100dvh-4rem)] lg:hidden"
                 >
                     <nav class="flex flex-col gap-1">
                         <a
                             v-for="link in navLinks"
                             :key="link.href"
                             :href="link.href"
-                            class="rounded-lg px-3 py-3 text-sm font-medium text-slate-700 active:bg-slate-100"
+                            class="rounded-lg px-3 py-3 text-sm font-medium agent-text transition active:bg-slate-100 dark:bg-slate-900 dark:active:bg-slate-800"
                             @click="mobileOpen = false"
                         >
                             {{ link.label }}
                         </a>
-                        <Link href="/login" class="rounded-lg px-3 py-3 text-sm font-medium text-slate-600 active:bg-slate-100" @click="mobileOpen = false">
+                        <Link href="/login" class="rounded-lg px-3 py-3 text-sm font-medium agent-text-muted active:bg-slate-100 dark:bg-slate-900 dark:active:bg-slate-800" @click="mobileOpen = false">
                             {{ $t('layouts.central.sign_in') }}
                         </Link>
                         <Link href="/register" class="mt-2 rounded-xl bg-blue-600 px-3 py-3 text-center text-sm font-semibold text-white" @click="mobileOpen = false">
@@ -131,21 +136,21 @@ useBodyScrollLock(mobileOpen);
             </Transition>
         </header>
 
-        <main class="flex-1 overflow-x-hidden">
+        <main class="flex-1 overflow-x-hidden agent-page-bg">
             <slot />
         </main>
 
-        <footer v-if="showFooter" class="border-t border-slate-200 bg-slate-950 text-slate-300">
+        <footer v-if="showFooter" class="border-t border-slate-200 bg-slate-950 text-slate-300 dark:border-slate-800">
             <div class="mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-14 lg:px-8">
                 <div class="grid gap-8 sm:grid-cols-2 sm:gap-10 lg:grid-cols-4">
                     <div class="lg:col-span-1">
                         <AppLogo size="md" surface="light" />
-                        <p class="mt-3 text-sm leading-relaxed text-slate-400">
+                        <p class="mt-3 text-sm leading-relaxed text-slate-400 dark:text-slate-500">
                             {{ $t('layouts.central.footer_tagline') }}
                         </p>
                     </div>
                     <div>
-                        <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">{{ $t('layouts.central.footer_product') }}</p>
+                        <p class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">{{ $t('layouts.central.footer_product') }}</p>
                         <ul class="mt-4 space-y-2.5 text-sm">
                             <li><a href="/#differentiators" class="transition hover:text-white">{{ $t('layouts.central.why_us') }}</a></li>
                             <li><a href="/#features" class="transition hover:text-white">{{ $t('layouts.central.features') }}</a></li>
@@ -155,7 +160,7 @@ useBodyScrollLock(mobileOpen);
                         </ul>
                     </div>
                     <div>
-                        <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">{{ $t('layouts.central.footer_get_started') }}</p>
+                        <p class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">{{ $t('layouts.central.footer_get_started') }}</p>
                         <ul class="mt-4 space-y-2.5 text-sm">
                             <li><Link href="/register" class="transition hover:text-white">{{ $t('layouts.central.start_free_trial') }}</Link></li>
                             <li><Link href="/login" class="transition hover:text-white">{{ $t('layouts.central.footer_sign_in_workspace') }}</Link></li>
@@ -163,8 +168,8 @@ useBodyScrollLock(mobileOpen);
                         </ul>
                     </div>
                     <div>
-                        <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">{{ $t('layouts.central.footer_capabilities') }}</p>
-                        <ul class="mt-4 space-y-2.5 text-sm text-slate-400">
+                        <p class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">{{ $t('layouts.central.footer_capabilities') }}</p>
+                        <ul class="mt-4 space-y-2.5 text-sm text-slate-400 dark:text-slate-500">
                             <li>{{ $t('layouts.central.footer_capability_inbox') }}</li>
                             <li>{{ $t('layouts.central.footer_capability_channels') }}</li>
                             <li>{{ $t('layouts.central.footer_capability_kb') }}</li>
@@ -175,7 +180,7 @@ useBodyScrollLock(mobileOpen);
                     </div>
                 </div>
                 <div class="mt-8 border-t border-white/10 pt-6 sm:mt-12 sm:pt-8">
-                    <p class="text-xs text-slate-500">© {{ new Date().getFullYear() }} {{ brand }}. {{ $t('layouts.central.footer_rights') }}</p>
+                    <p class="text-xs text-slate-500 dark:text-slate-400">© {{ new Date().getFullYear() }} {{ brand }}. {{ $t('layouts.central.footer_rights') }}</p>
                 </div>
             </div>
         </footer>

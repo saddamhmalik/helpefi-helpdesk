@@ -37,9 +37,9 @@ const shiftMonth = (delta) => {
 };
 
 const riskBadgeClass = (risk) => {
-    if (risk === 'critical') return 'bg-red-100 text-red-800';
+    if (risk === 'critical') return 'bg-red-100 text-red-800 dark:text-red-200';
     if (risk === 'high') return 'bg-orange-100 text-orange-800';
-    if (risk === 'low') return 'bg-emerald-100 text-emerald-800';
+    if (risk === 'low') return 'bg-emerald-100 text-emerald-800 dark:text-emerald-200';
 
     return 'bg-amber-100 text-amber-800';
 };
@@ -71,41 +71,41 @@ const formatRange = (entry) => {
         <ServiceDeskNav />
 
         <div class="mb-4 flex items-center justify-between gap-3">
-            <button type="button" class="rounded-lg bg-white px-3 py-1.5 text-sm font-medium text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50" @click="shiftMonth(-1)">{{ $t('service_desk.previous') }}</button>
-            <h2 class="text-sm font-semibold text-slate-900">{{ monthLabel }}</h2>
-            <button type="button" class="rounded-lg bg-white px-3 py-1.5 text-sm font-medium text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50" @click="shiftMonth(1)">{{ $t('service_desk.next') }}</button>
+            <button type="button" class="rounded-lg bg-white dark:bg-slate-900 px-3 py-1.5 text-sm font-medium text-slate-700 dark:text-slate-300 ring-1 ring-slate-200 dark:ring-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800" @click="shiftMonth(-1)">{{ $t('service_desk.previous') }}</button>
+            <h2 class="text-sm font-semibold text-slate-900 dark:text-slate-100">{{ monthLabel }}</h2>
+            <button type="button" class="rounded-lg bg-white dark:bg-slate-900 px-3 py-1.5 text-sm font-medium text-slate-700 dark:text-slate-300 ring-1 ring-slate-200 dark:ring-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800" @click="shiftMonth(1)">{{ $t('service_desk.next') }}</button>
         </div>
 
-        <div class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-            <table class="min-w-full divide-y divide-slate-100">
+        <div class="overflow-hidden rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm">
+            <table class="min-w-full divide-y divide-slate-100 dark:divide-slate-800">
                 <thead class="bg-slate-50">
                     <tr>
-                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('service_desk.change') }}</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('service_desk.schedule') }}</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('service_desk.risk') }}</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('service_desk.assignee') }}</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('service_desk.status') }}</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{{ $t('service_desk.change') }}</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{{ $t('service_desk.schedule') }}</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{{ $t('service_desk.risk') }}</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{{ $t('service_desk.assignee') }}</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{{ $t('service_desk.status') }}</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-slate-100">
-                    <tr v-for="entry in entries" :key="entry.id" class="hover:bg-slate-50">
+                <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+                    <tr v-for="entry in entries" :key="entry.id" class="hover:bg-slate-50 dark:hover:bg-slate-800">
                         <td class="px-4 py-3">
-                            <Link :href="`/tickets/${entry.ticket_id}`" class="font-medium text-blue-600 hover:text-blue-700">
+                            <Link :href="`/tickets/${entry.ticket_id}`" class="font-medium text-blue-600 hover:text-blue-700 dark:hover:text-blue-300 dark:text-blue-300">
                                 {{ entry.number }}
                             </Link>
-                            <p class="mt-0.5 max-w-md truncate text-sm text-slate-700">{{ entry.subject }}</p>
+                            <p class="mt-0.5 max-w-md truncate text-sm text-slate-700 dark:text-slate-300">{{ entry.subject }}</p>
                         </td>
-                        <td class="px-4 py-3 text-sm text-slate-600">{{ formatRange(entry) }}</td>
+                        <td class="px-4 py-3 text-sm text-slate-600 dark:text-slate-400">{{ formatRange(entry) }}</td>
                         <td class="px-4 py-3">
                             <span class="rounded-full px-2 py-0.5 text-xs font-medium capitalize" :class="riskBadgeClass(entry.risk)">
                                 {{ entry.risk }}
                             </span>
                         </td>
-                        <td class="px-4 py-3 text-sm text-slate-600">{{ entry.assignee || '—' }}</td>
-                        <td class="px-4 py-3 text-sm text-slate-600">{{ entry.status || '—' }}</td>
+                        <td class="px-4 py-3 text-sm text-slate-600 dark:text-slate-400">{{ entry.assignee || '—' }}</td>
+                        <td class="px-4 py-3 text-sm text-slate-600 dark:text-slate-400">{{ entry.status || '—' }}</td>
                     </tr>
                     <tr v-if="!entries?.length">
-                        <td colspan="5" class="px-4 py-12 text-center text-sm text-slate-500">No scheduled changes in this period.</td>
+                        <td colspan="5" class="px-4 py-12 text-center text-sm text-slate-500 dark:text-slate-400">No scheduled changes in this period.</td>
                     </tr>
                 </tbody>
             </table>

@@ -84,15 +84,15 @@ const submit = () => form.post('/knowledge');
                         </select>
                     </FormField>
                 </div>
-                <label class="flex cursor-pointer items-center gap-3 rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-3 transition hover:bg-slate-50">
+                <label class="flex cursor-pointer items-center gap-3 rounded-xl border agent-border agent-panel-muted/50 px-4 py-3 transition agent-hover-surface">
                     <input
                         v-model="form.is_published"
                         type="checkbox"
-                        class="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500/20"
+                        class="h-4 w-4 rounded agent-border text-blue-600 focus:ring-blue-500/20"
                     >
                     <span>
-                        <span class="block text-sm font-medium text-slate-900">{{ $t('knowledge.publish_immediately') }}</span>
-                        <span class="block text-xs text-slate-500">{{ $t('knowledge.make_this_article_visible_in_the_help_center_right_away') }}</span>
+                        <span class="block text-sm font-medium agent-text">{{ $t('knowledge.publish_immediately') }}</span>
+                        <span class="block text-xs agent-text-subtle">{{ $t('knowledge.make_this_article_visible_in_the_help_center_right_away') }}</span>
                     </span>
                 </label>
             </FormSection>

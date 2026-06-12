@@ -76,15 +76,15 @@ const onBlur = () => {
 <template>
     <div>
         <div
-            class="flex min-h-[42px] flex-wrap items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-2 py-1.5 focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/20"
+            class="flex min-h-[42px] flex-wrap items-center gap-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2 py-1.5 focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/20"
         >
             <span
                 v-for="(email, index) in modelValue"
                 :key="`${email}-${index}`"
-                class="inline-flex items-center gap-1 rounded-md bg-slate-100 px-2 py-0.5 text-xs text-slate-700"
+                class="inline-flex items-center gap-1 rounded-md bg-slate-100 dark:bg-slate-900 px-2 py-0.5 text-xs text-slate-700 dark:text-slate-300"
             >
                 {{ email }}
-                <button type="button" class="text-slate-400 hover:text-slate-600" @click="removeEmail(index)">×</button>
+                <button type="button" class="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:text-slate-400" @click="removeEmail(index)">×</button>
             </span>
             <input
                 v-model="input"
@@ -97,7 +97,7 @@ const onBlur = () => {
                 @blur="onBlur"
             />
         </div>
-        <p class="mt-1 text-xs text-slate-500">{{ $t('components.cc_recipients_count', { count: modelValue.length, max }) }}</p>
+        <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">{{ $t('components.cc_recipients_count', { count: modelValue.length, max }) }}</p>
         <p v-if="error" class="mt-1 text-xs text-red-600">{{ error }}</p>
     </div>
 </template>

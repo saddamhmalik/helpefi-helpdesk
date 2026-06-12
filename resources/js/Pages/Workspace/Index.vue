@@ -456,18 +456,18 @@ const formatRelative = (value) => {
 
 const statusBadgeClass = (name) => {
     const value = (name || '').toLowerCase();
-    if (value.includes('open')) return 'bg-emerald-100 text-emerald-800 ring-emerald-600/10';
+    if (value.includes('open')) return 'bg-emerald-100 text-emerald-800 dark:text-emerald-200 ring-emerald-600/10';
     if (value.includes('pending')) return 'bg-amber-100 text-amber-800 ring-amber-600/10';
-    if (value.includes('closed') || value.includes('resolved')) return 'bg-slate-200 text-slate-700 ring-slate-600/10';
+    if (value.includes('closed') || value.includes('resolved')) return 'bg-slate-200 text-slate-700 dark:text-slate-300 ring-slate-600/10';
 
-    return 'bg-slate-100 text-slate-700 ring-slate-600/10';
+    return 'bg-slate-100 dark:bg-slate-900 text-slate-700 dark:text-slate-300 ring-slate-600/10';
 };
 
 const priorityBadgeClass = (name) => {
     const value = (name || '').toLowerCase();
-    if (value.includes('urgent') || value.includes('critical')) return 'bg-red-100 text-red-800 ring-red-600/10';
+    if (value.includes('urgent') || value.includes('critical')) return 'bg-red-100 text-red-800 dark:text-red-200 ring-red-600/10';
     if (value.includes('high')) return 'bg-orange-100 text-orange-800 ring-orange-600/10';
-    if (value.includes('low')) return 'bg-slate-100 text-slate-600 ring-slate-600/10';
+    if (value.includes('low')) return 'bg-slate-100 dark:bg-slate-900 text-slate-600 dark:text-slate-400 ring-slate-600/10';
 
     return 'bg-blue-100 text-blue-800 ring-blue-600/10';
 };
@@ -505,17 +505,17 @@ onUnmounted(() => {
 <template>
     <Head :title="$t('workspace.workspace')" />
     <AgentLayout>
-        <div class="flex h-0 min-h-0 flex-1 basis-0 bg-slate-100 dark:bg-slate-950">
+        <div class="flex h-0 min-h-0 flex-1 basis-0 bg-slate-100 dark:bg-slate-900">
             <aside class="flex w-[min(100%,20rem)] shrink-0 flex-col overflow-hidden border-r agent-border agent-panel lg:w-80">
                 <div class="shrink-0 border-b agent-border-subtle agent-panel-muted px-3 py-2.5">
                     <div class="flex items-center justify-between gap-2">
                         <div class="flex items-center gap-2">
                             <h2 class="text-sm font-semibold agent-text">{{ $t('workspace.queue') }}</h2>
-                            <span class="rounded-full bg-slate-200/80 px-2 py-0.5 text-xs font-semibold tabular-nums text-slate-600 dark:bg-slate-700/80 dark:text-slate-300">{{ queueCount }}</span>
+                            <span class="rounded-full bg-slate-200/80 px-2 py-0.5 text-xs font-semibold tabular-nums text-slate-600 dark:text-slate-400 dark:bg-slate-700/80 dark:text-slate-300">{{ queueCount }}</span>
                         </div>
                         <button
                             type="button"
-                            class="rounded-lg p-1.5 text-slate-400 transition agent-hover-surface hover:text-slate-600 dark:hover:text-slate-200"
+                            class="rounded-lg p-1.5 text-slate-400 dark:text-slate-500 transition agent-hover-surface hover:text-slate-600 dark:text-slate-400 dark:hover:text-slate-200"
                             :title="filtersOpen ? 'Hide filters' : 'Show filters'"
                             @click="filtersOpen = !filtersOpen"
                         >
@@ -530,7 +530,7 @@ onUnmounted(() => {
                             <button
                                 type="button"
                                 class="rounded-full px-2.5 py-1 text-xs font-semibold transition"
-                                :class="!activeViewId ? 'bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900' : 'agent-panel agent-text-muted ring-1 agent-border agent-hover-surface'"
+                                :class="!activeViewId ? 'bg-slate-900 text-white dark:bg-slate-100 dark:bg-slate-900 dark:text-slate-900 dark:text-slate-100' : 'agent-panel agent-text-muted ring-1 agent-border agent-hover-surface'"
                                 @click="clearFilters"
                             >{{ $t('workspace.all') }}</button>
                             <button
@@ -538,7 +538,7 @@ onUnmounted(() => {
                                 :key="view.id"
                                 type="button"
                                 class="rounded-full px-2.5 py-1 text-xs font-semibold transition"
-                                :class="activeViewId === view.id ? 'bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900' : 'agent-panel agent-text-muted ring-1 agent-border agent-hover-surface'"
+                                :class="activeViewId === view.id ? 'bg-slate-900 text-white dark:bg-slate-100 dark:bg-slate-900 dark:text-slate-900 dark:text-slate-100' : 'agent-panel agent-text-muted ring-1 agent-border agent-hover-surface'"
                                 @click="loadView(view.id)"
                             >
                                 {{ view.name }}
@@ -547,7 +547,7 @@ onUnmounted(() => {
 
                         <form class="space-y-2" @submit.prevent="applyFilters">
                             <div class="relative">
-                                <svg class="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <svg class="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 dark:text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                                 </svg>
                                 <input
@@ -576,11 +576,11 @@ onUnmounted(() => {
 
                             <div class="flex items-center justify-between gap-2">
                                 <label class="flex cursor-pointer items-center gap-2 text-xs font-medium agent-text-muted">
-                                    <input v-model="filterForm.watching" type="checkbox" class="rounded border-slate-300 text-blue-600 focus:ring-blue-500/30" />
+                                    <input v-model="filterForm.watching" type="checkbox" class="rounded border-slate-300 dark:border-slate-700 text-blue-600 focus:ring-blue-500/30" />
                                     {{ $t('workspace.watching_only') }}
                                 </label>
                                 <div class="flex items-center gap-2">
-                                    <button v-if="hasFilters" type="button" class="text-xs font-medium text-slate-500 hover:text-slate-700" @click="clearFilters">{{ $t('workspace.clear') }}</button>
+                                    <button v-if="hasFilters" type="button" class="text-xs font-medium text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300 dark:text-slate-300" @click="clearFilters">{{ $t('workspace.clear') }}</button>
                                     <button type="submit" class="rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white hover:bg-slate-800">{{ $t('workspace.apply') }}</button>
                                 </div>
                             </div>
@@ -603,7 +603,7 @@ onUnmounted(() => {
                                     <p class="line-clamp-2 text-sm font-medium leading-snug agent-text">{{ item.subject }}</p>
                                     <div class="flex shrink-0 items-center gap-1.5">
                                         <UnreadBadge :count="item.unread_count ?? 0" />
-                                        <span class="font-mono text-[10px] text-slate-400">{{ item.number }}</span>
+                                        <span class="font-mono text-[10px] text-slate-400 dark:text-slate-500">{{ item.number }}</span>
                                     </div>
                                 </div>
                                 <div class="mt-1.5 flex flex-wrap items-center gap-1">
@@ -611,15 +611,15 @@ onUnmounted(() => {
                                     <span class="rounded-full px-1.5 py-0.5 text-[10px] font-medium ring-1 ring-inset" :class="priorityBadgeClass(item.priority?.name)">{{ item.priority?.name }}</span>
                                 </div>
                                 <div class="mt-1.5 flex items-center justify-between gap-2">
-                                    <span class="truncate text-xs text-slate-500">{{ item.assignee?.name || 'Unassigned' }}</span>
-                                    <span class="shrink-0 text-[10px] text-slate-400">{{ formatRelative(item.updated_at) }}</span>
+                                    <span class="truncate text-xs text-slate-500 dark:text-slate-400">{{ item.assignee?.name || 'Unassigned' }}</span>
+                                    <span class="shrink-0 text-[10px] text-slate-400 dark:text-slate-500">{{ formatRelative(item.updated_at) }}</span>
                                 </div>
                             </div>
                         </div>
                     </li>
                     <li v-if="!queueItems.length" class="px-3 py-10 text-center">
-                        <p class="text-sm font-medium text-slate-700">{{ $t('workspace.queue_is_empty') }}</p>
-                        <p class="mt-1 text-xs text-slate-500">{{ $t('workspace.adjust_filters_or_create_a_ticket') }}</p>
+                        <p class="text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('workspace.queue_is_empty') }}</p>
+                        <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">{{ $t('workspace.adjust_filters_or_create_a_ticket') }}</p>
                     </li>
                 </ul>
             </aside>
@@ -679,7 +679,7 @@ onUnmounted(() => {
                                     >{{ $t('workspace.unsnooze') }}</button>
                                 </div>
                             </div>
-                            <span v-if="snoozeLabel" class="hidden text-[10px] text-amber-700 lg:inline">Until {{ snoozeLabel }}</span>
+                            <span v-if="snoozeLabel" class="hidden text-[10px] text-amber-700 dark:text-amber-300 lg:inline">Until {{ snoozeLabel }}</span>
                             <Link
                                 :href="`/tickets/${ticket.id}`"
                                 class="rounded-lg border px-2.5 py-1 text-xs font-semibold text-slate-700 agent-hover-surface dark:text-slate-300"
@@ -694,12 +694,12 @@ onUnmounted(() => {
                     <div v-if="ticket.contact" class="flex shrink-0 items-center gap-2 border-b agent-border-subtle agent-panel-muted px-3 py-1.5">
                         <AppAvatar :name="ticket.contact.name" :email="ticket.contact.email" size="sm" />
                         <div class="min-w-0">
-                            <p class="truncate text-xs font-medium text-slate-800">{{ ticket.contact.name || ticket.contact.email }}</p>
-                            <p v-if="ticket.contact.email && ticket.contact.name" class="truncate text-[11px] text-slate-500">{{ ticket.contact.email }}</p>
+                            <p class="truncate text-xs font-medium text-slate-800 dark:text-slate-200">{{ ticket.contact.name || ticket.contact.email }}</p>
+                            <p v-if="ticket.contact.email && ticket.contact.name" class="truncate text-[11px] text-slate-500 dark:text-slate-400">{{ ticket.contact.email }}</p>
                         </div>
                         <div v-if="ticket.ccs?.length" class="ml-auto hidden items-center gap-1 sm:flex">
-                            <span class="text-[10px] font-medium uppercase tracking-wide text-slate-400">{{ $t('workspace.cc') }}</span>
-                            <span class="truncate text-xs text-slate-600">{{ ticket.ccs.map((cc) => cc.email).join(', ') }}</span>
+                            <span class="text-[10px] font-medium uppercase tracking-wide text-slate-400 dark:text-slate-500">{{ $t('workspace.cc') }}</span>
+                            <span class="truncate text-xs text-slate-600 dark:text-slate-400">{{ ticket.ccs.map((cc) => cc.email).join(', ') }}</span>
                         </div>
                     </div>
 
@@ -724,12 +724,12 @@ onUnmounted(() => {
                             :on-suggest-reply="(reply) => { composerBody = plainReplyToHtml(reply); composerInternal = false; }"
                             @submit="sendReply"
                         />
-                        <p v-if="draftSaving" class="mt-1 px-1 text-[11px] text-slate-400">{{ $t('workspace.saving_draft_ellipsis') }}</p>
+                        <p v-if="draftSaving" class="mt-1 px-1 text-[11px] text-slate-400 dark:text-slate-500">{{ $t('workspace.saving_draft_ellipsis') }}</p>
                     </form>
                 </section>
 
                 <div v-else class="flex min-h-0 flex-1 flex-col items-center justify-center agent-panel px-6 text-center">
-                    <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-50 text-blue-500 dark:bg-blue-950/50 dark:text-blue-400">
+                    <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-50 dark:bg-blue-950/40 text-blue-500 dark:bg-blue-950/50 dark:text-blue-400">
                         <svg class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                         </svg>

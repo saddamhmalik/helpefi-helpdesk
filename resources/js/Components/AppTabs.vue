@@ -17,13 +17,13 @@ const select = (id) => {
 const buttonClass = (active, variant) => {
     if (variant === 'pills') {
         return active
-            ? 'bg-slate-900 text-white shadow-sm'
-            : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900';
+            ? 'bg-slate-900 text-white shadow-sm dark:bg-slate-100 dark:bg-slate-900 dark:text-slate-900 dark:text-slate-100'
+            : 'agent-text-muted agent-hover-surface hover:text-slate-900 dark:text-slate-100 dark:hover:text-slate-100';
     }
 
     return active
-        ? 'border-blue-600 text-blue-600'
-        : 'border-transparent text-slate-500 hover:border-slate-300 hover:text-slate-700';
+        ? 'border-blue-600 text-blue-600 dark:text-blue-400'
+        : 'border-transparent agent-text-subtle hover:border-slate-300 dark:border-slate-700 hover:text-slate-700 dark:text-slate-300 dark:hover:border-slate-600 dark:hover:text-slate-300';
 };
 
 const hasPanels = computed(() => props.items.some((item) => Boolean(slots[item.id])));
@@ -35,8 +35,8 @@ const hasPanels = computed(() => props.items.some((item) => Boolean(slots[item.i
             :class="[
                 hasPanels ? 'mb-6' : 'mb-4',
                 variant === 'pills'
-                    ? 'inline-flex rounded-xl border border-slate-200 bg-white p-1 shadow-sm'
-                    : 'border-b border-slate-200',
+                    ? 'inline-flex rounded-xl border agent-border agent-panel p-1 shadow-sm'
+                    : 'border-b agent-border',
             ]"
         >
             <nav
@@ -63,8 +63,8 @@ const hasPanels = computed(() => props.items.some((item) => Boolean(slots[item.i
                         v-if="item.badge != null"
                         class="ml-1.5 rounded-full px-1.5 py-0.5 text-xs tabular-nums"
                         :class="modelValue === item.id
-                            ? (variant === 'pills' ? 'bg-white/15 text-white' : 'bg-blue-50 text-blue-700')
-                            : 'bg-slate-100 text-slate-500'"
+                            ? (variant === 'pills' ? 'bg-white/15 text-white dark:bg-slate-900/20' : 'bg-blue-50 text-blue-700 dark:bg-blue-950/50 dark:text-blue-300')
+                            : 'agent-panel-muted agent-text-subtle'"
                     >
                         {{ item.badge }}
                     </span>

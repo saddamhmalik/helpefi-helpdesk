@@ -299,14 +299,14 @@ defineExpose({ openSearch });
 <template>
     <button
         type="button"
-        class="flex w-full max-w-md items-center gap-2 rounded-full border border-slate-200/80 bg-slate-100/70 px-4 py-2 text-left text-sm text-slate-500 shadow-inner shadow-white/50 transition hover:border-slate-300 hover:bg-white xl:max-w-xl"
+        class="flex w-full max-w-md items-center gap-2 rounded-full border agent-border agent-panel-muted px-4 py-2 text-left text-sm agent-text-subtle shadow-inner transition hover:border-slate-300 dark:hover:border-slate-600 dark:border-slate-700 hover:bg-white dark:bg-slate-900 dark:hover:bg-slate-800 dark:shadow-slate-900/30 xl:max-w-xl"
         @click="openSearch"
     >
-        <svg class="h-4 w-4 shrink-0 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg class="h-4 w-4 shrink-0 text-slate-400 dark:text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
         </svg>
         <span class="truncate">{{ t('components.global_search_placeholder') }}</span>
-        <kbd class="ml-auto hidden shrink-0 rounded-md border border-slate-200/80 bg-white/80 px-1.5 py-0.5 text-[10px] font-medium text-slate-400 sm:inline">⌘K</kbd>
+        <kbd class="ml-auto hidden shrink-0 rounded-md border agent-border agent-panel px-1.5 py-0.5 text-[10px] font-medium text-slate-400 dark:text-slate-500 sm:inline">⌘K</kbd>
     </button>
 
     <Teleport to="body">
@@ -346,9 +346,9 @@ defineExpose({ openSearch });
                         :aria-label="t('components.search')"
                         @mousedown.stop
                     >
-                        <div class="overflow-hidden rounded-[1.75rem] border border-white/60 bg-white/85 shadow-[0_24px_80px_rgba(15,23,42,0.22)] backdrop-blur-2xl">
-                            <div class="flex items-center gap-3 border-b border-slate-200/70 px-5 py-4 sm:px-6 sm:py-5">
-                                <svg class="h-5 w-5 shrink-0 text-slate-400 sm:h-6 sm:w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <div class="overflow-hidden rounded-[1.75rem] border agent-border agent-panel shadow-[0_24px_80px_rgba(15,23,42,0.22)] backdrop-blur-2xl dark:shadow-[0_24px_80px_rgba(0,0,0,0.45)]">
+                            <div class="flex items-center gap-3 border-b agent-border px-5 py-4 sm:px-6 sm:py-5">
+                                <svg class="h-5 w-5 shrink-0 text-slate-400 dark:text-slate-500 sm:h-6 sm:w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                                 </svg>
                                 <input
@@ -356,12 +356,12 @@ defineExpose({ openSearch });
                                     v-model="query"
                                     type="search"
                                     :placeholder="t('components.global_search_placeholder')"
-                                    class="min-w-0 flex-1 bg-transparent text-lg font-normal text-slate-900 placeholder:text-slate-400 focus:outline-none sm:text-[1.35rem]"
+                                    class="min-w-0 flex-1 bg-transparent text-lg font-normal agent-text placeholder:text-slate-400 dark:text-slate-500 focus:outline-none sm:text-[1.35rem]"
                                     @keydown="onInputKeydown"
                                 >
                             </div>
 
-                            <div v-if="showCopilotPrompt" class="border-b border-violet-100 bg-violet-50/60 px-4 py-2.5">
+                            <div v-if="showCopilotPrompt" class="border-b border-violet-100 bg-violet-50/60 px-4 py-2.5 dark:border-violet-900/50 dark:bg-violet-950/40">
                                 <button
                                     type="button"
                                     class="flex w-full items-center gap-3 rounded-xl px-2 py-2 text-left transition hover:bg-violet-100/80"
@@ -375,29 +375,29 @@ defineExpose({ openSearch });
                                     </span>
                                     <span class="min-w-0 flex-1">
                                         <span class="block text-sm font-medium text-violet-950">{{ t('components.ask_copilot') }}</span>
-                                        <span class="block truncate text-xs text-violet-700">“{{ query.trim() }}”</span>
+                                        <span class="block truncate text-xs text-violet-700 dark:text-violet-300">“{{ query.trim() }}”</span>
                                     </span>
                                     <span v-if="copilotLoading" class="text-xs text-violet-600">{{ t('components.thinking') }}</span>
-                                    <kbd v-else class="hidden shrink-0 rounded border border-violet-200 bg-white px-1.5 py-0.5 text-[10px] text-violet-500 sm:inline">↵</kbd>
+                                    <kbd v-else class="hidden shrink-0 rounded border border-violet-200 dark:border-violet-900/60 bg-white dark:bg-slate-900 px-1.5 py-0.5 text-[10px] text-violet-500 sm:inline">↵</kbd>
                                 </button>
                             </div>
 
-                            <div v-if="copilotAnswer || copilotError" class="border-b border-slate-200/70 bg-slate-50/80 px-5 py-4">
-                                <div class="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wide text-violet-700">
+                            <div v-if="copilotAnswer || copilotError" class="border-b agent-border agent-panel-muted px-5 py-4">
+                                <div class="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wide text-violet-700 dark:text-violet-300">
                                     <span>{{ t('components.ai_copilot') }}</span>
-                                    <span v-if="copilotSource" class="rounded-full bg-violet-100 px-2 py-0.5 text-[10px] normal-case text-violet-600">{{ copilotSource }}</span>
+                                    <span v-if="copilotSource" class="rounded-full bg-violet-100 px-2 py-0.5 text-[10px] normal-case text-violet-600 dark:bg-violet-900/50 dark:text-violet-300">{{ copilotSource }}</span>
                                 </div>
-                                <p v-if="copilotError" class="mt-2 text-sm text-red-600">{{ copilotError }}</p>
-                                <p v-else class="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-slate-800">{{ copilotAnswer }}</p>
+                                <p v-if="copilotError" class="mt-2 text-sm text-red-600 dark:text-red-400">{{ copilotError }}</p>
+                                <p v-else class="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-slate-800 dark:text-slate-200">{{ copilotAnswer }}</p>
                                 <div v-if="copilotArticles.length" class="mt-3 space-y-1">
-                                    <p class="text-[11px] font-medium text-slate-500">{{ t('components.related_articles') }}</p>
+                                    <p class="text-[11px] font-medium text-slate-500 dark:text-slate-400">{{ t('components.related_articles') }}</p>
                                     <a
                                         v-for="article in copilotArticles"
                                         :key="article.id"
                                         :href="article.url"
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        class="block text-xs font-medium text-violet-700 hover:underline"
+                                        class="block text-xs font-medium text-violet-700 dark:text-violet-300 hover:underline"
                                     >
                                         {{ article.title }}
                                     </a>
@@ -405,15 +405,15 @@ defineExpose({ openSearch });
                             </div>
 
                             <div v-if="showResults" class="max-h-[min(50vh,28rem)] overflow-y-auto">
-                                <div v-if="loading" class="px-6 py-8 text-center text-sm text-slate-500">
+                                <div v-if="loading" class="px-6 py-8 text-center text-sm agent-text-subtle">
                                     {{ t('components.searching_ellipsis') }}
                                 </div>
-                                <div v-else-if="!hasResults && !copilotAnswer" class="px-6 py-8 text-center text-sm text-slate-500">
+                                <div v-else-if="!hasResults && !copilotAnswer" class="px-6 py-8 text-center text-sm agent-text-subtle">
                                     {{ t('components.no_results_for_query', { query: query.trim() }) }}
                                 </div>
                                 <div v-else class="py-2">
                                     <div v-for="group in mergedGroups" :key="group.type">
-                                        <p class="px-5 py-2 text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+                                        <p class="px-5 py-2 text-[11px] font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500">
                                             {{ group.label }}
                                         </p>
                                         <button
@@ -421,12 +421,12 @@ defineExpose({ openSearch });
                                             :key="`${group.type}-${item.id}`"
                                             type="button"
                                             class="flex w-full items-start gap-3 px-4 py-2.5 text-left transition"
-                                            :class="resultIndex(group, item) === activeIndex ? 'bg-blue-500/10' : 'hover:bg-slate-100/80'"
+                                            :class="resultIndex(group, item) === activeIndex ? 'bg-blue-500/10 dark:bg-blue-500/20' : 'agent-hover-surface'"
                                             @click="visitResult(item.href)"
                                         >
                                             <svg
                                                 v-if="group.type === 'settings'"
-                                                class="mt-0.5 h-4 w-4 shrink-0 text-slate-400"
+                                                class="mt-0.5 h-4 w-4 shrink-0 text-slate-400 dark:text-slate-500"
                                                 fill="none"
                                                 stroke="currentColor"
                                                 viewBox="0 0 24 24"
@@ -434,10 +434,10 @@ defineExpose({ openSearch });
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                             </svg>
                                             <div class="min-w-0 flex-1 px-1">
-                                                <p class="truncate text-sm font-medium text-slate-900">{{ item.title }}</p>
-                                                <p v-if="item.subtitle" class="truncate text-xs text-slate-500">{{ item.subtitle }}</p>
+                                                <p class="truncate text-sm font-medium agent-text">{{ item.title }}</p>
+                                                <p v-if="item.subtitle" class="truncate text-xs agent-text-subtle">{{ item.subtitle }}</p>
                                             </div>
-                                            <span v-if="item.meta" class="shrink-0 px-1 text-xs text-slate-400">{{ item.meta }}</span>
+                                            <span v-if="item.meta" class="shrink-0 px-1 text-xs text-slate-400 dark:text-slate-500">{{ item.meta }}</span>
                                         </button>
                                     </div>
                                 </div>
@@ -445,18 +445,18 @@ defineExpose({ openSearch });
 
                             <div
                                 v-else
-                                class="px-6 py-5 text-sm text-slate-400"
+                                class="px-6 py-5 text-sm text-slate-400 dark:text-slate-500"
                             >
                                 {{ t('components.global_search_hint') }}
                             </div>
 
-                            <div class="flex items-center justify-between border-t border-slate-200/70 px-5 py-3 text-xs text-slate-400">
+                            <div class="flex items-center justify-between border-t agent-border px-5 py-3 text-xs text-slate-400 dark:text-slate-500">
                                 <span class="hidden sm:inline">{{ aiEnabled ? t('components.global_search_shortcuts') : t('components.navigate_open_esc_close') }}</span>
                                 <span class="sm:hidden">{{ t('components.open_esc_close') }}</span>
                                 <Link
                                     v-if="hasQuery"
                                     :href="`/tickets?search=${encodeURIComponent(query.trim())}`"
-                                    class="font-medium text-blue-600 hover:text-blue-700"
+                                    class="font-medium text-blue-600 hover:text-blue-700 dark:text-blue-300 dark:text-blue-400 dark:hover:text-blue-300"
                                     @click="closeSearch"
                                 >
                                     {{ t('components.view_all_tickets') }}

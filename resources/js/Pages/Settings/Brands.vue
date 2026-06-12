@@ -109,16 +109,16 @@ const removeField = (index) => form.ticket_fields.splice(index, 1);
         </div>
 
         <div class="space-y-4">
-            <div v-for="brand in brands" :key="brand.id" class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div v-for="brand in brands" :key="brand.id" class="agent-card">
                 <div class="flex items-start justify-between gap-4">
                     <div>
                         <div class="flex items-center gap-2">
-                            <h2 class="text-lg font-semibold text-slate-900">{{ brand.name }}</h2>
-                            <span v-if="brand.is_default" class="rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700">{{ $t('settings_brands.default') }}</span>
-                            <span v-if="!brand.is_active" class="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600">{{ $t('settings_brands.inactive') }}</span>
+                            <h2 class="text-lg font-semibold agent-text">{{ brand.name }}</h2>
+                            <span v-if="brand.is_default" class="rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700 dark:text-blue-300">{{ $t('settings_brands.default') }}</span>
+                            <span v-if="!brand.is_active" class="rounded-full bg-slate-100 dark:bg-slate-900 px-2 py-0.5 text-xs font-medium agent-text-muted">{{ $t('settings_brands.inactive') }}</span>
                         </div>
-                        <p class="mt-1 text-sm text-slate-500">{{ brand.portal_url }}</p>
-                        <p class="mt-2 text-sm text-slate-600">
+                        <p class="mt-1 text-sm agent-text-subtle">{{ brand.portal_url }}</p>
+                        <p class="mt-2 text-sm agent-text-muted">
                             {{ brand.collections_count }} collections · {{ brand.inboxes_count }} mailboxes
                             <span v-if="brand.ticket_number_prefix"> · prefix {{ brand.ticket_number_prefix }}</span>
                         </p>
@@ -136,49 +136,49 @@ const removeField = (index) => form.ticket_fields.splice(index, 1);
         </div>
 
         <div v-if="showForm" class="fixed inset-0 z-40 flex items-center justify-center bg-slate-900/40 p-4">
-            <form class="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-xl bg-white p-6 shadow-xl" @submit.prevent="save">
-                <h3 class="text-lg font-semibold text-slate-900">{{ editingBrand ? 'Edit brand' : 'New brand' }}</h3>
+            <form class="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-xl bg-white dark:bg-slate-900 p-6 shadow-xl" @submit.prevent="save">
+                <h3 class="text-lg font-semibold agent-text">{{ editingBrand ? 'Edit brand' : 'New brand' }}</h3>
 
                 <div class="mt-4 grid gap-4 sm:grid-cols-2">
                     <div>
-                        <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('profile.name') }}</label>
-                        <input v-model="form.name" type="text" required class="w-full rounded-lg border border-slate-300 px-3 py-2" />
+                        <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('profile.name') }}</label>
+                        <input v-model="form.name" type="text" required class="w-full rounded-lg border agent-border px-3 py-2" />
                     </div>
                     <div>
-                        <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('settings_brands.slug') }}</label>
-                        <input v-model="form.slug" type="text" class="w-full rounded-lg border border-slate-300 px-3 py-2" :placeholder="$t('settings_brands.auto-generated_if_empty')" />
+                        <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('settings_brands.slug') }}</label>
+                        <input v-model="form.slug" type="text" class="w-full rounded-lg border agent-border px-3 py-2" :placeholder="$t('settings_brands.auto-generated_if_empty')" />
                     </div>
                     <div>
-                        <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('settings_brands.portal_title') }}</label>
-                        <input v-model="form.portal_title" type="text" class="w-full rounded-lg border border-slate-300 px-3 py-2" />
+                        <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('settings_brands.portal_title') }}</label>
+                        <input v-model="form.portal_title" type="text" class="w-full rounded-lg border agent-border px-3 py-2" />
                     </div>
                     <div>
-                        <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('settings_brands.ticket_prefix') }}</label>
-                        <input v-model="form.ticket_number_prefix" type="text" class="w-full rounded-lg border border-slate-300 px-3 py-2 uppercase" :placeholder="$t('settings_brands.ac-')" />
+                        <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('settings_brands.ticket_prefix') }}</label>
+                        <input v-model="form.ticket_number_prefix" type="text" class="w-full rounded-lg border agent-border px-3 py-2 uppercase" :placeholder="$t('settings_brands.ac-')" />
                     </div>
                     <div>
-                        <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('settings_brands.primary_color') }}</label>
-                        <input v-model="form.primary_color" type="text" class="w-full rounded-lg border border-slate-300 px-3 py-2" :placeholder="$t('settings_brands.2563eb')" />
+                        <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('settings_brands.primary_color') }}</label>
+                        <input v-model="form.primary_color" type="text" class="w-full rounded-lg border agent-border px-3 py-2" :placeholder="$t('settings_brands.2563eb')" />
                     </div>
                     <div>
-                        <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('settings_brands.default_priority') }}</label>
-                        <select v-model="form.default_ticket_priority_id" class="w-full rounded-lg border border-slate-300 px-3 py-2">
+                        <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('settings_brands.default_priority') }}</label>
+                        <select v-model="form.default_ticket_priority_id" class="w-full rounded-lg border agent-border px-3 py-2">
                             <option value="">{{ $t('settings_brands.normal_global_default') }}</option>
                             <option v-for="priority in priorities" :key="priority.id" :value="priority.id">{{ priority.name }}</option>
                         </select>
                     </div>
                 </div>
 
-                <label class="mt-4 flex items-center gap-2 text-sm text-slate-700">
-                    <input v-model="form.is_active" type="checkbox" class="rounded border-slate-300" />
+                <label class="mt-4 flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
+                    <input v-model="form.is_active" type="checkbox" class="rounded agent-border" />
                     {{ $t('common.active') }}
                 </label>
 
                 <div class="mt-4">
-                    <label class="mb-2 block text-sm font-medium text-slate-700">{{ $t('settings_brands.knowledge_collections') }}</label>
-                    <div class="max-h-40 space-y-2 overflow-y-auto rounded-lg border border-slate-200 p-3">
-                        <label v-for="collection in collections" :key="collection.id" class="flex items-center gap-2 text-sm text-slate-700">
-                            <input v-model="form.collection_ids" type="checkbox" class="rounded border-slate-300" :value="collection.id" />
+                    <label class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('settings_brands.knowledge_collections') }}</label>
+                    <div class="max-h-40 space-y-2 overflow-y-auto rounded-lg border agent-border p-3">
+                        <label v-for="collection in collections" :key="collection.id" class="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
+                            <input v-model="form.collection_ids" type="checkbox" class="rounded agent-border" :value="collection.id" />
                             {{ collection.name }}
                         </label>
                     </div>
@@ -186,14 +186,14 @@ const removeField = (index) => form.ticket_fields.splice(index, 1);
 
                 <div class="mt-4">
                     <div class="mb-2 flex items-center justify-between">
-                        <h4 class="text-sm font-medium text-slate-700">{{ $t('settings_brands.portal_ticket_fields') }}</h4>
-                        <button type="button" class="text-sm text-blue-600 hover:text-blue-700" @click="addField">{{ $t('settings_brands.add_field') }}</button>
+                        <h4 class="text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('settings_brands.portal_ticket_fields') }}</h4>
+                        <button type="button" class="text-sm text-blue-600 hover:text-blue-700 dark:hover:text-blue-300 dark:text-blue-300" @click="addField">{{ $t('settings_brands.add_field') }}</button>
                     </div>
                     <CustomFieldEditor :fields="form.ticket_fields" @add="addField" @remove="removeField" />
                 </div>
 
                 <div class="mt-6 flex justify-end gap-2">
-                    <button type="button" class="rounded-lg border border-slate-300 px-4 py-2 text-sm text-slate-700" @click="showForm = false">{{ $t('common.cancel') }}</button>
+                    <button type="button" class="rounded-lg border agent-border px-4 py-2 text-sm text-slate-700 dark:text-slate-300" @click="showForm = false">{{ $t('common.cancel') }}</button>
                     <button type="submit" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700" :disabled="form.processing">{{ $t('common.save') }}</button>
                 </div>
             </form>

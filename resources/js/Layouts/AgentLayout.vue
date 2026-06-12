@@ -47,7 +47,7 @@ const navItemClass = (href) => {
 
 const iconWrapClass = (href) => isActive(href)
     ? 'text-white'
-    : 'text-slate-500 group-hover:text-slate-300';
+    : 'text-slate-500 dark:text-slate-400 group-hover:text-slate-300';
 </script>
 
 <template>
@@ -77,7 +77,7 @@ const iconWrapClass = (href) => isActive(href)
                     :class="sectionIndex > 0 ? (isOpen ? 'mt-6' : 'mt-1') : ''"
                 >
                     <p
-                        class="sidebar-section-label px-2.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500"
+                        class="sidebar-section-label px-2.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400"
                         :class="{ 'sidebar-section-label--open': isOpen }"
                     >
                         {{ section.label }}
@@ -141,7 +141,7 @@ const iconWrapClass = (href) => isActive(href)
                         :class="{ 'sidebar-label--open': isOpen }"
                     >
                         <p class="truncate text-[13px] font-medium text-white">{{ user?.name }}</p>
-                        <p class="truncate text-[11px] text-slate-500">{{ user?.email }}</p>
+                        <p class="truncate text-[11px] text-slate-500 dark:text-slate-400">{{ user?.email }}</p>
                     </div>
                 </Link>
             </div>
@@ -156,13 +156,13 @@ const iconWrapClass = (href) => isActive(href)
                     :key="item.href"
                     :href="item.href"
                     class="whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-ui"
-                    :class="isActive(item.href) ? 'bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900' : 'agent-text-muted'"
+                    :class="isActive(item.href) ? 'bg-slate-900 text-white dark:bg-slate-100 dark:bg-slate-900 dark:text-slate-900 dark:text-slate-100' : 'agent-text-muted'"
                 >
                     {{ item.label }}
                 </Link>
             </nav>
 
-            <main class="flex min-h-0 flex-1 flex-col overflow-hidden px-4 pb-4 sm:px-6 sm:pb-6">
+            <main class="flex min-h-0 flex-1 flex-col overflow-hidden">
                 <div class="mb-3 shrink-0 space-y-2 empty:mb-0 empty:hidden">
                     <TrialBanner />
                     <CancellationGraceBanner />
@@ -170,9 +170,9 @@ const iconWrapClass = (href) => isActive(href)
                 </div>
                 <PlatformNoticeModal />
                 <SetupWarningNotifier />
-                <div class="flex min-h-0 flex-1 flex-col overflow-y-auto overflow-x-hidden">
+                <div class="flex min-h-0 flex-1 flex-col overflow-y-auto overflow-x-hidden px-4 pb-4 pt-3 sm:px-6 sm:pb-6 sm:pt-4">
                     <Transition name="page" mode="out-in">
-                        <div :key="pageKey" class="flex min-h-0 flex-1 flex-col">
+                        <div :key="pageKey">
                             <slot />
                         </div>
                     </Transition>

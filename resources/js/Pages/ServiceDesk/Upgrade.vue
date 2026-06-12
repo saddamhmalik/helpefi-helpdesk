@@ -25,15 +25,15 @@ const purchaseAddon = () => {
     <AgentLayout>
         <PageHeader :title="$t('service_desk.service_desk')" :description="$t('service_desk.enterprise_itsm_add-on_for_structured_incident_request_change_and_prob')" />
 
-        <div class="mx-auto max-w-3xl rounded-2xl border border-amber-200 bg-amber-50 p-8 shadow-sm">
-            <p class="text-xs font-semibold uppercase tracking-wide text-amber-700">Paid add-on</p>
+        <div class="mx-auto max-w-3xl rounded-2xl border border-amber-200 dark:border-amber-900/60 bg-amber-50 dark:bg-amber-950/40 p-8 shadow-sm">
+            <p class="text-xs font-semibold uppercase tracking-wide text-amber-700 dark:text-amber-300">Paid add-on</p>
             <h2 class="mt-2 text-2xl font-semibold text-amber-950">Unlock Service Desk</h2>
             <p class="mt-3 text-sm leading-6 text-amber-900/90">
                 You are on the <span class="font-medium">{{ plan }}</span> plan. Service Desk is a monthly add-on that adds ITIL-type queues,
                 approval workflows, change and problem management, and major incident war rooms on top of your existing tickets and service catalog.
             </p>
 
-            <p v-if="onTrial" class="mt-4 rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-900">
+            <p v-if="onTrial" class="mt-4 rounded-lg border border-blue-200 dark:border-blue-900/60 bg-blue-50 dark:bg-blue-950/40 px-4 py-3 text-sm text-blue-900">
                 You can enable Service Desk during your free trial. After the trial ends, you will need an active paid plan and this add-on at
                 <span v-if="addon?.price_monthly" class="font-semibold">{{ formatPrice(addon.price_monthly) }}/mo</span>
                 <span v-else class="font-semibold">the listed monthly price</span>.
@@ -68,13 +68,13 @@ const purchaseAddon = () => {
                 </button>
                 <Link
                     href="/settings/billing?section=addons"
-                    class="inline-flex items-center rounded-lg border border-amber-300 bg-white px-4 py-2.5 text-sm font-medium text-amber-950 hover:bg-amber-100/60"
+                    class="inline-flex items-center rounded-lg border border-amber-300 bg-white dark:bg-slate-900 px-4 py-2.5 text-sm font-medium text-amber-950 hover:bg-amber-100/60"
                 >
                     View billing add-ons
                 </Link>
                 <Link
                     href="/settings/service-catalog"
-                    class="inline-flex items-center rounded-lg border border-amber-300 bg-white px-4 py-2.5 text-sm font-medium text-amber-950 hover:bg-amber-100/60"
+                    class="inline-flex items-center rounded-lg border border-amber-300 bg-white dark:bg-slate-900 px-4 py-2.5 text-sm font-medium text-amber-950 hover:bg-amber-100/60"
                 >
                     Manage service catalog
                 </Link>

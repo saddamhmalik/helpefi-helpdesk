@@ -189,12 +189,12 @@ onUnmounted(() => {
 
 <template>
     <div class="relative">
-        <div v-if="hasSelection" class="flex items-center gap-2 rounded-lg border border-slate-300 bg-slate-50 px-3 py-2">
+        <div v-if="hasSelection" class="flex items-center gap-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 px-3 py-2">
             <div class="min-w-0 flex-1">
-                <p class="truncate text-sm font-medium text-slate-900">{{ displayLabel }}</p>
-                <p v-if="selected.email" class="truncate text-xs text-slate-500">{{ selected.email }}</p>
+                <p class="truncate text-sm font-medium text-slate-900 dark:text-slate-100">{{ displayLabel }}</p>
+                <p v-if="selected.email" class="truncate text-xs text-slate-500 dark:text-slate-400">{{ selected.email }}</p>
             </div>
-            <button type="button" class="shrink-0 text-xs text-slate-500 hover:text-slate-700" @click="clearSelection">
+            <button type="button" class="shrink-0 text-xs text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300 dark:text-slate-300" @click="clearSelection">
                 {{ $t('components.clear') }}
             </button>
         </div>
@@ -213,23 +213,23 @@ onUnmounted(() => {
 
             <div
                 v-if="open && (loading || results.length || canUseNewEmail)"
-                class="absolute z-20 mt-1 w-full overflow-hidden rounded-lg border border-slate-200 bg-white shadow-lg"
+                class="absolute z-20 mt-1 w-full overflow-hidden rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-lg"
             >
-                <p v-if="loading" class="px-3 py-2 text-xs text-slate-500">{{ $t('components.searching_ellipsis') }}</p>
+                <p v-if="loading" class="px-3 py-2 text-xs text-slate-500 dark:text-slate-400">{{ $t('components.searching_ellipsis') }}</p>
                 <button
                     v-for="contact in results"
                     :key="contact.id"
                     type="button"
-                    class="flex w-full flex-col items-start px-3 py-2 text-left hover:bg-slate-50"
+                    class="flex w-full flex-col items-start px-3 py-2 text-left hover:bg-slate-50 dark:hover:bg-slate-800"
                     @mousedown.prevent="selectContact(contact)"
                 >
-                    <span class="text-sm font-medium text-slate-900">{{ contact.name || contact.email }}</span>
-                    <span v-if="contact.email" class="text-xs text-slate-500">{{ contact.email }}</span>
+                    <span class="text-sm font-medium text-slate-900 dark:text-slate-100">{{ contact.name || contact.email }}</span>
+                    <span v-if="contact.email" class="text-xs text-slate-500 dark:text-slate-400">{{ contact.email }}</span>
                 </button>
                 <button
                     v-if="canUseNewEmail"
                     type="button"
-                    class="w-full border-t border-slate-100 px-3 py-2 text-left text-sm text-blue-600 hover:bg-blue-50"
+                    class="w-full border-t border-slate-100 dark:border-slate-800 px-3 py-2 text-left text-sm text-blue-600 hover:bg-blue-50 dark:bg-blue-950/40"
                     @mousedown.prevent="selectNewEmail(trimmedQuery)"
                 >
                     {{ $t('components.use_email', { email: trimmedQuery }) }}
@@ -238,7 +238,7 @@ onUnmounted(() => {
         </template>
 
         <div v-if="showNameField && selected?.email && !selected?.id" class="mt-2">
-            <label class="mb-1 block text-xs font-medium text-slate-600">{{ $t('components.requester_name') }}</label>
+            <label class="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-400">{{ $t('components.requester_name') }}</label>
             <input
                 :value="requesterName || selected.name"
                 type="text"

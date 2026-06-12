@@ -1,5 +1,6 @@
 <script setup>
 import AgentGlobalSearch from './AgentGlobalSearch.vue';
+import AgentThemeToggle from './AgentThemeToggle.vue';
 import AgentUserMenu from './AgentUserMenu.vue';
 import NotificationBell from './NotificationBell.vue';
 import { Link, usePage } from '@inertiajs/vue3';
@@ -20,11 +21,11 @@ const openSearch = () => {
         <div class="hidden h-16 items-center gap-4 px-6 lg:flex">
             <nav :aria-label="$t('components.breadcrumb')" class="flex min-w-0 flex-1 items-center gap-1.5">
                 <template v-for="(crumb, index) in crumbs" :key="`${crumb.label}-${index}`">
-                    <span v-if="index > 0" class="text-slate-300 dark:text-slate-600">/</span>
+                    <span v-if="index > 0" class="text-slate-300 dark:text-slate-600 dark:text-slate-400">/</span>
                     <Link
                         v-if="crumb.href && index < crumbs.length - 1"
                         :href="crumb.href"
-                        class="truncate text-sm agent-text-subtle transition hover:text-slate-800 dark:hover:text-slate-200"
+                        class="truncate text-sm agent-text-subtle transition hover:text-slate-800 dark:text-slate-200 dark:hover:text-slate-200"
                     >
                         {{ crumb.label }}
                     </Link>
@@ -46,7 +47,7 @@ const openSearch = () => {
                 <Link
                     v-if="helpCenter"
                     :href="helpCenter.homeUrl"
-                    class="hidden rounded-lg px-3 py-2 text-sm font-medium agent-text-muted transition hover:bg-slate-100 hover:text-slate-900 dark:hover:bg-slate-800 dark:hover:text-slate-100 xl:inline-flex"
+                    class="hidden rounded-lg px-3 py-2 text-sm font-medium agent-text-muted transition hover:bg-slate-100 dark:bg-slate-900 hover:text-slate-900 dark:text-slate-100 dark:hover:bg-slate-800 dark:hover:text-slate-100 xl:inline-flex"
                 >
                     {{ helpCenter.title }}
                 </Link>
@@ -59,6 +60,7 @@ const openSearch = () => {
                     </svg>
                     {{ $t('components.new_ticket') }}
                 </Link>
+                <AgentThemeToggle />
                 <NotificationBell />
                 <AgentUserMenu />
             </div>
@@ -76,7 +78,7 @@ const openSearch = () => {
 
             <button
                 type="button"
-                class="rounded-lg p-2 agent-text-subtle transition hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+                class="rounded-lg p-2 agent-text-subtle transition hover:bg-slate-100 dark:bg-slate-900 hover:text-slate-700 dark:hover:text-slate-300 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-200"
                 :aria-label="$t('components.search')"
                 @click="openSearch"
             >
@@ -87,7 +89,7 @@ const openSearch = () => {
 
             <Link
                 href="/tickets/create"
-                class="rounded-lg p-2 text-blue-600 transition hover:bg-blue-50 dark:hover:bg-blue-950/50"
+                class="rounded-lg p-2 text-blue-600 transition hover:bg-blue-50 dark:bg-blue-950/40 dark:hover:bg-blue-950/50"
                 :aria-label="$t('components.new_ticket')"
             >
                 <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -95,6 +97,7 @@ const openSearch = () => {
                 </svg>
             </Link>
 
+            <AgentThemeToggle />
             <NotificationBell />
             <AgentUserMenu />
         </div>

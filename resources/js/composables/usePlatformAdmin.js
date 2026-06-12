@@ -2,7 +2,7 @@ import { computed } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 import { useI18n } from 'vue-i18n';
 
-export const adminInputClass = 'w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20';
+export const adminInputClass = 'agent-input w-full rounded-xl px-3.5 py-2.5 text-sm';
 
 export function usePlatformAdmin() {
     const { t } = useI18n();

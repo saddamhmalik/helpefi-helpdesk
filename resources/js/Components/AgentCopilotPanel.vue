@@ -81,9 +81,9 @@ watch(open, async (isOpen) => {
     <div class="pointer-events-none fixed bottom-4 right-4 z-40 flex flex-col items-end gap-2">
         <div
             v-if="open"
-            class="pointer-events-auto flex h-[min(32rem,calc(100vh-6rem))] w-[min(24rem,calc(100vw-2rem))] flex-col overflow-hidden rounded-2xl border border-violet-200 bg-white shadow-2xl shadow-violet-900/10"
+            class="pointer-events-auto flex h-[min(32rem,calc(100vh-6rem))] w-[min(24rem,calc(100vw-2rem))] flex-col overflow-hidden rounded-2xl border border-violet-200 dark:border-violet-900/60 dark:border-violet-800 bg-white dark:bg-slate-900 shadow-2xl shadow-violet-900/10"
         >
-            <div class="flex items-center justify-between border-b border-violet-100 bg-gradient-to-r from-violet-600 to-indigo-600 px-4 py-3 text-white">
+            <div class="flex items-center justify-between border-b border-violet-100 dark:border-violet-900/50 bg-gradient-to-r from-violet-600 to-indigo-600 px-4 py-3 text-white">
                 <div>
                     <p class="text-sm font-semibold">AI Copilot</p>
                     <p v-if="provider" class="text-[11px] text-violet-100">{{ provider }}</p>
@@ -110,8 +110,8 @@ watch(open, async (isOpen) => {
                 </div>
             </div>
 
-            <div ref="scrollRef" class="min-h-0 flex-1 space-y-3 overflow-y-auto bg-slate-50/80 px-3 py-3">
-                <div v-if="messages.length === 0 && !loading" class="rounded-xl border border-dashed border-violet-200 bg-white px-3 py-4 text-center text-xs text-slate-500">
+            <div ref="scrollRef" class="min-h-0 flex-1 space-y-3 overflow-y-auto bg-slate-50 dark:bg-slate-950/80 px-3 py-3">
+                <div v-if="messages.length === 0 && !loading" class="rounded-xl border border-dashed border-violet-200 dark:border-violet-900/60 dark:border-violet-800 bg-white dark:bg-slate-900 px-3 py-4 text-center text-xs text-slate-500 dark:text-slate-400">
                     Ask about this ticket, draft replies, or find relevant knowledge base articles.
                 </div>
 
@@ -125,13 +125,13 @@ watch(open, async (isOpen) => {
                         class="max-w-[90%] rounded-2xl px-3 py-2 text-sm whitespace-pre-wrap"
                         :class="message.role === 'user'
                             ? 'bg-violet-600 text-white'
-                            : 'border border-violet-100 bg-white text-slate-800 shadow-sm'"
+                            : 'border border-violet-100 dark:border-violet-900/50 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 shadow-sm'"
                     >
                         {{ message.content }}
                         <button
                             v-if="message.role === 'assistant' && onInsertReply"
                             type="button"
-                            class="mt-2 block text-[11px] font-semibold text-violet-700 hover:text-violet-900"
+                            class="mt-2 block text-[11px] font-semibold text-violet-700 dark:text-violet-300 hover:text-violet-900"
                             @click="insertReply(message.content)"
                         >
                             Insert into reply
@@ -139,11 +139,11 @@ watch(open, async (isOpen) => {
                     </div>
                 </div>
 
-                <div v-if="loading" class="text-xs text-slate-500">Thinking...</div>
+                <div v-if="loading" class="text-xs text-slate-500 dark:text-slate-400">Thinking...</div>
                 <p v-if="error" class="text-xs text-red-600">{{ error }}</p>
 
-                <div v-if="articles.length" class="rounded-xl border border-violet-100 bg-white p-3">
-                    <p class="text-[11px] font-semibold uppercase tracking-wide text-violet-700">Related articles</p>
+                <div v-if="articles.length" class="rounded-xl border border-violet-100 dark:border-violet-900/50 bg-white dark:bg-slate-900 p-3">
+                    <p class="text-[11px] font-semibold uppercase tracking-wide text-violet-700 dark:text-violet-300">Related articles</p>
                     <div class="mt-2 space-y-1">
                         <Link
                             v-for="article in articles"
@@ -159,13 +159,13 @@ watch(open, async (isOpen) => {
                 </div>
             </div>
 
-            <div class="border-t border-slate-200 bg-white p-3">
+            <div class="border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-3">
                 <div class="mb-2 flex flex-wrap gap-1">
                     <button
                         v-for="prompt in quickPrompts"
                         :key="prompt"
                         type="button"
-                        class="rounded-full border border-violet-100 bg-violet-50 px-2 py-0.5 text-[10px] font-medium text-violet-700 transition hover:bg-violet-100"
+                        class="rounded-full border border-violet-100 dark:border-violet-900/50 bg-violet-50 dark:bg-violet-950/40 px-2 py-0.5 text-[10px] font-medium text-violet-700 dark:text-violet-300 transition hover:bg-violet-100"
                         :disabled="loading"
                         @click="usePrompt(prompt)"
                     >
@@ -176,7 +176,7 @@ watch(open, async (isOpen) => {
                     <textarea
                         v-model="draft"
                         rows="2"
-                        class="min-h-[2.75rem] flex-1 resize-none rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-900 focus:border-violet-500 focus:outline-none focus:ring-2 focus:ring-violet-500/20"
+                        class="min-h-[2.75rem] flex-1 resize-none rounded-xl border border-slate-200 dark:border-slate-800 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 focus:border-violet-500 focus:outline-none focus:ring-2 focus:ring-violet-500/20"
                         placeholder="Ask the copilot..."
                         :disabled="loading"
                     />

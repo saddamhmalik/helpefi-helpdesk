@@ -82,46 +82,46 @@ const portalArticleUrl = computed(() => {
     <Head :title="`${article.title} · ${$t('knowledge.edit')}`" />
     <AgentLayout>
         <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
-            <Link href="/knowledge" class="text-sm text-blue-600 hover:text-blue-700">{{ $t('knowledge.back_to_knowledge_base') }}</Link>
+            <Link href="/knowledge" class="text-sm text-blue-600 hover:text-blue-700 dark:hover:text-blue-300 dark:text-blue-300">{{ $t('knowledge.back_to_knowledge_base') }}</Link>
             <div class="flex flex-wrap items-center gap-3">
-                <Link :href="`/knowledge/${article.id}`" class="text-sm font-medium text-slate-700 hover:text-slate-900">{{ $t('knowledge.view') }}</Link>
+                <Link :href="`/knowledge/${article.id}`" class="text-sm font-medium text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:text-slate-100 dark:hover:text-slate-100">{{ $t('knowledge.view') }}</Link>
                 <a
                     v-if="article.is_published && portalArticleUrl"
                     :href="portalArticleUrl"
                     target="_blank"
                     rel="noopener noreferrer"
-                    class="text-sm text-blue-600 hover:text-blue-700"
+                    class="text-sm text-blue-600 hover:text-blue-700 dark:hover:text-blue-300 dark:text-blue-300"
                 >{{ $t('knowledge.view_on_portal') }}</a>
             </div>
         </div>
 
         <div class="grid gap-6 lg:grid-cols-3">
             <div class="lg:col-span-2">
-                <div class="rounded-xl border border-slate-200 bg-white p-8 shadow-sm">
+                <div class="rounded-xl border agent-border agent-panel p-8 shadow-sm">
                     <div class="mb-4 flex items-center gap-2">
-                        <span class="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-semibold uppercase text-slate-600">{{ article.locale || 'en' }}</span>
+                        <span class="rounded-full bg-slate-100 dark:bg-slate-900 px-2.5 py-0.5 text-xs font-semibold uppercase agent-text-muted">{{ article.locale || 'en' }}</span>
                     </div>
                     <form class="space-y-4" @submit.prevent="submit">
                         <div>
-                            <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('common.title') }}</label>
+                            <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('common.title') }}</label>
                             <input v-model="form.title" type="text" :class="formInputClass" required />
                         </div>
                         <div>
-                            <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('knowledge.collection') }}</label>
+                            <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('knowledge.collection') }}</label>
                             <select v-model="form.knowledge_collection_id" :class="formSelectClass">
                                 <option value="">{{ $t('knowledge.no_collection') }}</option>
                                 <option v-for="collection in collections" :key="collection.id" :value="collection.id">{{ collection.name }}</option>
                             </select>
                         </div>
                         <div>
-                            <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('knowledge.category') }}</label>
+                            <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('knowledge.category') }}</label>
                             <select v-model="form.knowledge_category_id" :class="formSelectClass">
                                 <option value="">{{ $t('knowledge.uncategorized') }}</option>
                                 <option v-for="category in categories" :key="category.id" :value="category.id">{{ category.name }}</option>
                             </select>
                         </div>
                         <div>
-                            <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('knowledge.excerpt') }}</label>
+                            <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('knowledge.excerpt') }}</label>
                             <input v-model="form.excerpt" type="text" :class="formInputClass" />
                         </div>
                         <FormRichTextField
@@ -130,8 +130,8 @@ const portalArticleUrl = computed(() => {
                             required
                             :error="form.errors.body"
                         />
-                        <label class="flex items-center gap-2 text-sm text-slate-600">
-                            <input v-model="form.is_published" type="checkbox" class="rounded border-slate-300" />
+                        <label class="flex items-center gap-2 text-sm agent-text-muted">
+                            <input v-model="form.is_published" type="checkbox" class="rounded agent-border" />
                             Published
                         </label>
                         <button type="submit" class="rounded-lg bg-blue-600 px-4 py-2 font-medium text-white hover:bg-blue-700" :disabled="form.processing">{{ $t('knowledge.update_article') }}</button>
@@ -140,13 +140,13 @@ const portalArticleUrl = computed(() => {
             </div>
 
             <div class="space-y-6">
-                <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+                <div class="agent-card">
                     <div class="flex items-center justify-between gap-2">
-                        <h2 class="text-lg font-semibold text-slate-900">{{ $t('knowledge.translations') }}</h2>
+                        <h2 class="text-lg font-semibold agent-text">{{ $t('knowledge.translations') }}</h2>
                         <button
                             v-if="availableTranslationLocales.length"
                             type="button"
-                            class="text-sm font-medium text-blue-600 hover:text-blue-700"
+                            class="text-sm font-medium text-blue-600 hover:text-blue-700 dark:hover:text-blue-300 dark:text-blue-300"
                             @click="openTranslationModal"
                         >{{ $t('knowledge.add') }}</button>
                     </div>
@@ -156,26 +156,26 @@ const portalArticleUrl = computed(() => {
                             :key="translation.id"
                             :href="`/knowledge/${translation.id}/edit`"
                             class="flex items-center justify-between rounded-lg border px-3 py-2 text-sm transition"
-                            :class="translation.id === article.id ? 'border-blue-200 bg-blue-50 text-blue-700' : 'border-slate-100 hover:bg-slate-50'"
+                            :class="translation.id === article.id ? 'border-blue-200 dark:border-blue-900/60 bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300' : 'agent-border-subtle agent-hover-surface'"
                         >
                             <span class="font-medium uppercase">{{ translation.locale }}</span>
-                            <span class="truncate text-slate-600">{{ translation.title }}</span>
+                            <span class="truncate agent-text-muted">{{ translation.title }}</span>
                         </Link>
                     </div>
                 </div>
 
-                <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-                    <h2 class="text-lg font-semibold text-slate-900">{{ $t('knowledge.version_history') }}</h2>
+                <div class="agent-card">
+                    <h2 class="text-lg font-semibold agent-text">{{ $t('knowledge.version_history') }}</h2>
                     <div class="mt-4 space-y-3">
-                        <div v-for="version in versions" :key="version.id" class="rounded-lg border border-slate-100 p-3 text-sm">
+                        <div v-for="version in versions" :key="version.id" class="rounded-lg border agent-border-subtle p-3 text-sm">
                             <div class="flex items-center justify-between gap-2">
-                                <span class="font-medium text-slate-900">v{{ version.version_number }}</span>
-                                <button type="button" class="text-blue-600 hover:text-blue-700" @click="restoreVersion(version.id)">{{ $t('knowledge.restore') }}</button>
+                                <span class="font-medium agent-text">v{{ version.version_number }}</span>
+                                <button type="button" class="text-blue-600 hover:text-blue-700 dark:hover:text-blue-300 dark:text-blue-300" @click="restoreVersion(version.id)">{{ $t('knowledge.restore') }}</button>
                             </div>
-                            <p class="mt-1 truncate text-slate-600">{{ version.title }}</p>
-                            <p class="mt-1 text-xs text-slate-500">{{ version.user?.name || 'Unknown' }} · {{ formatDateTime(version.created_at) }}</p>
+                            <p class="mt-1 truncate agent-text-muted">{{ version.title }}</p>
+                            <p class="mt-1 text-xs agent-text-subtle">{{ version.user?.name || 'Unknown' }} · {{ formatDateTime(version.created_at) }}</p>
                         </div>
-                        <p v-if="!versions?.length" class="text-sm text-slate-500">{{ $t('knowledge.no_previous_versions_yet') }}</p>
+                        <p v-if="!versions?.length" class="text-sm agent-text-subtle">{{ $t('knowledge.no_previous_versions_yet') }}</p>
                     </div>
                 </div>
             </div>
@@ -189,17 +189,17 @@ const portalArticleUrl = computed(() => {
         >
             <form id="translation-form" class="space-y-4" @submit.prevent="createTranslation">
                 <div>
-                    <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('knowledge.language') }}</label>
+                    <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('knowledge.language') }}</label>
                     <select v-model="translationForm.locale" :class="formSelectClass" required>
                         <option v-for="locale in availableTranslationLocales" :key="locale.code" :value="locale.code">{{ locale.label }}</option>
                     </select>
                 </div>
                 <div>
-                    <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('common.title') }}</label>
+                    <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('common.title') }}</label>
                     <input v-model="translationForm.title" type="text" :class="formInputClass" required />
                 </div>
                 <div>
-                    <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('knowledge.excerpt') }}</label>
+                    <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('knowledge.excerpt') }}</label>
                     <input v-model="translationForm.excerpt" type="text" :class="formInputClass" />
                 </div>
                 <FormRichTextField
@@ -208,15 +208,15 @@ const portalArticleUrl = computed(() => {
                     required
                     :error="translationForm.errors.body"
                 />
-                <label class="flex items-center gap-2 text-sm text-slate-600">
-                    <input v-model="translationForm.is_published" type="checkbox" class="rounded border-slate-300" />
+                <label class="flex items-center gap-2 text-sm agent-text-muted">
+                    <input v-model="translationForm.is_published" type="checkbox" class="rounded agent-border" />
                     Published
                 </label>
             </form>
 
             <template #footer>
                 <div class="flex justify-end gap-2">
-                    <button type="button" class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700" @click="showTranslationModal = false">{{ $t('knowledge.cancel') }}</button>
+                    <button type="button" class="rounded-lg border agent-border px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300" @click="showTranslationModal = false">{{ $t('knowledge.cancel') }}</button>
                     <button type="submit" form="translation-form" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700" :disabled="translationForm.processing">{{ $t('knowledge.create_translation') }}</button>
                 </div>
             </template>

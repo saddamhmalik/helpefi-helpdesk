@@ -25,10 +25,10 @@ const resolvedSubmitLabel = computed(() => props.submitLabel || t('components.sa
 
 <template>
     <div class="mx-auto w-full" :class="widthClass">
-        <div class="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm shadow-slate-200/60">
-            <div v-if="description || $slots.header" class="border-b border-slate-100 bg-slate-50/40 px-6 py-5 sm:px-8">
+        <div class="overflow-hidden rounded-2xl border agent-border agent-panel shadow-sm shadow-slate-200/60 dark:shadow-slate-900/40">
+            <div v-if="description || $slots.header" class="border-b agent-border-subtle agent-panel-muted px-6 py-5 sm:px-8">
                 <slot name="header">
-                    <p v-if="description" class="text-sm leading-relaxed text-slate-500">{{ description }}</p>
+                    <p v-if="description" class="text-sm leading-relaxed agent-text-subtle">{{ description }}</p>
                 </slot>
             </div>
 
@@ -37,11 +37,11 @@ const resolvedSubmitLabel = computed(() => props.submitLabel || t('components.sa
                     <slot />
                 </div>
 
-                <div class="flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 bg-slate-50/70 px-6 py-4 sm:px-8">
+                <div class="flex flex-wrap items-center justify-between gap-3 border-t agent-border-subtle agent-panel-muted px-6 py-4 sm:px-8">
                     <Link
                         v-if="cancelHref"
                         :href="cancelHref"
-                        class="text-sm font-medium text-slate-600 transition hover:text-slate-900"
+                        class="text-sm font-medium agent-text-muted transition hover:text-slate-900 dark:text-slate-100 dark:hover:text-slate-100"
                     >
                         {{ resolvedCancelLabel }}
                     </Link>

@@ -2,6 +2,7 @@
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import AuthLayout from '../../Layouts/AuthLayout.vue';
 import { useI18n } from 'vue-i18n';
+import { formInputClass } from '../../composables/useFormControls.js';
 
 const props = defineProps({
     token: { type: String, required: true },
@@ -18,8 +19,6 @@ const form = useForm({
 });
 
 const submit = () => form.post('/reset-password');
-
-const inputClass = 'w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 shadow-sm transition placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20';
 </script>
 
 <template>
@@ -28,17 +27,17 @@ const inputClass = 'w-full rounded-xl border border-slate-200 bg-white px-3.5 py
         :aside-title="$t('auth.reset_password_title')"
         :aside-description="$t('auth.reset_password_description')"
     >
-        <h1 class="text-2xl font-semibold tracking-tight text-slate-900">{{ $t('auth.reset_password') }}</h1>
-        <p class="mt-2 text-sm text-slate-600">{{ $t('auth.reset_password_help') }}</p>
+        <h1 class="text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-100">{{ $t('auth.reset_password') }}</h1>
+        <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">{{ $t('auth.reset_password_help') }}</p>
 
         <form class="mt-8 space-y-5" @submit.prevent="submit">
             <div>
-                <label class="mb-1.5 block text-sm font-medium text-slate-700" for="email">{{ $t('auth.email') }}</label>
+                <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300" for="email">{{ $t('auth.email') }}</label>
                 <input
                     id="email"
                     v-model="form.email"
                     type="email"
-                    :class="inputClass"
+                    :class="formInputClass"
                     autocomplete="username"
                     required
                 />
@@ -46,12 +45,12 @@ const inputClass = 'w-full rounded-xl border border-slate-200 bg-white px-3.5 py
             </div>
 
             <div>
-                <label class="mb-1.5 block text-sm font-medium text-slate-700" for="password">{{ $t('auth.password') }}</label>
+                <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300" for="password">{{ $t('auth.password') }}</label>
                 <input
                     id="password"
                     v-model="form.password"
                     type="password"
-                    :class="inputClass"
+                    :class="formInputClass"
                     autocomplete="new-password"
                     autofocus
                     required
@@ -60,12 +59,12 @@ const inputClass = 'w-full rounded-xl border border-slate-200 bg-white px-3.5 py
             </div>
 
             <div>
-                <label class="mb-1.5 block text-sm font-medium text-slate-700" for="password_confirmation">{{ $t('auth.confirm_password') }}</label>
+                <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300" for="password_confirmation">{{ $t('auth.confirm_password') }}</label>
                 <input
                     id="password_confirmation"
                     v-model="form.password_confirmation"
                     type="password"
-                    :class="inputClass"
+                    :class="formInputClass"
                     autocomplete="new-password"
                     required
                 />
@@ -80,8 +79,8 @@ const inputClass = 'w-full rounded-xl border border-slate-200 bg-white px-3.5 py
             </button>
         </form>
 
-        <p class="mt-8 text-center text-sm text-slate-600">
-            <Link href="/login" class="font-semibold text-blue-600 transition hover:text-blue-700">{{ $t('auth.back_to_sign_in') }}</Link>
+        <p class="mt-8 text-center text-sm text-slate-600 dark:text-slate-400">
+            <Link href="/login" class="font-semibold text-blue-600 transition hover:text-blue-700 dark:hover:text-blue-300 dark:text-blue-300">{{ $t('auth.back_to_sign_in') }}</Link>
         </p>
     </AuthLayout>
 </template>

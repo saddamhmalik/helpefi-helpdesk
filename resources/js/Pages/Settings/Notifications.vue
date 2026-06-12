@@ -27,30 +27,30 @@ const save = () => {
         :title="$t('common.notifications')"
         :description="$t('settings_notifications.configure_in-app_and_email_alerts_for_agents')"
     >
-        <div class="max-w-2xl rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div class="max-w-2xl agent-card">
             <form class="space-y-4" @submit.prevent="save">
-                <label class="flex items-center gap-2 text-sm text-slate-700">
-                    <input v-model="form.email_enabled" type="checkbox" class="rounded border-slate-300" />
+                <label class="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
+                    <input v-model="form.email_enabled" type="checkbox" class="rounded agent-border" />
                     {{ $t('settings_notifications.email_enabled') }}
                 </label>
 
-                <div class="border-t border-slate-100 pt-4">
-                    <p class="mb-3 text-sm font-medium text-slate-900">{{ $t('settings_notifications.alert_types') }}</p>
+                <div class="border-t agent-border-subtle pt-4">
+                    <p class="mb-3 text-sm font-medium agent-text">{{ $t('settings_notifications.alert_types') }}</p>
                     <div class="space-y-3">
-                        <label class="flex items-center gap-2 text-sm text-slate-700">
-                            <input v-model="form.notify_ticket_assigned" type="checkbox" class="rounded border-slate-300" />
+                        <label class="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
+                            <input v-model="form.notify_ticket_assigned" type="checkbox" class="rounded agent-border" />
                             {{ $t('settings_notifications.notify_ticket_assigned') }}
                         </label>
-                        <label class="flex items-center gap-2 text-sm text-slate-700">
-                            <input v-model="form.notify_customer_reply" type="checkbox" class="rounded border-slate-300" />
+                        <label class="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
+                            <input v-model="form.notify_customer_reply" type="checkbox" class="rounded agent-border" />
                             {{ $t('settings_notifications.notify_customer_reply') }}
                         </label>
-                        <label class="flex items-center gap-2 text-sm text-slate-700">
-                            <input v-model="form.notify_sla_breach" type="checkbox" class="rounded border-slate-300" />
+                        <label class="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
+                            <input v-model="form.notify_sla_breach" type="checkbox" class="rounded agent-border" />
                             {{ $t('settings_notifications.notify_sla_breach') }}
                         </label>
-                        <label class="flex items-center gap-2 text-sm text-slate-700">
-                            <input v-model="form.notify_approval_pending" type="checkbox" class="rounded border-slate-300" />
+                        <label class="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
+                            <input v-model="form.notify_approval_pending" type="checkbox" class="rounded agent-border" />
                             {{ $t('settings_notifications.notify_approval_pending') }}
                         </label>
                     </div>

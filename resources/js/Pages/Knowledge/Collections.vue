@@ -81,17 +81,17 @@ const destroy = (collection) => {
     <AgentLayout>
         <div class="mb-6 flex items-center justify-between">
             <div>
-                <Link href="/knowledge" class="text-sm text-blue-600 transition hover:text-blue-700">← Knowledge base</Link>
-                <h1 class="mt-2 text-2xl font-semibold text-slate-900">{{ $t('knowledge.collections') }}</h1>
+                <Link href="/knowledge" class="text-sm text-blue-600 transition hover:text-blue-700 dark:hover:text-blue-300 dark:text-blue-300">← Knowledge base</Link>
+                <h1 class="mt-2 text-2xl font-semibold agent-text">{{ $t('knowledge.collections') }}</h1>
             </div>
             <button type="button" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700" @click="showCreate = true">{{ $t('knowledge.new_collection') }}</button>
         </div>
 
         <div class="space-y-4">
-            <div v-for="collection in collections" :key="collection.id" class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm transition hover:border-slate-300">
-                <h3 class="font-semibold text-slate-900">{{ collection.name }}</h3>
-                <p v-if="collection.description" class="mt-1 text-sm text-slate-600">{{ collection.description }}</p>
-                <div class="mt-3 flex items-center justify-between text-sm text-slate-500">
+            <div v-for="collection in collections" :key="collection.id" class="agent-card transition hover:border-slate-300 dark:border-slate-700 dark:hover:border-slate-600">
+                <h3 class="font-semibold agent-text">{{ collection.name }}</h3>
+                <p v-if="collection.description" class="mt-1 text-sm agent-text-muted">{{ collection.description }}</p>
+                <div class="mt-3 flex items-center justify-between text-sm agent-text-subtle">
                     <span>{{ collection.articles_count }} articles · {{ collection.is_public ? 'Public' : 'Private' }}</span>
                     <div class="flex gap-2">
                         <AppRowActions>
@@ -101,7 +101,7 @@ const destroy = (collection) => {
                     </div>
                 </div>
             </div>
-            <p v-if="!collections.length" class="rounded-xl border border-dashed border-slate-300 px-6 py-12 text-center text-sm text-slate-500">{{ $t('knowledge.no_collections_yet') }}</p>
+            <p v-if="!collections.length" class="rounded-xl border border-dashed agent-border px-6 py-12 text-center text-sm agent-text-subtle">{{ $t('knowledge.no_collections_yet') }}</p>
         </div>
 
         <AppModal
@@ -111,15 +111,15 @@ const destroy = (collection) => {
             @close="closeCreate"
         >
             <form id="create-collection-form" class="space-y-3" @submit.prevent="create">
-                <input v-model="createForm.name" type="text" :placeholder="$t('knowledge.name')" required class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm transition focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20" />
-                <textarea v-model="createForm.description" rows="3" :placeholder="$t('knowledge.description')" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm transition focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20" />
-                <input v-model.number="createForm.sort_order" type="number" min="0" :placeholder="$t('knowledge.sort_order')" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+                <input v-model="createForm.name" type="text" :placeholder="$t('knowledge.name')" required class="w-full rounded-lg border agent-border px-3 py-2 text-sm transition focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20" />
+                <textarea v-model="createForm.description" rows="3" :placeholder="$t('knowledge.description')" class="w-full rounded-lg border agent-border px-3 py-2 text-sm transition focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20" />
+                <input v-model.number="createForm.sort_order" type="number" min="0" :placeholder="$t('knowledge.sort_order')" class="w-full rounded-lg border agent-border px-3 py-2 text-sm" />
                 <AppToggle v-model="createForm.is_public" :label="$t('knowledge.public_on_portal')" />
             </form>
 
             <template #footer>
                 <div class="flex justify-end gap-2">
-                    <button type="button" class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-white" @click="closeCreate">{{ $t('knowledge.cancel') }}</button>
+                    <button type="button" class="rounded-lg border agent-border px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 transition agent-hover-surface" @click="closeCreate">{{ $t('knowledge.cancel') }}</button>
                     <button type="submit" form="create-collection-form" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700 disabled:opacity-60" :disabled="createForm.processing">{{ $t('knowledge.create') }}</button>
                 </div>
             </template>
@@ -132,15 +132,15 @@ const destroy = (collection) => {
             @close="closeEdit"
         >
             <form v-if="editingCollection" id="edit-collection-form" class="space-y-3" @submit.prevent="saveEdit">
-                <input v-model="editForm.name" type="text" required class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium" />
-                <textarea v-model="editForm.description" rows="2" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
-                <input v-model.number="editForm.sort_order" type="number" min="0" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+                <input v-model="editForm.name" type="text" required class="w-full rounded-lg border agent-border px-3 py-2 text-sm font-medium" />
+                <textarea v-model="editForm.description" rows="2" class="w-full rounded-lg border agent-border px-3 py-2 text-sm" />
+                <input v-model.number="editForm.sort_order" type="number" min="0" class="w-full rounded-lg border agent-border px-3 py-2 text-sm" />
                 <AppToggle v-model="editForm.is_public" :label="$t('knowledge.public_on_portal')" />
             </form>
 
             <template #footer>
                 <div v-if="editingCollection" class="flex justify-end gap-2">
-                    <button type="button" class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-white" @click="closeEdit">{{ $t('knowledge.cancel') }}</button>
+                    <button type="button" class="rounded-lg border agent-border px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 transition agent-hover-surface" @click="closeEdit">{{ $t('knowledge.cancel') }}</button>
                     <button type="submit" form="edit-collection-form" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700 disabled:opacity-60" :disabled="editForm.processing">{{ $t('knowledge.save') }}</button>
                 </div>
             </template>

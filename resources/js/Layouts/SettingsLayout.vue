@@ -53,18 +53,18 @@ watch(currentUrl, () => {
                 <div ref="contentRef" class="min-h-0 min-w-0 overflow-y-auto overscroll-contain pb-8 scrollbar-gutter-stable">
                     <SettingsMobileNav :breadcrumb="breadcrumb" />
 
-                    <nav v-if="breadcrumb" class="mb-3 hidden flex-wrap items-center gap-1.5 text-sm text-slate-500 lg:flex" aria-label="Breadcrumb">
-                        <Link href="/settings" class="transition hover:text-slate-800">{{ t('common.settings') }}</Link>
+                    <nav v-if="breadcrumb" class="mb-3 hidden flex-wrap items-center gap-1.5 text-sm agent-text-subtle lg:flex" aria-label="Breadcrumb">
+                        <Link href="/settings" class="transition hover:text-slate-800 dark:text-slate-200 dark:hover:text-slate-200">{{ t('common.settings') }}</Link>
                         <span aria-hidden="true">/</span>
                         <span>{{ breadcrumb.group }}</span>
                         <span aria-hidden="true">/</span>
-                        <span class="font-medium text-slate-800">{{ breadcrumb.page }}</span>
+                        <span class="font-medium text-slate-800 dark:text-slate-200">{{ breadcrumb.page }}</span>
                     </nav>
 
                     <div class="mb-6 flex flex-wrap items-start justify-between gap-4">
                         <div>
-                            <h1 class="text-2xl font-semibold tracking-tight text-slate-900">{{ title }}</h1>
-                            <p v-if="description" class="mt-1 text-sm text-slate-500">{{ description }}</p>
+                            <h1 class="text-2xl font-semibold tracking-tight agent-text">{{ title }}</h1>
+                            <p v-if="description" class="mt-1 text-sm agent-text-subtle">{{ description }}</p>
                         </div>
                         <div id="settings-page-actions" class="flex flex-wrap items-center gap-2" />
                     </div>

@@ -20,7 +20,7 @@ const props = defineProps({
 
 const { t } = useI18n();
 
-const inputClass = 'w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20';
+const inputClass = 'w-full rounded-lg border border-slate-300 dark:border-slate-700 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20';
 const showImport = ref(false);
 const importForm = useForm({ file: null });
 
@@ -85,7 +85,7 @@ const warrantyClass = (asset) => {
         return 'text-amber-600';
     }
 
-    return 'text-slate-600';
+    return 'text-slate-600 dark:text-slate-400';
 };
 
 const statCards = computed(() => [
@@ -105,12 +105,12 @@ const statCards = computed(() => [
             <template #actions>
                 <button
                     type="button"
-                    class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                    class="rounded-lg border border-slate-300 dark:border-slate-700 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
                     @click="showImport = !showImport"
                 >{{ $t('assets.import_csv') }}</button>
                 <a
                     :href="exportUrl"
-                    class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                    class="rounded-lg border border-slate-300 dark:border-slate-700 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
                 >
                     {{ $t('assets.export_csv') }}
                 </a>
@@ -124,12 +124,12 @@ const statCards = computed(() => [
             <div
                 v-for="card in statCards"
                 :key="card.label"
-                class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"
+                class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-sm"
             >
-                <p class="text-xs font-medium uppercase tracking-wide text-slate-500">{{ card.label }}</p>
+                <p class="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">{{ card.label }}</p>
                 <p
                     class="mt-1 text-2xl font-semibold"
-                    :class="card.accent === 'amber' ? 'text-amber-600' : card.accent === 'red' ? 'text-red-600' : 'text-slate-900'"
+                    :class="card.accent === 'amber' ? 'text-amber-600' : card.accent === 'red' ? 'text-red-600' : 'text-slate-900 dark:text-slate-100'"
                 >
                     {{ card.value }}
                 </p>
@@ -137,7 +137,7 @@ const statCards = computed(() => [
         </div>
 
         <ListPanel v-if="showImport" class="mb-4" :title="$t('assets.import_assets_from_csv')">
-            <p class="mb-3 text-sm text-slate-600">
+            <p class="mb-3 text-sm text-slate-600 dark:text-slate-400">
                 Required columns: <span class="font-medium">{{ $t('assets.name') }}</span>, <span class="font-medium">{{ $t('assets.type') }}</span>.
                 Optional: asset tag, status, serial number, contact email, organization, location, IP, MAC, hostname, manufacturer, model, vendor, purchase cost, purchased, warranty expires, notes.
             </p>
@@ -179,12 +179,12 @@ const statCards = computed(() => [
                     </FilterField>
                 </div>
                 <div class="mt-4 flex flex-wrap items-center gap-4">
-                    <label class="inline-flex items-center gap-2 text-sm text-slate-700">
-                        <input name="unassigned" type="checkbox" class="rounded border-slate-300" :checked="filters.unassigned">
+                    <label class="inline-flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
+                        <input name="unassigned" type="checkbox" class="rounded border-slate-300 dark:border-slate-700" :checked="filters.unassigned">
                         Unassigned only
                     </label>
-                    <label class="inline-flex items-center gap-2 text-sm text-slate-700">
-                        <input name="warranty_expiring" type="checkbox" class="rounded border-slate-300" :checked="filters.warranty_expiring">
+                    <label class="inline-flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
+                        <input name="warranty_expiring" type="checkbox" class="rounded border-slate-300 dark:border-slate-700" :checked="filters.warranty_expiring">
                         Warranty expiring in 30 days
                     </label>
                     <button type="submit" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">{{ $t('assets.apply_filters') }}</button>
@@ -195,33 +195,33 @@ const statCards = computed(() => [
         <DataTable>
             <thead class="bg-slate-50">
                 <tr>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('assets.tag') }}</th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('assets.name') }}</th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('assets.type') }}</th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('assets.status') }}</th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('assets.assigned_to') }}</th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('assets.ip') }}</th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('assets.warranty') }}</th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('assets.location') }}</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{{ $t('assets.tag') }}</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{{ $t('assets.name') }}</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{{ $t('assets.type') }}</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{{ $t('assets.status') }}</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{{ $t('assets.assigned_to') }}</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{{ $t('assets.ip') }}</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{{ $t('assets.warranty') }}</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{{ $t('assets.location') }}</th>
                 </tr>
             </thead>
-            <tbody class="divide-y divide-slate-100">
-                <tr v-for="asset in assets.data" :key="asset.id" class="hover:bg-slate-50">
+            <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+                <tr v-for="asset in assets.data" :key="asset.id" class="hover:bg-slate-50 dark:hover:bg-slate-800">
                     <td class="px-4 py-3 text-sm font-medium">
-                        <Link :href="`/assets/${asset.id}`" class="text-blue-600 hover:text-blue-700">{{ asset.asset_tag }}</Link>
+                        <Link :href="`/assets/${asset.id}`" class="text-blue-600 hover:text-blue-700 dark:hover:text-blue-300 dark:text-blue-300">{{ asset.asset_tag }}</Link>
                     </td>
-                    <td class="px-4 py-3 text-sm text-slate-900">{{ asset.name }}</td>
-                    <td class="px-4 py-3 text-sm text-slate-600">{{ asset.type?.name }}</td>
-                    <td class="px-4 py-3 text-sm text-slate-600">{{ statusLabel(asset.status) }}</td>
-                    <td class="px-4 py-3 text-sm text-slate-600">{{ asset.contact?.name || '—' }}</td>
-                    <td class="px-4 py-3 text-sm text-slate-600">{{ asset.ip_address || '—' }}</td>
+                    <td class="px-4 py-3 text-sm text-slate-900 dark:text-slate-100">{{ asset.name }}</td>
+                    <td class="px-4 py-3 text-sm text-slate-600 dark:text-slate-400">{{ asset.type?.name }}</td>
+                    <td class="px-4 py-3 text-sm text-slate-600 dark:text-slate-400">{{ statusLabel(asset.status) }}</td>
+                    <td class="px-4 py-3 text-sm text-slate-600 dark:text-slate-400">{{ asset.contact?.name || '—' }}</td>
+                    <td class="px-4 py-3 text-sm text-slate-600 dark:text-slate-400">{{ asset.ip_address || '—' }}</td>
                     <td class="px-4 py-3 text-sm" :class="warrantyClass(asset)">
                         {{ asset.warranty_expires_at?.slice(0, 10) || '—' }}
                     </td>
-                    <td class="px-4 py-3 text-sm text-slate-600">{{ asset.location || '—' }}</td>
+                    <td class="px-4 py-3 text-sm text-slate-600 dark:text-slate-400">{{ asset.location || '—' }}</td>
                 </tr>
                 <tr v-if="!assets.data?.length">
-                    <td colspan="8" class="px-4 py-12 text-center text-sm text-slate-500">No assets found.</td>
+                    <td colspan="8" class="px-4 py-12 text-center text-sm text-slate-500 dark:text-slate-400">No assets found.</td>
                 </tr>
             </tbody>
             <template #footer>

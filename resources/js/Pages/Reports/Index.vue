@@ -56,7 +56,7 @@ const saveForm = useForm({
     is_default: false,
 });
 
-const inputClass = 'w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20';
+const inputClass = 'w-full rounded-lg border px-3 py-2 text-sm agent-input';
 
 const isAgentReport = computed(() => props.result?.format === 'agents');
 const isCsatReport = computed(() => props.result?.format === 'csat');
@@ -213,15 +213,15 @@ const formatDate = (value) => value ? formatDateTime(value) : '—';
             <div
                 v-for="saved in savedReports"
                 :key="saved.id"
-                class="group flex items-center gap-1 rounded-lg bg-white px-2 py-1.5 text-sm font-medium text-slate-600 ring-1 ring-slate-200 hover:bg-slate-50"
+                class="group flex items-center gap-1 rounded-lg agent-panel px-2 py-1.5 text-sm font-medium agent-text-muted ring-1 agent-border agent-hover-surface"
             >
                 <button type="button" class="px-1" @click="loadSaved(saved)">
                     {{ saved.name }}
-                    <span v-if="saved.schedule?.is_enabled" class="ml-1 rounded bg-blue-50 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-blue-700">{{ $t('reports.scheduled') }}</span>
+                    <span v-if="saved.schedule?.is_enabled" class="ml-1 rounded bg-blue-50 dark:bg-blue-950/40 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-blue-700 dark:text-blue-300">{{ $t('reports.scheduled') }}</span>
                 </button>
                 <button
                     type="button"
-                    class="rounded px-1.5 py-0.5 text-xs text-slate-400 hover:bg-slate-100 hover:text-slate-700"
+                    class="rounded px-1.5 py-0.5 text-xs text-slate-400 dark:text-slate-500 agent-hover-surface hover:text-slate-700 dark:hover:text-slate-300 dark:text-slate-300"
                     :title="$t('reports.email_schedule')"
                     @click="openSchedule(saved)"
                 >
@@ -229,7 +229,7 @@ const formatDate = (value) => value ? formatDateTime(value) : '—';
                 </button>
                 <button
                     type="button"
-                    class="rounded px-1.5 py-0.5 text-xs text-slate-400 opacity-0 hover:bg-slate-100 hover:text-slate-700 group-hover:opacity-100"
+                    class="rounded px-1.5 py-0.5 text-xs text-slate-400 dark:text-slate-500 opacity-0 agent-hover-surface hover:text-slate-700 dark:hover:text-slate-300 dark:text-slate-300 group-hover:opacity-100"
                     @click="deleteSaved(saved.id)"
                 >
                     ×
@@ -265,19 +265,19 @@ const formatDate = (value) => value ? formatDateTime(value) : '—';
                     </FilterField>
                 </div>
 
-                <label class="mt-4 flex items-center gap-2 text-sm text-slate-600">
-                    <input v-model="scheduleForm.is_enabled" type="checkbox" class="rounded border-slate-300" />
+                <label class="mt-4 flex items-center gap-2 text-sm agent-text-muted">
+                    <input v-model="scheduleForm.is_enabled" type="checkbox" class="rounded agent-border" />
                     Enable scheduled delivery
                 </label>
 
-                <p v-if="schedulingReport?.schedule?.is_enabled" class="mt-2 text-xs text-slate-500">
+                <p v-if="schedulingReport?.schedule?.is_enabled" class="mt-2 text-xs agent-text-subtle">
                     Current: {{ scheduleSummary(schedulingReport) }}
                 </p>
 
                 <div class="mt-4 flex flex-wrap gap-2">
                     <button type="submit" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700" :disabled="scheduleForm.processing">{{ $t('reports.save_schedule') }}</button>
-                    <button v-if="schedulingReport?.schedule" type="button" class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50" @click="removeSchedule">{{ $t('reports.remove_schedule') }}</button>
-                    <button type="button" class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50" @click="showSchedule = false">{{ $t('reports.cancel') }}</button>
+                    <button v-if="schedulingReport?.schedule" type="button" class="agent-btn-secondary" @click="removeSchedule">{{ $t('reports.remove_schedule') }}</button>
+                    <button type="button" class="agent-btn-secondary" @click="showSchedule = false">{{ $t('reports.cancel') }}</button>
                 </div>
             </form>
         </ListPanel>
@@ -330,18 +330,18 @@ const formatDate = (value) => value ? formatDateTime(value) : '—';
 
                 <div class="mt-4 flex flex-wrap items-center gap-2">
                     <button type="submit" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">{{ $t('reports.run_report') }}</button>
-                    <a v-if="result" :href="exportUrl" class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">{{ $t('reports.export_csv') }}</a>
-                    <button v-if="result" type="button" class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50" @click="openSave">{{ $t('reports.save_report') }}</button>
+                    <a v-if="result" :href="exportUrl" class="agent-btn-secondary">{{ $t('reports.export_csv') }}</a>
+                    <button v-if="result" type="button" class="agent-btn-secondary" @click="openSave">{{ $t('reports.save_report') }}</button>
                 </div>
             </form>
 
-            <form v-if="showSave" class="mt-5 border-t border-slate-100 pt-5" @submit.prevent="saveReport">
+            <form v-if="showSave" class="mt-5 border-t agent-border-subtle pt-5" @submit.prevent="saveReport">
                 <div class="grid gap-4 md:grid-cols-2">
                     <FilterField :label="$t('reports.report_name')">
                         <input v-model="saveForm.name" type="text" required :placeholder="$t('reports.weekly_open_tickets')" :class="inputClass" />
                     </FilterField>
-                    <label class="flex items-center gap-2 self-end pb-2 text-sm text-slate-600">
-                        <input v-model="saveForm.is_default" type="checkbox" class="rounded border-slate-300" />
+                    <label class="flex items-center gap-2 self-end pb-2 text-sm agent-text-muted">
+                        <input v-model="saveForm.is_default" type="checkbox" class="rounded agent-border" />
                         Set as default
                     </label>
                 </div>
@@ -350,171 +350,171 @@ const formatDate = (value) => value ? formatDateTime(value) : '—';
         </ListPanel>
 
         <div v-if="result && isTimeTrackingReport" class="mb-6 grid gap-4 sm:grid-cols-2">
-            <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-                <p class="text-sm text-slate-500">{{ $t('reports.total_minutes') }}</p>
-                <p class="mt-2 text-3xl font-semibold text-slate-900">{{ formatMinutes(result.summary?.total_minutes ?? 0) }}</p>
+            <div class="agent-stat-card">
+                <p class="text-sm agent-text-subtle">{{ $t('reports.total_minutes') }}</p>
+                <p class="mt-2 text-3xl font-semibold agent-text">{{ formatMinutes(result.summary?.total_minutes ?? 0) }}</p>
             </div>
-            <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-                <p class="text-sm text-slate-500">{{ $t('reports.entries_logged') }}</p>
-                <p class="mt-2 text-3xl font-semibold text-slate-900">{{ result.summary?.entry_count ?? 0 }}</p>
+            <div class="agent-stat-card">
+                <p class="text-sm agent-text-subtle">{{ $t('reports.entries_logged') }}</p>
+                <p class="mt-2 text-3xl font-semibold agent-text">{{ result.summary?.entry_count ?? 0 }}</p>
             </div>
         </div>
 
         <div v-if="result && isCsatReport" class="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
-            <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-                <p class="text-sm text-slate-500">{{ $t('reports.average_rating') }}</p>
-                <p class="mt-2 text-3xl font-semibold text-slate-900">{{ result.summary?.average_rating ?? '—' }}</p>
+            <div class="agent-stat-card">
+                <p class="text-sm agent-text-subtle">{{ $t('reports.average_rating') }}</p>
+                <p class="mt-2 text-3xl font-semibold agent-text">{{ result.summary?.average_rating ?? '—' }}</p>
             </div>
-            <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-                <p class="text-sm text-slate-500">{{ $t('reports.total_responses') }}</p>
-                <p class="mt-2 text-3xl font-semibold text-slate-900">{{ result.summary?.total_responses ?? 0 }}</p>
+            <div class="agent-stat-card">
+                <p class="text-sm agent-text-subtle">{{ $t('reports.total_responses') }}</p>
+                <p class="mt-2 text-3xl font-semibold agent-text">{{ result.summary?.total_responses ?? 0 }}</p>
             </div>
-            <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-                <p class="text-sm text-slate-500">{{ $t('reports.portal_responses') }}</p>
-                <p class="mt-2 text-3xl font-semibold text-slate-900">{{ result.summary?.by_channel?.portal ?? 0 }}</p>
+            <div class="agent-stat-card">
+                <p class="text-sm agent-text-subtle">{{ $t('reports.portal_responses') }}</p>
+                <p class="mt-2 text-3xl font-semibold agent-text">{{ result.summary?.by_channel?.portal ?? 0 }}</p>
             </div>
-            <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-                <p class="text-sm text-slate-500">{{ $t('reports.email_responses') }}</p>
-                <p class="mt-2 text-3xl font-semibold text-slate-900">{{ result.summary?.by_channel?.email ?? 0 }}</p>
+            <div class="agent-stat-card">
+                <p class="text-sm agent-text-subtle">{{ $t('reports.email_responses') }}</p>
+                <p class="mt-2 text-3xl font-semibold agent-text">{{ result.summary?.by_channel?.email ?? 0 }}</p>
             </div>
-            <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-                <p class="text-sm text-slate-500">{{ $t('reports.5-star_ratings') }}</p>
-                <p class="mt-2 text-3xl font-semibold text-slate-900">{{ result.summary?.breakdown?.[5] ?? 0 }}</p>
+            <div class="agent-stat-card">
+                <p class="text-sm agent-text-subtle">{{ $t('reports.5-star_ratings') }}</p>
+                <p class="mt-2 text-3xl font-semibold agent-text">{{ result.summary?.breakdown?.[5] ?? 0 }}</p>
             </div>
         </div>
 
         <template v-if="result && isTimeTrackingReport">
             <DataTable class="mb-6">
-                <thead class="bg-slate-50">
+                <thead class="agent-panel-muted">
                     <tr>
-                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('reports.agent') }}</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('reports.total_time') }}</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('reports.entries') }}</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide agent-text-subtle">{{ $t('reports.agent') }}</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide agent-text-subtle">{{ $t('reports.total_time') }}</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide agent-text-subtle">{{ $t('reports.entries') }}</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-slate-100">
-                    <tr v-for="row in timeAgentRows" :key="row.agent_id" class="hover:bg-slate-50">
-                        <td class="px-4 py-3 text-sm font-medium text-slate-900">{{ row.agent_name }}</td>
-                        <td class="px-4 py-3 text-sm text-slate-600">{{ formatMinutes(row.total_minutes) }}</td>
-                        <td class="px-4 py-3 text-sm text-slate-600">{{ row.entry_count }}</td>
+                <tbody class="divide-y agent-table-divider">
+                    <tr v-for="row in timeAgentRows" :key="row.agent_id" class="agent-hover-surface">
+                        <td class="px-4 py-3 text-sm font-medium agent-text">{{ row.agent_name }}</td>
+                        <td class="px-4 py-3 text-sm agent-text-muted">{{ formatMinutes(row.total_minutes) }}</td>
+                        <td class="px-4 py-3 text-sm agent-text-muted">{{ row.entry_count }}</td>
                     </tr>
                     <tr v-if="!timeAgentRows.length">
-                        <td colspan="3" class="px-4 py-12 text-center text-sm text-slate-500">No agent time logged for this period.</td>
+                        <td colspan="3" class="px-4 py-12 text-center text-sm agent-text-subtle">No agent time logged for this period.</td>
                     </tr>
                 </tbody>
             </DataTable>
 
             <DataTable>
-                <thead class="bg-slate-50">
+                <thead class="agent-panel-muted">
                     <tr>
-                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('reports.team') }}</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('reports.total_time') }}</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('reports.entries') }}</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide agent-text-subtle">{{ $t('reports.team') }}</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide agent-text-subtle">{{ $t('reports.total_time') }}</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide agent-text-subtle">{{ $t('reports.entries') }}</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-slate-100">
-                    <tr v-for="row in timeTeamRows" :key="row.team_id" class="hover:bg-slate-50">
-                        <td class="px-4 py-3 text-sm font-medium text-slate-900">{{ row.team_name }}</td>
-                        <td class="px-4 py-3 text-sm text-slate-600">{{ formatMinutes(row.total_minutes) }}</td>
-                        <td class="px-4 py-3 text-sm text-slate-600">{{ row.entry_count }}</td>
+                <tbody class="divide-y agent-table-divider">
+                    <tr v-for="row in timeTeamRows" :key="row.team_id" class="agent-hover-surface">
+                        <td class="px-4 py-3 text-sm font-medium agent-text">{{ row.team_name }}</td>
+                        <td class="px-4 py-3 text-sm agent-text-muted">{{ formatMinutes(row.total_minutes) }}</td>
+                        <td class="px-4 py-3 text-sm agent-text-muted">{{ row.entry_count }}</td>
                     </tr>
                     <tr v-if="!timeTeamRows.length">
-                        <td colspan="3" class="px-4 py-12 text-center text-sm text-slate-500">No team time logged for this period.</td>
+                        <td colspan="3" class="px-4 py-12 text-center text-sm agent-text-subtle">No team time logged for this period.</td>
                     </tr>
                 </tbody>
             </DataTable>
         </template>
 
         <DataTable v-else-if="result && isAgentReport">
-            <thead class="bg-slate-50">
+            <thead class="agent-panel-muted">
                 <tr>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('reports.agent') }}</th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('reports.open') }}</th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('reports.closed') }}</th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('reports.total') }}</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide agent-text-subtle">{{ $t('reports.agent') }}</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide agent-text-subtle">{{ $t('reports.open') }}</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide agent-text-subtle">{{ $t('reports.closed') }}</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide agent-text-subtle">{{ $t('reports.total') }}</th>
                 </tr>
             </thead>
-            <tbody class="divide-y divide-slate-100">
-                <tr v-for="row in agentRows" :key="row.agent_id" class="hover:bg-slate-50">
-                    <td class="px-4 py-3 text-sm font-medium text-slate-900">{{ row.agent_name }}</td>
-                    <td class="px-4 py-3 text-sm text-slate-600">{{ row.open_count }}</td>
-                    <td class="px-4 py-3 text-sm text-slate-600">{{ row.closed_count }}</td>
-                    <td class="px-4 py-3 text-sm text-slate-600">{{ row.total_count }}</td>
+            <tbody class="divide-y agent-table-divider">
+                <tr v-for="row in agentRows" :key="row.agent_id" class="agent-hover-surface">
+                    <td class="px-4 py-3 text-sm font-medium agent-text">{{ row.agent_name }}</td>
+                    <td class="px-4 py-3 text-sm agent-text-muted">{{ row.open_count }}</td>
+                    <td class="px-4 py-3 text-sm agent-text-muted">{{ row.closed_count }}</td>
+                    <td class="px-4 py-3 text-sm agent-text-muted">{{ row.total_count }}</td>
                 </tr>
                 <tr v-if="!agentRows.length">
-                    <td colspan="4" class="px-4 py-12 text-center text-sm text-slate-500">No data for this report.</td>
+                    <td colspan="4" class="px-4 py-12 text-center text-sm agent-text-subtle">No data for this report.</td>
                 </tr>
             </tbody>
         </DataTable>
 
         <DataTable v-else-if="result && isCsatReport">
-            <thead class="bg-slate-50">
+            <thead class="agent-panel-muted">
                 <tr>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('reports.ticket') }}</th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('reports.contact') }}</th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('reports.rating') }}</th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('reports.channel') }}</th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('reports.comment') }}</th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('reports.assignee') }}</th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('reports.submitted') }}</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide agent-text-subtle">{{ $t('reports.ticket') }}</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide agent-text-subtle">{{ $t('reports.contact') }}</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide agent-text-subtle">{{ $t('reports.rating') }}</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide agent-text-subtle">{{ $t('reports.channel') }}</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide agent-text-subtle">{{ $t('reports.comment') }}</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide agent-text-subtle">{{ $t('reports.assignee') }}</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide agent-text-subtle">{{ $t('reports.submitted') }}</th>
                 </tr>
             </thead>
-            <tbody class="divide-y divide-slate-100">
-                <tr v-for="row in csatRows" :key="row.id" class="hover:bg-slate-50">
+            <tbody class="divide-y agent-table-divider">
+                <tr v-for="row in csatRows" :key="row.id" class="agent-hover-surface">
                     <td class="px-4 py-3 text-sm font-medium">
-                        <Link v-if="row.ticket" :href="`/tickets/${row.ticket.id}`" class="text-blue-600 hover:text-blue-700">{{ row.ticket.number }}</Link>
+                        <Link v-if="row.ticket" :href="`/tickets/${row.ticket.id}`" class="text-blue-600 hover:text-blue-700 dark:hover:text-blue-300 dark:text-blue-300">{{ row.ticket.number }}</Link>
                     </td>
-                    <td class="px-4 py-3 text-sm text-slate-600">{{ row.contact?.name || '—' }}</td>
-                    <td class="px-4 py-3 text-sm text-slate-900">{{ row.rating }}/5</td>
-                    <td class="px-4 py-3 text-sm capitalize text-slate-600">{{ row.channel || 'portal' }}</td>
-                    <td class="px-4 py-3 text-sm text-slate-600">{{ row.comment || '—' }}</td>
-                    <td class="px-4 py-3 text-sm text-slate-600">{{ row.ticket?.assignee?.name || '—' }}</td>
-                    <td class="px-4 py-3 text-sm text-slate-500">{{ formatDate(row.created_at) }}</td>
+                    <td class="px-4 py-3 text-sm agent-text-muted">{{ row.contact?.name || '—' }}</td>
+                    <td class="px-4 py-3 text-sm agent-text">{{ row.rating }}/5</td>
+                    <td class="px-4 py-3 text-sm capitalize agent-text-muted">{{ row.channel || 'portal' }}</td>
+                    <td class="px-4 py-3 text-sm agent-text-muted">{{ row.comment || '—' }}</td>
+                    <td class="px-4 py-3 text-sm agent-text-muted">{{ row.ticket?.assignee?.name || '—' }}</td>
+                    <td class="px-4 py-3 text-sm agent-text-subtle">{{ formatDate(row.created_at) }}</td>
                 </tr>
                 <tr v-if="!csatRows.length">
-                    <td colspan="7" class="px-4 py-12 text-center text-sm text-slate-500">No CSAT responses for this period.</td>
+                    <td colspan="7" class="px-4 py-12 text-center text-sm agent-text-subtle">No CSAT responses for this period.</td>
                 </tr>
             </tbody>
         </DataTable>
 
         <DataTable v-else-if="result">
-            <thead class="bg-slate-50">
+            <thead class="agent-panel-muted">
                 <tr>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('reports.number') }}</th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('reports.subject') }}</th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('reports.contact') }}</th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('reports.status') }}</th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('reports.priority') }}</th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('reports.assignee') }}</th>
-                    <th v-if="activeType === 'sla_breaches'" class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('reports.breaches') }}</th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('reports.created') }}</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide agent-text-subtle">{{ $t('reports.number') }}</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide agent-text-subtle">{{ $t('reports.subject') }}</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide agent-text-subtle">{{ $t('reports.contact') }}</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide agent-text-subtle">{{ $t('reports.status') }}</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide agent-text-subtle">{{ $t('reports.priority') }}</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide agent-text-subtle">{{ $t('reports.assignee') }}</th>
+                    <th v-if="activeType === 'sla_breaches'" class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide agent-text-subtle">{{ $t('reports.breaches') }}</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide agent-text-subtle">{{ $t('reports.created') }}</th>
                 </tr>
             </thead>
-            <tbody class="divide-y divide-slate-100">
-                <tr v-for="ticket in ticketRows" :key="ticket.id" class="hover:bg-slate-50">
+            <tbody class="divide-y agent-table-divider">
+                <tr v-for="ticket in ticketRows" :key="ticket.id" class="agent-hover-surface">
                     <td class="px-4 py-3 text-sm font-medium">
-                        <Link :href="`/tickets/${ticket.id}`" class="text-blue-600 hover:text-blue-700">{{ ticket.number }}</Link>
+                        <Link :href="`/tickets/${ticket.id}`" class="text-blue-600 hover:text-blue-700 dark:hover:text-blue-300 dark:text-blue-300">{{ ticket.number }}</Link>
                     </td>
-                    <td class="px-4 py-3 text-sm text-slate-900">{{ ticket.subject }}</td>
-                    <td class="px-4 py-3 text-sm text-slate-600">{{ ticket.contact?.name || '—' }}</td>
+                    <td class="px-4 py-3 text-sm agent-text">{{ ticket.subject }}</td>
+                    <td class="px-4 py-3 text-sm agent-text-muted">{{ ticket.contact?.name || '—' }}</td>
                     <td class="px-4 py-3">
                         <StatusBadge :label="ticket.status?.name" :color="ticket.status?.color" />
                     </td>
-                    <td class="px-4 py-3 text-sm text-slate-600">{{ ticket.priority?.name }}</td>
-                    <td class="px-4 py-3 text-sm text-slate-600">{{ ticket.assignee?.name || '—' }}</td>
-                    <td v-if="activeType === 'sla_breaches'" class="px-4 py-3 text-sm text-slate-600">
-                        <span v-if="ticket.sla_timer?.first_response_breached" class="mr-1 rounded bg-red-100 px-1.5 py-0.5 text-xs text-red-800">{{ $t('reports.fr') }}</span>
-                        <span v-if="ticket.sla_timer?.resolution_breached" class="rounded bg-red-100 px-1.5 py-0.5 text-xs text-red-800">{{ $t('reports.res') }}</span>
+                    <td class="px-4 py-3 text-sm agent-text-muted">{{ ticket.priority?.name }}</td>
+                    <td class="px-4 py-3 text-sm agent-text-muted">{{ ticket.assignee?.name || '—' }}</td>
+                    <td v-if="activeType === 'sla_breaches'" class="px-4 py-3 text-sm agent-text-muted">
+                        <span v-if="ticket.sla_timer?.first_response_breached" class="mr-1 rounded bg-red-100 px-1.5 py-0.5 text-xs text-red-800 dark:text-red-200">{{ $t('reports.fr') }}</span>
+                        <span v-if="ticket.sla_timer?.resolution_breached" class="rounded bg-red-100 px-1.5 py-0.5 text-xs text-red-800 dark:text-red-200">{{ $t('reports.res') }}</span>
                     </td>
-                    <td class="px-4 py-3 text-sm text-slate-500">{{ formatDate(ticket.created_at) }}</td>
+                    <td class="px-4 py-3 text-sm agent-text-subtle">{{ formatDate(ticket.created_at) }}</td>
                 </tr>
                 <tr v-if="!ticketRows.length">
-                    <td :colspan="activeType === 'sla_breaches' ? 8 : 7" class="px-4 py-12 text-center text-sm text-slate-500">No data for this report.</td>
+                    <td :colspan="activeType === 'sla_breaches' ? 8 : 7" class="px-4 py-12 text-center text-sm agent-text-subtle">No data for this report.</td>
                 </tr>
             </tbody>
         </DataTable>
 
-        <div v-else class="rounded-xl border border-dashed border-slate-300 bg-white px-6 py-12 text-center text-sm text-slate-500">
+        <div v-else class="rounded-xl border border-dashed agent-border agent-panel px-6 py-12 text-center text-sm agent-text-subtle">
             Choose a report type and filters, then click Run report.
         </div>
     </AgentLayout>

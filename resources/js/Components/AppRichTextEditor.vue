@@ -25,22 +25,22 @@ const toolbarTick = ref(0);
 
 const editorSurfaceClass = computed(() => {
     if (props.form) {
-        return 'min-h-[10rem] max-h-[min(24rem,50vh)] overflow-y-auto px-3.5 py-2.5 text-sm leading-relaxed text-slate-800 focus:outline-none';
+        return 'min-h-[10rem] max-h-[min(24rem,50vh)] overflow-y-auto px-3.5 py-2.5 text-sm leading-relaxed text-slate-800 dark:text-slate-200 focus:outline-none';
     }
 
     if (props.expanded) {
-        return 'min-h-[8rem] max-h-[min(16rem,40vh)] overflow-y-auto px-4 py-3 text-sm leading-relaxed text-slate-800 focus:outline-none';
+        return 'min-h-[8rem] max-h-[min(16rem,40vh)] overflow-y-auto px-4 py-3 text-sm leading-relaxed text-slate-800 dark:text-slate-200 focus:outline-none';
     }
 
     if (props.inline) {
-        return 'max-h-24 min-h-[2.25rem] overflow-y-auto px-2 py-1.5 text-sm leading-snug text-slate-800 focus:outline-none';
+        return 'max-h-24 min-h-[2.25rem] overflow-y-auto px-2 py-1.5 text-sm leading-snug text-slate-800 dark:text-slate-200 focus:outline-none';
     }
 
     if (props.compact) {
-        return 'max-h-[4.5rem] min-h-[2.75rem] overflow-y-auto px-3 py-2 text-sm leading-snug text-slate-800 focus:outline-none';
+        return 'max-h-[4.5rem] min-h-[2.75rem] overflow-y-auto px-3 py-2 text-sm leading-snug text-slate-800 dark:text-slate-200 focus:outline-none';
     }
 
-    return 'min-h-[120px] px-3 py-2 text-sm text-slate-800 focus:outline-none';
+    return 'min-h-[120px] px-3 py-2 text-sm text-slate-800 dark:text-slate-200 focus:outline-none';
 });
 
 const editor = useEditor({
@@ -156,34 +156,34 @@ const toggleLink = () => {
 const buttonClass = (active, icon = false) => [
     'rounded transition',
     icon ? 'flex h-7 w-7 items-center justify-center text-xs font-semibold' : 'px-2 py-1 text-xs font-semibold',
-    active ? 'bg-slate-200 text-slate-900' : 'text-slate-500 hover:bg-slate-100 hover:text-slate-800',
+    active ? 'bg-slate-200 text-slate-900 dark:bg-slate-700 dark:text-slate-100' : 'agent-text-subtle agent-hover-surface hover:text-slate-800 dark:text-slate-200 dark:hover:text-slate-200',
 ];
 
 const shellClass = computed(() => {
     if (props.form) {
-        return 'overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition focus-within:border-blue-500 focus-within:ring-4 focus-within:ring-blue-500/10';
+        return 'overflow-hidden rounded-xl border agent-border agent-panel shadow-sm transition focus-within:border-blue-500 focus-within:ring-4 focus-within:ring-blue-500/10 dark:focus-within:ring-blue-500/20';
     }
 
     if (props.borderless) {
         return '';
     }
 
-    return 'overflow-hidden rounded-lg border border-slate-300 bg-white';
+    return 'overflow-hidden rounded-lg border agent-border agent-panel';
 });
 
 const toolbarClass = computed(() => {
     if (props.form) {
-        return 'flex flex-wrap items-center gap-0.5 border-b border-slate-100 bg-slate-50/80 px-2 py-1.5';
+        return 'flex flex-wrap items-center gap-0.5 border-b agent-border-subtle agent-panel-muted px-2 py-1.5';
     }
 
-    return ['flex flex-wrap items-center gap-0.5 border-b border-slate-200 bg-slate-50 px-2', props.compact ? 'py-1' : 'py-1.5'];
+    return ['flex flex-wrap items-center gap-0.5 border-b agent-border agent-panel-muted px-2', props.compact ? 'py-1' : 'py-1.5'];
 });
 </script>
 
 <template>
     <div
         v-if="inline"
-        class="flex min-w-0 flex-1 items-center gap-1 rounded-lg bg-slate-50 ring-1 ring-slate-200 transition focus-within:ring-blue-400"
+        class="flex min-w-0 flex-1 items-center gap-1 rounded-lg bg-slate-50 dark:bg-slate-950 ring-1 ring-slate-200 dark:ring-slate-700 transition focus-within:ring-blue-400"
     >
         <div v-if="editor" class="flex shrink-0 items-center gap-0.5 pl-1">
             <button type="button" :class="buttonClass(isActive('bold'), true)" :title="$t('components.bold')" @mousedown.prevent @click="run((instance) => instance.chain().focus().toggleBold())">B</button>

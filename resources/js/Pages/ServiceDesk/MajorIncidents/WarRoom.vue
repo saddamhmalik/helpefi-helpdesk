@@ -132,10 +132,10 @@ const completeReview = () => {
 };
 
 const statusBadgeClass = computed(() => {
-    if (isActive.value) return 'bg-red-100 text-red-800 ring-red-200';
+    if (isActive.value) return 'bg-red-100 text-red-800 dark:text-red-200 ring-red-200';
     if (isResolved.value) return 'bg-amber-100 text-amber-900 ring-amber-200';
 
-    return 'bg-slate-100 text-slate-700 ring-slate-200';
+    return 'bg-slate-100 dark:bg-slate-900 text-slate-700 dark:text-slate-300 ring-slate-200 dark:ring-slate-700';
 });
 
 const coordinatorNames = computed(() => {
@@ -158,9 +158,9 @@ const coordinatorNames = computed(() => {
                     >
                         {{ majorIncident.status }}
                     </span>
-                    <h1 class="min-w-0 text-lg font-semibold text-slate-900">{{ ticket.subject }}</h1>
+                    <h1 class="min-w-0 text-lg font-semibold text-slate-900 dark:text-slate-100">{{ ticket.subject }}</h1>
                 </div>
-                <Link :href="`/tickets/${ticket.id}`" class="text-sm text-slate-500 hover:text-slate-800">
+                <Link :href="`/tickets/${ticket.id}`" class="text-sm text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:text-slate-200">
                     {{ $t('service_desk.full_ticket_view') }}
                 </Link>
             </div>
@@ -169,10 +169,10 @@ const coordinatorNames = computed(() => {
 
             <div class="grid gap-6 xl:grid-cols-[minmax(0,1fr)_17.5rem]">
                 <div class="min-w-0 space-y-5">
-                    <section class="flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-                        <div class="flex items-center justify-between border-b border-slate-100 px-4 py-3">
-                            <h2 class="text-sm font-semibold text-slate-900">{{ $t('service_desk.live_conversation') }}</h2>
-                            <span v-if="majorIncident.declared_by" class="text-xs text-slate-500">
+                    <section class="flex flex-col overflow-hidden rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm">
+                        <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 px-4 py-3">
+                            <h2 class="text-sm font-semibold text-slate-900 dark:text-slate-100">{{ $t('service_desk.live_conversation') }}</h2>
+                            <span v-if="majorIncident.declared_by" class="text-xs text-slate-500 dark:text-slate-400">
                                 {{ $t('service_desk.declared_by_label') }} {{ majorIncident.declared_by }}
                             </span>
                         </div>
@@ -181,7 +181,7 @@ const coordinatorNames = computed(() => {
                         </div>
                         <form
                             v-if="canReply"
-                            class="shrink-0 border-t border-slate-200 bg-white px-2 pb-2 pt-1"
+                            class="shrink-0 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-2 pb-2 pt-1"
                             @submit.prevent="reply"
                             @keydown="onReplyKeydown"
                         >
@@ -198,61 +198,61 @@ const coordinatorNames = computed(() => {
                                 @submit="reply"
                             />
                         </form>
-                        <p v-else class="border-t border-slate-100 px-4 py-3 text-xs text-slate-500">
+                        <p v-else class="border-t border-slate-100 dark:border-slate-800 px-4 py-3 text-xs text-slate-500 dark:text-slate-400">
                             {{ $t('service_desk.review_complete') }} — replies are closed for this major incident.
                         </p>
                     </section>
 
-                    <section v-if="isResolved" class="overflow-hidden rounded-xl border border-amber-200 bg-white shadow-sm">
-                        <div class="border-b border-amber-100 bg-amber-50/60 px-5 py-4">
-                            <h2 class="text-base font-semibold text-slate-900">{{ $t('service_desk.post-incident_review') }}</h2>
-                            <p class="mt-1 text-sm text-slate-600">{{ $t('service_desk.document_what_happened_before_closing_this_major_incident') }}</p>
+                    <section v-if="isResolved" class="overflow-hidden rounded-xl border border-amber-200 dark:border-amber-900/60 bg-white dark:bg-slate-900 shadow-sm">
+                        <div class="border-b border-amber-100 bg-amber-50 dark:bg-amber-950/40 px-5 py-4">
+                            <h2 class="text-base font-semibold text-slate-900 dark:text-slate-100">{{ $t('service_desk.post-incident_review') }}</h2>
+                            <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">{{ $t('service_desk.document_what_happened_before_closing_this_major_incident') }}</p>
                         </div>
 
                         <form class="space-y-5 p-5" @submit.prevent="completeReview">
                             <div>
-                                <label class="mb-1.5 block text-sm font-medium text-slate-700">{{ $t('service_desk.summary') }} *</label>
+                                <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('service_desk.summary') }} *</label>
                                 <textarea
                                     v-model="completeForm.summary"
                                     rows="4"
                                     required
-                                    class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                                    class="w-full rounded-lg border border-slate-300 dark:border-slate-700 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                                     :placeholder="$t('service_desk.review_summary_placeholder')"
                                 />
                             </div>
 
                             <div class="grid gap-5 md:grid-cols-2">
                                 <div>
-                                    <label class="mb-1.5 block text-sm font-medium text-slate-700">{{ $t('service_desk.timeline') }}</label>
+                                    <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('service_desk.timeline') }}</label>
                                     <textarea
                                         v-model="completeForm.timeline"
                                         rows="5"
-                                        class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                                        class="w-full rounded-lg border border-slate-300 dark:border-slate-700 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                                         :placeholder="$t('service_desk.review_timeline_placeholder')"
                                     />
                                 </div>
                                 <div>
-                                    <label class="mb-1.5 block text-sm font-medium text-slate-700">{{ $t('service_desk.lessons_learned') }}</label>
+                                    <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('service_desk.lessons_learned') }}</label>
                                     <textarea
                                         v-model="completeForm.lessons_learned"
                                         rows="5"
-                                        class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                                        class="w-full rounded-lg border border-slate-300 dark:border-slate-700 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                                         :placeholder="$t('service_desk.review_lessons_placeholder')"
                                     />
                                 </div>
                             </div>
 
                             <div>
-                                <label class="mb-1.5 block text-sm font-medium text-slate-700">{{ $t('service_desk.action_items') }}</label>
+                                <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('service_desk.action_items') }}</label>
                                 <textarea
                                     v-model="completeForm.action_items"
                                     rows="4"
-                                    class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                                    class="w-full rounded-lg border border-slate-300 dark:border-slate-700 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                                     :placeholder="$t('service_desk.review_actions_placeholder')"
                                 />
                             </div>
 
-                            <div class="flex justify-end border-t border-slate-100 pt-4">
+                            <div class="flex justify-end border-t border-slate-100 dark:border-slate-800 pt-4">
                                 <button
                                     type="submit"
                                     class="rounded-lg bg-amber-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-amber-700 disabled:opacity-50"
@@ -264,39 +264,39 @@ const coordinatorNames = computed(() => {
                         </form>
                     </section>
 
-                    <section v-if="isClosed" class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-                        <h2 class="text-base font-semibold text-slate-900">{{ $t('service_desk.review_complete') }}</h2>
-                        <p class="mt-3 text-sm leading-relaxed text-slate-700">{{ majorIncident.summary }}</p>
+                    <section v-if="isClosed" class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-sm">
+                        <h2 class="text-base font-semibold text-slate-900 dark:text-slate-100">{{ $t('service_desk.review_complete') }}</h2>
+                        <p class="mt-3 text-sm leading-relaxed text-slate-700 dark:text-slate-300">{{ majorIncident.summary }}</p>
                         <dl v-if="majorIncident.timeline || majorIncident.lessons_learned || majorIncident.action_items" class="mt-5 grid gap-4 md:grid-cols-2">
                             <div v-if="majorIncident.timeline">
-                                <dt class="text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('service_desk.timeline') }}</dt>
-                                <dd class="mt-1 whitespace-pre-wrap text-sm text-slate-700">{{ majorIncident.timeline }}</dd>
+                                <dt class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{{ $t('service_desk.timeline') }}</dt>
+                                <dd class="mt-1 whitespace-pre-wrap text-sm text-slate-700 dark:text-slate-300">{{ majorIncident.timeline }}</dd>
                             </div>
                             <div v-if="majorIncident.lessons_learned">
-                                <dt class="text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('service_desk.lessons_learned') }}</dt>
-                                <dd class="mt-1 whitespace-pre-wrap text-sm text-slate-700">{{ majorIncident.lessons_learned }}</dd>
+                                <dt class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{{ $t('service_desk.lessons_learned') }}</dt>
+                                <dd class="mt-1 whitespace-pre-wrap text-sm text-slate-700 dark:text-slate-300">{{ majorIncident.lessons_learned }}</dd>
                             </div>
                             <div v-if="majorIncident.action_items" class="md:col-span-2">
-                                <dt class="text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('service_desk.action_items') }}</dt>
-                                <dd class="mt-1 whitespace-pre-wrap text-sm text-slate-700">{{ majorIncident.action_items }}</dd>
+                                <dt class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{{ $t('service_desk.action_items') }}</dt>
+                                <dd class="mt-1 whitespace-pre-wrap text-sm text-slate-700 dark:text-slate-300">{{ majorIncident.action_items }}</dd>
                             </div>
                         </dl>
-                        <p v-if="majorIncident.review_completed_by" class="mt-4 text-xs text-slate-500">
+                        <p v-if="majorIncident.review_completed_by" class="mt-4 text-xs text-slate-500 dark:text-slate-400">
                             {{ $t('service_desk.completed_by_label') }} {{ majorIncident.review_completed_by }}
                         </p>
                     </section>
 
-                    <section v-if="lifecycle?.length" class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-                        <h3 class="mb-3 text-sm font-semibold text-slate-900">{{ $t('components.activity') }}</h3>
+                    <section v-if="lifecycle?.length" class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-sm">
+                        <h3 class="mb-3 text-sm font-semibold text-slate-900 dark:text-slate-100">{{ $t('components.activity') }}</h3>
                         <TicketLifecycle compact :lifecycle="lifecycle" />
                     </section>
                 </div>
 
                 <aside class="space-y-4 xl:sticky xl:top-20 xl:self-start">
-                    <div class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-                        <div v-if="!isClosed" class="divide-y divide-slate-100">
+                    <div class="overflow-hidden rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm">
+                        <div v-if="!isClosed" class="divide-y divide-slate-100 dark:divide-slate-800">
                             <div class="px-4 py-3">
-                                <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('service_desk.coordinators') }}</p>
+                                <p class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{{ $t('service_desk.coordinators') }}</p>
                                 <div v-if="isActive" class="mt-2 flex flex-wrap gap-1.5">
                                     <button
                                         v-for="agent in agents"
@@ -305,7 +305,7 @@ const coordinatorNames = computed(() => {
                                         class="rounded-full px-2.5 py-1 text-xs font-medium ring-1 ring-inset transition-ui"
                                         :class="warRoomForm.coordinator_user_ids.includes(agent.id)
                                             ? 'bg-slate-900 text-white ring-slate-900'
-                                            : 'bg-white text-slate-600 ring-slate-200 hover:bg-slate-50'"
+                                            : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 ring-slate-200 dark:ring-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800'"
                                         @click="toggleCoordinator(agent.id)"
                                     >
                                         {{ agent.name }}
@@ -315,13 +315,13 @@ const coordinatorNames = computed(() => {
                                     <span
                                         v-for="agent in coordinatorNames"
                                         :key="agent.id"
-                                        class="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-700"
+                                        class="rounded-full bg-slate-100 dark:bg-slate-900 px-2.5 py-1 text-xs font-medium text-slate-700 dark:text-slate-300"
                                     >
                                         {{ agent.name }}
                                     </span>
                                 </p>
-                                <p v-else class="mt-1 text-xs text-slate-500">—</p>
-                                <p v-if="!agents?.length && isActive" class="mt-1 text-xs text-slate-500">{{ $t('service_desk.no_agents_available') }}</p>
+                                <p v-else class="mt-1 text-xs text-slate-500 dark:text-slate-400">—</p>
+                                <p v-if="!agents?.length && isActive" class="mt-1 text-xs text-slate-500 dark:text-slate-400">{{ $t('service_desk.no_agents_available') }}</p>
                             </div>
 
                             <div v-if="sla && isActive" class="px-4 py-3">
@@ -329,16 +329,16 @@ const coordinatorNames = computed(() => {
                             </div>
 
                             <form v-if="isActive" class="px-4 py-3" @submit.prevent="saveWarRoom">
-                                <label class="text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('service_desk.war_room_notes') }}</label>
+                                <label class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{{ $t('service_desk.war_room_notes') }}</label>
                                 <textarea
                                     v-model="warRoomForm.war_room_notes"
                                     rows="4"
-                                    class="mt-2 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                                    class="mt-2 w-full rounded-lg border border-slate-300 dark:border-slate-700 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                                     :placeholder="$t('service_desk.status_updates_actions_in_progress_comms_plan_ellipsis')"
                                 />
                                 <button
                                     type="submit"
-                                    class="mt-2 w-full rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50"
+                                    class="mt-2 w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-xs font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 dark:bg-slate-950 disabled:opacity-50"
                                     :disabled="warRoomForm.processing"
                                 >
                                     {{ $t('service_desk.save_war_room_notes') }}
@@ -346,26 +346,26 @@ const coordinatorNames = computed(() => {
                             </form>
 
                             <div v-else-if="majorIncident.war_room_notes" class="px-4 py-3">
-                                <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('service_desk.war_room_notes') }}</p>
-                                <p class="mt-2 whitespace-pre-wrap text-sm text-slate-700">{{ majorIncident.war_room_notes }}</p>
+                                <p class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{{ $t('service_desk.war_room_notes') }}</p>
+                                <p class="mt-2 whitespace-pre-wrap text-sm text-slate-700 dark:text-slate-300">{{ majorIncident.war_room_notes }}</p>
                             </div>
                         </div>
 
                         <div v-else class="px-4 py-3">
-                            <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('service_desk.coordinators') }}</p>
+                            <p class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{{ $t('service_desk.coordinators') }}</p>
                             <p v-if="coordinatorNames.length" class="mt-2 flex flex-wrap gap-1.5">
                                 <span
                                     v-for="agent in coordinatorNames"
                                     :key="agent.id"
-                                    class="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-700"
+                                    class="rounded-full bg-slate-100 dark:bg-slate-900 px-2.5 py-1 text-xs font-medium text-slate-700 dark:text-slate-300"
                                 >
                                     {{ agent.name }}
                                 </span>
                             </p>
-                            <p v-else class="mt-1 text-xs text-slate-500">—</p>
+                            <p v-else class="mt-1 text-xs text-slate-500 dark:text-slate-400">—</p>
                         </div>
 
-                        <div v-if="isActive" class="border-t border-slate-100 p-3">
+                        <div v-if="isActive" class="border-t border-slate-100 dark:border-slate-800 p-3">
                             <button
                                 type="button"
                                 class="w-full rounded-lg bg-emerald-600 px-3 py-2 text-xs font-semibold text-white hover:bg-emerald-700 disabled:opacity-50"
@@ -376,9 +376,9 @@ const coordinatorNames = computed(() => {
                             </button>
                         </div>
 
-                        <div v-if="isResolved" class="border-t border-slate-100 bg-amber-50/50 px-4 py-3">
+                        <div v-if="isResolved" class="border-t border-slate-100 dark:border-slate-800 bg-amber-50 dark:bg-amber-950/40/50 px-4 py-3">
                             <p class="text-xs font-medium text-amber-900">{{ $t('service_desk.review_pending') }}</p>
-                            <p class="mt-0.5 text-xs text-amber-700">{{ $t('service_desk.complete_review_in_main_panel') }}</p>
+                            <p class="mt-0.5 text-xs text-amber-700 dark:text-amber-300">{{ $t('service_desk.complete_review_in_main_panel') }}</p>
                         </div>
                     </div>
                 </aside>

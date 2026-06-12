@@ -103,7 +103,7 @@ const copy = async (text) => {
             <Transition name="welcome-banner">
                 <div
                     v-if="showWelcome"
-                    class="welcome-banner relative mb-8 overflow-hidden rounded-2xl border border-blue-200 bg-gradient-to-br from-blue-600 via-blue-600 to-indigo-600 p-6 text-white shadow-lg"
+                    class="welcome-banner relative mb-8 overflow-hidden rounded-2xl border border-blue-200 dark:border-blue-900/60 bg-gradient-to-br from-blue-600 via-blue-600 to-indigo-600 p-6 text-white shadow-lg"
                 >
                     <div class="welcome-confetti pointer-events-none absolute inset-0 overflow-hidden">
                         <span v-for="n in 12" :key="n" class="welcome-particle" :style="{ '--i': n }" />
@@ -127,9 +127,9 @@ const copy = async (text) => {
 
             <section
                 v-if="dummyData.needs_choice"
-                class="mb-8 overflow-hidden rounded-2xl border border-blue-200 bg-white shadow-sm"
+                class="mb-8 overflow-hidden rounded-2xl border border-blue-200 dark:border-blue-900/60 bg-white dark:bg-slate-900 shadow-sm"
             >
-                <div class="border-b border-blue-100 bg-blue-50/80 px-5 py-4">
+                <div class="border-b border-blue-100 bg-blue-50 dark:bg-blue-950/40/80 px-5 py-4">
                     <p class="text-sm font-semibold text-blue-900">How would you like to start?</p>
                     <p class="mt-1 text-sm text-blue-800">
                         {{ $t('setup_index.load_realistic_sample_tickets_and_customers_to_explore_the_product_or_') }}
@@ -138,43 +138,43 @@ const copy = async (text) => {
                 <div class="grid gap-4 p-5 sm:grid-cols-2">
                     <button
                         type="button"
-                        class="rounded-xl border border-blue-200 bg-blue-50/50 p-5 text-left transition hover:border-blue-400 hover:bg-blue-50 disabled:opacity-60"
+                        class="rounded-xl border border-blue-200 dark:border-blue-900/60 bg-blue-50 dark:bg-blue-950/40/50 p-5 text-left transition hover:border-blue-400 hover:bg-blue-50 dark:bg-blue-950/40 disabled:opacity-60"
                         :disabled="loadingSample || loadingSkip"
                         @click="loadSampleData"
                     >
-                        <p class="text-base font-semibold text-slate-900">{{ $t('setup_index.explore_with_sample_data') }}</p>
-                        <p class="mt-2 text-sm text-slate-600">
+                        <p class="text-base font-semibold text-slate-900 dark:text-slate-100">{{ $t('setup_index.explore_with_sample_data') }}</p>
+                        <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">
                             {{ $t('setup_index.adds_demo_tickets_conversations_customers_tags_teams_and_departments_y') }}
                         </p>
-                        <p class="mt-3 text-xs font-medium text-blue-700">
+                        <p class="mt-3 text-xs font-medium text-blue-700 dark:text-blue-300">
                             {{ loadingSample ? 'Loading sample data…' : 'Recommended for first-time setup' }}
                         </p>
                     </button>
                     <button
                         type="button"
-                        class="rounded-xl border border-slate-200 p-5 text-left transition hover:border-slate-300 hover:bg-slate-50 disabled:opacity-60"
+                        class="rounded-xl border border-slate-200 dark:border-slate-800 p-5 text-left transition hover:border-slate-300 dark:hover:border-slate-600 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 dark:bg-slate-950 disabled:opacity-60"
                         :disabled="loadingSample || loadingSkip"
                         @click="startEmpty"
                     >
-                        <p class="text-base font-semibold text-slate-900">{{ $t('setup_index.start_with_my_own_data') }}</p>
-                        <p class="mt-2 text-sm text-slate-600">
+                        <p class="text-base font-semibold text-slate-900 dark:text-slate-100">{{ $t('setup_index.start_with_my_own_data') }}</p>
+                        <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">
                             {{ $t('setup_index.skip_sample_content_and_build_your_workspace_from_scratch_with_real_cu') }}
                         </p>
-                        <p class="mt-3 text-xs font-medium text-slate-500">
+                        <p class="mt-3 text-xs font-medium text-slate-500 dark:text-slate-400">
                             {{ loadingSkip ? 'Continuing…' : 'Empty workspace' }}
                         </p>
                     </button>
                 </div>
-                <p class="border-t border-slate-100 px-5 py-3 text-xs text-slate-500">
+                <p class="border-t border-slate-100 dark:border-slate-800 px-5 py-3 text-xs text-slate-500 dark:text-slate-400">
                     {{ $t('setup_index.sample_data_is_for_testing_only_if_you_load_it_you_can_remove_everythi') }}
                 </p>
             </section>
 
             <section
                 v-else-if="guidePaused"
-                class="mb-8 overflow-hidden rounded-2xl border border-amber-200 bg-white shadow-sm"
+                class="mb-8 overflow-hidden rounded-2xl border border-amber-200 dark:border-amber-900/60 bg-white dark:bg-slate-900 shadow-sm"
             >
-                <div class="border-b border-amber-100 bg-amber-50 px-5 py-4">
+                <div class="border-b border-amber-100 bg-amber-50 dark:bg-amber-950/40 px-5 py-4">
                     <p class="text-sm font-semibold text-amber-950">{{ $t('setup_index.sample_workspace_ready') }}</p>
                     <p class="mt-1 text-sm text-amber-800">
                         {{ dummyData.summary?.tickets ?? 0 }} tickets · {{ dummyData.summary?.contacts ?? 0 }} customers ·
@@ -182,7 +182,7 @@ const copy = async (text) => {
                     </p>
                 </div>
                 <div class="space-y-4 p-5">
-                    <p class="text-sm text-slate-600">
+                    <p class="text-sm text-slate-600 dark:text-slate-400">
                         {{ $t('setup_index.workspace_setup_is_paused_while_you_explore_open_the_inbox_browse_cust') }}
                     </p>
                     <div class="flex flex-col gap-2 sm:flex-row">
@@ -194,13 +194,13 @@ const copy = async (text) => {
                         </Link>
                         <Link
                             href="/dashboard"
-                            class="inline-flex h-10 items-center justify-center rounded-lg border border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+                            class="inline-flex h-10 items-center justify-center rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 text-sm font-medium text-slate-700 dark:text-slate-300 transition hover:bg-slate-50 dark:hover:bg-slate-800"
                         >
                             {{ $t('nav.dashboard') }}
                         </Link>
                     </div>
                 </div>
-                <div class="flex flex-col gap-3 border-t border-amber-100 bg-amber-50/50 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+                <div class="flex flex-col gap-3 border-t border-amber-100 bg-amber-50 dark:bg-amber-950/40/50 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
                     <p class="text-xs text-amber-900">{{ $t('setup_index.ready_configure_real') }}</p>
                     <div class="flex items-center gap-2">
                         <button
@@ -223,79 +223,79 @@ const copy = async (text) => {
 
             <div v-if="!guidePaused" class="mb-8">
                 <p class="text-sm font-medium text-blue-600">{{ $t('setup_index.getting_started') }}</p>
-                <h1 class="mt-1 text-2xl font-semibold text-slate-900">Set up {{ guide.workspace?.name }}</h1>
-                <p class="mt-2 text-sm text-slate-600">
+                <h1 class="mt-1 text-2xl font-semibold text-slate-900 dark:text-slate-100">Set up {{ guide.workspace?.name }}</h1>
+                <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">
                     {{ $t('setup_index.complete_steps_configure') }}
-                    <span class="font-medium text-slate-800">{{ guide.workspace?.domain }}</span>.
+                    <span class="font-medium text-slate-800 dark:text-slate-200">{{ guide.workspace?.domain }}</span>.
                 </p>
-                <div class="mt-4 h-2 overflow-hidden rounded-full bg-slate-100">
+                <div class="mt-4 h-2 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-900">
                     <div
                         class="h-full rounded-full bg-blue-600 transition-all duration-700 ease-out"
                         :style="{ width: `${progress.total ? (progress.completed / progress.total) * 100 : 0}%` }"
                     />
                 </div>
-                <p class="mt-2 text-xs text-slate-500">{{ progress.completed }} of {{ progress.total }} required steps complete</p>
+                <p class="mt-2 text-xs text-slate-500 dark:text-slate-400">{{ progress.completed }} of {{ progress.total }} required steps complete</p>
             </div>
 
             <div v-if="!guidePaused" class="space-y-4">
                 <article
                     v-for="(step, index) in guide.steps"
                     :key="step.key"
-                    class="setup-step rounded-xl border bg-white shadow-sm"
-                    :class="step.complete ? 'border-emerald-200' : 'border-slate-200'"
+                    class="setup-step rounded-xl border bg-white dark:bg-slate-900 shadow-sm"
+                    :class="step.complete ? 'border-emerald-200 dark:border-emerald-900/60' : 'border-slate-200 dark:border-slate-800'"
                     :style="{ animationDelay: `${index * 60}ms` }"
                 >
                     <div class="p-5">
                         <div class="flex items-start gap-3">
                             <span
                                 class="mt-0.5 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-bold transition-colors"
-                                :class="step.complete ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500'"
+                                :class="step.complete ? 'bg-emerald-100 text-emerald-700 dark:text-emerald-300' : 'bg-slate-100 dark:bg-slate-900 text-slate-500 dark:text-slate-400'"
                             >
                                 {{ step.complete ? '✓' : '•' }}
                             </span>
                             <div class="min-w-0 flex-1">
                                 <div class="flex flex-wrap items-center gap-2">
-                                    <h2 class="text-base font-semibold text-slate-900">{{ step.title }}</h2>
-                                    <span v-if="!step.required" class="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-500">{{ $t('setup_index.optional') }}</span>
+                                    <h2 class="text-base font-semibold text-slate-900 dark:text-slate-100">{{ step.title }}</h2>
+                                    <span v-if="!step.required" class="rounded-full bg-slate-100 dark:bg-slate-900 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{{ $t('setup_index.optional') }}</span>
                                     <span
                                         v-if="step.complete"
-                                        class="rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-emerald-700"
+                                        class="rounded-full bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-emerald-700 dark:text-emerald-300"
                                     >
                                         {{ $t('setup_index.done') }}
                                     </span>
                                 </div>
-                                <p class="mt-2 text-sm text-slate-600">{{ step.description }}</p>
+                                <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">{{ step.description }}</p>
 
                                 <div v-if="step.key === 'chat_widget' && step.meta?.embed_snippet" class="mt-3">
-                                    <p class="mb-1 text-xs font-medium uppercase tracking-wide text-slate-500">{{ $t('setup_index.embed_snippet') }}</p>
+                                    <p class="mb-1 text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">{{ $t('setup_index.embed_snippet') }}</p>
                                     <pre class="overflow-x-auto rounded-lg bg-slate-900 p-3 text-xs text-slate-100">{{ step.meta.embed_snippet }}</pre>
                                     <button
                                         type="button"
-                                        class="mt-2 text-sm font-medium text-blue-600 hover:text-blue-700"
+                                        class="mt-2 text-sm font-medium text-blue-600 hover:text-blue-700 dark:hover:text-blue-300 dark:text-blue-300"
                                         @click="copy(step.meta.embed_snippet)"
                                     >
                                         {{ snippetCopied ? 'Copied!' : 'Copy snippet' }}
                                     </button>
                                 </div>
 
-                                <div v-if="step.key === 'email_inbox'" class="mt-3 text-xs text-slate-500">
+                                <div v-if="step.key === 'email_inbox'" class="mt-3 text-xs text-slate-500 dark:text-slate-400">
                                     {{ $t('setup_index.inbound_webhook') }}
-                                    <code class="rounded bg-slate-100 px-1.5 py-0.5">{{ guide.infrastructure?.inbound_webhook }}</code>
+                                    <code class="rounded bg-slate-100 dark:bg-slate-900 px-1.5 py-0.5">{{ guide.infrastructure?.inbound_webhook }}</code>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <div class="flex flex-col-reverse gap-2 border-t border-slate-100 px-5 py-3 sm:flex-row sm:items-center sm:justify-end">
+                    <div class="flex flex-col-reverse gap-2 border-t border-slate-100 dark:border-slate-800 px-5 py-3 sm:flex-row sm:items-center sm:justify-end">
                         <button
                             v-if="!step.complete"
                             type="button"
-                            class="inline-flex h-9 w-full items-center justify-center rounded-lg px-4 text-sm font-medium text-slate-600 transition hover:bg-slate-50 hover:text-slate-900 sm:w-auto"
+                            class="inline-flex h-9 w-full items-center justify-center rounded-lg px-4 text-sm font-medium text-slate-600 dark:text-slate-400 transition hover:bg-slate-50 dark:hover:bg-slate-800 dark:bg-slate-950 hover:text-slate-900 dark:hover:text-slate-100 dark:text-slate-100 sm:w-auto"
                             @click="completeStep(step.key)"
                         >{{ $t('setup_index.mark_done') }}</button>
                         <Link
                             :href="step.url"
-                            class="inline-flex h-9 w-full items-center justify-center rounded-lg border border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 transition hover:bg-slate-50 sm:w-auto"
+                            class="inline-flex h-9 w-full items-center justify-center rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 text-sm font-medium text-slate-700 dark:text-slate-300 transition hover:bg-slate-50 dark:hover:bg-slate-800 dark:bg-slate-950 sm:w-auto"
                         >
                             {{ $t('setup_index.open') }}
                         </Link>
@@ -303,19 +303,19 @@ const copy = async (text) => {
                 </article>
             </div>
 
-            <div v-if="!guidePaused" class="mt-8 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+            <div v-if="!guidePaused" class="mt-8 overflow-hidden rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm">
                 <div class="p-5">
                     <template v-if="isDismissed">
-                        <p class="text-sm font-medium text-slate-900">{{ $t('setup_index.setup_guide') }}</p>
-                        <p class="mt-1 text-sm text-slate-500">{{ $t('setup_index.return_to_your_dashboard_incomplete_items_will_keep_showing_warnings_u') }}</p>
+                        <p class="text-sm font-medium text-slate-900 dark:text-slate-100">{{ $t('setup_index.setup_guide') }}</p>
+                        <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">{{ $t('setup_index.return_to_your_dashboard_incomplete_items_will_keep_showing_warnings_u') }}</p>
                     </template>
                     <template v-else>
-                        <p class="text-sm font-medium text-slate-900">Ready to start supporting customers?</p>
-                        <p class="mt-1 text-sm text-slate-500">{{ $t('setup_index.finish_setup_to_open_your_workspace_dashboard_missing_configuration_wi') }}</p>
-                        <p v-if="dummyData.needs_choice" class="mt-2 text-sm text-amber-700">{{ $t('setup_index.choose_sample_data_or_an_empty_workspace_above_to_continue') }}</p>
+                        <p class="text-sm font-medium text-slate-900 dark:text-slate-100">Ready to start supporting customers?</p>
+                        <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">{{ $t('setup_index.finish_setup_to_open_your_workspace_dashboard_missing_configuration_wi') }}</p>
+                        <p v-if="dummyData.needs_choice" class="mt-2 text-sm text-amber-700 dark:text-amber-300">{{ $t('setup_index.choose_sample_data_or_an_empty_workspace_above_to_continue') }}</p>
                     </template>
                 </div>
-                <div class="flex flex-col-reverse gap-2 border-t border-slate-100 px-5 py-3 sm:flex-row sm:items-center sm:justify-end">
+                <div class="flex flex-col-reverse gap-2 border-t border-slate-100 dark:border-slate-800 px-5 py-3 sm:flex-row sm:items-center sm:justify-end">
                     <Link
                         v-if="isDismissed"
                         href="/dashboard"
