@@ -103,7 +103,7 @@ class BillingController extends Controller
             '/settings/billing?checkout=success&section=usage',
         );
 
-        return redirect($redirect);
+        return redirect($redirect)->with('success', 'Subscription activated successfully.');
     }
 
     private function resolveInternalPath(string $path, string $fallback): string
