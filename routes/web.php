@@ -16,6 +16,7 @@ use App\Domains\Platform\Controllers\Central\AdminRoleController;
 use App\Domains\Platform\Controllers\Central\AdminTenantController;
 use App\Domains\Platform\Controllers\Central\AdminUserController;
 use App\Domains\Platform\Controllers\Central\PlatformNoticeImageController;
+use App\Domains\Ai\Controllers\Central\MarketingAiDemoController;
 use App\Domains\Tenancy\Controllers\Central\AdminSettingsController;
 use App\Domains\Tenancy\Controllers\Central\HomeController;
 use App\Domains\Tenancy\Controllers\Central\LoginController;
@@ -34,6 +35,10 @@ Route::get('/platform-notices/{notice}/image', PlatformNoticeImageController::cl
 Route::get('/robots.txt', RobotsController::class)->name('central.robots');
 Route::get('/sitemap.xml', SitemapController::class)->name('central.sitemap');
 Route::get('/', [HomeController::class, 'index'])->name('central.home');
+
+Route::post('/api/marketing/ai-demo', [MarketingAiDemoController::class, 'store'])
+    ->middleware('throttle:10,1')
+    ->name('central.marketing.ai-demo');
 
 Route::get('/dashboard', function () {
     if (Auth::guard('platform')->check()) {

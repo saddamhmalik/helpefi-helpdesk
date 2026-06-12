@@ -10,6 +10,7 @@ use App\Domains\Assets\Controllers\AssetExportController;
 use App\Domains\Assets\Controllers\AssetImportController;
 use App\Domains\Assets\Controllers\AssetTypeController;
 use App\Domains\Ai\Controllers\AiAssistController;
+use App\Domains\Ai\Controllers\AgentCopilotController;
 use App\Domains\Ai\Controllers\AiSettingController;
 use App\Domains\Auth\Controllers\AuthController;
 use App\Domains\Auth\Controllers\PasswordResetController;
@@ -375,11 +376,17 @@ Route::middleware('auth')->group(function () {
         Route::post('/workspace/tickets/{ticket}/ai/suggest-reply', [AiAssistController::class, 'suggestReply'])->name('workspace.ai.suggest-reply');
         Route::post('/workspace/tickets/{ticket}/ai/summarize', [AiAssistController::class, 'summarize'])->name('workspace.ai.summarize');
         Route::get('/workspace/tickets/{ticket}/ai/kb-assist', [AiAssistController::class, 'kbAssist'])->name('workspace.ai.kb-assist');
+        Route::get('/workspace/tickets/{ticket}/ai/copilot', [AgentCopilotController::class, 'index'])->name('workspace.ai.copilot.index');
+        Route::post('/workspace/tickets/{ticket}/ai/copilot', [AgentCopilotController::class, 'store'])->name('workspace.ai.copilot.store');
+        Route::delete('/workspace/tickets/{ticket}/ai/copilot', [AgentCopilotController::class, 'destroy'])->name('workspace.ai.copilot.destroy');
         Route::get('/tickets/{ticket}/customer-context', [CustomerContextController::class, 'show'])->name('tickets.customer-context');
         Route::post('/tickets/{ticket}/customer-context/refresh', [CustomerContextController::class, 'refresh'])->name('tickets.customer-context.refresh');
         Route::post('/tickets/{ticket}/ai/suggest-reply', [AiAssistController::class, 'suggestReply'])->name('tickets.ai.suggest-reply');
         Route::post('/tickets/{ticket}/ai/summarize', [AiAssistController::class, 'summarize'])->name('tickets.ai.summarize');
         Route::get('/tickets/{ticket}/ai/kb-assist', [AiAssistController::class, 'kbAssist'])->name('tickets.ai.kb-assist');
+        Route::get('/tickets/{ticket}/ai/copilot', [AgentCopilotController::class, 'index'])->name('tickets.ai.copilot.index');
+        Route::post('/tickets/{ticket}/ai/copilot', [AgentCopilotController::class, 'store'])->name('tickets.ai.copilot.store');
+        Route::delete('/tickets/{ticket}/ai/copilot', [AgentCopilotController::class, 'destroy'])->name('tickets.ai.copilot.destroy');
 
         Route::get('/tickets/export/csv', [TicketExportController::class, 'csv'])->name('tickets.export.csv');
         Route::post('/tickets/bulk', [TicketBulkController::class, 'store'])->name('tickets.bulk');

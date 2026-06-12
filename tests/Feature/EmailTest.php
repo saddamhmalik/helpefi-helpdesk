@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Domains\Channels\Models\EmailInbox;
 use App\Domains\Channels\Models\MailSetting;
+use App\Domains\Channels\Services\OutboundMailService;
 use App\Domains\Contacts\Models\Contact;
 use App\Domains\Tickets\Models\Ticket;
 use App\Domains\Tickets\Models\TicketPriority;
@@ -187,7 +188,7 @@ class EmailTest extends TestCase
             'queue_connection' => MailSetting::QUEUE_DATABASE,
         ]);
 
-        app(\App\Domains\Channels\Services\OutboundMailService::class)->applyGlobalConfig();
+        app(OutboundMailService::class)->applyGlobalConfig();
 
         $this->assertSame(MailSetting::QUEUE_REDIS, config('queue.default'));
     }

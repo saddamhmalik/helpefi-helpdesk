@@ -16,6 +16,7 @@ const mobileOpen = ref(false);
 
 const navLinks = computed(() => [
     { href: '/#product', label: t('layouts.central.product') },
+    { href: '/#ai', label: t('layouts.central.ai') },
     { href: '/#differentiators', label: t('layouts.central.why_us') },
     { href: '/#features', label: t('layouts.central.features') },
     { href: '/#how-it-works', label: t('layouts.central.how_it_works') },

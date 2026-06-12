@@ -38,7 +38,7 @@ class AiAssistService
             'model' => $setting->model ?: config('ai.model'),
             'triage_enabled' => $setting->triage_enabled,
             'provider_configured' => $this->client->available(),
-            'mode' => $this->client->available() ? 'openai' : 'local',
+            'mode' => $this->client->available() ? (string) config('ai.provider', 'openai') : 'local',
         ];
     }
 
@@ -70,7 +70,7 @@ class AiAssistService
                     'You are a professional helpdesk agent. Write concise, empathetic customer replies. Do not invent facts. Output only the reply body.',
                     $this->buildSuggestReplyPrompt($ticket, $agent->name),
                 ),
-                'source' => 'openai',
+                'source' => $this->providerSource(),
             ];
         }
 
@@ -92,7 +92,7 @@ class AiAssistService
                     'You summarize helpdesk tickets for agents. Use short bullet points. Mention status, customer issue, and next step.',
                     $this->buildConversationPrompt($ticket),
                 ),
-                'source' => 'openai',
+                'source' => $this->providerSource(),
             ];
         }
 
@@ -141,7 +141,7 @@ class AiAssistService
 
             return [
                 'articles' => $mapped,
-                'source' => 'openai',
+                'source' => $this->providerSource(),
             ];
         }
 
@@ -158,6 +158,11 @@ class AiAssistService
         if (! $this->isEnabled()) {
             throw new AuthorizationException('AI assistance is disabled.');
         }
+    }
+
+    private function providerSource(): string
+    {
+        return (string) config('ai.provider', 'openai');
     }
 
     private function buildSuggestReplyPrompt(Ticket $ticket, string $agentName): string

@@ -1,4 +1,5 @@
 <script setup>
+import { computed } from 'vue';
 import { useForm } from '@inertiajs/vue3';
 import SettingsPage from '../../Components/SettingsPage.vue';
 import PlanFeatureBanner from '../../Components/PlanFeatureBanner.vue';
@@ -9,6 +10,18 @@ const props = defineProps({
 });
 
 const { t } = useI18n();
+
+const providerLabel = computed(() => {
+    if (props.settings.mode === 'groq') {
+        return 'Groq';
+    }
+
+    if (props.settings.mode === 'openai') {
+        return 'OpenAI';
+    }
+
+    return 'Local fallback';
+});
 
 const form = useForm({
     enabled: props.settings.enabled,
@@ -37,9 +50,9 @@ const save = () => {
                 <div class="mb-6 mt-4 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700">
                     <p>
                         Mode:
-                        <span class="font-medium">{{ settings.mode === 'openai' ? 'OpenAI' : 'Local fallback' }}</span>
+                        <span class="font-medium">{{ providerLabel }}</span>
                     </p>
-                    <p v-if="settings.mode !== 'openai'" class="mt-1 text-xs text-slate-500">
+                    <p v-if="settings.mode === 'local'" class="mt-1 text-xs text-slate-500">
                         {{ $t('settings_ai.openai_is_not_enabled_for_this_workspace_ai_features_use_a_built-in_fa') }}
                     </p>
                 </div>

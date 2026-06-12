@@ -2,6 +2,7 @@
 
 namespace App\Domains\Tenancy\Support;
 
+use App\Domains\Ai\Services\CentralMarketingAiService;
 use App\Domains\Tenancy\Services\CentralSeoService;
 use App\Domains\Tenancy\Services\CentralSettingsService;
 
@@ -16,6 +17,7 @@ class CentralMarketingPresenter
             'currency' => app(CentralSettingsService::class)->currencyMeta(),
             'plans' => self::plans(),
             'seo' => app(CentralSeoService::class)->shared(),
+            'aiDemoEnabled' => app(CentralMarketingAiService::class)->isEnabled(),
         ];
     }
 
