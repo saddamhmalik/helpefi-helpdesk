@@ -1,12 +1,16 @@
 <script setup>
 import { Link, usePage } from '@inertiajs/vue3';
-import { computed, onMounted, ref, watch } from 'vue';
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { useToast } from '../composables/useToast.js';
+import { readSessionItem, readSessionJson, storageKey, writeSessionItem } from '../support/sessionStorage.js';
 
 const page = usePage();
-const toast = useToast();
 const { t } = useI18n();
+
+const scope = computed(() => page.props.tenantId ?? '');
+const setupDismissedKey = computed(() => storageKey('setup-warnings-modal-dismissed', scope.value));
+const noticesCompleteKey = computed(() => storageKey('platform-notices-modal-complete', scope.value));
+const noticesSeenKey = computed(() => storageKey('platform-notices-seen-session', scope.value));
 
 const panelOpen = ref(false);
 const modalOpen = ref(false);
@@ -36,31 +40,59 @@ const icons = {
 
 const iconPath = (key) => icons[key] ?? icons.sla_policies;
 
-const dismissModal = () => {
-    modalOpen.value = false;
-    sessionStorage.setItem('setup-warnings-modal-dismissed', '1');
+const platformNoticesPending = () => {
+    const notices = page.props.platformNotices ?? [];
+
+    if (!notices.length) {
+        return false;
+    }
+
+    if (readSessionItem(noticesCompleteKey.value) === '1') {
+        return false;
+    }
+
+    const seen = new Set(readSessionJson(noticesSeenKey.value, []));
+
+    return notices.some((notice) => notice.dismissible || !seen.has(notice.id));
 };
 
-const maybeShowOnLogin = () => {
+const dismissModal = () => {
+    modalOpen.value = false;
+    writeSessionItem(setupDismissedKey.value, '1');
+};
+
+const trySetupModal = () => {
     if (!showWidget.value) {
         return;
     }
 
-    if (sessionStorage.getItem('setup-warnings-modal-dismissed') !== '1') {
-        modalOpen.value = true;
+    if (readSessionItem(setupDismissedKey.value) === '1') {
+        return;
     }
 
-    if (sessionStorage.getItem('setup-warnings-toast-shown') !== '1') {
-        toast.info(t('components.setup_toast_summary', { count: warnings.value.length }), 8000);
-        sessionStorage.setItem('setup-warnings-toast-shown', '1');
+    if (platformNoticesPending()) {
+        return;
     }
+
+    modalOpen.value = true;
 };
 
-onMounted(maybeShowOnLogin);
+const onPlatformNoticesComplete = () => {
+    trySetupModal();
+};
+
+onMounted(() => {
+    trySetupModal();
+    window.addEventListener('platform-notices-complete', onPlatformNoticesComplete);
+});
+
+onUnmounted(() => {
+    window.removeEventListener('platform-notices-complete', onPlatformNoticesComplete);
+});
 
 watch(showWidget, (visible) => {
     if (visible) {
-        maybeShowOnLogin();
+        trySetupModal();
     }
 });
 </script>
@@ -138,17 +170,16 @@ watch(showWidget, (visible) => {
 
         <div
             v-if="showWidget"
-            class="pointer-events-none fixed z-[60]"
-            :class="panelOpen ? 'right-4 top-24 sm:top-24' : 'bottom-20 right-4 sm:bottom-auto sm:right-4 sm:top-24'"
+            class="pointer-events-none fixed bottom-24 right-4 z-[55]"
         >
-            <div class="pointer-events-auto flex items-end justify-end gap-2">
+            <div class="pointer-events-auto flex flex-col items-end gap-2">
                 <Transition
                     enter-active-class="transition duration-200 ease-out"
-                    enter-from-class="translate-x-4 opacity-0"
-                    enter-to-class="translate-x-0 opacity-100"
+                    enter-from-class="translate-y-2 opacity-0"
+                    enter-to-class="translate-y-0 opacity-100"
                     leave-active-class="transition duration-150 ease-in"
-                    leave-from-class="translate-x-0 opacity-100"
-                    leave-to-class="translate-x-4 opacity-0"
+                    leave-from-class="translate-y-0 opacity-100"
+                    leave-to-class="translate-y-2 opacity-0"
                 >
                     <div
                         v-if="panelOpen"
@@ -205,7 +236,7 @@ watch(showWidget, (visible) => {
                     <svg class="h-4 w-4 text-amber-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                     </svg>
-                    <span class="hidden md:inline">{{ t('components.setup') }}</span>
+                    <span>{{ t('components.setup') }}</span>
                     <span class="flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-amber-600 px-1.5 text-[10px] font-bold text-white">
                         {{ warnings.length }}
                     </span>

@@ -396,6 +396,7 @@ defineExpose({ openSearch });
                                         :key="article.id"
                                         :href="article.url"
                                         target="_blank"
+                                        rel="noopener noreferrer"
                                         class="block text-xs font-medium text-violet-700 hover:underline"
                                     >
                                         {{ article.title }}
