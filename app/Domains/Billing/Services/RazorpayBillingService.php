@@ -87,18 +87,12 @@ class RazorpayBillingService
         }
 
         try {
-            $razorpaySubscription = $this->client()->subscription->create([
-                'plan_id' => $planId,
-                'customer_id' => $tenant->razorpay_customer_id,
-                'customer_notify' => true,
-                'total_count' => $interval === 'year' ? 10 : 120,
-                'expire_by' => now()->addDays(3)->getTimestamp(),
-                'notes' => [
-                    'tenant_id' => $tenant->id,
-                    'plan' => $planSlug,
-                    'billing_interval' => $interval,
-                ],
-            ])->toArray();
+            $razorpaySubscription = $this->createRazorpayCheckoutSubscription(
+                $tenant,
+                $planId,
+                $planSlug,
+                $interval,
+            );
         } catch (Error $exception) {
             Log::warning('Razorpay subscription creation failed during checkout', [
                 'tenant_id' => $tenant->id,
@@ -111,9 +105,16 @@ class RazorpayBillingService
             ]);
         }
 
-        $this->persistPendingCheckoutSubscription($subscription, $razorpaySubscription, $planSlug, $planId, $interval);
-
-        return $this->buildCheckoutSession($razorpaySubscription, $plan, $customerEmail, $customerName);
+        return $this->beginCheckoutSession(
+            $subscription,
+            $razorpaySubscription,
+            $planSlug,
+            $planId,
+            $interval,
+            $plan,
+            $customerEmail,
+            $customerName,
+        );
     }
 
     public function verifySubscriptionPayment(
@@ -159,6 +160,12 @@ class RazorpayBillingService
 
         if ($addonKey !== null && $addonKey !== '') {
             return $this->confirmAddonSubscriptionPayment($subscription, $subscriptionId, $addonKey);
+        }
+
+        $pendingPlanCheckout = session('razorpay_plan_checkout');
+
+        if (is_array($pendingPlanCheckout) && ($pendingPlanCheckout['subscription_id'] ?? null) === $subscriptionId) {
+            return $this->confirmPlanChangeCheckout($subscription, $subscriptionId, $pendingPlanCheckout);
         }
 
         if (! $subscription->razorpay_subscription_id) {
@@ -674,6 +681,10 @@ class RazorpayBillingService
                     return $subscription;
                 }
 
+                if ($this->planChangeRequiresCheckout($subscription, $interval)) {
+                    return null;
+                }
+
                 return $this->changeActiveRazorpayPlan(
                     $subscription,
                     $planSlug,
@@ -692,7 +703,7 @@ class RazorpayBillingService
                 return null;
             }
 
-            return $this->buildCheckoutSession($entity, $plan, $customerEmail, $customerName);
+            return $this->buildPlanCheckoutSession($entity, $plan, $customerEmail, $customerName);
         }
 
         if (RazorpaySubscriptionCheckout::shouldResetIncompleteSubscription($entity)) {
@@ -765,7 +776,8 @@ class RazorpayBillingService
         $subscriptionId = (string) $subscription->razorpay_subscription_id;
         $currentPlan = $this->plans->find($subscription->plan ?? $planSlug);
         $nextPlan = $this->plans->find($planSlug);
-        $currentPrice = PlanCatalogDefinition::priceForInterval($currentPlan, $interval);
+        $currentInterval = $subscription->billing_interval ?? 'month';
+        $currentPrice = PlanCatalogDefinition::priceForInterval($currentPlan, $currentInterval);
         $nextPrice = PlanCatalogDefinition::priceForInterval($nextPlan, $interval);
         $scheduleChangeAt = $nextPrice >= $currentPrice ? 'now' : 'cycle_end';
 
@@ -963,6 +975,140 @@ class RazorpayBillingService
         }
 
         return $this->buildAddonCheckoutSession($addonSubscription, $addon, $customerEmail, $customerName);
+    }
+
+    /** @return array<string, mixed> */
+    private function buildPlanCheckoutSession(
+        array $razorpaySubscription,
+        array $plan,
+        string $customerEmail,
+        string $customerName,
+    ): array {
+        return array_merge(
+            $this->buildCheckoutSession($razorpaySubscription, $plan, $customerEmail, $customerName),
+            [
+                'redirect_on_success' => '/settings/billing?checkout=success&section=plans',
+                'redirect_on_cancel' => '/settings/billing?checkout=cancelled&section=plans',
+            ],
+        );
+    }
+
+    private function planChangeRequiresCheckout(Subscription $subscription, string $interval): bool
+    {
+        if (! $subscription->isActive() || ! $subscription->razorpay_subscription_id) {
+            return true;
+        }
+
+        return ($subscription->billing_interval ?? 'month') !== $interval;
+    }
+
+    /** @return array<string, mixed> */
+    private function createRazorpayCheckoutSubscription(
+        Tenant $tenant,
+        string $planId,
+        string $planSlug,
+        string $interval,
+    ): array {
+        return $this->client()->subscription->create([
+            'plan_id' => $planId,
+            'customer_id' => $tenant->razorpay_customer_id,
+            'customer_notify' => true,
+            'total_count' => $interval === 'year' ? 10 : 120,
+            'expire_by' => now()->addDays(3)->getTimestamp(),
+            'notes' => [
+                'tenant_id' => $tenant->id,
+                'plan' => $planSlug,
+                'billing_interval' => $interval,
+            ],
+        ])->toArray();
+    }
+
+    /** @return array<string, mixed> */
+    private function beginCheckoutSession(
+        Subscription $subscription,
+        array $razorpaySubscription,
+        string $planSlug,
+        string $planId,
+        string $interval,
+        array $plan,
+        string $customerEmail,
+        string $customerName,
+    ): array {
+        $previousSubscriptionId = $subscription->isActive() && $subscription->razorpay_subscription_id
+            ? (string) $subscription->razorpay_subscription_id
+            : null;
+
+        if ($previousSubscriptionId) {
+            session([
+                'razorpay_plan_checkout' => [
+                    'subscription_id' => (string) ($razorpaySubscription['id'] ?? ''),
+                    'previous_subscription_id' => $previousSubscriptionId,
+                    'plan' => $planSlug,
+                    'plan_id' => $planId,
+                    'interval' => $interval,
+                ],
+            ]);
+        } else {
+            $this->persistPendingCheckoutSubscription($subscription, $razorpaySubscription, $planSlug, $planId, $interval);
+        }
+
+        return $this->buildPlanCheckoutSession($razorpaySubscription, $plan, $customerEmail, $customerName);
+    }
+
+    private function confirmPlanChangeCheckout(
+        Subscription $subscription,
+        string $subscriptionId,
+        array $pendingPlanCheckout,
+    ): Subscription {
+        try {
+            $entity = $this->fetchedSubscription($subscriptionId)->toArray();
+        } catch (Error $exception) {
+            Log::warning('Razorpay subscription fetch failed after plan change checkout', [
+                'subscription_id' => $subscriptionId,
+                'message' => $exception->getMessage(),
+            ]);
+
+            throw ValidationException::withMessages([
+                'razorpay' => 'Payment was received but the subscription could not be confirmed yet. Please refresh billing in a moment.',
+            ]);
+        }
+
+        $status = (string) ($entity['status'] ?? '');
+
+        if (! in_array($status, ['active', 'authenticated'], true)) {
+            throw ValidationException::withMessages([
+                'razorpay' => 'Payment was received but the subscription could not be confirmed yet. Please refresh billing in a moment.',
+            ]);
+        }
+
+        $previousId = (string) ($pendingPlanCheckout['previous_subscription_id'] ?? '');
+
+        if ($previousId !== '') {
+            try {
+                $this->fetchedSubscription($previousId)->cancel([
+                    'cancel_at_cycle_end' => true,
+                ]);
+            } catch (Error $exception) {
+                Log::warning('Razorpay previous subscription cancellation failed after plan change checkout', [
+                    'subscription_id' => $previousId,
+                    'message' => $exception->getMessage(),
+                ]);
+            }
+        }
+
+        session()->forget('razorpay_plan_checkout');
+
+        $this->subscriptions->update($subscription, [
+            'plan' => (string) ($pendingPlanCheckout['plan'] ?? $subscription->plan),
+            'billing_interval' => (string) ($pendingPlanCheckout['interval'] ?? $subscription->billing_interval ?? 'month'),
+            'razorpay_subscription_id' => $subscriptionId,
+            'razorpay_plan_id' => (string) ($pendingPlanCheckout['plan_id'] ?? $entity['plan_id'] ?? ''),
+        ]);
+
+        return $this->lifecycle->applyRazorpaySubscription(
+            $subscription->fresh(),
+            $this->normalizeSubscriptionPayload($entity),
+        );
     }
 
     /** @return array<string, mixed> */
