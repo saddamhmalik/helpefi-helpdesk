@@ -56,7 +56,18 @@ class RazorpayBillingService
         $this->assertCanChangePlan($subscription);
 
         $tenant = Tenant::query()->findOrFail(tenant('id'));
-        $this->ensureCustomer($tenant, $customerEmail);
+        try {
+            $this->ensureCustomer($tenant, $customerEmail);
+        } catch (Error $exception) {
+            Log::warning('Razorpay customer creation failed during checkout', [
+                'tenant_id' => $tenant->id,
+                'message' => $exception->getMessage(),
+            ]);
+
+            throw ValidationException::withMessages([
+                'plan' => 'Unable to start checkout. Please try again or contact support.',
+            ]);
+        }
 
         if ($subscription->razorpay_subscription_id) {
             $existing = $this->resolveExistingCheckoutSession(
@@ -73,18 +84,30 @@ class RazorpayBillingService
             }
         }
 
-        $razorpaySubscription = $this->client()->subscription->create([
-            'plan_id' => $planId,
-            'customer_id' => $tenant->razorpay_customer_id,
-            'customer_notify' => 1,
-            'total_count' => $interval === 'year' ? 10 : 120,
-            'expire_by' => now()->addDays(3)->getTimestamp(),
-            'notes' => [
+        try {
+            $razorpaySubscription = $this->client()->subscription->create([
+                'plan_id' => $planId,
+                'customer_id' => $tenant->razorpay_customer_id,
+                'customer_notify' => 1,
+                'total_count' => $interval === 'year' ? 10 : 120,
+                'expire_by' => now()->addDays(3)->getTimestamp(),
+                'notes' => [
+                    'tenant_id' => $tenant->id,
+                    'plan' => $planSlug,
+                    'billing_interval' => $interval,
+                ],
+            ])->toArray();
+        } catch (Error $exception) {
+            Log::warning('Razorpay subscription creation failed during checkout', [
                 'tenant_id' => $tenant->id,
-                'plan' => $planSlug,
-                'billing_interval' => $interval,
-            ],
-        ])->toArray();
+                'plan_id' => $planId,
+                'message' => $exception->getMessage(),
+            ]);
+
+            throw ValidationException::withMessages([
+                'plan' => 'Unable to start checkout. Please try again or contact support.',
+            ]);
+        }
 
         $this->persistPendingCheckoutSubscription($subscription, $razorpaySubscription, $planSlug, $planId, $interval);
 
@@ -105,12 +128,25 @@ class RazorpayBillingService
                 'razorpay_signature' => $signature,
             ]);
         } catch (SignatureVerificationError $exception) {
+            Log::warning('Razorpay payment signature verification failed', [
+                'payment_id' => $paymentId,
+                'subscription_id' => $subscriptionId,
+                'tenant_id' => tenant('id'),
+                'message' => $exception->getMessage(),
+            ]);
+
             throw ValidationException::withMessages([
                 'razorpay' => 'Payment verification failed. Please try again or contact support.',
             ]);
         }
 
         $subscription = $this->subscriptions->current();
+
+        if (! $subscription->razorpay_subscription_id) {
+            throw ValidationException::withMessages([
+                'razorpay' => 'No pending checkout session was found for this workspace. Please start checkout again.',
+            ]);
+        }
 
         if ($subscription->razorpay_subscription_id !== $subscriptionId) {
             throw ValidationException::withMessages([
@@ -119,7 +155,7 @@ class RazorpayBillingService
         }
 
         try {
-            $entity = $this->client()->subscription->fetch($subscriptionId)->toArray();
+            $entity = $this->fetchedSubscription($subscriptionId)->toArray();
         } catch (Error $exception) {
             Log::warning('Razorpay subscription fetch failed after payment verification', [
                 'subscription_id' => $subscriptionId,
@@ -171,14 +207,26 @@ class RazorpayBillingService
         $tenant = Tenant::query()->findOrFail(tenant('id'));
         $this->ensureCustomer($tenant, $customerEmail);
 
-        $addonItem = $this->client()->subscription->createAddon($subscription->razorpay_subscription_id, [
-            'item' => [
-                'name' => $addon['name'],
-                'amount' => max(0, (int) ($addon['price_monthly'] ?? 0)) * 100,
-                'currency' => $this->centralSettings->currency(),
-            ],
-            'quantity' => 1,
-        ])->toArray();
+        try {
+            $addonItem = $this->fetchedSubscription($subscription->razorpay_subscription_id)->createAddon([
+                'item' => [
+                    'name' => $addon['name'],
+                    'amount' => max(0, (int) ($addon['price_monthly'] ?? 0)) * 100,
+                    'currency' => $this->centralSettings->currency(),
+                ],
+                'quantity' => 1,
+            ])->toArray();
+        } catch (Error $exception) {
+            Log::warning('Razorpay add-on purchase failed', [
+                'addon' => $addonKey,
+                'subscription_id' => $subscription->razorpay_subscription_id,
+                'message' => $exception->getMessage(),
+            ]);
+
+            throw ValidationException::withMessages([
+                'addon' => 'Unable to purchase this add-on. Please try again or contact support.',
+            ]);
+        }
 
         $active = $subscription->active_addons ?? [];
         $razorpayAddonItems = $subscription->razorpay_addon_items ?? [];
@@ -200,7 +248,7 @@ class RazorpayBillingService
 
         if ($itemId && $subscription->razorpay_subscription_id) {
             try {
-                $this->client()->subscription->deleteAddon($subscription->razorpay_subscription_id, $itemId);
+                $this->client()->addon->fetch($itemId)->delete();
             } catch (Error $exception) {
                 Log::warning('Razorpay add-on cancellation failed', [
                     'addon' => $addonKey,
@@ -233,13 +281,76 @@ class RazorpayBillingService
             ]);
         }
 
-        $this->client()->subscription->cancel($subscription->razorpay_subscription_id, [
-            'cancel_at_cycle_end' => 1,
-        ]);
+        $subscriptionId = $subscription->razorpay_subscription_id;
 
-        $razorpaySubscription = $this->client()->subscription->fetch($subscription->razorpay_subscription_id)->toArray();
+        try {
+            $entity = $this->fetchedSubscription($subscriptionId)->toArray();
+        } catch (Error $exception) {
+            Log::warning('Razorpay subscription fetch failed before cancellation', [
+                'subscription_id' => $subscriptionId,
+                'tenant_id' => tenant('id'),
+                'message' => $exception->getMessage(),
+            ]);
 
-        return $this->lifecycle->applyRazorpaySubscription($subscription, $this->normalizeSubscriptionPayload($razorpaySubscription));
+            throw ValidationException::withMessages([
+                'subscription' => 'Unable to cancel subscription. Please try again or contact support.',
+            ]);
+        }
+
+        $status = (string) ($entity['status'] ?? '');
+
+        if (in_array($status, ['cancelled', 'completed', 'expired'], true)) {
+            return $this->lifecycle->applyRazorpaySubscription(
+                $subscription,
+                $this->normalizeSubscriptionPayload($entity),
+            );
+        }
+
+        if ((bool) ($entity['cancel_at_cycle_end'] ?? false) && in_array($status, ['active', 'authenticated'], true)) {
+            return $this->lifecycle->applyRazorpaySubscription(
+                $subscription,
+                $this->normalizeSubscriptionPayload($entity),
+            );
+        }
+
+        $cancelAtCycleEnd = in_array($status, ['active', 'authenticated'], true);
+
+        try {
+            $this->fetchedSubscription($subscriptionId)->cancel([
+                'cancel_at_cycle_end' => $cancelAtCycleEnd,
+            ]);
+        } catch (Error $exception) {
+            Log::warning('Razorpay subscription cancellation failed', [
+                'subscription_id' => $subscriptionId,
+                'tenant_id' => tenant('id'),
+                'status' => $status,
+                'cancel_at_cycle_end' => $cancelAtCycleEnd,
+                'message' => $exception->getMessage(),
+            ]);
+
+            throw ValidationException::withMessages([
+                'subscription' => 'Unable to cancel subscription. Please try again or contact support.',
+            ]);
+        }
+
+        try {
+            $razorpaySubscription = $this->fetchedSubscription($subscriptionId)->toArray();
+        } catch (Error $exception) {
+            Log::warning('Razorpay subscription fetch failed after cancellation', [
+                'subscription_id' => $subscriptionId,
+                'tenant_id' => tenant('id'),
+                'message' => $exception->getMessage(),
+            ]);
+
+            throw ValidationException::withMessages([
+                'subscription' => 'Subscription cancellation was requested but could not be confirmed yet. Please refresh billing in a moment.',
+            ]);
+        }
+
+        return $this->lifecycle->applyRazorpaySubscription(
+            $subscription,
+            $this->normalizeSubscriptionPayload($razorpaySubscription),
+        );
     }
 
     public function handleWebhook(string $payload, ?string $signature): void
@@ -418,7 +529,7 @@ class RazorpayBillingService
         string $customerName,
     ): array|string|null {
         try {
-            $entity = $this->client()->subscription->fetch($subscription->razorpay_subscription_id)->toArray();
+            $entity = $this->fetchedSubscription($subscription->razorpay_subscription_id)->toArray();
         } catch (Error $exception) {
             Log::warning('Razorpay subscription fetch failed during checkout', [
                 'subscription_id' => $subscription->razorpay_subscription_id,
@@ -440,11 +551,23 @@ class RazorpayBillingService
 
             if ($subscription->isActive()) {
                 if (($entity['plan_id'] ?? null) !== $planId) {
-                    $this->client()->subscription->update($subscription->razorpay_subscription_id, [
-                        'plan_id' => $planId,
-                        'schedule_change_at' => 'now',
-                        'customer_notify' => 1,
-                    ]);
+                    try {
+                        $this->fetchedSubscription($subscription->razorpay_subscription_id)->update([
+                            'plan_id' => $planId,
+                            'schedule_change_at' => 'now',
+                            'customer_notify' => 1,
+                        ]);
+                    } catch (Error $exception) {
+                        Log::warning('Razorpay subscription plan update failed during checkout', [
+                            'subscription_id' => $subscription->razorpay_subscription_id,
+                            'plan_id' => $planId,
+                            'message' => $exception->getMessage(),
+                        ]);
+
+                        throw ValidationException::withMessages([
+                            'plan' => 'Unable to change plan right now. Please try again or contact support.',
+                        ]);
+                    }
                 }
 
                 return $successUrl;
@@ -452,6 +575,13 @@ class RazorpayBillingService
         }
 
         if ($status === 'created' && RazorpaySubscriptionCheckout::canAuthenticateViaStandardCheckout($entity)) {
+            if (($entity['plan_id'] ?? null) !== $planId) {
+                $this->cancelRazorpaySubscriptionImmediately($subscription->razorpay_subscription_id);
+                $this->clearRazorpaySubscriptionReference($subscription);
+
+                return null;
+            }
+
             return $this->buildCheckoutSession($entity, $plan, $customerEmail, $customerName);
         }
 
@@ -509,11 +639,16 @@ class RazorpayBillingService
         ]);
     }
 
+    private function fetchedSubscription(string $subscriptionId)
+    {
+        return $this->client()->subscription->fetch($subscriptionId);
+    }
+
     private function cancelRazorpaySubscriptionImmediately(string $subscriptionId): void
     {
         try {
-            $this->client()->subscription->cancel($subscriptionId, [
-                'cancel_at_cycle_end' => 0,
+            $this->fetchedSubscription($subscriptionId)->cancel([
+                'cancel_at_cycle_end' => false,
             ]);
         } catch (Error $exception) {
             Log::warning('Razorpay subscription cancellation failed during checkout reset', [

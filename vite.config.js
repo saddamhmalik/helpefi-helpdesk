@@ -19,6 +19,25 @@ export default defineConfig({
         }),
         tailwindcss(),
     ],
+    build: {
+        rollupOptions: {
+            output: {
+                manualChunks(id) {
+                    if (id.includes('node_modules/@inertiajs/')) {
+                        return 'inertia';
+                    }
+
+                    if (id.includes('node_modules/vue-i18n/')) {
+                        return 'vue-i18n';
+                    }
+
+                    if (id.includes('node_modules/vue/') || id.includes('node_modules/@vue/')) {
+                        return 'vue';
+                    }
+                },
+            },
+        },
+    },
     resolve: {
         alias: {
             '@': '/resources/js',

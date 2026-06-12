@@ -53,11 +53,10 @@ class BillingController extends Controller
         ]);
 
         $interval = $data['interval'] ?? 'month';
-        $returnPath = $data['redirect'] ?? '/settings/billing?section=plans';
-
-        if (! str_starts_with($returnPath, '/')) {
-            $returnPath = '/settings/billing?section=plans';
-        }
+        $returnPath = $this->resolveInternalPath(
+            $data['redirect'] ?? '/settings/billing?section=plans',
+            '/settings/billing?section=plans',
+        );
 
         $successPath = str_contains($returnPath, '?')
             ? $returnPath.'&checkout=success'
@@ -99,13 +98,25 @@ class BillingController extends Controller
             $data['razorpay_signature'],
         );
 
-        $redirect = $data['redirect'] ?? '/settings/billing?checkout=success&section=usage';
-
-        if (! str_starts_with($redirect, '/')) {
-            $redirect = '/settings/billing?checkout=success&section=usage';
-        }
+        $redirect = $this->resolveInternalPath(
+            $data['redirect'] ?? '/settings/billing?checkout=success&section=usage',
+            '/settings/billing?checkout=success&section=usage',
+        );
 
         return redirect($redirect);
+    }
+
+    private function resolveInternalPath(string $path, string $fallback): string
+    {
+        if (! str_starts_with($path, '/') || str_starts_with($path, '//')) {
+            return $fallback;
+        }
+
+        if (str_contains($path, '://') || str_contains($path, '\\')) {
+            return $fallback;
+        }
+
+        return $path;
     }
 
     public function cancel(Request $request): RedirectResponse
