@@ -6,7 +6,7 @@ import SettingsSectionNav from '../../Components/SettingsSectionNav.vue';
 import { useSettingsSection } from '../../composables/useSettingsSection.js';
 import { useCurrency } from '../../composables/useCurrency.js';
 import { useBillingInterval } from '../../composables/useBillingInterval.js';
-import { useRazorpayCheckout } from '../../composables/useRazorpayCheckout.js';
+import { useRazorpayCheckout, checkoutFlowFinishedInUrl } from '../../composables/useRazorpayCheckout.js';
 import { useI18n } from 'vue-i18n';
 import { useDateTime } from '../../composables/useDateTime.js';
 
@@ -80,6 +80,10 @@ const currentPlanSuffix = computed(() => {
 });
 
 const openCheckoutFromFlash = (session) => {
+    if (checkoutFlowFinishedInUrl()) {
+        return;
+    }
+
     if (session?.subscription_id) {
         openRazorpayCheckout(session, {
             redirectOnSuccess: session.redirect_on_success ?? '/settings/billing?checkout=success&section=plans',

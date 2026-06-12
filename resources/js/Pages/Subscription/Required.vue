@@ -4,7 +4,7 @@ import { onMounted, ref, watch } from 'vue';
 import AgentLayout from '../../Layouts/AgentLayout.vue';
 import { useCurrency } from '../../composables/useCurrency.js';
 import { useBillingInterval } from '../../composables/useBillingInterval.js';
-import { useRazorpayCheckout } from '../../composables/useRazorpayCheckout.js';
+import { useRazorpayCheckout, checkoutFlowFinishedInUrl } from '../../composables/useRazorpayCheckout.js';
 import { useI18n } from 'vue-i18n';
 
 const props = defineProps({
@@ -34,6 +34,9 @@ const purchase = () => {
             redirect: '/subscription-required',
         }, {
             preserveScroll: true,
+            onSuccess: (page) => {
+                openCheckoutFromFlash(page.props.flash?.razorpay_checkout);
+            },
             onFinish: () => {
                 checkoutProcessing.value = false;
             },
@@ -54,9 +57,13 @@ const purchase = () => {
 };
 
 const openCheckoutFromFlash = (session) => {
+    if (checkoutFlowFinishedInUrl()) {
+        return;
+    }
+
     if (session?.subscription_id) {
         openRazorpayCheckout(session, {
-            redirectOnSuccess: '/dashboard',
+            redirectOnSuccess: '/dashboard?checkout=success',
             redirectOnCancel: '/subscription-required?checkout=cancelled',
         });
     }
