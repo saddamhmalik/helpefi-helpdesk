@@ -8,6 +8,7 @@ use App\Domains\Platform\Repositories\PlatformNoticeRepository;
 use App\Domains\Platform\Repositories\PlatformTenantRepository;
 use App\Domains\Platform\Support\PlatformAuditRecorder;
 use App\Domains\Platform\Support\PlatformNoticeUrlGenerator;
+use App\Domains\Tickets\Support\MessageBodySanitizer;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -174,7 +175,9 @@ class PlatformNoticeService
 
         return [
             'title' => $data['title'],
-            'body_html' => $data['body_html'] ?? null,
+            'body_html' => isset($data['body_html']) && $data['body_html'] !== null && $data['body_html'] !== ''
+                ? MessageBodySanitizer::sanitize($data['body_html'])
+                : null,
             'notice_type' => $data['notice_type'],
             'target_scope' => $targetScope,
             'tenant_ids' => $tenantIds,

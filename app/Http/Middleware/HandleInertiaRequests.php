@@ -66,6 +66,9 @@ class HandleInertiaRequests extends Middleware
             'timezone' => fn () => $user instanceof User
                 ? app(UserPreferenceService::class)->timezone($user)
                 : $this->helpdeskTimezone(),
+            'appearance' => fn () => $user instanceof User
+                ? app(UserPreferenceService::class)->appearance($user)
+                : 'system',
             'ai' => fn () => $this->tenantFeature($user, fn () => app(AiAssistService::class)->status()),
             'billing' => fn () => $this->tenantFeature($user, fn () => app(BillingService::class)->snapshot()),
             'notifications' => fn () => $this->tenantFeature($user, fn () => app(NotificationService::class)->inboxSummary($user)),
@@ -118,6 +121,7 @@ class HandleInertiaRequests extends Middleware
             'email' => $user->email,
             'locale' => $preferences->locale($user),
             'timezone' => $preferences->timezone($user),
+            'appearance' => $preferences->appearance($user),
             'roles' => $user->getRoleNames()->values()->all(),
             'permissions' => $user->getAllPermissions()->pluck('name')->values()->all(),
             'is_admin' => $user->hasRole('admin'),

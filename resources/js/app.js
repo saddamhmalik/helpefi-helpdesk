@@ -2,6 +2,7 @@ import { createApp, h } from 'vue';
 import { createInertiaApp } from '@inertiajs/vue3';
 import AppToastContainer from './Components/AppToastContainer.vue';
 import AppLocaleSync from './Components/AppLocaleSync.vue';
+import AppAppearanceSync from './Components/AppAppearanceSync.vue';
 import SettingsLayout from './Layouts/SettingsLayout.vue';
 import { registerCsrfHandling } from './plugins/csrf.js';
 import { registerFlashToasts, showInitialFlashToasts } from './plugins/flashToasts.js';
@@ -34,6 +35,7 @@ createInertiaApp({
             render: () => h('div', [
                 h(App, props),
                 h(AppLocaleSync),
+                h(AppAppearanceSync),
                 h(AppToastContainer),
             ]),
         })

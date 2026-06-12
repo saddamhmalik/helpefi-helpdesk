@@ -118,7 +118,7 @@ const saveViewForm = useForm({
     is_default: false,
 });
 
-const inputClass = 'w-full rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-sm text-slate-800 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20';
+const inputClass = 'w-full rounded-lg border px-2.5 py-1.5 text-sm agent-input';
 const selectClass = `${inputClass} pr-8`;
 
 const filteredTeams = computed(() => {
@@ -386,7 +386,7 @@ const activeFilterLabels = computed(() => {
             <template #actions>
                 <a
                     :href="exportUrl"
-                    class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                    class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 agent-hover-surface dark:border-slate-600 dark:text-slate-300"
                 >
                     {{ $t('tickets.export_csv') }}
                 </a>
@@ -397,7 +397,7 @@ const activeFilterLabels = computed(() => {
             <button
                 type="button"
                 class="rounded-lg px-3 py-1.5 text-sm font-medium transition"
-                :class="!activeViewId ? 'bg-slate-900 text-white' : 'bg-white text-slate-600 ring-1 ring-slate-200 hover:bg-slate-50'"
+                :class="!activeViewId ? 'bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900' : 'agent-panel agent-text-muted ring-1 agent-border agent-hover-surface'"
                 @click="clearFilters"
             >{{ $t('tickets.all_tickets') }}</button>
 
@@ -408,7 +408,7 @@ const activeFilterLabels = computed(() => {
                     v-for="view in personalViews"
                     :key="view.id"
                     class="inline-flex overflow-hidden rounded-lg ring-1 ring-slate-200"
-                    :class="activeViewId === view.id ? 'bg-slate-900 text-white' : 'bg-white text-slate-600'"
+                    :class="activeViewId === view.id ? 'bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900' : 'agent-panel agent-text-muted'"
                 >
                     <button type="button" class="px-3 py-1.5 text-sm font-medium" @click="loadView(view.id)">
                         {{ view.name }}
@@ -416,7 +416,7 @@ const activeFilterLabels = computed(() => {
                     <button
                         type="button"
                         class="border-l px-2 text-xs opacity-60 hover:opacity-100"
-                        :class="activeViewId === view.id ? 'border-white/20' : 'border-slate-200'"
+                        :class="activeViewId === view.id ? 'border-white/20 dark:border-slate-900/20' : 'agent-border'"
                         @click="deleteView(view)"
                     >
                         ×
@@ -431,13 +431,13 @@ const activeFilterLabels = computed(() => {
                     v-for="view in sharedViews"
                     :key="view.id"
                     class="inline-flex overflow-hidden rounded-lg ring-1 ring-slate-200"
-                    :class="activeViewId === view.id ? 'bg-blue-600 text-white' : 'bg-white text-slate-600'"
+                    :class="activeViewId === view.id ? 'bg-blue-600 text-white' : 'agent-panel agent-text-muted'"
                 >
                     <button type="button" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium" @click="loadView(view.id)">
                         {{ view.name }}
                         <span
                             class="rounded-full px-1.5 py-0.5 text-[10px]"
-                            :class="activeViewId === view.id ? 'bg-white/15' : 'bg-blue-50 text-blue-700'"
+                            :class="activeViewId === view.id ? 'bg-white/15' : 'bg-blue-50 text-blue-700 dark:bg-blue-950/50 dark:text-blue-300'"
                         >
                             {{ view.team?.name }}
                         </span>
@@ -446,7 +446,7 @@ const activeFilterLabels = computed(() => {
                         v-if="view.user_id === currentUserId"
                         type="button"
                         class="border-l px-2 text-xs opacity-60 hover:opacity-100"
-                        :class="activeViewId === view.id ? 'border-white/20' : 'border-slate-200'"
+                        :class="activeViewId === view.id ? 'border-white/20 dark:border-slate-900/20' : 'agent-border'"
                         @click="deleteView(view)"
                     >
                         ×
@@ -455,7 +455,7 @@ const activeFilterLabels = computed(() => {
             </template>
         </div>
 
-        <div class="mb-4 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+        <div class="mb-4 overflow-hidden rounded-xl border agent-border agent-panel shadow-sm">
             <form @submit.prevent="applyFilters" class="p-3">
                 <div class="flex flex-col gap-2 xl:flex-row xl:items-center">
                     <div class="relative min-w-0 flex-1 xl:max-w-xs">
@@ -467,7 +467,7 @@ const activeFilterLabels = computed(() => {
                             type="search"
                             :placeholder="$t('tickets.search_tickets_ellipsis')"
                             :aria-label="$t('tickets.search_tickets')"
-                            class="w-full rounded-lg border border-slate-200 bg-white py-1.5 pl-9 pr-3 text-sm text-slate-800 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                            class="w-full rounded-lg border py-1.5 pl-9 pr-3 text-sm agent-input"
                         />
                     </div>
 
@@ -499,7 +499,7 @@ const activeFilterLabels = computed(() => {
                         >{{ $t('tickets.apply') }}</button>
                         <button
                             type="button"
-                            class="inline-flex items-center gap-1 rounded-lg border border-slate-200 px-2.5 py-1.5 text-xs font-medium text-slate-600 transition hover:bg-slate-50"
+                            class="inline-flex items-center gap-1 rounded-lg border agent-border px-2.5 py-1.5 text-xs font-medium agent-text-muted transition agent-hover-surface"
                             @click="showMoreFilters = !showMoreFilters"
                         >
                             <svg class="h-3.5 w-3.5 transition" :class="showMoreFilters ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -515,7 +515,7 @@ const activeFilterLabels = computed(() => {
                         </button>
                         <button
                             type="button"
-                            class="rounded-lg border border-slate-200 px-2.5 py-1.5 text-xs font-medium text-slate-600 transition hover:bg-slate-50"
+                            class="rounded-lg border agent-border px-2.5 py-1.5 text-xs font-medium agent-text-muted transition agent-hover-surface"
                             @click="openSaveView"
                         >{{ $t('tickets.save_view') }}</button>
                     </div>
@@ -566,16 +566,16 @@ const activeFilterLabels = computed(() => {
             class="mb-4 flex flex-wrap items-center gap-2 rounded-xl border border-blue-200 bg-blue-50 px-4 py-3"
         >
             <span class="text-sm font-medium text-blue-900">{{ selectedIds.length }} selected</span>
-            <button type="button" class="rounded-lg bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 ring-1 ring-slate-200" @click="openBulkModal('assign')">{{ $t('tickets.assign') }}</button>
-            <button type="button" class="rounded-lg bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 ring-1 ring-slate-200" @click="openBulkModal('status')">{{ $t('tickets.status') }}</button>
-            <button type="button" class="rounded-lg bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 ring-1 ring-slate-200" @click="openBulkModal('priority')">{{ $t('tickets.priority') }}</button>
-            <button type="button" class="rounded-lg bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 ring-1 ring-slate-200" @click="openBulkModal('snooze')">{{ $t('tickets.snooze') }}</button>
+            <button type="button" class="rounded-lg agent-panel px-3 py-1.5 text-xs font-semibold text-slate-700 ring-1 agent-border dark:text-slate-300" @click="openBulkModal('assign')">{{ $t('tickets.assign') }}</button>
+            <button type="button" class="rounded-lg agent-panel px-3 py-1.5 text-xs font-semibold text-slate-700 ring-1 agent-border dark:text-slate-300" @click="openBulkModal('status')">{{ $t('tickets.status') }}</button>
+            <button type="button" class="rounded-lg agent-panel px-3 py-1.5 text-xs font-semibold text-slate-700 ring-1 agent-border dark:text-slate-300" @click="openBulkModal('priority')">{{ $t('tickets.priority') }}</button>
+            <button type="button" class="rounded-lg agent-panel px-3 py-1.5 text-xs font-semibold text-slate-700 ring-1 agent-border dark:text-slate-300" @click="openBulkModal('snooze')">{{ $t('tickets.snooze') }}</button>
             <button type="button" class="rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white" @click="bulkForm.action = 'close'; submitBulk()">{{ $t('tickets.close') }}</button>
             <button type="button" class="ml-auto text-xs font-medium text-blue-700" @click="selectedIds = []">{{ $t('tickets.clear') }}</button>
         </div>
 
         <DataTable>
-            <thead class="bg-slate-50">
+            <thead class="agent-panel-muted">
                 <tr>
                     <th class="px-4 py-3">
                         <input
@@ -595,7 +595,7 @@ const activeFilterLabels = computed(() => {
                 </tr>
             </thead>
             <tbody class="divide-y divide-slate-100">
-                <tr v-for="ticket in tickets.data" :key="ticket.id" class="hover:bg-slate-50">
+                <tr v-for="ticket in tickets.data" :key="ticket.id" class="agent-hover-row">
                     <td class="px-4 py-3">
                         <input
                             type="checkbox"
@@ -610,7 +610,7 @@ const activeFilterLabels = computed(() => {
                                 <span class="text-sm font-semibold text-blue-600 hover:text-blue-700">{{ ticket.number }}</span>
                                 <UnreadBadge :count="ticket.unread_count ?? 0" />
                             </div>
-                            <span class="mt-0.5 block max-w-md truncate text-sm text-slate-900">{{ ticket.subject }}</span>
+                            <span class="mt-0.5 block max-w-md truncate text-sm agent-text">{{ ticket.subject }}</span>
                         </Link>
                     </td>
                     <td class="px-4 py-3">
@@ -655,7 +655,7 @@ const activeFilterLabels = computed(() => {
 
                 <FilterField label="Who can use this view?">
                     <div class="flex flex-wrap gap-3">
-                        <label class="flex cursor-pointer items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 text-sm">
+                        <label class="flex cursor-pointer items-center gap-2 rounded-lg border agent-border px-3 py-2 text-sm dark:text-slate-300">
                             <input v-model="saveViewForm.visibility" type="radio" value="private" />
                             {{ $t('tickets.only_me') }}
                         </label>
@@ -677,13 +677,13 @@ const activeFilterLabels = computed(() => {
                     {{ $t('tickets.set_as_my_default_view') }}
                 </label>
 
-                <div v-if="activeFilterLabels.length" class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-3">
+                <div v-if="activeFilterLabels.length" class="rounded-lg border agent-border agent-panel-muted px-3 py-3">
                     <p class="text-sm font-medium text-slate-700">{{ $t('tickets.filters_to_save') }}</p>
                     <div class="mt-2 flex flex-wrap gap-1.5">
                         <span
                             v-for="chip in activeFilterLabels"
                             :key="`save-${chip.key}`"
-                            class="rounded-full bg-white px-2 py-0.5 text-xs text-slate-600 ring-1 ring-slate-200"
+                            class="rounded-full agent-panel px-2 py-0.5 text-xs agent-text-muted ring-1 agent-border"
                         >
                             {{ chip.label }}
                         </span>

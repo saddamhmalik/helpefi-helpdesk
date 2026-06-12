@@ -4,6 +4,7 @@ namespace App\Domains\Auth\Services;
 
 use App\Domains\Sla\Repositories\BusinessHoursRepository;
 use App\Models\User;
+use App\Support\AppearanceSupport;
 use App\Support\LocaleSupport;
 
 class UserPreferenceService
@@ -30,5 +31,10 @@ class UserPreferenceService
     public function isRtl(User $user): bool
     {
         return LocaleSupport::isRtl($this->locale($user));
+    }
+
+    public function appearance(User $user): string
+    {
+        return AppearanceSupport::resolve($user->appearance);
     }
 }

@@ -41,8 +41,14 @@ export function readSessionJson(key, fallback) {
 }
 
 export function writeSessionJson(key, value) {
+    return writeSessionItem(key, JSON.stringify(value));
+}
+
+export function removeSessionItem(key) {
     try {
-        return writeSessionItem(key, JSON.stringify(value));
+        sessionStorage.removeItem(key);
+
+        return true;
     } catch {
         return false;
     }

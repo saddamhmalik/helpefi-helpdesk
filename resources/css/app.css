@@ -1,6 +1,8 @@
 @import 'tailwindcss';
 @plugin '@tailwindcss/typography';
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
 
@@ -180,5 +182,49 @@
 
     .scrollbar-gutter-stable {
         scrollbar-gutter: stable;
+    }
+
+    .agent-page-bg {
+        @apply bg-slate-50 dark:bg-slate-950;
+    }
+
+    .agent-panel {
+        @apply bg-white dark:bg-slate-900;
+    }
+
+    .agent-panel-muted {
+        @apply bg-slate-50 dark:bg-slate-900/60;
+    }
+
+    .agent-border {
+        @apply border-slate-200 dark:border-slate-700;
+    }
+
+    .agent-border-subtle {
+        @apply border-slate-100 dark:border-slate-800;
+    }
+
+    .agent-text {
+        @apply text-slate-900 dark:text-slate-100;
+    }
+
+    .agent-text-muted {
+        @apply text-slate-600 dark:text-slate-400;
+    }
+
+    .agent-text-subtle {
+        @apply text-slate-500 dark:text-slate-400;
+    }
+
+    .agent-input {
+        @apply border-slate-200 bg-white text-slate-800 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:placeholder:text-slate-500;
+    }
+
+    .agent-hover-row {
+        @apply hover:bg-slate-50 dark:hover:bg-slate-800/60;
+    }
+
+    .agent-hover-surface {
+        @apply hover:bg-slate-50 dark:hover:bg-slate-800;
     }
 }

@@ -1,18 +1,21 @@
 <script setup>
 import { useForm, usePage } from '@inertiajs/vue3';
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import SettingsPage from '../../Components/SettingsPage.vue';
 import SettingsSectionNav from '../../Components/SettingsSectionNav.vue';
 import { useSettingsSection } from '../../composables/useSettingsSection.js';
+import { applyAppearance } from '../../composables/useAppearance.js';
 
 const props = defineProps({
     twoFactor: Object,
     mfaRequired: Boolean,
     locale: { type: String, default: 'en' },
     storedTimezone: { type: String, default: null },
+    appearance: { type: String, default: 'system' },
     localeOptions: { type: Array, default: () => [] },
     timezoneOptions: { type: Array, default: () => [] },
+    appearanceOptions: { type: Array, default: () => [] },
 });
 
 const { t } = useI18n();
@@ -47,7 +50,13 @@ const profileForm = useForm({
     email: user.value.email,
     locale: props.locale,
     timezone: props.storedTimezone ?? '',
+    appearance: props.appearance,
 });
+
+watch(
+    () => profileForm.appearance,
+    (value) => applyAppearance(value),
+);
 
 const passwordForm = useForm({
     current_password: '',
@@ -65,7 +74,9 @@ const disableForm = useForm({
 
 const showDisable = ref(false);
 
-const updateProfile = () => profileForm.put('/settings/profile');
+const updateProfile = () => profileForm.put('/settings/profile', {
+    onError: () => applyAppearance(page.props.appearance ?? page.props.auth?.user?.appearance ?? 'system'),
+});
 const updatePassword = () => passwordForm.put('/settings/password', {
     onSuccess: () => passwordForm.reset(),
 });
@@ -109,31 +120,31 @@ const disableTwoFactor = () => {
             {{ t('profile.mfa_required') }}
         </div>
 
-        <div v-show="activeSection === 'profile'" class="max-w-2xl rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div v-show="activeSection === 'profile'" class="max-w-2xl rounded-xl border agent-border agent-panel p-6 shadow-sm">
             <form class="space-y-4" @submit.prevent="updateProfile">
                 <div>
-                    <label class="mb-1 block text-sm font-medium text-slate-700">{{ t('profile.name') }}</label>
-                    <input v-model="profileForm.name" type="text" class="w-full rounded-lg border border-slate-300 px-3 py-2" required />
+                    <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ t('profile.name') }}</label>
+                    <input v-model="profileForm.name" type="text" class="w-full rounded-lg border px-3 py-2 agent-input" required />
                     <p v-if="profileForm.errors.name" class="mt-1 text-sm text-red-600">{{ profileForm.errors.name }}</p>
                 </div>
                 <div>
-                    <label class="mb-1 block text-sm font-medium text-slate-700">{{ t('profile.email') }}</label>
-                    <input v-model="profileForm.email" type="email" class="w-full rounded-lg border border-slate-300 px-3 py-2" required />
+                    <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ t('profile.email') }}</label>
+                    <input v-model="profileForm.email" type="email" class="w-full rounded-lg border px-3 py-2 agent-input" required />
                     <p v-if="profileForm.errors.email" class="mt-1 text-sm text-red-600">{{ profileForm.errors.email }}</p>
                 </div>
                 <div>
-                    <label class="mb-1 block text-sm font-medium text-slate-700">{{ t('profile.language') }}</label>
-                    <select v-model="profileForm.locale" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" required>
+                    <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ t('profile.language') }}</label>
+                    <select v-model="profileForm.locale" class="w-full rounded-lg border px-3 py-2 text-sm agent-input" required>
                         <option v-for="option in localeOptions" :key="option.code" :value="option.code">
                             {{ option.label }}
                         </option>
                     </select>
-                    <p class="mt-1 text-xs text-slate-500">{{ t('profile.language_hint') }}</p>
+                    <p class="mt-1 text-xs agent-text-subtle">{{ t('profile.language_hint') }}</p>
                     <p v-if="profileForm.errors.locale" class="mt-1 text-sm text-red-600">{{ profileForm.errors.locale }}</p>
                 </div>
                 <div>
-                    <label class="mb-1 block text-sm font-medium text-slate-700">{{ t('profile.timezone') }}</label>
-                    <select v-model="profileForm.timezone" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm">
+                    <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ t('profile.timezone') }}</label>
+                    <select v-model="profileForm.timezone" class="w-full rounded-lg border px-3 py-2 text-sm agent-input">
                         <option value="">{{ helpdeskTimezone }} — {{ t('profile.workspace_default') }}</option>
                         <optgroup v-for="group in timezoneOptions" :key="group.region" :label="group.region">
                             <option v-for="tz in group.options" :key="tz.value" :value="tz.value">
@@ -141,8 +152,32 @@ const disableTwoFactor = () => {
                             </option>
                         </optgroup>
                     </select>
-                    <p class="mt-1 text-xs text-slate-500">{{ timezoneHint }}</p>
+                    <p class="mt-1 text-xs agent-text-subtle">{{ timezoneHint }}</p>
                     <p v-if="profileForm.errors.timezone" class="mt-1 text-sm text-red-600">{{ profileForm.errors.timezone }}</p>
+                </div>
+                <div>
+                    <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ t('profile.appearance') }}</label>
+                    <div class="grid gap-2 sm:grid-cols-3">
+                        <label
+                            v-for="option in appearanceOptions"
+                            :key="option.value"
+                            class="flex cursor-pointer items-center gap-2 rounded-lg border px-3 py-2.5 text-sm transition"
+                            :class="profileForm.appearance === option.value
+                                ? 'border-blue-500 bg-blue-50 text-blue-900 dark:border-blue-400 dark:bg-blue-950/40 dark:text-blue-100'
+                                : 'agent-border agent-panel agent-text-muted agent-hover-surface'"
+                        >
+                            <input
+                                v-model="profileForm.appearance"
+                                type="radio"
+                                class="sr-only"
+                                name="appearance"
+                                :value="option.value"
+                            />
+                            <span class="font-medium">{{ t(`profile.appearance_${option.value}`) }}</span>
+                        </label>
+                    </div>
+                    <p class="mt-1 text-xs agent-text-subtle">{{ t('profile.appearance_hint') }}</p>
+                    <p v-if="profileForm.errors.appearance" class="mt-1 text-sm text-red-600">{{ profileForm.errors.appearance }}</p>
                 </div>
                 <button type="submit" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700" :disabled="profileForm.processing">
                     {{ t('profile.save_profile') }}

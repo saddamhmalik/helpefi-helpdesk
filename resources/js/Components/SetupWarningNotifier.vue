@@ -9,7 +9,6 @@ const { t } = useI18n();
 
 const scope = computed(() => page.props.tenantId ?? '');
 const setupDismissedKey = computed(() => storageKey('setup-warnings-modal-dismissed', scope.value));
-const noticesCompleteKey = computed(() => storageKey('platform-notices-modal-complete', scope.value));
 const noticesSeenKey = computed(() => storageKey('platform-notices-seen-session', scope.value));
 
 const panelOpen = ref(false);
@@ -44,10 +43,6 @@ const platformNoticesPending = () => {
     const notices = page.props.platformNotices ?? [];
 
     if (!notices.length) {
-        return false;
-    }
-
-    if (readSessionItem(noticesCompleteKey.value) === '1') {
         return false;
     }
 

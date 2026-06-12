@@ -8,10 +8,10 @@ defineProps({
 <template>
     <div class="mb-6 flex flex-wrap items-center justify-between gap-4">
         <div>
-            <h1 v-if="title" class="text-2xl font-semibold text-slate-900">{{ title }}</h1>
+            <h1 v-if="title" class="text-2xl font-semibold agent-text">{{ title }}</h1>
             <p
                 v-if="description || $slots.description"
-                class="text-sm text-slate-600"
+                class="text-sm agent-text-muted"
                 :class="title ? 'mt-1' : ''"
             >
                 <slot name="description">{{ description }}</slot>

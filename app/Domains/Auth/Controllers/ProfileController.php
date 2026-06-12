@@ -8,6 +8,7 @@ use App\Domains\Security\Services\SecuritySettingService;
 use App\Domains\Security\Services\TwoFactorService;
 use App\Domains\Sla\Services\BusinessHoursService;
 use App\Http\Controllers\Controller;
+use App\Support\AppearanceSupport;
 use App\Support\LocaleSupport;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -36,8 +37,10 @@ class ProfileController extends Controller
             'mfaRequired' => $this->security->userMustEnrollMfa($user),
             'locale' => $this->preferences->locale($user),
             'storedTimezone' => $user->timezone,
+            'appearance' => $this->preferences->appearance($user),
             'localeOptions' => LocaleSupport::options(),
             'timezoneOptions' => $this->businessHours->timezoneOptions(),
+            'appearanceOptions' => AppearanceSupport::options(),
         ]);
     }
 
@@ -52,6 +55,7 @@ class ProfileController extends Controller
             'email' => ['required', 'email', 'max:255'],
             'locale' => ['required', 'string', Rule::in(LocaleSupport::APP_LOCALES)],
             'timezone' => ['nullable', 'string', 'timezone:all'],
+            'appearance' => ['required', 'string', Rule::in(AppearanceSupport::MODES)],
         ]);
 
         $this->profileService->update($request->user(), $data);

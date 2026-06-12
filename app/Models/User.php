@@ -14,7 +14,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
 
-#[Fillable(['name', 'email', 'locale', 'timezone', 'password', 'api_token', 'contact_id', 'custom_fields', 'performance_score', 'two_factor_secret', 'two_factor_recovery_codes', 'two_factor_confirmed_at', 'sso_subject', 'sso_provider'])]
+#[Fillable(['name', 'email', 'locale', 'timezone', 'appearance', 'password', 'api_token', 'contact_id', 'custom_fields', 'performance_score', 'two_factor_secret', 'two_factor_recovery_codes', 'two_factor_confirmed_at', 'sso_subject', 'sso_provider'])]
 #[Hidden(['password', 'remember_token', 'api_token', 'two_factor_secret', 'two_factor_recovery_codes'])]
 class User extends Authenticatable
 {

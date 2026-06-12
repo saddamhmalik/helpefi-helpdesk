@@ -1,4 +1,11 @@
 <!DOCTYPE html>
+@php
+    $appearance = 'system';
+
+    if (auth()->check()) {
+        $appearance = app(\App\Domains\Auth\Services\UserPreferenceService::class)->appearance(auth()->user());
+    }
+@endphp
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ in_array(app()->getLocale(), ['ar']) ? 'rtl' : 'ltr' }}">
     <head>
         <meta charset="utf-8">
@@ -9,10 +16,21 @@
         <link rel="icon" href="/favicon-16.png" type="image/png" sizes="16x16">
         <link rel="apple-touch-icon" href="/apple-touch-icon.png">
         <title inertia>{{ config('app.name', 'helpefi') }}</title>
+        <script>
+            (function () {
+                var pref = @json($appearance);
+                var dark = pref === 'dark' || (pref === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+
+                if (dark) {
+                    document.documentElement.classList.add('dark');
+                    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', '#0f172a');
+                }
+            })();
+        </script>
         @vite(['resources/css/app.css', 'resources/js/app.js'])
         @inertiaHead
     </head>
-    <body class="font-sans antialiased bg-slate-50 text-slate-900">
+    <body class="font-sans antialiased bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100">
         @inertia
     </body>
 </html>

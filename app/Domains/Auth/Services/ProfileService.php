@@ -4,6 +4,7 @@ namespace App\Domains\Auth\Services;
 
 use App\Models\User;
 use App\Domains\Security\Support\AuditRecorder;
+use App\Support\AppearanceSupport;
 use App\Support\LocaleSupport;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
@@ -42,12 +43,17 @@ class ProfileService
             $payload['timezone'] = $data['timezone'] ?: null;
         }
 
+        if (array_key_exists('appearance', $data)) {
+            $payload['appearance'] = AppearanceSupport::resolve($data['appearance']);
+        }
+
         $user->update($payload);
 
         $this->audit->record('profile.updated', $user, [
             'email' => $user->email,
             'locale' => $user->locale,
             'timezone' => $user->timezone,
+            'appearance' => $user->appearance,
         ], $user->id);
 
         return $user->fresh();
