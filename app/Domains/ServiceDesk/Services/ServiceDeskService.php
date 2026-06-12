@@ -74,6 +74,7 @@ class ServiceDeskService
             'plan' => $snapshot['plan']['name'] ?? 'Current plan',
             'features' => $snapshot['features'] ?? [],
             'addon' => $addon,
+            'currency' => $snapshot['currency'] ?? null,
             'onTrial' => $snapshot['on_trial'] ?? false,
         ];
     }

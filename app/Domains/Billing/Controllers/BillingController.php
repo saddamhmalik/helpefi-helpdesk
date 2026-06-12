@@ -49,23 +49,63 @@ class BillingController extends Controller
         $data = $request->validate([
             'plan' => ['required', 'in:'.implode(',', $this->planRepository->slugs())],
             'interval' => ['nullable', 'in:month,year'],
+            'redirect' => ['nullable', 'string', 'max:255'],
         ]);
 
         $interval = $data['interval'] ?? 'month';
+        $returnPath = $data['redirect'] ?? '/settings/billing?section=plans';
 
-        $url = $this->billingService->initiatePlanChange(
+        if (! str_starts_with($returnPath, '/')) {
+            $returnPath = '/settings/billing?section=plans';
+        }
+
+        $successPath = str_contains($returnPath, '?')
+            ? $returnPath.'&checkout=success'
+            : $returnPath.'?checkout=success';
+        $successUrl = $request->getSchemeAndHttpHost().$successPath;
+
+        $result = $this->billingService->initiatePlanChange(
             $data['plan'],
             (string) $request->user()->email,
-            $request->getSchemeAndHttpHost().'/settings/billing?checkout=success',
-            $request->getSchemeAndHttpHost().'/settings/billing?checkout=cancelled',
+            (string) $request->user()->name,
+            $successUrl,
             $interval,
         );
 
-        if (! is_string($url)) {
+        if (is_string($result)) {
+            return redirect($result);
+        }
+
+        if (! is_array($result)) {
             return back()->with('success', 'Plan updated.');
         }
 
-        return redirect()->away($url);
+        return redirect($returnPath)
+            ->with('razorpay_checkout', $result);
+    }
+
+    public function verifyRazorpayCheckout(Request $request): RedirectResponse
+    {
+        $data = $request->validate([
+            'razorpay_payment_id' => ['required', 'string'],
+            'razorpay_subscription_id' => ['required', 'string'],
+            'razorpay_signature' => ['required', 'string'],
+            'redirect' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        $this->billingService->verifyRazorpayCheckout(
+            $data['razorpay_payment_id'],
+            $data['razorpay_subscription_id'],
+            $data['razorpay_signature'],
+        );
+
+        $redirect = $data['redirect'] ?? '/settings/billing?checkout=success&section=usage';
+
+        if (! str_starts_with($redirect, '/')) {
+            $redirect = '/settings/billing?checkout=success&section=usage';
+        }
+
+        return redirect($redirect);
     }
 
     public function cancel(Request $request): RedirectResponse

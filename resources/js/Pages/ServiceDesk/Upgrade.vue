@@ -1,5 +1,5 @@
 <script setup>
-import { Head, Link, router } from '@inertiajs/vue3';
+import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import AgentLayout from '../../Layouts/AgentLayout.vue';
 import PageHeader from '../../Components/PageHeader.vue';
 import { useCurrency } from '../../composables/useCurrency.js';
@@ -12,8 +12,9 @@ const props = defineProps({
     onTrial: { type: Boolean, default: false },
 });
 
+const page = usePage();
 const { t } = useI18n();
-const { formatPrice } = useCurrency();
+const { formatPrice } = useCurrency(() => props.addon?.currency ?? page.props.billing?.currency);
 
 const purchaseAddon = () => {
     router.post('/settings/billing/addons/service_desk', {}, { preserveScroll: true });

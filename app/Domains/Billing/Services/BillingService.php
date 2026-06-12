@@ -238,17 +238,31 @@ class BillingService
     public function initiatePlanChange(
         string $slug,
         string $customerEmail,
+        string $customerName,
         string $successUrl,
-        string $cancelUrl,
         string $interval = 'month',
-    ): string|Subscription {
+    ): array|string|Subscription {
         $this->plans->find($slug);
 
         if ($this->razorpay->isEnabled()) {
-            return $this->razorpay->checkoutUrl($slug, $customerEmail, $successUrl, $cancelUrl, $interval);
+            return $this->razorpay->prepareCheckoutSession(
+                $slug,
+                $customerEmail,
+                $customerName,
+                $successUrl,
+                $interval,
+            );
         }
 
         return $this->changePlan($slug, $interval);
+    }
+
+    public function verifyRazorpayCheckout(
+        string $paymentId,
+        string $subscriptionId,
+        string $signature,
+    ): Subscription {
+        return $this->razorpay->verifySubscriptionPayment($paymentId, $subscriptionId, $signature);
     }
 
     public function cancelSubscription(): Subscription
@@ -386,6 +400,8 @@ class BillingService
 
     private function availableAddons(Subscription $subscription): array
     {
+        $currency = $this->centralSettings->currencyMeta();
+
         return collect($this->centralSettings->addonCatalog())
             ->filter(fn (array $addon) => $addon['enabled'] ?? true)
             ->map(fn (array $addon, string $key) => [
@@ -394,6 +410,7 @@ class BillingService
                 'feature' => $addon['feature'],
                 'description' => $addon['description'],
                 'price_monthly' => $addon['price_monthly'],
+                'currency' => $currency,
                 'active' => in_array($key, $subscription->active_addons ?? [], true),
                 'trial_access' => $subscription->isOnTrial()
                     && in_array($key, $subscription->active_addons ?? [], true),

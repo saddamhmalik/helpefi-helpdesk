@@ -1,17 +1,21 @@
 <script setup>
-import { computed } from 'vue';
-import { router, useForm } from '@inertiajs/vue3';
+import { computed, onMounted, watch } from 'vue';
+import { router, useForm, usePage } from '@inertiajs/vue3';
 import SettingsPage from '../../Components/SettingsPage.vue';
 import SettingsSectionNav from '../../Components/SettingsSectionNav.vue';
 import { useSettingsSection } from '../../composables/useSettingsSection.js';
 import { useCurrency } from '../../composables/useCurrency.js';
 import { useBillingInterval } from '../../composables/useBillingInterval.js';
+import { useRazorpayCheckout } from '../../composables/useRazorpayCheckout.js';
 import { useI18n } from 'vue-i18n';
 import { useDateTime } from '../../composables/useDateTime.js';
 
 const props = defineProps({
     billing: Object,
 });
+
+const page = usePage();
+const { open: openRazorpayCheckout } = useRazorpayCheckout();
 
 const { formatDateTime, formatDate } = useDateTime();
 
@@ -80,7 +84,12 @@ const savePlan = () => {
             return;
         }
 
-        window.location.href = `/settings/billing/checkout?plan=${encodeURIComponent(form.plan)}&interval=${encodeURIComponent(billingInterval.value)}`;
+        router.post('/settings/billing/checkout', {
+            plan: form.plan,
+            interval: billingInterval.value,
+            redirect: '/settings/billing?section=plans',
+        }, { preserveScroll: true });
+
         return;
     }
 
@@ -89,6 +98,21 @@ const savePlan = () => {
         interval: billingInterval.value,
     })).put('/settings/billing/plan', { preserveScroll: true });
 };
+
+const openCheckoutFromFlash = (session) => {
+    if (session?.subscription_id) {
+        openRazorpayCheckout(session, {
+            redirectOnSuccess: '/settings/billing?checkout=success&section=usage',
+        });
+    }
+};
+
+onMounted(() => openCheckoutFromFlash(page.props.flash?.razorpay_checkout));
+
+watch(
+    () => page.props.flash?.razorpay_checkout,
+    (session) => openCheckoutFromFlash(session),
+);
 
 const cancelSubscription = () => {
     router.post('/settings/billing/cancel', {}, { preserveScroll: true });
@@ -153,7 +177,7 @@ const addonStatusLabel = (addon) => {
     return t('settings_billing.addon_active');
 };
 
-const { formatPrice } = useCurrency(() => props.billing.currency);
+const { formatPrice } = useCurrency(() => props.addon?.currency ?? props.billing?.currency);
 
 const trialRemainingLabel = computed(() => {
     const days = props.billing.trial_days_remaining;

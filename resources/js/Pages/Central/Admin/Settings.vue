@@ -3,6 +3,7 @@ import { computed, ref } from 'vue';
 import { Head, router, useForm } from '@inertiajs/vue3';
 import AdminLayout from '../../../Layouts/AdminLayout.vue';
 import PageHeader from '../../../Components/PageHeader.vue';
+import { useCurrency } from '../../../composables/useCurrency.js';
 import { useI18n } from 'vue-i18n';
 
 const props = defineProps({
@@ -12,6 +13,12 @@ const props = defineProps({
 });
 
 const { t } = useI18n();
+
+const initialCurrencyCode = () => (
+    typeof props.settings.currency === 'object'
+        ? props.settings.currency.code
+        : props.settings.currency
+);
 
 const mapPlan = (plan) => {
     const unlimited = {};
@@ -51,15 +58,18 @@ const form = useForm({
     trial_days: props.settings.trial_days,
     tenant_purge_grace_days: props.settings.tenant_purge_grace_days ?? 15,
     tenant_purge_enabled: props.settings.tenant_purge_enabled ?? true,
-    currency: props.settings.currency,
+    currency: initialCurrencyCode(),
     plans: props.settings.plans.map(mapPlan),
     addons: (props.settings.addons ?? []).map(mapAddon),
 });
 
 const selectedCurrency = computed(() => (
     props.availableCurrencies.find((item) => item.code === form.currency)
+    ?? (typeof props.settings.currency === 'object' ? props.settings.currency : null)
     ?? { symbol: '$', code: 'USD', name: t('central.us_dollar') }
 ));
+
+const { formatPrice } = useCurrency(() => selectedCurrency.value);
 
 const toggleFeature = (plan, featureKey) => {
     const index = plan.features.indexOf(featureKey);
@@ -185,6 +195,7 @@ const submit = () => {
                             </option>
                         </select>
                         <p v-if="form.errors.currency" class="mt-1.5 text-xs text-red-600">{{ form.errors.currency }}</p>
+                        <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">Plan and add-on prices below use this currency for billing and tenant display.</p>
                     </div>
                 </section>
 
@@ -310,7 +321,7 @@ const submit = () => {
                 <section class="space-y-4">
                     <div>
                         <h2 class="font-semibold text-slate-900 dark:text-slate-100">Paid add-ons</h2>
-                        <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">Monthly add-ons tenants purchase on top of their base plan. Prices sync to Razorpay when enabled.</p>
+                        <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">Monthly add-ons tenants purchase on top of their base plan. Prices use {{ selectedCurrency.code }} and sync to Razorpay when enabled.</p>
                     </div>
 
                     <div
@@ -340,6 +351,7 @@ const submit = () => {
                                     <span class="flex items-center bg-slate-50 dark:bg-slate-950 px-3 text-sm text-slate-500 dark:text-slate-400">{{ selectedCurrency.symbol }}</span>
                                     <input v-model.number="addon.price_monthly" type="number" min="0" max="99999" required class="min-w-0 flex-1 border-0 bg-transparent px-3 py-2.5 text-sm" />
                                 </div>
+                                <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">Tenants see {{ formatPrice(addon.price_monthly) }}/mo</p>
                             </div>
                             <div v-if="!settings.razorpay_enabled" class="sm:col-span-2">
                                 <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Razorpay monthly price ID</label>
