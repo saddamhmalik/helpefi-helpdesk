@@ -63,6 +63,8 @@ class CentralSettingsService
 
     public function addonsForDisplay(): array
     {
+        $currency = $this->currencyMeta();
+
         return collect($this->addonCatalog())
             ->map(fn (array $addon, string $key) => [
                 'key' => $key,
@@ -70,6 +72,7 @@ class CentralSettingsService
                 'feature' => $addon['feature'],
                 'description' => $addon['description'],
                 'price_monthly' => $addon['price_monthly'],
+                'currency' => $currency,
                 'enabled' => $addon['enabled'],
                 'razorpay_plan_id_monthly' => $addon['razorpay_plan_id_monthly'] ?? null,
             ])
@@ -113,7 +116,7 @@ class CentralSettingsService
             'trial_days' => $this->trialDays(),
             'tenant_purge_grace_days' => $this->tenantPurgeGraceDays(),
             'tenant_purge_enabled' => $this->tenantPurgeEnabled(),
-            'currency' => $this->currency(),
+            'currency' => $this->currencyMeta(),
             'razorpay_enabled' => $this->razorpayPlanSync->isEnabled(),
             'plans' => $this->plansForDisplay(),
             'addons' => $this->addonsForDisplay(),

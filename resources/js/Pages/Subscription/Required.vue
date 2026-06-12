@@ -1,9 +1,10 @@
 <script setup>
-import { Head, Link, useForm } from '@inertiajs/vue3';
-import { usePage } from '@inertiajs/vue3';
+import { Head, Link, useForm, usePage, router } from '@inertiajs/vue3';
+import { onMounted, watch } from 'vue';
 import AgentLayout from '../../Layouts/AgentLayout.vue';
 import { useCurrency } from '../../composables/useCurrency.js';
 import { useBillingInterval } from '../../composables/useBillingInterval.js';
+import { useRazorpayCheckout } from '../../composables/useRazorpayCheckout.js';
 import { useI18n } from 'vue-i18n';
 
 const props = defineProps({
@@ -11,8 +12,8 @@ const props = defineProps({
 });
 
 const { t } = useI18n();
-
 const page = usePage();
+const { open: openRazorpayCheckout } = useRazorpayCheckout();
 const isAdmin = page.props.auth?.user?.is_admin;
 
 const form = useForm({
@@ -23,7 +24,12 @@ const { billingInterval, intervalSuffix, planPrice, billingReadyForInterval } = 
 
 const purchase = () => {
     if (props.billing.razorpay_enabled) {
-        window.location.href = `/settings/billing/checkout?plan=${encodeURIComponent(form.plan)}&interval=${encodeURIComponent(billingInterval.value)}`;
+        router.post('/settings/billing/checkout', {
+            plan: form.plan,
+            interval: billingInterval.value,
+            redirect: '/subscription-required',
+        }, { preserveScroll: true });
+
         return;
     }
 
@@ -37,6 +43,21 @@ const purchase = () => {
         },
     });
 };
+
+const openCheckoutFromFlash = (session) => {
+    if (session?.subscription_id) {
+        openRazorpayCheckout(session, {
+            redirectOnSuccess: '/dashboard',
+        });
+    }
+};
+
+onMounted(() => openCheckoutFromFlash(page.props.flash?.razorpay_checkout));
+
+watch(
+    () => page.props.flash?.razorpay_checkout,
+    (session) => openCheckoutFromFlash(session),
+);
 
 const { formatPrice } = useCurrency(() => props.billing.currency);
 </script>
@@ -91,11 +112,11 @@ const { formatPrice } = useCurrency(() => props.billing.currency);
                 </label>
 
                 <button type="button" class="w-full rounded-xl bg-blue-600 px-4 py-3 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-70" :disabled="form.processing" @click="purchase">
-                    {{ form.processing ? 'Redirecting…' : (billing.razorpay_enabled ? 'Continue to checkout' : 'Activate plan') }}
+                    {{ form.processing ? 'Opening checkout…' : (billing.razorpay_enabled ? 'Continue to checkout' : 'Activate plan') }}
                 </button>
 
                 <p class="text-center text-xs text-slate-500 dark:text-slate-400">
-                    {{ billing.razorpay_enabled ? 'You will be redirected to Razorpay to complete payment.' : 'Simulated checkout for local development — Razorpay is not configured.' }}
+                    {{ billing.razorpay_enabled ? 'Razorpay checkout will open to authorise your subscription.' : 'Simulated checkout for local development — Razorpay is not configured.' }}
                 </p>
             </div>
 

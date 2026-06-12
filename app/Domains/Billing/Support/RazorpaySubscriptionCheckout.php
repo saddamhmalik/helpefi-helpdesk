@@ -4,25 +4,26 @@ namespace App\Domains\Billing\Support;
 
 final class RazorpaySubscriptionCheckout
 {
-    public static function hostedPageUrl(array $entity): ?string
+    public static function canAuthenticateViaStandardCheckout(array $entity): bool
     {
         if (($entity['status'] ?? '') !== 'created') {
-            return null;
+            return false;
         }
 
+        if (self::isExpired($entity)) {
+            return false;
+        }
+
+        $subscriptionId = $entity['id'] ?? null;
+
+        return is_string($subscriptionId) && $subscriptionId !== '';
+    }
+
+    public static function isExpired(array $entity): bool
+    {
         $expireBy = $entity['expire_by'] ?? null;
 
-        if (is_numeric($expireBy) && now()->getTimestamp() > (int) $expireBy) {
-            return null;
-        }
-
-        $shortUrl = $entity['short_url'] ?? null;
-
-        if (! is_string($shortUrl) || $shortUrl === '') {
-            return null;
-        }
-
-        return $shortUrl;
+        return is_numeric($expireBy) && now()->getTimestamp() > (int) $expireBy;
     }
 
     public static function shouldResetIncompleteSubscription(array $entity): bool
@@ -30,7 +31,7 @@ final class RazorpaySubscriptionCheckout
         $status = (string) ($entity['status'] ?? '');
 
         if ($status === 'created') {
-            return self::hostedPageUrl($entity) === null;
+            return ! self::canAuthenticateViaStandardCheckout($entity);
         }
 
         return in_array($status, ['authenticated', 'pending', 'halted', 'expired'], true);

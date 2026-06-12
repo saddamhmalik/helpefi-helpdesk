@@ -2,6 +2,7 @@
 import { Link } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { useCurrency } from '../composables/useCurrency.js';
 import { usePlanFeature } from '../composables/usePlanFeature.js';
 
 const props = defineProps({
@@ -10,6 +11,7 @@ const props = defineProps({
 
 const { t } = useI18n();
 const { hasFeature, requiredPlanName, featureLabel, addon, isAddonFeature, billing } = usePlanFeature(props.feature);
+const { formatPrice } = useCurrency(() => billing.value?.currency ?? addon.value?.currency);
 
 const billingHref = computed(() => {
     if (isAddonFeature.value) {
@@ -31,7 +33,7 @@ const message = computed(() => {
 
         return t('settings_billing.addon_feature_hint', {
             feature: featureLabel.value,
-            price: addon.value?.price_monthly ? `$${addon.value.price_monthly}/mo` : '',
+            price: addon.value?.price_monthly ? `${formatPrice(addon.value.price_monthly)}/mo` : '',
         });
     }
 

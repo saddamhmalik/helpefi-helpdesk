@@ -39,6 +39,7 @@ class EnsureActiveSubscription
             'settings.billing',
             'settings.billing.plan',
             'settings.billing.checkout',
+            'settings.billing.razorpay.verify',
             'settings.billing.portal',
             'logout',
         )) {

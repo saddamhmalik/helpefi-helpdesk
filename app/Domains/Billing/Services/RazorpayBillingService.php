@@ -34,13 +34,13 @@ class RazorpayBillingService
         return (bool) config('razorpay.enabled') && config('razorpay.key') && config('razorpay.secret');
     }
 
-    public function checkoutUrl(
+    public function prepareCheckoutSession(
         string $planSlug,
         string $customerEmail,
+        string $customerName,
         string $successUrl,
-        string $cancelUrl,
         string $interval = 'month',
-    ): string {
+    ): array|string {
         $this->assertEnabled();
 
         $plan = $this->plans->find($planSlug);
@@ -56,23 +56,26 @@ class RazorpayBillingService
         $this->assertCanChangePlan($subscription);
 
         $tenant = Tenant::query()->findOrFail(tenant('id'));
-        $customerId = $this->ensureCustomer($tenant, $customerEmail);
+        $this->ensureCustomer($tenant, $customerEmail);
 
         if ($subscription->razorpay_subscription_id) {
-            $existingUrl = $this->resolveExistingCheckoutUrl(
+            $existing = $this->resolveExistingCheckoutSession(
                 $subscription,
                 $planId,
                 $successUrl,
+                $plan,
+                $customerEmail,
+                $customerName,
             );
 
-            if ($existingUrl !== null) {
-                return $existingUrl;
+            if ($existing !== null) {
+                return $existing;
             }
         }
 
         $razorpaySubscription = $this->client()->subscription->create([
             'plan_id' => $planId,
-            'customer_id' => $customerId,
+            'customer_id' => $tenant->razorpay_customer_id,
             'customer_notify' => 1,
             'total_count' => $interval === 'year' ? 10 : 120,
             'expire_by' => now()->addDays(3)->getTimestamp(),
@@ -85,7 +88,53 @@ class RazorpayBillingService
 
         $this->persistPendingCheckoutSubscription($subscription, $razorpaySubscription, $planSlug, $planId, $interval);
 
-        return $this->requireCheckoutShortUrl($razorpaySubscription);
+        return $this->buildCheckoutSession($razorpaySubscription, $plan, $customerEmail, $customerName);
+    }
+
+    public function verifySubscriptionPayment(
+        string $paymentId,
+        string $subscriptionId,
+        string $signature,
+    ): Subscription {
+        $this->assertEnabled();
+
+        try {
+            $this->client()->utility->verifyPaymentSignature([
+                'razorpay_payment_id' => $paymentId,
+                'razorpay_subscription_id' => $subscriptionId,
+                'razorpay_signature' => $signature,
+            ]);
+        } catch (SignatureVerificationError $exception) {
+            throw ValidationException::withMessages([
+                'razorpay' => 'Payment verification failed. Please try again or contact support.',
+            ]);
+        }
+
+        $subscription = $this->subscriptions->current();
+
+        if ($subscription->razorpay_subscription_id !== $subscriptionId) {
+            throw ValidationException::withMessages([
+                'razorpay' => 'This checkout session does not match your workspace subscription.',
+            ]);
+        }
+
+        try {
+            $entity = $this->client()->subscription->fetch($subscriptionId)->toArray();
+        } catch (Error $exception) {
+            Log::warning('Razorpay subscription fetch failed after payment verification', [
+                'subscription_id' => $subscriptionId,
+                'message' => $exception->getMessage(),
+            ]);
+
+            throw ValidationException::withMessages([
+                'razorpay' => 'Payment was received but the subscription could not be confirmed yet. Please refresh billing in a moment.',
+            ]);
+        }
+
+        return $this->lifecycle->applyRazorpaySubscription(
+            $subscription,
+            $this->normalizeSubscriptionPayload($entity),
+        );
     }
 
     public function purchaseAddon(string $addonKey, string $customerEmail): Subscription
@@ -359,11 +408,15 @@ class RazorpayBillingService
         }
     }
 
-    private function resolveExistingCheckoutUrl(
+    /** @return array<string, mixed>|string|null */
+    private function resolveExistingCheckoutSession(
         Subscription $subscription,
         string $planId,
         string $successUrl,
-    ): ?string {
+        array $plan,
+        string $customerEmail,
+        string $customerName,
+    ): array|string|null {
         try {
             $entity = $this->client()->subscription->fetch($subscription->razorpay_subscription_id)->toArray();
         } catch (Error $exception) {
@@ -398,12 +451,8 @@ class RazorpayBillingService
             }
         }
 
-        if ($status === 'created') {
-            $shortUrl = RazorpaySubscriptionCheckout::hostedPageUrl($entity);
-
-            if ($shortUrl !== null) {
-                return $shortUrl;
-            }
+        if ($status === 'created' && RazorpaySubscriptionCheckout::canAuthenticateViaStandardCheckout($entity)) {
+            return $this->buildCheckoutSession($entity, $plan, $customerEmail, $customerName);
         }
 
         if (RazorpaySubscriptionCheckout::shouldResetIncompleteSubscription($entity)) {
@@ -413,6 +462,36 @@ class RazorpayBillingService
         $this->clearRazorpaySubscriptionReference($subscription);
 
         return null;
+    }
+
+    /** @return array<string, mixed> */
+    private function buildCheckoutSession(
+        array $razorpaySubscription,
+        array $plan,
+        string $customerEmail,
+        string $customerName,
+    ): array {
+        $subscriptionId = (string) ($razorpaySubscription['id'] ?? '');
+
+        if ($subscriptionId === '') {
+            throw ValidationException::withMessages([
+                'plan' => 'Unable to start Razorpay checkout. Please try again.',
+            ]);
+        }
+
+        return [
+            'key' => (string) config('razorpay.key'),
+            'subscription_id' => $subscriptionId,
+            'name' => (string) config('app.name'),
+            'description' => ($plan['name'] ?? 'Plan').' subscription',
+            'prefill' => [
+                'email' => $customerEmail,
+                'name' => $customerName,
+            ],
+            'theme' => [
+                'color' => '#2563eb',
+            ],
+        ];
     }
 
     private function persistPendingCheckoutSubscription(
@@ -428,19 +507,6 @@ class RazorpayBillingService
             'plan' => $planSlug,
             'billing_interval' => $interval,
         ]);
-    }
-
-    private function requireCheckoutShortUrl(array $razorpaySubscription): string
-    {
-        $shortUrl = $razorpaySubscription['short_url'] ?? null;
-
-        if (! is_string($shortUrl) || $shortUrl === '') {
-            throw ValidationException::withMessages([
-                'plan' => 'Unable to start Razorpay checkout. Confirm Subscriptions are enabled in your Razorpay dashboard, then try again.',
-            ]);
-        }
-
-        return $shortUrl;
     }
 
     private function cancelRazorpaySubscriptionImmediately(string $subscriptionId): void

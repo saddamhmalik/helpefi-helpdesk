@@ -167,7 +167,8 @@ Route::middleware('auth')->group(function () {
 
     Route::middleware('admin')->group(function () {
         Route::get('/settings/billing', [BillingController::class, 'index'])->name('settings.billing');
-        Route::get('/settings/billing/checkout', [BillingController::class, 'checkout'])->name('settings.billing.checkout');
+        Route::post('/settings/billing/checkout', [BillingController::class, 'checkout'])->name('settings.billing.checkout');
+        Route::post('/settings/billing/razorpay/verify', [BillingController::class, 'verifyRazorpayCheckout'])->name('settings.billing.razorpay.verify');
         Route::put('/settings/billing/plan', [BillingController::class, 'updatePlan'])->name('settings.billing.plan');
         Route::post('/settings/billing/cancel', [BillingController::class, 'cancel'])->name('settings.billing.cancel');
         Route::post('/settings/billing/addons/{addon}', [BillingController::class, 'purchaseAddon'])->name('settings.billing.addons.purchase');
