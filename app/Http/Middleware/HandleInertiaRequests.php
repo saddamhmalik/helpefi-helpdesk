@@ -99,15 +99,15 @@ class HandleInertiaRequests extends Middleware
             'helpCenter' => fn () => tenant('id')
                 ? app(\App\Domains\Knowledge\Services\HelpCenterService::class)->guestState()
                 : null,
-            'flash' => [
-                'success' => fn () => $request->session()->pull('success'),
-                'error' => fn () => $request->session()->pull('error'),
-                'created_inbox_id' => fn () => $request->session()->pull('created_inbox_id'),
-                'invite_url' => fn () => $request->session()->get('invite_url'),
-                'webhook_secret' => fn () => $request->session()->get('webhook_secret'),
-                'two_factor_setup' => fn () => $request->session()->get('two_factor_setup'),
-                'recovery_codes' => fn () => $request->session()->get('recovery_codes'),
-                'razorpay_checkout' => fn () => $request->session()->pull('razorpay_checkout'),
+            'flash' => fn () => [
+                'success' => $request->session()->pull('success'),
+                'error' => $request->session()->pull('error'),
+                'created_inbox_id' => $request->session()->pull('created_inbox_id'),
+                'invite_url' => $request->session()->pull('invite_url'),
+                'webhook_secret' => $request->session()->pull('webhook_secret'),
+                'two_factor_setup' => $request->session()->pull('two_factor_setup'),
+                'recovery_codes' => $request->session()->pull('recovery_codes'),
+                'razorpay_checkout' => $request->session()->pull('razorpay_checkout'),
             ],
         ]);
     }

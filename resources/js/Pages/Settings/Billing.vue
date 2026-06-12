@@ -79,6 +79,15 @@ const currentPlanSuffix = computed(() => {
     return '/mo';
 });
 
+const openCheckoutFromFlash = (session) => {
+    if (session?.subscription_id) {
+        openRazorpayCheckout(session, {
+            redirectOnSuccess: session.redirect_on_success ?? '/settings/billing?checkout=success&section=plans',
+            redirectOnCancel: session.redirect_on_cancel ?? '/settings/billing?checkout=cancelled&section=plans',
+        });
+    }
+};
+
 const savePlan = () => {
     if (props.billing.razorpay_enabled) {
         if (!selectedPlanBillingReady.value) {
@@ -94,6 +103,9 @@ const savePlan = () => {
             redirect: '/settings/billing?section=plans',
         }, {
             preserveScroll: true,
+            onSuccess: (page) => {
+                openCheckoutFromFlash(page.props.flash?.razorpay_checkout);
+            },
             onFinish: () => {
                 checkoutProcessing.value = false;
             },
@@ -106,15 +118,6 @@ const savePlan = () => {
         ...data,
         interval: billingInterval.value,
     })).put('/settings/billing/plan', { preserveScroll: true });
-};
-
-const openCheckoutFromFlash = (session) => {
-    if (session?.subscription_id) {
-        openRazorpayCheckout(session, {
-            redirectOnSuccess: '/settings/billing?checkout=success&section=usage',
-            redirectOnCancel: '/settings/billing?checkout=cancelled&section=plans',
-        });
-    }
 };
 
 onMounted(() => openCheckoutFromFlash(page.props.flash?.razorpay_checkout));
