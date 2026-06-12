@@ -40,7 +40,7 @@ class RazorpayBillingService
         string $customerName,
         string $successUrl,
         string $interval = 'month',
-    ): array|string {
+    ): array|string|Subscription {
         $this->assertEnabled();
 
         $plan = $this->plans->find($planSlug);
@@ -72,7 +72,9 @@ class RazorpayBillingService
         if ($subscription->razorpay_subscription_id) {
             $existing = $this->resolveExistingCheckoutSession(
                 $subscription,
+                $planSlug,
                 $planId,
+                $interval,
                 $successUrl,
                 $plan,
                 $customerEmail,
@@ -88,7 +90,7 @@ class RazorpayBillingService
             $razorpaySubscription = $this->client()->subscription->create([
                 'plan_id' => $planId,
                 'customer_id' => $tenant->razorpay_customer_id,
-                'customer_notify' => 1,
+                'customer_notify' => true,
                 'total_count' => $interval === 'year' ? 10 : 120,
                 'expire_by' => now()->addDays(3)->getTimestamp(),
                 'notes' => [
@@ -141,6 +143,23 @@ class RazorpayBillingService
         }
 
         $subscription = $this->subscriptions->current();
+        $addonKey = $this->resolveAddonKeyForRazorpaySubscriptionId($subscription, $subscriptionId);
+
+        if ($addonKey === null && $subscription->razorpay_subscription_id !== $subscriptionId) {
+            try {
+                $entity = $this->fetchedSubscription($subscriptionId)->toArray();
+
+                if ($this->isAddonSubscription($entity)) {
+                    $addonKey = (string) ($entity['notes']['addon_key'] ?? '');
+                }
+            } catch (Error) {
+                $addonKey = null;
+            }
+        }
+
+        if ($addonKey !== null && $addonKey !== '') {
+            return $this->confirmAddonSubscriptionPayment($subscription, $subscriptionId, $addonKey);
+        }
 
         if (! $subscription->razorpay_subscription_id) {
             throw ValidationException::withMessages([
@@ -173,7 +192,8 @@ class RazorpayBillingService
         );
     }
 
-    public function purchaseAddon(string $addonKey, string $customerEmail): Subscription
+    /** @return array<string, mixed>|Subscription */
+    public function purchaseAddon(string $addonKey, string $customerEmail, string $customerName = ''): array|Subscription
     {
         $this->assertEnabled();
 
@@ -205,21 +225,13 @@ class RazorpayBillingService
         }
 
         $tenant = Tenant::query()->findOrFail(tenant('id'));
-        $this->ensureCustomer($tenant, $customerEmail);
 
         try {
-            $addonItem = $this->fetchedSubscription($subscription->razorpay_subscription_id)->createAddon([
-                'item' => [
-                    'name' => $addon['name'],
-                    'amount' => max(0, (int) ($addon['price_monthly'] ?? 0)) * 100,
-                    'currency' => $this->centralSettings->currency(),
-                ],
-                'quantity' => 1,
-            ])->toArray();
+            $this->ensureCustomer($tenant, $customerEmail);
         } catch (Error $exception) {
-            Log::warning('Razorpay add-on purchase failed', [
+            Log::warning('Razorpay customer resolution failed during add-on purchase', [
+                'tenant_id' => $tenant->id,
                 'addon' => $addonKey,
-                'subscription_id' => $subscription->razorpay_subscription_id,
                 'message' => $exception->getMessage(),
             ]);
 
@@ -228,14 +240,53 @@ class RazorpayBillingService
             ]);
         }
 
-        $active = $subscription->active_addons ?? [];
-        $razorpayAddonItems = $subscription->razorpay_addon_items ?? [];
-        $razorpayAddonItems[$addonKey] = (string) ($addonItem['id'] ?? '');
+        $existingAddonSubscription = $this->resolvePendingAddonSubscription(
+            $subscription,
+            $addonKey,
+            $addon,
+            $customerEmail,
+            $customerName,
+        );
 
-        return $this->subscriptions->update($subscription, [
-            'active_addons' => array_values(array_unique([...$active, $addonKey])),
-            'razorpay_addon_items' => $razorpayAddonItems,
-        ]);
+        if ($existingAddonSubscription !== null) {
+            return $existingAddonSubscription;
+        }
+
+        try {
+            $addonSubscription = $this->client()->subscription->create([
+                'plan_id' => $planId,
+                'customer_id' => $tenant->razorpay_customer_id,
+                'customer_notify' => true,
+                'total_count' => 120,
+                'expire_by' => now()->addDays(3)->getTimestamp(),
+                'notes' => [
+                    'tenant_id' => $tenant->id,
+                    'addon_key' => $addonKey,
+                    'billing_type' => 'addon',
+                ],
+            ])->toArray();
+        } catch (Error $exception) {
+            Log::warning('Razorpay add-on subscription creation failed', [
+                'addon' => $addonKey,
+                'plan_id' => $planId,
+                'message' => $exception->getMessage(),
+            ]);
+
+            throw ValidationException::withMessages([
+                'addon' => 'Unable to purchase this add-on. Please try again or contact support.',
+            ]);
+        }
+
+        $this->persistPendingAddonSubscription($subscription, $addonKey, $addonSubscription);
+
+        return $this->resolveAddonPurchaseResult(
+            $subscription->fresh(),
+            $addonKey,
+            $addonSubscription,
+            $addon,
+            $customerEmail,
+            $customerName,
+        );
     }
 
     public function cancelAddon(string $addonKey): Subscription
@@ -246,9 +297,15 @@ class RazorpayBillingService
         $razorpayAddonItems = $subscription->razorpay_addon_items ?? [];
         $itemId = $razorpayAddonItems[$addonKey] ?? null;
 
-        if ($itemId && $subscription->razorpay_subscription_id) {
+        if ($itemId) {
             try {
-                $this->client()->addon->fetch($itemId)->delete();
+                if (str_starts_with($itemId, 'sub_')) {
+                    $this->fetchedSubscription($itemId)->cancel([
+                        'cancel_at_cycle_end' => true,
+                    ]);
+                } elseif (str_starts_with($itemId, 'ao_')) {
+                    $this->client()->addon->fetch($itemId)->delete();
+                }
             } catch (Error $exception) {
                 Log::warning('Razorpay add-on cancellation failed', [
                     'addon' => $addonKey,
@@ -390,13 +447,21 @@ class RazorpayBillingService
 
     private function handleSubscriptionEvent(array $event): void
     {
+        $entity = $event['payload']['subscription']['entity'] ?? [];
+
+        if ($this->isAddonSubscription($entity)) {
+            $this->handleAddonSubscriptionEvent($event);
+
+            return;
+        }
+
         $subscription = $this->resolveSubscription($event);
 
         if (! $subscription) {
             return;
         }
 
-        $payload = $this->normalizeSubscriptionPayload($event['payload']['subscription']['entity'] ?? []);
+        $payload = $this->normalizeSubscriptionPayload($entity);
 
         $this->lifecycle->applyRazorpaySubscription($subscription, $payload);
     }
@@ -414,22 +479,75 @@ class RazorpayBillingService
 
     private function handleSubscriptionCancelled(array $event): void
     {
+        $entity = $event['payload']['subscription']['entity'] ?? [];
+
+        if ($this->isAddonSubscription($entity)) {
+            $this->handleAddonSubscriptionEvent($event);
+
+            return;
+        }
+
         $subscription = $this->resolveSubscription($event);
 
         if (! $subscription) {
             return;
         }
 
-        $payload = $this->normalizeSubscriptionPayload($event['payload']['subscription']['entity'] ?? []);
-        $periodEnd = isset($payload['current_end']) ? now()->createFromTimestamp($payload['current_end']) : null;
+        $payload = $this->normalizeSubscriptionPayload($entity);
+        $periodEnd = isset($payload->current_end) ? now()->createFromTimestamp($payload->current_end) : null;
 
         $this->lifecycle->markCancelled($subscription, [
             'razorpay_subscription_id' => null,
             'renews_at' => null,
-            'cancelled_at' => isset($payload['ended_at'])
-                ? now()->createFromTimestamp($payload['ended_at'])
+            'cancelled_at' => isset($payload->ended_at)
+                ? now()->createFromTimestamp($payload->ended_at)
                 : now(),
         ], $periodEnd);
+    }
+
+    private function handleAddonSubscriptionEvent(array $event): void
+    {
+        $subscription = $this->resolveSubscription($event);
+
+        if (! $subscription) {
+            return;
+        }
+
+        $entity = $event['payload']['subscription']['entity'] ?? [];
+        $addonKey = (string) ($entity['notes']['addon_key'] ?? '');
+        $subscriptionId = (string) ($entity['id'] ?? '');
+        $status = (string) ($entity['status'] ?? '');
+
+        if ($addonKey === '' || $subscriptionId === '') {
+            return;
+        }
+
+        if (in_array($status, ['active', 'authenticated'], true)) {
+            $this->activateAddonSubscription($subscription, $addonKey, $entity);
+
+            return;
+        }
+
+        if (! in_array($status, ['cancelled', 'completed'], true)) {
+            return;
+        }
+
+        $items = $subscription->razorpay_addon_items ?? [];
+
+        if (($items[$addonKey] ?? null) !== $subscriptionId) {
+            return;
+        }
+
+        $active = array_values(array_filter(
+            $subscription->active_addons ?? [],
+            fn (string $key) => $key !== $addonKey,
+        ));
+        unset($items[$addonKey]);
+
+        $this->subscriptions->update($subscription, [
+            'active_addons' => $active,
+            'razorpay_addon_items' => $items,
+        ]);
     }
 
     private function handlePaymentFailed(array $event): void
@@ -519,15 +637,17 @@ class RazorpayBillingService
         }
     }
 
-    /** @return array<string, mixed>|string|null */
+    /** @return array<string, mixed>|string|Subscription|null */
     private function resolveExistingCheckoutSession(
         Subscription $subscription,
+        string $planSlug,
         string $planId,
+        string $interval,
         string $successUrl,
         array $plan,
         string $customerEmail,
         string $customerName,
-    ): array|string|null {
+    ): array|string|Subscription|null {
         try {
             $entity = $this->fetchedSubscription($subscription->razorpay_subscription_id)->toArray();
         } catch (Error $exception) {
@@ -550,32 +670,22 @@ class RazorpayBillingService
             );
 
             if ($subscription->isActive()) {
-                if (($entity['plan_id'] ?? null) !== $planId) {
-                    try {
-                        $this->fetchedSubscription($subscription->razorpay_subscription_id)->update([
-                            'plan_id' => $planId,
-                            'schedule_change_at' => 'now',
-                            'customer_notify' => 1,
-                        ]);
-                    } catch (Error $exception) {
-                        Log::warning('Razorpay subscription plan update failed during checkout', [
-                            'subscription_id' => $subscription->razorpay_subscription_id,
-                            'plan_id' => $planId,
-                            'message' => $exception->getMessage(),
-                        ]);
-
-                        throw ValidationException::withMessages([
-                            'plan' => 'Unable to change plan right now. Please try again or contact support.',
-                        ]);
-                    }
+                if ($this->matchesSelectedPlan($subscription, $planSlug, $interval)) {
+                    return $subscription;
                 }
 
-                return $successUrl;
+                return $this->changeActiveRazorpayPlan(
+                    $subscription,
+                    $planSlug,
+                    $planId,
+                    $interval,
+                    $entity,
+                );
             }
         }
 
         if ($status === 'created' && RazorpaySubscriptionCheckout::canAuthenticateViaStandardCheckout($entity)) {
-            if (($entity['plan_id'] ?? null) !== $planId) {
+            if (($entity['plan_id'] ?? null) !== $planId || ! $this->matchesSelectedPlan($subscription, $planSlug, $interval)) {
                 $this->cancelRazorpaySubscriptionImmediately($subscription->razorpay_subscription_id);
                 $this->clearRazorpaySubscriptionReference($subscription);
 
@@ -639,9 +749,241 @@ class RazorpayBillingService
         ]);
     }
 
+    private function matchesSelectedPlan(Subscription $subscription, string $planSlug, string $interval): bool
+    {
+        return $subscription->plan === $planSlug
+            && ($subscription->billing_interval ?? 'month') === $interval;
+    }
+
+    private function changeActiveRazorpayPlan(
+        Subscription $subscription,
+        string $planSlug,
+        string $planId,
+        string $interval,
+        array $currentEntity,
+    ): Subscription {
+        $subscriptionId = (string) $subscription->razorpay_subscription_id;
+        $currentPlan = $this->plans->find($subscription->plan ?? $planSlug);
+        $nextPlan = $this->plans->find($planSlug);
+        $currentPrice = PlanCatalogDefinition::priceForInterval($currentPlan, $interval);
+        $nextPrice = PlanCatalogDefinition::priceForInterval($nextPlan, $interval);
+        $scheduleChangeAt = $nextPrice >= $currentPrice ? 'now' : 'cycle_end';
+
+        $payload = [
+            'plan_id' => $planId,
+            'schedule_change_at' => $scheduleChangeAt,
+            'customer_notify' => true,
+        ];
+
+        if (isset($currentEntity['remaining_count'])) {
+            $payload['remaining_count'] = (int) $currentEntity['remaining_count'];
+        }
+
+        try {
+            $this->fetchedSubscription($subscriptionId)->update($payload);
+        } catch (Error $exception) {
+            if ($scheduleChangeAt === 'now') {
+                try {
+                    $payload['schedule_change_at'] = 'cycle_end';
+                    $this->fetchedSubscription($subscriptionId)->update($payload);
+                } catch (Error $retryException) {
+                    Log::warning('Razorpay subscription plan update failed during checkout', [
+                        'subscription_id' => $subscriptionId,
+                        'plan_id' => $planId,
+                        'plan_slug' => $planSlug,
+                        'interval' => $interval,
+                        'message' => $retryException->getMessage(),
+                        'initial_message' => $exception->getMessage(),
+                    ]);
+
+                    throw ValidationException::withMessages([
+                        'plan' => 'Unable to change plan right now. Please try again or contact support.',
+                    ]);
+                }
+            } else {
+                Log::warning('Razorpay subscription plan update failed during checkout', [
+                    'subscription_id' => $subscriptionId,
+                    'plan_id' => $planId,
+                    'plan_slug' => $planSlug,
+                    'interval' => $interval,
+                    'message' => $exception->getMessage(),
+                ]);
+
+                throw ValidationException::withMessages([
+                    'plan' => 'Unable to change plan right now. Please try again or contact support.',
+                ]);
+            }
+        }
+
+        $updatedEntity = $this->fetchedSubscription($subscriptionId)->toArray();
+
+        $this->subscriptions->update($subscription, [
+            'plan' => $planSlug,
+            'billing_interval' => $interval,
+            'razorpay_plan_id' => $planId,
+        ]);
+
+        return $this->lifecycle->applyRazorpaySubscription(
+            $subscription->fresh(),
+            $this->normalizeSubscriptionPayload($updatedEntity),
+        );
+    }
+
     private function fetchedSubscription(string $subscriptionId)
     {
         return $this->client()->subscription->fetch($subscriptionId);
+    }
+
+    private function isAddonSubscription(array $entity): bool
+    {
+        $notes = $entity['notes'] ?? [];
+
+        return ($notes['billing_type'] ?? null) === 'addon'
+            || isset($notes['addon_key']);
+    }
+
+    private function resolveAddonKeyForRazorpaySubscriptionId(Subscription $subscription, string $subscriptionId): ?string
+    {
+        foreach ($subscription->razorpay_addon_items ?? [] as $key => $id) {
+            if ((string) $id === $subscriptionId) {
+                return $key;
+            }
+        }
+
+        return null;
+    }
+
+    private function confirmAddonSubscriptionPayment(
+        Subscription $subscription,
+        string $subscriptionId,
+        string $addonKey,
+    ): Subscription {
+        try {
+            $entity = $this->fetchedSubscription($subscriptionId)->toArray();
+        } catch (Error $exception) {
+            Log::warning('Razorpay add-on subscription fetch failed after payment verification', [
+                'subscription_id' => $subscriptionId,
+                'addon' => $addonKey,
+                'message' => $exception->getMessage(),
+            ]);
+
+            throw ValidationException::withMessages([
+                'razorpay' => 'Payment was received but the add-on could not be confirmed yet. Please refresh billing in a moment.',
+            ]);
+        }
+
+        $status = (string) ($entity['status'] ?? '');
+
+        if (! in_array($status, ['active', 'authenticated'], true)) {
+            throw ValidationException::withMessages([
+                'razorpay' => 'Payment was received but the add-on could not be confirmed yet. Please refresh billing in a moment.',
+            ]);
+        }
+
+        return $this->activateAddonSubscription($subscription, $addonKey, $entity);
+    }
+
+    private function activateAddonSubscription(Subscription $subscription, string $addonKey, array $addonSubscription): Subscription
+    {
+        $active = $subscription->active_addons ?? [];
+        $items = $subscription->razorpay_addon_items ?? [];
+        $items[$addonKey] = (string) ($addonSubscription['id'] ?? '');
+
+        return $this->subscriptions->update($subscription, [
+            'active_addons' => array_values(array_unique([...$active, $addonKey])),
+            'razorpay_addon_items' => $items,
+        ]);
+    }
+
+    private function persistPendingAddonSubscription(
+        Subscription $subscription,
+        string $addonKey,
+        array $addonSubscription,
+    ): void {
+        $items = $subscription->razorpay_addon_items ?? [];
+        $items[$addonKey] = (string) ($addonSubscription['id'] ?? '');
+
+        $this->subscriptions->update($subscription, [
+            'razorpay_addon_items' => $items,
+        ]);
+    }
+
+    /** @return array<string, mixed>|Subscription|null */
+    private function resolvePendingAddonSubscription(
+        Subscription $subscription,
+        string $addonKey,
+        array $addon,
+        string $customerEmail,
+        string $customerName,
+    ): array|Subscription|null {
+        $existingId = $subscription->razorpay_addon_items[$addonKey] ?? null;
+
+        if (! is_string($existingId) || ! str_starts_with($existingId, 'sub_')) {
+            return null;
+        }
+
+        try {
+            $entity = $this->fetchedSubscription($existingId)->toArray();
+        } catch (Error $exception) {
+            Log::warning('Razorpay add-on subscription fetch failed during purchase', [
+                'addon' => $addonKey,
+                'subscription_id' => $existingId,
+                'message' => $exception->getMessage(),
+            ]);
+
+            return null;
+        }
+
+        $status = (string) ($entity['status'] ?? '');
+
+        if (in_array($status, ['active', 'authenticated'], true)) {
+            return $this->activateAddonSubscription($subscription, $addonKey, $entity);
+        }
+
+        if ($status === 'created') {
+            return $this->buildAddonCheckoutSession($entity, $addon, $customerEmail, $customerName);
+        }
+
+        return null;
+    }
+
+    /** @return array<string, mixed>|Subscription */
+    private function resolveAddonPurchaseResult(
+        Subscription $subscription,
+        string $addonKey,
+        array $addonSubscription,
+        array $addon,
+        string $customerEmail,
+        string $customerName,
+    ): array|Subscription {
+        $status = (string) ($addonSubscription['status'] ?? '');
+
+        if (in_array($status, ['active', 'authenticated'], true)) {
+            return $this->activateAddonSubscription($subscription, $addonKey, $addonSubscription);
+        }
+
+        return $this->buildAddonCheckoutSession($addonSubscription, $addon, $customerEmail, $customerName);
+    }
+
+    /** @return array<string, mixed> */
+    private function buildAddonCheckoutSession(
+        array $addonSubscription,
+        array $addon,
+        string $customerEmail,
+        string $customerName,
+    ): array {
+        return array_merge(
+            $this->buildCheckoutSession(
+                $addonSubscription,
+                ['name' => $addon['name'] ?? 'Add-on'],
+                $customerEmail,
+                $customerName,
+            ),
+            [
+                'redirect_on_success' => '/settings/billing?checkout=success&section=addons',
+                'redirect_on_cancel' => '/settings/billing?checkout=cancelled&section=addons',
+            ],
+        );
     }
 
     private function cancelRazorpaySubscriptionImmediately(string $subscriptionId): void

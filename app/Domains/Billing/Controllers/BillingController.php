@@ -130,7 +130,16 @@ class BillingController extends Controller
     {
         $onTrial = $this->billingService->snapshot()['on_trial'];
 
-        $this->billingService->purchaseAddon($addon, (string) $request->user()->email);
+        $result = $this->billingService->purchaseAddon(
+            $addon,
+            (string) $request->user()->email,
+            (string) $request->user()->name,
+        );
+
+        if (is_array($result)) {
+            return redirect('/settings/billing?section=addons')
+                ->with('razorpay_checkout', $result);
+        }
 
         return back()->with('success', $onTrial
             ? 'Add-on enabled for your free trial.'

@@ -102,6 +102,107 @@ class CentralSettingsTest extends TestCase
         $this->assertSame('plan_yearly_starter', $starter['razorpay_plan_id_yearly']);
     }
 
+    public function test_admin_settings_update_persists_price_change_when_existing_catalog_has_price_monthly(): void
+    {
+        \App\Domains\Tenancy\Models\CentralSetting::query()->update([
+            'plan_catalog' => [
+                'starter' => [
+                    'name' => 'Starter',
+                    'price' => 29,
+                    'price_monthly' => 29,
+                    'price_yearly' => 4999,
+                    'razorpay_plan_id' => 'plan_existing_monthly',
+                    'razorpay_plan_id_monthly' => 'plan_existing_monthly',
+                    'razorpay_plan_id_yearly' => 'plan_existing_yearly',
+                    'limits' => ['agents' => 1, 'tickets_monthly' => 50],
+                    'features' => [],
+                ],
+                'professional' => [
+                    'name' => 'Professional',
+                    'price' => 79,
+                    'price_monthly' => 79,
+                    'price_yearly' => 6999,
+                    'limits' => ['agents' => 10, 'tickets_monthly' => 500],
+                    'features' => ['automation'],
+                ],
+                'enterprise' => [
+                    'name' => 'Enterprise',
+                    'price' => 199,
+                    'price_monthly' => 199,
+                    'price_yearly' => 9999,
+                    'limits' => ['agents' => null, 'tickets_monthly' => null],
+                    'features' => ['ai'],
+                ],
+            ],
+        ]);
+
+        $this->mock(RazorpayPlanSyncService::class, function ($mock): void {
+            $mock->shouldReceive('isEnabled')->andReturn(true);
+            $mock->shouldReceive('syncCatalog')
+                ->once()
+                ->withArgs(function (array $catalog): bool {
+                    return ($catalog['starter']['price_monthly'] ?? null) === 499;
+                })
+                ->andReturnUsing(fn (array $catalog) => collect($catalog)
+                    ->map(fn (array $plan, string $slug) => array_merge($plan, [
+                        'razorpay_plan_id' => $slug === 'starter' ? 'plan_new_monthly' : ($plan['razorpay_plan_id_monthly'] ?? null),
+                        'razorpay_plan_id_monthly' => $slug === 'starter' ? 'plan_new_monthly' : ($plan['razorpay_plan_id_monthly'] ?? null),
+                        'razorpay_plan_id_yearly' => $plan['razorpay_plan_id_yearly'] ?? null,
+                    ]))
+                    ->all());
+        });
+
+        $this->mock(RazorpayAddonSyncService::class, function ($mock): void {
+            $mock->shouldReceive('isEnabled')->andReturn(true);
+            $mock->shouldReceive('syncCatalog')->andReturnUsing(fn (array $catalog) => $catalog);
+        });
+
+        config([
+            'razorpay.enabled' => true,
+            'razorpay.secret' => 'secret_test_example',
+        ]);
+
+        $this->adminLogin();
+
+        $this->put('http://'.config('tenancy.central_app_domain').'/admin/settings', [
+            'trial_days' => 14,
+            'tenant_purge_grace_days' => 15,
+            'tenant_purge_enabled' => true,
+            'currency' => 'INR',
+            'plans' => [
+                [
+                    'slug' => 'starter',
+                    'name' => 'Starter',
+                    'price' => 499,
+                    'price_yearly' => 4999,
+                    'limits' => ['agents' => 1, 'tickets_monthly' => 50],
+                    'features' => [],
+                ],
+                [
+                    'slug' => 'professional',
+                    'name' => 'Professional',
+                    'price' => 79,
+                    'price_yearly' => 6999,
+                    'limits' => ['agents' => 10, 'tickets_monthly' => 500],
+                    'features' => ['automation'],
+                ],
+                [
+                    'slug' => 'enterprise',
+                    'name' => 'Enterprise',
+                    'price' => 199,
+                    'price_yearly' => 9999,
+                    'limits' => ['agents' => null, 'tickets_monthly' => null],
+                    'features' => ['ai'],
+                ],
+            ],
+        ])->assertRedirect();
+
+        $starter = app(\App\Domains\Billing\Repositories\PlanRepository::class)->find('starter');
+
+        $this->assertSame(499, $starter['price_monthly']);
+        $this->assertSame('plan_new_monthly', $starter['razorpay_plan_id_monthly']);
+    }
+
     public function test_admin_can_update_trial_days_pricing_and_currency(): void
     {
         $this->adminLogin();
