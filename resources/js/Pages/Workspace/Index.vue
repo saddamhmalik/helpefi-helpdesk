@@ -2,6 +2,7 @@
 import { Head, Link, router, useForm, usePage } from '@inertiajs/vue3';
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import AgentLayout from '../../Layouts/AgentLayout.vue';
+import AgentCopilotPanel from '../../Components/AgentCopilotPanel.vue';
 import AppAvatar from '../../Components/AppAvatar.vue';
 import TicketComposerDock from '../../Components/TicketComposerDock.vue';
 import TicketConversation from '../../Components/TicketConversation.vue';
@@ -504,7 +505,7 @@ onUnmounted(() => {
 <template>
     <Head :title="$t('workspace.workspace')" />
     <AgentLayout>
-        <div class="-mb-4 flex h-0 min-h-0 flex-1 basis-0 overflow-hidden bg-slate-100 sm:-mb-6">
+        <div class="flex h-0 min-h-0 flex-1 basis-0 bg-slate-100">
             <aside class="flex w-[min(100%,20rem)] shrink-0 flex-col overflow-hidden border-r border-slate-200 bg-white lg:w-80">
                 <div class="shrink-0 border-b border-slate-100 bg-slate-50/80 px-3 py-2.5">
                     <div class="flex items-center justify-between gap-2">
@@ -710,7 +711,7 @@ onUnmounted(() => {
                         />
                     </div>
 
-                    <form class="shrink-0 border-t border-slate-200 bg-white px-2 pb-2 pt-1" @submit.prevent="sendReply" @keydown="onComposerKeydown">
+                    <form class="shrink-0 border-t border-slate-200 bg-white px-2 pb-3 pt-1" @submit.prevent="sendReply" @keydown="onComposerKeydown">
                         <TicketComposerDock
                             v-model:body="composerBody"
                             v-model:attachments="composerAttachments"
@@ -760,5 +761,11 @@ onUnmounted(() => {
                 </aside>
             </div>
         </div>
+
+        <AgentCopilotPanel
+            v-if="aiEnabled && ticket"
+            :ai-base-path="`/workspace/tickets/${selectedId}/ai`"
+            :on-insert-reply="(reply) => { composerBody = plainReplyToHtml(reply); composerInternal = false; }"
+        />
     </AgentLayout>
 </template>

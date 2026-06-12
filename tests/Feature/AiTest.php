@@ -124,7 +124,11 @@ class AiTest extends TestCase
 
     public function test_openai_mode_used_when_api_key_configured(): void
     {
-        config(['ai.api_key' => 'test-key']);
+        config([
+            'ai.provider' => 'openai',
+            'ai.api_key' => 'test-key',
+            'ai.base_url' => 'https://api.openai.com/v1',
+        ]);
 
         Http::fake([
             'https://api.openai.com/v1/chat/completions' => Http::response([
@@ -144,5 +148,33 @@ class AiTest extends TestCase
             ->assertJsonPath('reply', 'Thanks for your patience, we are reviewing your billing issue.');
 
         Http::assertSent(fn ($request) => $request->url() === 'https://api.openai.com/v1/chat/completions');
+    }
+
+    public function test_groq_mode_used_when_groq_api_key_configured(): void
+    {
+        config([
+            'ai.provider' => 'groq',
+            'ai.api_key' => 'test-groq-key',
+            'ai.base_url' => 'https://api.groq.com/openai/v1',
+        ]);
+
+        Http::fake([
+            'https://api.groq.com/openai/v1/chat/completions' => Http::response([
+                'choices' => [
+                    ['message' => ['content' => 'Thanks for your patience, we are reviewing your billing issue.']],
+                ],
+            ], 200),
+        ]);
+
+        $ticket = $this->seedTicketWithMessage();
+        AiSetting::query()->create(['enabled' => true]);
+
+        $response = $this->postJson("/workspace/tickets/{$ticket->id}/ai/suggest-reply");
+
+        $response->assertOk()
+            ->assertJsonPath('source', 'groq')
+            ->assertJsonPath('reply', 'Thanks for your patience, we are reviewing your billing issue.');
+
+        Http::assertSent(fn ($request) => $request->url() === 'https://api.groq.com/openai/v1/chat/completions');
     }
 }

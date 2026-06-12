@@ -4,6 +4,7 @@ import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import CentralLayout from '../../Layouts/CentralLayout.vue';
 import CentralSeoHead from '../../Components/CentralSeoHead.vue';
+import CentralAiDemoWidget from '../../Components/CentralAiDemoWidget.vue';
 import IntegrationStackIcon from '../../Components/IntegrationStackIcon.vue';
 import { useCurrency } from '../../composables/useCurrency.js';
 import { useBillingInterval } from '../../composables/useBillingInterval.js';
@@ -17,6 +18,7 @@ const props = defineProps({
     currency: { type: Object, default: () => ({ code: 'USD', symbol: '$', name: 'US Dollar' }) },
     seo: { type: Object, default: () => ({}) },
     centralDomain: { type: String, default: '' },
+    aiDemoEnabled: { type: Boolean, default: true },
 });
 
 const platformName = computed(() => t('app.name'));
@@ -51,9 +53,37 @@ const featureLabels = {
 
 const previewTabs = [
     { id: 'inbox', label: t('central.shared_inbox') },
+    { id: 'ai', label: 'AI Copilot' },
     { id: 'chat', label: t('central.live_chat') },
     { id: 'servicedesk', label: t('nav.service_desk') },
     { id: 'analytics', label: t('central.analytics') },
+];
+
+const aiCapabilities = [
+    {
+        title: 'Agent Copilot',
+        body: 'Side-panel assistant on every ticket — summarize threads, draft replies, suggest KB articles, and recommend next steps with full context.',
+        icon: 'M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z',
+        accent: 'from-violet-500/20 to-purple-500/10',
+    },
+    {
+        title: 'Reply drafts & summaries',
+        body: 'One-click AI reply drafts and thread summaries in the composer. Agents review before sending — faster responses without losing the human touch.',
+        icon: 'M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z',
+        accent: 'from-indigo-500/20 to-blue-500/10',
+    },
+    {
+        title: 'Customer deflection',
+        body: 'AI answers on your portal and live chat widget before customers submit tickets. Semantic search finds the right article even when wording differs.',
+        icon: 'M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z',
+        accent: 'from-fuchsia-500/20 to-pink-500/10',
+    },
+    {
+        title: 'AI triage',
+        body: 'New tickets analyzed on creation for suggested priority, tags, and routing hints. Agents accept or override — smarter queues from day one.',
+        icon: 'M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z',
+        accent: 'from-cyan-500/20 to-sky-500/10',
+    },
 ];
 
 const featureCategories = [
@@ -504,11 +534,11 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
                                 <svg class="h-5 w-5 transition group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
                             </Link>
                             <a
-                                href="#product"
+                                href="#ai"
                                 class="inline-flex items-center justify-center gap-2 rounded-2xl border border-white/20 bg-white/5 px-6 py-4 text-sm font-semibold text-white backdrop-blur transition hover:bg-white/10"
                             >
                                 <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                                See it in action
+                                Try AI live
                             </a>
                         </div>
 
@@ -596,6 +626,29 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
                                             <span class="rounded-md bg-violet-500/20 px-2 py-1 text-[10px] text-violet-200">{{ $t('central.ai_draft_ready') }}</span>
                                             <span class="rounded-md bg-white/5 px-2 py-1 text-[10px] text-slate-400">{{ $t('central.billing') }}</span>
                                         </div>
+                                    </div>
+                                </div>
+
+                                <div v-else-if="previewTab === 'ai'" class="grid grid-cols-5">
+                                    <div class="col-span-2 border-r border-white/10 bg-slate-950/90 p-4">
+                                        <p class="text-[10px] font-semibold uppercase tracking-wider text-slate-500">Ticket #1042</p>
+                                        <p class="mt-2 text-xs font-medium text-white">Payment failed — need help</p>
+                                        <div class="mt-4 space-y-2">
+                                            <div class="rounded-lg bg-white/5 px-3 py-2"><p class="text-[10px] text-slate-300">Customer: charged twice after failed payment</p></div>
+                                            <div class="rounded-lg bg-blue-600/20 px-3 py-2 ring-1 ring-blue-500/30"><p class="text-[10px] text-blue-100">Agent: refund initiated, plan extended</p></div>
+                                        </div>
+                                        <span class="mt-4 inline-flex rounded-md bg-violet-500/20 px-2 py-1 text-[10px] text-violet-200">AI draft ready</span>
+                                    </div>
+                                    <div class="col-span-3 flex flex-col bg-gradient-to-b from-violet-950/40 to-slate-950/90 p-4">
+                                        <div class="flex items-center justify-between border-b border-violet-500/20 pb-3">
+                                            <p class="text-xs font-semibold text-violet-200">Agent Copilot</p>
+                                            <span class="rounded-full bg-violet-500/20 px-2 py-0.5 text-[9px] text-violet-300">live</span>
+                                        </div>
+                                        <div class="mt-3 flex-1 space-y-2">
+                                            <div class="ml-auto max-w-[90%] rounded-xl rounded-br-sm bg-violet-600/50 px-3 py-2"><p class="text-[10px] text-violet-50">Summarize and suggest next steps</p></div>
+                                            <div class="max-w-[95%] rounded-xl rounded-bl-sm border border-violet-500/20 bg-white/5 px-3 py-2"><p class="text-[10px] leading-relaxed text-slate-200">Duplicate charge confirmed. Refund queued; subscription extended 30 days. Send confirmation email and close when refund clears.</p></div>
+                                        </div>
+                                        <p class="mt-3 text-[9px] text-violet-300/70">3 KB articles matched · Insert draft →</p>
                                     </div>
                                 </div>
 
@@ -826,6 +879,66 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
                         <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
                     </Link>
                     <p class="mt-3 text-sm text-slate-500">{{ trialDays }}-day trial · No credit card · Migrate in an afternoon</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="ai" class="relative overflow-hidden border-b border-slate-200 bg-slate-950 py-24 text-white">
+            <div class="pointer-events-none absolute inset-0">
+                <div class="absolute -left-32 top-0 h-[28rem] w-[28rem] rounded-full bg-violet-600/25 blur-3xl" />
+                <div class="absolute bottom-0 right-0 h-96 w-96 rounded-full bg-indigo-600/20 blur-3xl" />
+                <div class="absolute inset-0 bg-[linear-gradient(to_right,#ffffff04_1px,transparent_1px),linear-gradient(to_bottom,#ffffff04_1px,transparent_1px)] bg-[size:3rem_3rem]" />
+            </div>
+
+            <div class="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                <div class="grid items-start gap-12 lg:grid-cols-2 lg:gap-16">
+                    <div>
+                        <p class="inline-flex items-center gap-2 rounded-full border border-violet-400/30 bg-violet-500/10 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-violet-300">
+                            <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg>
+                            AI-powered
+                        </p>
+                        <h2 class="mt-5 text-3xl font-bold tracking-tight sm:text-4xl lg:text-5xl">
+                            AI that works for agents
+                            <span class="mt-1 block bg-gradient-to-r from-violet-400 via-fuchsia-300 to-indigo-400 bg-clip-text text-transparent">
+                                and your customers
+                            </span>
+                        </h2>
+                        <p class="mt-5 text-lg leading-relaxed text-slate-300">
+                            {{ platformName }} ships AI where support actually happens — not as a bolt-on. Deflect tickets before they arrive, draft replies in seconds, and give every agent a Copilot with full ticket context.
+                        </p>
+
+                        <div class="mt-10 grid gap-4 sm:grid-cols-2">
+                            <article
+                                v-for="capability in aiCapabilities"
+                                :key="capability.title"
+                                class="group relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 p-5 backdrop-blur transition hover:border-violet-400/30 hover:bg-white/10"
+                            >
+                                <div class="pointer-events-none absolute inset-0 bg-gradient-to-br opacity-60" :class="capability.accent" />
+                                <div class="relative">
+                                    <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-violet-600/30 text-violet-200 ring-1 ring-violet-400/20">
+                                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" :d="capability.icon" /></svg>
+                                    </div>
+                                    <h3 class="mt-4 text-base font-semibold text-white">{{ capability.title }}</h3>
+                                    <p class="mt-2 text-sm leading-relaxed text-slate-400">{{ capability.body }}</p>
+                                </div>
+                            </article>
+                        </div>
+
+                        <div class="mt-10 flex flex-wrap items-center gap-4">
+                            <Link
+                                href="/register"
+                                class="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-violet-600 to-indigo-600 px-6 py-3.5 text-sm font-bold text-white shadow-xl shadow-violet-600/30 transition hover:from-violet-500 hover:to-indigo-500"
+                            >
+                                Start free trial
+                                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
+                            </Link>
+                            <p class="text-sm text-slate-500">Enterprise · AI included · No credit card</p>
+                        </div>
+                    </div>
+
+                    <div class="lg:sticky lg:top-24">
+                        <CentralAiDemoWidget :enabled="aiDemoEnabled" />
+                    </div>
                 </div>
             </div>
         </section>

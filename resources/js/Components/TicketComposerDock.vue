@@ -71,7 +71,7 @@ defineExpose({ expand, collapse });
 
 <template>
     <div
-        class="overflow-hidden rounded-t-xl border border-b-0 border-slate-200 bg-white shadow-[0_-4px_24px_rgba(15,23,42,0.06)] transition-shadow"
+        class="rounded-xl border border-slate-200 bg-white shadow-[0_-4px_24px_rgba(15,23,42,0.06)] transition-shadow"
         :class="editorLarge ? 'ring-1 ring-slate-200/80' : ''"
     >
         <button

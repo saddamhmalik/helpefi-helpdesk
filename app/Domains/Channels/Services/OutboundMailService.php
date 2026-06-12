@@ -39,10 +39,12 @@ class OutboundMailService
     ) {
     }
 
-    public function applyGlobalConfig(): void
+    public function applyGlobalConfig(): bool
     {
         if (! Schema::hasTable('mail_settings')) {
-            return;
+            $this->clearTenantMailer();
+
+            return false;
         }
 
         $this->applyQueueConfig();
@@ -50,39 +52,57 @@ class OutboundMailService
         $setting = $this->settings->current()->loadMissing('emailInbox');
 
         if (! $setting->enabled) {
-            return;
+            $this->clearTenantMailer();
+
+            return false;
         }
 
         try {
             $this->registerMailer($setting);
         } catch (InvalidArgumentException) {
-            return;
+            $this->clearTenantMailer();
+
+            return false;
         }
 
         $config = $this->smtpResolver->resolve($setting);
         Config::set('mail.default', self::MAILER);
         Config::set('mail.from.address', $config['from_address'] ?? $setting->from_address);
         Config::set('mail.from.name', $config['from_name'] ?? $setting->from_name);
+
+        return true;
     }
 
     public function resolveMailerName(): string
     {
-        $this->applyGlobalConfig();
+        if (! Schema::hasTable('mail_settings')) {
+            return $this->fallbackMailerName();
+        }
 
-        $setting = $this->settings->current();
-
-        if ($setting->enabled && $this->mailerIsConfigured(self::MAILER)) {
+        if ($this->applyGlobalConfig()) {
             return self::MAILER;
         }
 
-        return (string) config('mail.default', 'smtp');
+        return $this->fallbackMailerName();
     }
 
-    private function mailerIsConfigured(string $name): bool
+    private function fallbackMailerName(): string
     {
+        return (string) config('mail.bootstrap_default', 'log');
+    }
+
+    private function clearTenantMailer(): void
+    {
+        Config::set('mail.default', $this->fallbackMailerName());
+        Config::set('mail.from.address', (string) config('mail.bootstrap_from_address'));
+        Config::set('mail.from.name', (string) config('mail.bootstrap_from_name'));
+
         $mailers = config('mail.mailers', []);
 
-        return is_array($mailers) && array_key_exists($name, $mailers);
+        if (is_array($mailers) && array_key_exists(self::MAILER, $mailers)) {
+            unset($mailers[self::MAILER]);
+            Config::set('mail.mailers', $mailers);
+        }
     }
 
     public function sendTicketReply(Ticket $ticket, TicketMessage $message, User $agent): void

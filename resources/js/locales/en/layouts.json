@@ -37,6 +37,7 @@
         },
         "central": {
             "product": "Product",
+            "ai": "AI",
             "features": "Features",
             "how_it_works": "How it works",
             "pricing": "Pricing",

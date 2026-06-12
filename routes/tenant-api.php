@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Domains\Assets\Controllers\Api\AssetController as ApiAssetController;
+use App\Domains\Ai\Controllers\Api\AgentCopilotController as ApiAgentCopilotController;
 use App\Domains\Ai\Controllers\Api\AiAssistController as ApiAiAssistController;
 use App\Domains\Ai\Controllers\Api\AiSettingController as ApiAiSettingController;
 use App\Domains\Api\Controllers\OpenApiController;
@@ -241,6 +242,9 @@ Route::middleware([
         Route::post('/ai/tickets/{ticket}/suggest-reply', [ApiAiAssistController::class, 'suggestReply']);
         Route::post('/ai/tickets/{ticket}/summarize', [ApiAiAssistController::class, 'summarize']);
         Route::get('/ai/tickets/{ticket}/kb-assist', [ApiAiAssistController::class, 'kbAssist']);
+        Route::get('/ai/tickets/{ticket}/copilot', [ApiAgentCopilotController::class, 'index']);
+        Route::post('/ai/tickets/{ticket}/copilot', [ApiAgentCopilotController::class, 'store']);
+        Route::delete('/ai/tickets/{ticket}/copilot', [ApiAgentCopilotController::class, 'destroy']);
         Route::get('/deflection/metrics', [ApiAiDeflectionController::class, 'metrics']);
         Route::get('/kb-deflection/metrics', [ApiKbDeflectionController::class, 'metrics']);
 

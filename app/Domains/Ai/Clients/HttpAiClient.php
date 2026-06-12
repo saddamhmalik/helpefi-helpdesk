@@ -15,14 +15,19 @@ class HttpAiClient implements AiCompletionClient
 
     public function complete(string $systemPrompt, string $userPrompt): string
     {
-        $response = Http::timeout(30)
-            ->withToken(config('ai.api_key'))
-            ->post(rtrim(config('ai.base_url'), '/').'/chat/completions', [
+        return $this->chat([
+            ['role' => 'system', 'content' => $systemPrompt],
+            ['role' => 'user', 'content' => $userPrompt],
+        ]);
+    }
+
+    public function chat(array $messages): string
+    {
+        $response = Http::timeout(60)
+            ->withToken((string) config('ai.api_key'))
+            ->post(rtrim((string) config('ai.base_url'), '/').'/chat/completions', [
                 'model' => config('ai.model'),
-                'messages' => [
-                    ['role' => 'system', 'content' => $systemPrompt],
-                    ['role' => 'user', 'content' => $userPrompt],
-                ],
+                'messages' => $messages,
                 'temperature' => 0.4,
             ]);
 

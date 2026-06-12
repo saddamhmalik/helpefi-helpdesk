@@ -2,6 +2,7 @@
 import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
 import { computed, ref, watch } from 'vue';
 import AgentLayout from '../../Layouts/AgentLayout.vue';
+import AgentCopilotPanel from '../../Components/AgentCopilotPanel.vue';
 import TicketComposerDock from '../../Components/TicketComposerDock.vue';
 import TicketConversation from '../../Components/TicketConversation.vue';
 import TicketDetailsSidebar from '../../Components/TicketDetailsSidebar.vue';
@@ -138,7 +139,7 @@ const sidebarProps = computed(() => ({
 <template>
     <Head :title="ticket.number" />
     <AgentLayout>
-        <div class="flex h-0 min-h-0 flex-1 flex-col overflow-hidden">
+        <div class="flex h-0 min-h-0 flex-1 flex-col">
         <div
             v-if="ticket.merged_into"
             class="mb-3 shrink-0 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900"
@@ -147,7 +148,7 @@ const sidebarProps = computed(() => ({
             <Link :href="`/tickets/${ticket.merged_into.id}`" class="font-medium underline">{{ ticket.merged_into.number }}</Link>
         </div>
 
-        <div class="-mb-4 flex h-0 min-h-0 flex-1 basis-0 overflow-hidden sm:-mb-6">
+        <div class="flex h-0 min-h-0 flex-1 basis-0">
             <div class="flex min-h-0 min-w-0 flex-1">
                 <section class="flex min-h-0 min-w-0 flex-1 basis-0 flex-col overflow-hidden bg-white">
                     <div class="flex shrink-0 items-center gap-2 border-b border-slate-200 bg-white px-3 py-2">
@@ -182,7 +183,7 @@ const sidebarProps = computed(() => ({
                         />
                     </div>
 
-                    <form class="shrink-0 border-t border-slate-200 bg-white px-2 pb-2 pt-1" @submit.prevent="reply" @keydown="onReplyKeydown">
+                    <form class="shrink-0 border-t border-slate-200 bg-white px-2 pb-3 pt-1" @submit.prevent="reply" @keydown="onReplyKeydown">
                         <TicketComposerDock
                             v-model:body="replyForm.body"
                             v-model:attachments="replyForm.attachments"
@@ -222,5 +223,11 @@ const sidebarProps = computed(() => ({
             </AppCollapse>
         </div>
         </div>
+
+        <AgentCopilotPanel
+            v-if="aiEnabled"
+            :ai-base-path="`/tickets/${ticket.id}/ai`"
+            :on-insert-reply="(reply) => { replyForm.body = plainReplyToHtml(reply); replyForm.is_internal = false; }"
+        />
     </AgentLayout>
 </template>
