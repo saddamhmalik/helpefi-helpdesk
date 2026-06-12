@@ -6,7 +6,6 @@ use App\Domains\Auth\Jobs\SendTeamInvitationJob;
 use App\Domains\Auth\Mail\TeamInvitationMail;
 use App\Domains\Auth\Models\Invitation;
 use App\Domains\Auth\Repositories\InvitationRepository;
-use App\Domains\Channels\Repositories\MailSettingRepository;
 use App\Domains\Channels\Services\OutboundMailService;
 use Illuminate\Support\Facades\Mail;
 use InvalidArgumentException;
@@ -17,7 +16,6 @@ class InvitationMailService
     public function __construct(
         private InvitationRepository $invitations,
         private OutboundMailService $outbound,
-        private MailSettingRepository $mailSettings,
     ) {
     }
 
@@ -39,10 +37,9 @@ class InvitationMailService
         }
 
         $acceptUrl = url('/invitations/'.$invitation->token);
-        $mailer = $this->resolveMailer();
 
         try {
-            Mail::mailer($mailer)->to($invitation->email)->send(
+            Mail::mailer($this->outbound->resolveMailerName())->to($invitation->email)->send(
                 new TeamInvitationMail($invitation, $invitation->inviter, $acceptUrl),
             );
         } catch (TransportExceptionInterface $exception) {
@@ -50,27 +47,14 @@ class InvitationMailService
         }
     }
 
-    private function resolveMailer(): string
-    {
-        $this->outbound->applyGlobalConfig();
-
-        $setting = $this->mailSettings->current();
-
-        if ($setting->enabled) {
-            return OutboundMailService::MAILER;
-        }
-
-        return config('mail.default');
-    }
-
     public function isDeliveryConfigured(): bool
     {
-        $this->outbound->applyGlobalConfig();
+        $mailer = $this->outbound->resolveMailerName();
 
-        if ($this->mailSettings->current()->enabled) {
+        if ($mailer === OutboundMailService::MAILER) {
             return true;
         }
 
-        return ! in_array(config('mail.default'), ['log', 'array'], true);
+        return ! in_array($mailer, ['log', 'array'], true);
     }
 }

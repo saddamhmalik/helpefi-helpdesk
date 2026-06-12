@@ -132,4 +132,46 @@ class CustomDomainTest extends TenantTestCase
         $this->get('http://'.$platformHost.'/login')
             ->assertRedirect('http://support.anytrip.com/login');
     }
+
+    public function test_removing_custom_domain_stops_platform_redirect(): void
+    {
+        $this->setPlan('enterprise');
+
+        $platformHost = $this->tenant->domains()->value('domain');
+
+        TenantDomain::query()->create([
+            'tenant_id' => $this->tenant->id,
+            'domain' => 'support.anytrip.com',
+            'type' => TenantDomain::TYPE_CUSTOM,
+            'is_primary' => true,
+            'verification_status' => TenantDomain::STATUS_VERIFIED,
+            'verified_at' => now(),
+        ]);
+
+        TenantDomain::query()
+            ->where('tenant_id', $this->tenant->id)
+            ->where('type', TenantDomain::TYPE_PLATFORM)
+            ->update(['is_primary' => false]);
+
+        $this->tenant->update(['custom_domain_redirect' => true]);
+
+        $this->actingAs($this->admin())
+            ->tenantDelete('/settings/custom-domain')
+            ->assertRedirect();
+
+        $this->tenant->refresh();
+
+        $this->assertFalse($this->tenant->custom_domain_redirect);
+        $this->assertDatabaseMissing('domains', [
+            'tenant_id' => $this->tenant->id,
+            'type' => TenantDomain::TYPE_CUSTOM,
+        ], 'central');
+        $this->assertDatabaseHas('domains', [
+            'tenant_id' => $this->tenant->id,
+            'type' => TenantDomain::TYPE_PLATFORM,
+            'is_primary' => true,
+        ], 'central');
+
+        $this->get('http://'.$platformHost.'/login')->assertOk();
+    }
 }

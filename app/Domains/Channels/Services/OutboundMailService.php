@@ -65,6 +65,26 @@ class OutboundMailService
         Config::set('mail.from.name', $config['from_name'] ?? $setting->from_name);
     }
 
+    public function resolveMailerName(): string
+    {
+        $this->applyGlobalConfig();
+
+        $setting = $this->settings->current();
+
+        if ($setting->enabled && $this->mailerIsConfigured(self::MAILER)) {
+            return self::MAILER;
+        }
+
+        return (string) config('mail.default', 'smtp');
+    }
+
+    private function mailerIsConfigured(string $name): bool
+    {
+        $mailers = config('mail.mailers', []);
+
+        return is_array($mailers) && array_key_exists($name, $mailers);
+    }
+
     public function sendTicketReply(Ticket $ticket, TicketMessage $message, User $agent): void
     {
         $setting = $this->settings->current()->loadMissing('emailInbox');

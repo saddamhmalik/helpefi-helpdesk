@@ -56,11 +56,16 @@ class TenantDomainRepository
 
     public function primaryDomain(Tenant $tenant): ?TenantDomain
     {
-        return TenantDomain::query()
+        $primary = TenantDomain::query()
             ->where('tenant_id', $tenant->id)
             ->where('is_primary', true)
-            ->first()
-            ?? $this->platformDomain($tenant);
+            ->first();
+
+        if ($primary?->isPlatform() || $primary?->isVerified()) {
+            return $primary;
+        }
+
+        return $this->platformDomain($tenant);
     }
 
     public function createPlatform(Tenant $tenant, string $host): TenantDomain
