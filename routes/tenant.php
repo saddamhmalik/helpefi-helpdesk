@@ -160,6 +160,7 @@ Route::prefix('portal/{brand:slug}')->middleware(['brand', 'portal.locale'])->na
 
 Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+    Route::put('/settings/appearance', [ProfileController::class, 'updateAppearance'])->name('settings.appearance.update');
 
     Route::get('/subscription-required', [\App\Domains\Billing\Controllers\SubscriptionRequiredController::class, 'show'])
         ->name('subscription.required');

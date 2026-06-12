@@ -31,47 +31,47 @@ const lookup = () => form.post(portalPath('/track'));
     <Head :title="$t('portal.track_request')" />
     <PortalLayout>
         <div class="mx-auto max-w-xl">
-            <Link :href="portalPath()" class="text-sm text-blue-600 hover:text-blue-700">← Help Center</Link>
-            <h1 class="mt-2 text-2xl font-bold text-slate-900">{{ $t('portal.track_your_request') }}</h1>
-            <p class="mt-1 text-sm text-slate-600">{{ $t('portal.enter_your_ticket_number_and_email_to_view_status') }}</p>
+            <Link :href="portalPath()" class="text-sm text-blue-600 hover:text-blue-700 dark:hover:text-blue-300 dark:text-blue-300">← Help Center</Link>
+            <h1 class="mt-2 text-2xl font-bold text-slate-900 dark:text-slate-100">{{ $t('portal.track_your_request') }}</h1>
+            <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">{{ $t('portal.enter_your_ticket_number_and_email_to_view_status') }}</p>
 
-            <form class="mt-6 space-y-4 rounded-xl border border-slate-200 bg-white p-6 shadow-sm" @submit.prevent="lookup">
+            <form class="mt-6 space-y-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm" @submit.prevent="lookup">
                 <div>
-                    <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('portal.ticket_number') }}</label>
-                    <input v-model="form.number" type="text" required placeholder="HD-00001" class="w-full rounded-lg border border-slate-300 px-3 py-2" />
+                    <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('portal.ticket_number') }}</label>
+                    <input v-model="form.number" type="text" required placeholder="HD-00001" class="w-full rounded-lg border border-slate-300 dark:border-slate-700 px-3 py-2" />
                 </div>
                 <div>
-                    <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('portal.email') }}</label>
-                    <input v-model="form.email" type="email" required class="w-full rounded-lg border border-slate-300 px-3 py-2" />
+                    <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('portal.email') }}</label>
+                    <input v-model="form.email" type="email" required class="w-full rounded-lg border border-slate-300 dark:border-slate-700 px-3 py-2" />
                 </div>
                 <button type="submit" class="w-full rounded-lg bg-blue-600 px-4 py-2 font-medium text-white hover:bg-blue-700" :disabled="form.processing">{{ $t('portal.track') }}</button>
             </form>
 
-            <div v-if="number && email && !ticket" class="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+            <div v-if="number && email && !ticket" class="mt-4 rounded-lg border border-red-200 dark:border-red-900/60 bg-red-50 dark:bg-red-950/40 px-4 py-3 text-sm text-red-800 dark:text-red-200">
                 No ticket found for that number and email.
             </div>
 
-            <div v-if="ticket" class="mt-6 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div v-if="ticket" class="mt-6 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm">
                 <div class="flex items-start justify-between gap-4">
                     <div>
-                        <p class="text-sm font-medium text-slate-500">{{ ticket.number }}</p>
-                        <h2 class="text-xl font-semibold text-slate-900">{{ ticket.subject }}</h2>
+                        <p class="text-sm font-medium text-slate-500 dark:text-slate-400">{{ ticket.number }}</p>
+                        <h2 class="text-xl font-semibold text-slate-900 dark:text-slate-100">{{ ticket.subject }}</h2>
                     </div>
-                    <span class="rounded-full bg-slate-100 px-3 py-1 text-sm text-slate-700">{{ ticket.status?.name }}</span>
+                    <span class="rounded-full bg-slate-100 dark:bg-slate-900 px-3 py-1 text-sm text-slate-700 dark:text-slate-300">{{ ticket.status?.name }}</span>
                 </div>
                 <div v-if="ticket.description" class="mt-4">
                     <TicketMessageContent :body="ticket.description" />
                 </div>
 
-                <div v-if="ticket.messages?.length" class="mt-6 border-t border-slate-100 pt-4">
-                    <h3 class="text-sm font-semibold text-slate-900">{{ $t('portal.updates') }}</h3>
+                <div v-if="ticket.messages?.length" class="mt-6 border-t border-slate-100 dark:border-slate-800 pt-4">
+                    <h3 class="text-sm font-semibold text-slate-900 dark:text-slate-100">{{ $t('portal.updates') }}</h3>
                     <div class="mt-3 space-y-3">
-                        <div v-for="message in ticket.messages" :key="message.id" class="rounded-lg bg-slate-50 p-3 text-sm">
-                            <div class="flex justify-between text-slate-500">
+                        <div v-for="message in ticket.messages" :key="message.id" class="rounded-lg bg-slate-50 dark:bg-slate-950 p-3 text-sm">
+                            <div class="flex justify-between text-slate-500 dark:text-slate-400">
                                 <span>{{ message.user?.name || 'Support' }}</span>
                                 <span>{{ formatDateTime(message.created_at) }}</span>
                             </div>
-                            <p class="mt-1 whitespace-pre-wrap text-slate-800">{{ message.body }}</p>
+                            <p class="mt-1 whitespace-pre-wrap text-slate-800 dark:text-slate-200">{{ message.body }}</p>
                         </div>
                     </div>
                 </div>
@@ -85,10 +85,10 @@ const lookup = () => form.post(portalPath('/track'));
                 />
             </div>
 
-            <p class="mt-6 text-center text-sm text-slate-600">
-                <Link :href="portalPath('/login')" class="text-blue-600 hover:text-blue-700">{{ $t('portal.sign_in') }}</Link>
+            <p class="mt-6 text-center text-sm text-slate-600 dark:text-slate-400">
+                <Link :href="portalPath('/login')" class="text-blue-600 hover:text-blue-700 dark:hover:text-blue-300 dark:text-blue-300">{{ $t('portal.sign_in') }}</Link>
                 to see all your tickets, or
-                <Link :href="portalPath('/register')" class="text-blue-600 hover:text-blue-700">{{ $t('portal.create_an_account') }}</Link>.
+                <Link :href="portalPath('/register')" class="text-blue-600 hover:text-blue-700 dark:hover:text-blue-300 dark:text-blue-300">{{ $t('portal.create_an_account') }}</Link>.
             </p>
         </div>
     </PortalLayout>

@@ -17,7 +17,7 @@ const collisionVerb = (count) => (count === 1 ? t('components.collision_is') : t
 </script>
 
 <template>
-    <div v-if="viewers.length" class="border-b border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900">
+    <div v-if="viewers.length" class="border-b border-amber-200 dark:border-amber-900/60 bg-amber-50 dark:bg-amber-950/40 px-3 py-2 text-xs text-amber-900">
         <p v-if="replying.length">
             {{ $t('components.collision_replying', { names: names(replying), verb: collisionVerb(replying.length) }) }}
         </p>

@@ -29,18 +29,18 @@ const stepLabel = (step) => {
 
 const stepClass = (step) => {
     if (step.status === 'approved') {
-        return 'border-emerald-200 bg-emerald-50';
+        return 'border-emerald-200 dark:border-emerald-900/60 bg-emerald-50 dark:bg-emerald-950/40';
     }
 
     if (step.status === 'rejected') {
-        return 'border-red-200 bg-red-50';
+        return 'border-red-200 dark:border-red-900/60 bg-red-50 dark:bg-red-950/40';
     }
 
     if (step.step_order === props.approval.current_step) {
-        return 'border-amber-200 bg-amber-50';
+        return 'border-amber-200 dark:border-amber-900/60 bg-amber-50 dark:bg-amber-950/40';
     }
 
-    return 'border-slate-200 bg-slate-50';
+    return 'border-slate-200 dark:border-slate-800 bg-slate-50';
 };
 
 const approve = () => {
@@ -53,10 +53,10 @@ const reject = () => {
 </script>
 
 <template>
-    <section v-if="approval" class="rounded-xl border border-slate-200 bg-white">
-        <div class="border-b border-slate-100 px-4 py-3">
-            <h3 class="text-sm font-semibold text-slate-900">{{ $t('components.approval') }}</h3>
-            <p class="text-xs capitalize text-slate-500">{{ approval.status }}</p>
+    <section v-if="approval" class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
+        <div class="border-b border-slate-100 dark:border-slate-800 px-4 py-3">
+            <h3 class="text-sm font-semibold text-slate-900 dark:text-slate-100">{{ $t('components.approval') }}</h3>
+            <p class="text-xs capitalize text-slate-500 dark:text-slate-400">{{ approval.status }}</p>
         </div>
 
         <div class="space-y-2 p-4">
@@ -67,14 +67,14 @@ const reject = () => {
                 :class="stepClass(step)"
             >
                 <div class="flex items-center justify-between gap-2">
-                    <span class="font-medium text-slate-900">{{ step.approver?.name }}</span>
-                    <span class="text-xs text-slate-600">{{ stepLabel(step) }}</span>
+                    <span class="font-medium text-slate-900 dark:text-slate-100">{{ step.approver?.name }}</span>
+                    <span class="text-xs text-slate-600 dark:text-slate-400">{{ stepLabel(step) }}</span>
                 </div>
             </div>
         </div>
 
-        <div v-if="canDecide" class="border-t border-slate-100 p-4 space-y-3">
-            <textarea v-model="form.note" rows="2" :placeholder="$t('components.optional_note')" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+        <div v-if="canDecide" class="border-t border-slate-100 dark:border-slate-800 p-4 space-y-3">
+            <textarea v-model="form.note" rows="2" :placeholder="$t('components.optional_note')" class="w-full rounded-lg border border-slate-300 dark:border-slate-700 px-3 py-2 text-sm" />
             <div class="flex gap-2">
                 <button type="button" class="rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white" @click="approve">{{ $t('components.approve') }}</button>
                 <button type="button" class="rounded-lg bg-red-600 px-3 py-1.5 text-xs font-medium text-white" @click="reject">{{ $t('components.reject') }}</button>

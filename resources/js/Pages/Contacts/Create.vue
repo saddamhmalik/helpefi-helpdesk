@@ -80,8 +80,8 @@ const submit = () => form.post('/contacts');
                             type="button"
                             class="rounded-full px-3 py-1.5 text-sm font-medium ring-1 ring-inset transition"
                             :class="form.tag_ids.includes(tag.id)
-                                ? 'bg-blue-50 text-blue-700 ring-blue-200'
-                                : 'bg-white text-slate-600 ring-slate-200 hover:bg-slate-50'"
+                                ? 'bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 ring-blue-200'
+                                : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 ring-slate-200 dark:ring-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800'"
                             @click="toggleTag(tag.id)"
                         >
                             {{ tag.name }}

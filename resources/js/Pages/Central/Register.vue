@@ -116,13 +116,13 @@ const submit = () => {
     });
 };
 
-const inputClass = 'w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 shadow-sm transition placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20';
+const inputClass = 'w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3.5 py-2.5 text-sm text-slate-900 dark:text-slate-100 shadow-sm transition placeholder:text-slate-400 dark:text-slate-500 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20';
 </script>
 
 <template>
     <CentralSeoHead page="register" :brand="platformName" :trial-days="trialDays" :seo="seo" />
     <CentralLayout :brand="platformName" :trial-days="trialDays" :show-footer="false">
-        <div class="min-h-[calc(100dvh-3.5rem)] bg-slate-50 sm:min-h-[calc(100vh-4rem)]">
+        <div class="min-h-[calc(100dvh-3.5rem)] bg-slate-50 dark:bg-slate-950 sm:min-h-[calc(100vh-4rem)]">
             <div class="mx-auto grid max-w-6xl lg:min-h-[calc(100vh-4rem)] lg:grid-cols-2">
                 <aside class="relative hidden overflow-hidden bg-slate-950 px-10 py-12 text-white lg:flex lg:flex-col lg:justify-between">
                     <div class="pointer-events-none absolute inset-0">
@@ -130,14 +130,14 @@ const inputClass = 'w-full rounded-xl border border-slate-200 bg-white px-3.5 py
                         <div class="absolute bottom-0 left-0 h-64 w-64 rounded-full bg-indigo-500/15 blur-3xl" />
                     </div>
                     <div class="relative">
-                        <Link href="/" class="text-sm text-slate-400 transition hover:text-white">← Back to home</Link>
-                        <div class="mt-8 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-medium text-blue-200">
+                        <Link href="/" class="text-sm text-slate-400 dark:text-slate-500 transition hover:text-white">← Back to home</Link>
+                        <div class="mt-8 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white dark:bg-slate-900/5 px-3 py-1 text-xs font-medium text-blue-200">
                             {{ trialDays }}-day free trial · No credit card
                         </div>
                         <h1 class="mt-6 text-3xl font-semibold leading-tight tracking-tight">
                             Create your {{ platformName }} workspace
                         </h1>
-                        <p class="mt-4 max-w-md text-sm leading-relaxed text-slate-400">
+                        <p class="mt-4 max-w-md text-sm leading-relaxed text-slate-400 dark:text-slate-500">
                             Get full access during your trial — tickets, chat, KB, service catalog, automation, and more. Upgrade to Enterprise for Service Desk ITSM, SSO, and AI.
                         </p>
                     </div>
@@ -154,67 +154,67 @@ const inputClass = 'w-full rounded-xl border border-slate-200 bg-white px-3.5 py
                 <div class="px-4 py-8 sm:px-6 lg:py-12">
                     <div class="mx-auto max-w-lg">
                         <div class="mb-6 lg:hidden">
-                            <Link href="/" class="text-sm text-slate-500 hover:text-slate-700">← Back to home</Link>
-                            <h1 class="mt-4 text-2xl font-semibold text-slate-900">{{ $t('central.start_your_free_trial') }}</h1>
-                            <p class="mt-1 text-sm text-slate-600">{{ trialDays }} days free · No credit card · No plan selection needed</p>
+                            <Link href="/" class="text-sm text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300 dark:text-slate-300">← Back to home</Link>
+                            <h1 class="mt-4 text-2xl font-semibold text-slate-900 dark:text-slate-100">{{ $t('central.start_your_free_trial') }}</h1>
+                            <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">{{ trialDays }} days free · No credit card · No plan selection needed</p>
                         </div>
 
                         <form class="space-y-6" @submit.prevent="submit">
-                            <section class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6">
+                            <section class="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-sm sm:p-6">
                                 <div class="mb-5 flex items-center gap-3">
                                     <span class="flex h-8 w-8 items-center justify-center rounded-full bg-blue-600 text-sm font-bold text-white">1</span>
                                     <div>
-                                        <h2 class="font-semibold text-slate-900">{{ $t('settings.groups.workspace') }}</h2>
-                                        <p class="text-xs text-slate-500">{{ $t('central.name_and_url_for_your_team') }}</p>
+                                        <h2 class="font-semibold text-slate-900 dark:text-slate-100">{{ $t('settings.groups.workspace') }}</h2>
+                                        <p class="text-xs text-slate-500 dark:text-slate-400">{{ $t('central.name_and_url_for_your_team') }}</p>
                                     </div>
                                 </div>
                                 <div class="space-y-4">
                                     <div>
-                                        <label class="mb-1.5 block text-sm font-medium text-slate-700">{{ $t('central.organization_name') }}</label>
+                                        <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('central.organization_name') }}</label>
                                         <input v-model="form.organization_name" type="text" required :class="inputClass" :placeholder="$t('central.acme_support')" />
                                         <p v-if="form.errors.organization_name" class="mt-1.5 text-xs text-red-600">{{ form.errors.organization_name }}</p>
                                     </div>
                                     <div>
-                                        <label class="mb-1.5 block text-sm font-medium text-slate-700">{{ $t('central.workspace_url') }}</label>
-                                        <div class="flex overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/20">
+                                        <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('central.workspace_url') }}</label>
+                                        <div class="flex overflow-hidden rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/20">
                                             <input v-model="form.slug" type="text" required pattern="[a-z0-9]+(?:-[a-z0-9]+)*" class="min-w-0 flex-1 border-0 bg-transparent px-3.5 py-2.5 text-sm focus:outline-none" :placeholder="$t('central.acme')" @input="onSlugInput" />
-                                            <span class="flex min-w-0 shrink items-center bg-slate-50 px-2 text-xs text-slate-500 sm:px-3 sm:text-sm">.{{ workspaceDomainSuffix }}</span>
+                                            <span class="flex min-w-0 shrink items-center bg-slate-50 dark:bg-slate-950 px-2 text-xs text-slate-500 dark:text-slate-400 sm:px-3 sm:text-sm">.{{ workspaceDomainSuffix }}</span>
                                         </div>
                                         <p v-if="form.errors.slug" class="mt-1.5 text-xs text-red-600">{{ form.errors.slug }}</p>
                                     </div>
                                 </div>
                             </section>
 
-                            <section class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6">
+                            <section class="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-sm sm:p-6">
                                 <div class="mb-5 flex items-center gap-3">
                                     <span class="flex h-8 w-8 items-center justify-center rounded-full bg-blue-600 text-sm font-bold text-white">2</span>
                                     <div>
-                                        <h2 class="font-semibold text-slate-900">{{ $t('central.your_account') }}</h2>
-                                        <p class="text-xs text-slate-500">{{ $t('central.youll_be_the_workspace_admin') }}</p>
+                                        <h2 class="font-semibold text-slate-900 dark:text-slate-100">{{ $t('central.your_account') }}</h2>
+                                        <p class="text-xs text-slate-500 dark:text-slate-400">{{ $t('central.youll_be_the_workspace_admin') }}</p>
                                     </div>
                                 </div>
                                 <div class="space-y-4">
                                     <div>
-                                        <label class="mb-1.5 block text-sm font-medium text-slate-700">{{ $t('central.full_name') }}</label>
+                                        <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('central.full_name') }}</label>
                                         <input v-model="form.name" type="text" required :class="inputClass" :placeholder="$t('central.jane_admin')" />
                                     </div>
                                     <div>
-                                        <label class="mb-1.5 block text-sm font-medium text-slate-700">{{ $t('central.work_email') }}</label>
+                                        <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('central.work_email') }}</label>
                                         <input v-model="form.email" type="email" required :class="inputClass" :placeholder="$t('central.you_company_com')" />
                                         <p v-if="form.errors.email" class="mt-1.5 text-xs text-red-600">{{ form.errors.email }}</p>
                                     </div>
                                     <div>
-                                        <label class="mb-1.5 block text-sm font-medium text-slate-700">{{ $t('settings.password') }}</label>
+                                        <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('settings.password') }}</label>
                                         <input v-model="form.password" type="password" required minlength="8" :class="inputClass" :placeholder="$t('central.at_least_8_characters')" />
                                         <div v-if="form.password" class="mt-2">
-                                            <div class="h-1 overflow-hidden rounded-full bg-slate-100">
+                                            <div class="h-1 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-900">
                                                 <div class="h-full rounded-full transition-all duration-300" :class="passwordStrength.color" :style="{ width: passwordStrength.width }" />
                                             </div>
-                                            <p class="mt-1 text-xs text-slate-500">{{ passwordStrength.label }}</p>
+                                            <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">{{ passwordStrength.label }}</p>
                                         </div>
                                     </div>
                                     <div>
-                                        <label class="mb-1.5 block text-sm font-medium text-slate-700">{{ $t('profile.confirm_password_disable') }}</label>
+                                        <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('profile.confirm_password_disable') }}</label>
                                         <input v-model="form.password_confirmation" type="password" required :class="inputClass" />
                                     </div>
                                 </div>
@@ -224,9 +224,9 @@ const inputClass = 'w-full rounded-xl border border-slate-200 bg-white px-3.5 py
                                 {{ form.processing ? 'Creating workspace…' : `Start ${trialDays}-day free trial` }}
                             </button>
 
-                            <p class="text-center text-xs text-slate-500">
+                            <p class="text-center text-xs text-slate-500 dark:text-slate-400">
                                 Already have a workspace?
-                                <Link href="/login" class="font-medium text-blue-600 hover:text-blue-700">{{ $t('central.sign_in') }}</Link>
+                                <Link href="/login" class="font-medium text-blue-600 hover:text-blue-700 dark:hover:text-blue-300 dark:text-blue-300">{{ $t('central.sign_in') }}</Link>
                             </p>
                         </form>
                     </div>
@@ -237,13 +237,13 @@ const inputClass = 'w-full rounded-xl border border-slate-200 bg-white px-3.5 py
         <Teleport to="body">
             <Transition name="provision-fade">
                 <div v-if="form.processing" class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/80 px-4 backdrop-blur-sm">
-                    <div class="provision-card w-full max-w-md rounded-2xl border border-white/10 bg-white p-8 text-center shadow-2xl">
-                        <div class="provision-ring mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-blue-50">
-                            <div class="provision-spinner h-10 w-10 rounded-full border-[3px] border-blue-200 border-t-blue-600" />
+                    <div class="provision-card w-full max-w-md rounded-2xl border border-white/10 bg-white dark:bg-slate-900 p-8 text-center shadow-2xl">
+                        <div class="provision-ring mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-blue-50 dark:bg-blue-950/40">
+                            <div class="provision-spinner h-10 w-10 rounded-full border-[3px] border-blue-200 dark:border-blue-900/60 border-t-blue-600" />
                         </div>
-                        <h2 class="text-lg font-semibold text-slate-900">{{ $t('central.building_your_workspace') }}</h2>
-                        <p class="provision-step mt-3 text-sm text-slate-600">{{ provisioningSteps[provisioningStep] }}</p>
-                        <p class="mt-6 text-xs text-slate-400">Redirecting to {{ form.slug ? `${form.slug}.${workspaceDomainSuffix}` : 'your workspace' }}…</p>
+                        <h2 class="text-lg font-semibold text-slate-900 dark:text-slate-100">{{ $t('central.building_your_workspace') }}</h2>
+                        <p class="provision-step mt-3 text-sm text-slate-600 dark:text-slate-400">{{ provisioningSteps[provisioningStep] }}</p>
+                        <p class="mt-6 text-xs text-slate-400 dark:text-slate-500">Redirecting to {{ form.slug ? `${form.slug}.${workspaceDomainSuffix}` : 'your workspace' }}…</p>
                     </div>
                 </div>
             </Transition>

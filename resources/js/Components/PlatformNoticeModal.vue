@@ -24,35 +24,35 @@ const primaryButtonRef = ref(null);
 
 const styles = {
     maintenance: {
-        header: 'border-amber-100 bg-amber-50',
-        icon: 'bg-amber-100 text-amber-700',
+        header: 'border-amber-100 bg-amber-50 dark:bg-amber-950/40',
+        icon: 'bg-amber-100 text-amber-700 dark:text-amber-300',
         badge: 'bg-amber-200/60 text-amber-900',
-        title: 'text-slate-900',
+        title: 'text-slate-900 dark:text-slate-100',
         body: 'text-amber-900',
         button: 'bg-amber-600 hover:bg-amber-700',
     },
     offer: {
-        header: 'border-emerald-100 bg-emerald-50',
-        icon: 'bg-emerald-100 text-emerald-700',
+        header: 'border-emerald-100 bg-emerald-50 dark:bg-emerald-950/40',
+        icon: 'bg-emerald-100 text-emerald-700 dark:text-emerald-300',
         badge: 'bg-emerald-200/60 text-emerald-900',
-        title: 'text-slate-900',
+        title: 'text-slate-900 dark:text-slate-100',
         body: 'text-emerald-900',
         button: 'bg-emerald-600 hover:bg-emerald-700',
     },
     announcement: {
-        header: 'border-blue-100 bg-blue-50',
-        icon: 'bg-blue-100 text-blue-700',
+        header: 'border-blue-100 bg-blue-50 dark:bg-blue-950/40',
+        icon: 'bg-blue-100 text-blue-700 dark:text-blue-300',
         badge: 'bg-blue-200/60 text-blue-900',
-        title: 'text-slate-900',
+        title: 'text-slate-900 dark:text-slate-100',
         body: 'text-blue-900',
         button: 'bg-blue-600 hover:bg-blue-700',
     },
     general: {
-        header: 'border-slate-100 bg-slate-50',
-        icon: 'bg-slate-100 text-slate-600',
-        badge: 'bg-slate-200/60 text-slate-800',
-        title: 'text-slate-900',
-        body: 'text-slate-800',
+        header: 'border-slate-100 dark:border-slate-800 bg-slate-50',
+        icon: 'bg-slate-100 dark:bg-slate-900 text-slate-600 dark:text-slate-400',
+        badge: 'bg-slate-200/60 text-slate-800 dark:text-slate-200',
+        title: 'text-slate-900 dark:text-slate-100',
+        body: 'text-slate-800 dark:text-slate-200',
         button: 'bg-slate-700 hover:bg-slate-800',
     },
 };
@@ -143,9 +143,6 @@ const dismiss = async (notice) => {
 
         router.post(DISMISS_NOTICE_PATH(notice.id), {}, {
             preserveScroll: true,
-            onSuccess: () => {
-                advanceQueue();
-            },
             onError: () => {
                 dismissError.value = true;
             },
@@ -192,7 +189,7 @@ watch(() => page.props.platformNotices, buildQueue, { deep: true });
                 aria-modal="true"
                 :aria-label="current.title"
             >
-                <div ref="dialogRef" class="w-full max-w-lg overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl">
+                <div ref="dialogRef" class="w-full max-w-lg overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xl">
                     <div class="border-b px-5 py-4" :class="styleFor(current).header">
                         <div class="flex items-start gap-3">
                             <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl" :class="styleFor(current).icon">
@@ -222,7 +219,7 @@ watch(() => page.props.platformNotices, buildQueue, { deep: true });
                             v-if="current.image_url"
                             :src="current.image_url"
                             :alt="current.title"
-                            class="mb-4 max-h-48 w-full rounded-xl border border-slate-200 object-contain"
+                            class="mb-4 max-h-48 w-full rounded-xl border border-slate-200 dark:border-slate-800 object-contain"
                         />
                         <div
                             v-if="current.body_html"
@@ -230,12 +227,12 @@ watch(() => page.props.platformNotices, buildQueue, { deep: true });
                             :class="styleFor(current).body"
                             v-html="current.body_html"
                         />
-                        <p v-else class="text-sm text-slate-600">{{ t('components.platform_notice_fallback') }}</p>
+                        <p v-else class="text-sm text-slate-600 dark:text-slate-400">{{ t('components.platform_notice_fallback') }}</p>
                     </div>
 
-                    <div class="flex items-center justify-between gap-3 border-t border-slate-100 px-5 py-4">
+                    <div class="flex items-center justify-between gap-3 border-t border-slate-100 dark:border-slate-800 px-5 py-4">
                         <div class="min-w-0">
-                            <p v-if="totalInQueue > 1" class="text-xs text-slate-400">
+                            <p v-if="totalInQueue > 1" class="text-xs text-slate-400 dark:text-slate-500">
                                 {{ t('components.notice_queue_progress', { current: currentIndex, total: totalInQueue }) }}
                             </p>
                             <p v-if="dismissError" class="text-xs text-red-600">

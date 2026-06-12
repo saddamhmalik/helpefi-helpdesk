@@ -11,7 +11,7 @@ defineProps({
 
 <template>
     <div v-if="links?.length > 3" class="flex flex-wrap items-center justify-between gap-3">
-        <p v-if="from != null && to != null && total != null" class="text-sm text-slate-500">
+        <p v-if="from != null && to != null && total != null" class="text-sm agent-text-subtle">
             {{ $t('components.pagination_showing', { from, to, total }) }}
         </p>
         <div class="flex flex-wrap gap-1">
@@ -21,7 +21,7 @@ defineProps({
                 :href="link.url || '#'"
                 class="rounded-lg px-3 py-1.5 text-sm transition"
                 :class="[
-                    link.active ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-slate-100',
+                    link.active ? 'bg-slate-900 text-white dark:bg-slate-100 dark:bg-slate-900 dark:text-slate-900 dark:text-slate-100' : 'agent-text-muted agent-hover-surface',
                     !link.url ? 'pointer-events-none opacity-40' : '',
                 ]"
                 v-html="link.label"

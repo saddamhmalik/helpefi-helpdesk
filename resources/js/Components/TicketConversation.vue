@@ -54,14 +54,14 @@ const rowClass = (message) => {
 
 const bubbleClass = (message) => {
     if (message.is_internal) {
-        return 'rounded-2xl border border-amber-200/90 bg-amber-50 text-amber-950 shadow-sm ring-1 ring-amber-100/80';
+        return 'rounded-2xl border border-amber-200 dark:border-amber-900/60/90 bg-amber-50 dark:bg-amber-950/40 text-amber-950 shadow-sm ring-1 ring-amber-100/80';
     }
 
     if (alignment(message) === 'right') {
         return 'rounded-2xl rounded-br-md bg-blue-600 text-white shadow-md shadow-blue-600/15';
     }
 
-    return 'rounded-2xl rounded-bl-md border border-slate-200/90 bg-white text-slate-800 shadow-sm';
+    return 'rounded-2xl rounded-bl-md border border-slate-200 dark:border-slate-800/90 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 shadow-sm';
 };
 
 const messageHasBody = (message) => (message.body ?? '').replace(/<[^>]+>/g, '').trim() !== '';
@@ -179,14 +179,14 @@ const relativeTime = (value) => formatRelativeTime(value);
                     ]"
                 >
                     <div
-                        class="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-slate-500"
+                        class="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-slate-500 dark:text-slate-400"
                         :class="[
                             alignment(message) === 'right' ? 'justify-end' : '',
                             alignment(message) === 'left' ? 'justify-start' : '',
                             alignment(message) === 'center' ? 'justify-center' : '',
                         ]"
                     >
-                        <span class="font-medium text-slate-700">{{ messageAuthor(message) }}</span>
+                        <span class="font-medium text-slate-700 dark:text-slate-300">{{ messageAuthor(message) }}</span>
                         <time
                             :datetime="message.created_at"
                             :title="formatDateTime(message.created_at)"
@@ -197,7 +197,7 @@ const relativeTime = (value) => formatRelativeTime(value);
                         <button
                             v-if="messageHasBody(message)"
                             type="button"
-                            class="rounded px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-slate-400 opacity-0 transition hover:bg-slate-100 hover:text-slate-600 group-hover/message:opacity-100"
+                            class="rounded px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-slate-400 dark:text-slate-500 opacity-0 transition hover:bg-slate-100 dark:bg-slate-900 dark:hover:bg-slate-800 hover:text-slate-600 dark:text-slate-400 group-hover/message:opacity-100"
                             @click="copyMessage(message)"
                         >
                             {{ copiedMessageId === message.id ? $t('components.copied') : $t('components.copy') }}
@@ -215,7 +215,7 @@ const relativeTime = (value) => formatRelativeTime(value);
                                     ? 'text-amber-950'
                                     : alignment(message) === 'right'
                                         ? 'prose-invert text-white [&_a]:text-blue-100'
-                                        : 'text-slate-800',
+                                        : 'text-slate-800 dark:text-slate-200',
                             ]"
                         >
                             <TicketMessageContent
@@ -249,8 +249,8 @@ const relativeTime = (value) => formatRelativeTime(value);
                             alignment(message) === 'center' ? 'justify-center' : '',
                         ]"
                     >
-                        <span v-if="message.is_internal" class="text-[11px] font-medium uppercase tracking-wide text-amber-700">{{ $t('components.internal_note') }}</span>
-                        <span v-if="message.channel" class="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] text-slate-600">{{ message.channel.name }}</span>
+                        <span v-if="message.is_internal" class="text-[11px] font-medium uppercase tracking-wide text-amber-700 dark:text-amber-300">{{ $t('components.internal_note') }}</span>
+                        <span v-if="message.channel" class="rounded-full bg-slate-100 dark:bg-slate-900 px-2 py-0.5 text-[11px] text-slate-600 dark:text-slate-400">{{ message.channel.name }}</span>
                     </div>
                 </div>
 
@@ -262,13 +262,13 @@ const relativeTime = (value) => formatRelativeTime(value);
                 />
             </div>
 
-            <p v-if="!sortedMessages.length" class="py-8 text-center text-sm text-slate-500">{{ $t('components.no_messages_yet') }}</p>
+            <p v-if="!sortedMessages.length" class="py-8 text-center text-sm text-slate-500 dark:text-slate-400">{{ $t('components.no_messages_yet') }}</p>
         </div>
 
         <button
             v-if="showJumpToBottom"
             type="button"
-            class="absolute bottom-3 left-1/2 z-10 inline-flex -translate-x-1/2 items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-700 shadow-lg transition hover:bg-slate-50"
+            class="absolute bottom-3 left-1/2 z-10 inline-flex -translate-x-1/2 items-center gap-2 rounded-full border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-2 text-xs font-semibold text-slate-700 dark:text-slate-300 shadow-lg transition hover:bg-slate-50 dark:bg-slate-950 dark:hover:bg-slate-800"
             @click="scrollToBottom('smooth')"
         >
             <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">

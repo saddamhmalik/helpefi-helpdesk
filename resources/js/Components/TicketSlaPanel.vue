@@ -91,11 +91,11 @@ const milestoneLabel = (milestone) => {
 
 const milestoneTone = (milestone) => {
     if (!milestone) {
-        return 'text-slate-500';
+        return 'text-slate-500 dark:text-slate-400';
     }
 
     if (milestone.status === 'met') {
-        return 'text-emerald-700';
+        return 'text-emerald-700 dark:text-emerald-300';
     }
 
     if (milestone.status === 'breached') {
@@ -107,7 +107,7 @@ const milestoneTone = (milestone) => {
         return 'text-amber-600';
     }
 
-    return 'text-slate-900';
+    return 'text-slate-900 dark:text-slate-100';
 };
 
 const progressTone = (milestone) => {
@@ -150,25 +150,25 @@ const hasRules = computed(() => (props.sla?.policy?.rules?.length ?? 0) > 0);
 </script>
 
 <template>
-    <div :class="compact ? '' : 'rounded-xl border border-slate-200 bg-white p-6 shadow-sm'">
+    <div :class="compact ? '' : 'rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm'">
         <div class="flex items-start justify-between gap-3" :class="compact ? 'px-1' : ''">
             <div>
-                <h2 :class="compact ? 'text-xs font-semibold uppercase tracking-wide text-slate-500' : 'text-lg font-semibold text-slate-900'">
+                <h2 :class="compact ? 'text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400' : 'text-lg font-semibold text-slate-900 dark:text-slate-100'">
                     {{ $t('components.sla') }}
                 </h2>
-                <p v-if="!compact && sla?.policy?.name" class="mt-1 text-xs text-slate-500">
+                <p v-if="!compact && sla?.policy?.name" class="mt-1 text-xs text-slate-500 dark:text-slate-400">
                     {{ sla.policy.name }}
                     <span v-if="sla.policy.business_hours"> · {{ sla.policy.business_hours.name }} ({{ sla.policy.business_hours.timezone }})</span>
                 </p>
-                <p v-else-if="compact && sla?.policy?.name" class="mt-0.5 text-xs text-slate-500">{{ sla.policy.name }}</p>
+                <p v-else-if="compact && sla?.policy?.name" class="mt-0.5 text-xs text-slate-500 dark:text-slate-400">{{ sla.policy.name }}</p>
             </div>
-            <Link v-if="sla?.policy" href="/settings/sla" class="text-xs text-blue-600 transition hover:text-blue-700">{{ $t('components.manage') }}</Link>
+            <Link v-if="sla?.policy" href="/settings/sla" class="text-xs text-blue-600 transition hover:text-blue-700 dark:hover:text-blue-300 dark:text-blue-300">{{ $t('components.manage') }}</Link>
         </div>
 
         <div v-if="sla?.active" :class="compact ? 'mt-3 space-y-2.5' : 'mt-4 space-y-4'">
-            <div :class="compact ? 'rounded-lg border border-slate-200 px-3 py-2.5' : 'rounded-lg border border-slate-100 bg-slate-50/70 p-3'">
+            <div :class="compact ? 'rounded-lg border border-slate-200 dark:border-slate-800 px-3 py-2.5' : 'rounded-lg border border-slate-100 bg-slate-50 dark:bg-slate-950/70 p-3'">
                 <div class="flex items-center justify-between gap-3 text-sm">
-                    <span :class="compact ? 'text-xs font-medium text-slate-600' : 'font-medium text-slate-700'">{{ $t('components.first_response') }}</span>
+                    <span :class="compact ? 'text-xs font-medium text-slate-600 dark:text-slate-400' : 'font-medium text-slate-700 dark:text-slate-300'">{{ $t('components.first_response') }}</span>
                     <span :class="['font-medium', compact ? 'text-xs' : 'text-sm', milestoneTone(sla.first_response)]">
                         {{ milestoneLabel(sla.first_response) }}
                     </span>
@@ -180,12 +180,12 @@ const hasRules = computed(() => (props.sla?.policy?.rules?.length ?? 0) > 0);
                         :style="{ width: `${liveProgress(sla.first_response, ruleMinutes('first_response'))}%` }"
                     />
                 </div>
-                <p v-if="!compact" class="mt-2 text-xs text-slate-500">{{ formatDueAt(sla.first_response?.due_at) }}</p>
+                <p v-if="!compact" class="mt-2 text-xs text-slate-500 dark:text-slate-400">{{ formatDueAt(sla.first_response?.due_at) }}</p>
             </div>
 
-            <div :class="compact ? 'rounded-lg border border-slate-200 px-3 py-2.5' : 'rounded-lg border border-slate-100 bg-slate-50/70 p-3'">
+            <div :class="compact ? 'rounded-lg border border-slate-200 dark:border-slate-800 px-3 py-2.5' : 'rounded-lg border border-slate-100 bg-slate-50 dark:bg-slate-950/70 p-3'">
                 <div class="flex items-center justify-between gap-3 text-sm">
-                    <span :class="compact ? 'text-xs font-medium text-slate-600' : 'font-medium text-slate-700'">{{ $t('components.resolution') }}</span>
+                    <span :class="compact ? 'text-xs font-medium text-slate-600 dark:text-slate-400' : 'font-medium text-slate-700 dark:text-slate-300'">{{ $t('components.resolution') }}</span>
                     <span :class="['font-medium', compact ? 'text-xs' : 'text-sm', milestoneTone(sla.resolution)]">
                         {{ milestoneLabel(sla.resolution) }}
                     </span>
@@ -197,26 +197,26 @@ const hasRules = computed(() => (props.sla?.policy?.rules?.length ?? 0) > 0);
                         :style="{ width: `${liveProgress(sla.resolution, ruleMinutes('resolution'))}%` }"
                     />
                 </div>
-                <p v-if="!compact" class="mt-2 text-xs text-slate-500">{{ formatDueAt(sla.resolution?.due_at) }}</p>
+                <p v-if="!compact" class="mt-2 text-xs text-slate-500 dark:text-slate-400">{{ formatDueAt(sla.resolution?.due_at) }}</p>
             </div>
         </div>
 
-        <p v-else :class="compact ? 'mt-2 text-xs text-slate-500' : 'mt-3 text-sm text-slate-500'">{{ $t('components.no_sla_timer') }}</p>
+        <p v-else :class="compact ? 'mt-2 text-xs text-slate-500 dark:text-slate-400' : 'mt-3 text-sm text-slate-500 dark:text-slate-400'">{{ $t('components.no_sla_timer') }}</p>
 
-        <div v-if="hasRules && !compact" class="mt-4 border-t border-slate-100 pt-4">
-            <p class="text-xs font-medium uppercase tracking-wide text-slate-500">{{ $t('components.violation_rules') }}</p>
+        <div v-if="hasRules && !compact" class="mt-4 border-t border-slate-100 dark:border-slate-800 pt-4">
+            <p class="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">{{ $t('components.violation_rules') }}</p>
             <ul class="mt-3 space-y-3">
-                <li v-for="rule in sla.policy.rules" :key="rule.key" class="rounded-lg border border-slate-100 px-3 py-2.5">
-                    <p class="text-sm font-medium text-slate-800">{{ rule.label }}</p>
-                    <p class="mt-1 text-xs leading-relaxed text-slate-600">{{ rule.description }}</p>
+                <li v-for="rule in sla.policy.rules" :key="rule.key" class="rounded-lg border border-slate-100 dark:border-slate-800 px-3 py-2.5">
+                    <p class="text-sm font-medium text-slate-800 dark:text-slate-200">{{ rule.label }}</p>
+                    <p class="mt-1 text-xs leading-relaxed text-slate-600 dark:text-slate-400">{{ rule.description }}</p>
                 </li>
             </ul>
         </div>
 
-        <div v-else-if="hasRules && compact" class="mt-3 border-t border-slate-100 pt-3">
+        <div v-else-if="hasRules && compact" class="mt-3 border-t border-slate-100 dark:border-slate-800 pt-3">
             <button
                 type="button"
-                class="flex w-full items-center justify-between text-xs font-medium text-slate-500 hover:text-slate-700"
+                class="flex w-full items-center justify-between text-xs font-medium text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300 dark:text-slate-300"
                 @click="showRules = !showRules"
             >
                 <span>{{ $t('components.violation_rules') }}</span>
@@ -225,8 +225,8 @@ const hasRules = computed(() => (props.sla?.policy?.rules?.length ?? 0) > 0);
                 </svg>
             </button>
             <ul v-if="showRules" class="mt-2 space-y-2">
-                <li v-for="rule in sla.policy.rules" :key="rule.key" class="text-xs leading-relaxed text-slate-600">
-                    <span class="font-medium text-slate-700">{{ rule.label }}:</span> {{ rule.description }}
+                <li v-for="rule in sla.policy.rules" :key="rule.key" class="text-xs leading-relaxed text-slate-600 dark:text-slate-400">
+                    <span class="font-medium text-slate-700 dark:text-slate-300">{{ rule.label }}:</span> {{ rule.description }}
                 </li>
             </ul>
         </div>

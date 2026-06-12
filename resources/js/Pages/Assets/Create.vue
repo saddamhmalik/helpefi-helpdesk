@@ -59,8 +59,8 @@ const submit = () => form.post('/assets');
                         <select v-model="form.asset_type_id" required :class="formSelectClass">
                             <option v-for="type in meta.types" :key="type.id" :value="type.id">{{ type.name }}</option>
                         </select>
-                        <p class="mt-1.5 text-xs text-slate-500">
-                            <a href="/assets/types" class="text-blue-600 hover:text-blue-700">{{ $t('assets.manage_asset_types') }}</a>
+                        <p class="mt-1.5 text-xs text-slate-500 dark:text-slate-400">
+                            <a href="/assets/types" class="text-blue-600 hover:text-blue-700 dark:hover:text-blue-300 dark:text-blue-300">{{ $t('assets.manage_asset_types') }}</a>
                             to add Printer, Router, and other categories.
                         </p>
                     </FormField>

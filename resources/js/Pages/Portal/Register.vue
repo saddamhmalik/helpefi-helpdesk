@@ -21,34 +21,34 @@ const submit = () => form.post(portalPath('/register'));
     <Head :title="$t('portal.register')" />
     <PortalLayout>
         <div class="mx-auto max-w-md">
-            <Link :href="portalPath()" class="text-sm text-blue-600 hover:text-blue-700">← Help Center</Link>
-            <h1 class="mt-2 text-2xl font-bold text-slate-900">{{ $t('portal.create_account') }}</h1>
-            <p class="mt-1 text-sm text-slate-600">{{ $t('portal.register_to_view_all_your_support_requests_in_one_place') }}</p>
+            <Link :href="portalPath()" class="text-sm text-blue-600 hover:text-blue-700 dark:hover:text-blue-300 dark:text-blue-300">← Help Center</Link>
+            <h1 class="mt-2 text-2xl font-bold text-slate-900 dark:text-slate-100">{{ $t('portal.create_account') }}</h1>
+            <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">{{ $t('portal.register_to_view_all_your_support_requests_in_one_place') }}</p>
 
-            <form class="mt-6 space-y-4 rounded-xl border border-slate-200 bg-white p-6 shadow-sm" @submit.prevent="submit">
+            <form class="mt-6 space-y-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm" @submit.prevent="submit">
                 <div>
-                    <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('portal.name') }}</label>
-                    <input v-model="form.name" type="text" required class="w-full rounded-lg border border-slate-300 px-3 py-2" />
+                    <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('portal.name') }}</label>
+                    <input v-model="form.name" type="text" required class="w-full rounded-lg border border-slate-300 dark:border-slate-700 px-3 py-2" />
                 </div>
                 <div>
-                    <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('portal.email') }}</label>
-                    <input v-model="form.email" type="email" required class="w-full rounded-lg border border-slate-300 px-3 py-2" />
+                    <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('portal.email') }}</label>
+                    <input v-model="form.email" type="email" required class="w-full rounded-lg border border-slate-300 dark:border-slate-700 px-3 py-2" />
                     <p v-if="form.errors.email" class="mt-1 text-sm text-red-600">{{ form.errors.email }}</p>
                 </div>
                 <div>
-                    <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('portal.password') }}</label>
-                    <input v-model="form.password" type="password" required class="w-full rounded-lg border border-slate-300 px-3 py-2" />
+                    <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('portal.password') }}</label>
+                    <input v-model="form.password" type="password" required class="w-full rounded-lg border border-slate-300 dark:border-slate-700 px-3 py-2" />
                 </div>
                 <div>
-                    <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('portal.confirm_password') }}</label>
-                    <input v-model="form.password_confirmation" type="password" required class="w-full rounded-lg border border-slate-300 px-3 py-2" />
+                    <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('portal.confirm_password') }}</label>
+                    <input v-model="form.password_confirmation" type="password" required class="w-full rounded-lg border border-slate-300 dark:border-slate-700 px-3 py-2" />
                 </div>
                 <button type="submit" class="w-full rounded-lg bg-blue-600 px-4 py-2 font-medium text-white hover:bg-blue-700" :disabled="form.processing">{{ $t('portal.create_account') }}</button>
             </form>
 
-            <p class="mt-4 text-center text-sm text-slate-600">
+            <p class="mt-4 text-center text-sm text-slate-600 dark:text-slate-400">
                 Already have an account?
-                <Link :href="portalPath('/login')" class="text-blue-600 hover:text-blue-700">{{ $t('portal.sign_in') }}</Link>
+                <Link :href="portalPath('/login')" class="text-blue-600 hover:text-blue-700 dark:hover:text-blue-300 dark:text-blue-300">{{ $t('portal.sign_in') }}</Link>
             </p>
         </div>
     </PortalLayout>

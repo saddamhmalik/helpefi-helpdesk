@@ -41,37 +41,37 @@ const placeholderTag = (key) => `{{${key}}}`;
     <Head :title="`Edit · ${name}`" />
     <SettingsPage :title="name" :description="trigger">
         <div class="mb-6">
-            <Link href="/settings/email-templates" class="text-sm text-slate-500 hover:text-slate-700">← Back to email templates</Link>
+            <Link href="/settings/email-templates" class="text-sm agent-text-subtle hover:text-slate-700 dark:hover:text-slate-300 dark:text-slate-300">← Back to email templates</Link>
         </div>
 
-        <div v-if="placeholders.length" class="mb-6 rounded-xl border border-blue-200 bg-blue-50 p-4">
+        <div v-if="placeholders.length" class="mb-6 rounded-xl border border-blue-200 dark:border-blue-900/60 bg-blue-50 dark:bg-blue-950/40 p-4">
             <p class="text-sm font-medium text-blue-900">Placeholders for this email</p>
             <ul class="mt-2 grid gap-1 sm:grid-cols-2">
                 <li v-for="item in placeholders" :key="item.key" class="text-xs text-blue-800">
-                    <code class="rounded bg-white px-1.5 py-0.5">{{ placeholderTag(item.key) }}</code>
+                    <code class="rounded bg-white dark:bg-slate-900 px-1.5 py-0.5">{{ placeholderTag(item.key) }}</code>
                     — {{ item.label }}
                 </li>
             </ul>
         </div>
 
-        <form class="space-y-5 rounded-xl border border-slate-200 bg-white p-6 shadow-sm" @submit.prevent="submit">
+        <form class="space-y-5 agent-card" @submit.prevent="submit">
             <div>
-                <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('profile.name') }}</label>
-                <input v-model="form.name" type="text" required class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+                <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('profile.name') }}</label>
+                <input v-model="form.name" type="text" required class="w-full rounded-lg border agent-border px-3 py-2 text-sm" />
             </div>
 
             <div>
-                <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('common.subject') }}</label>
-                <input v-model="form.subject" type="text" required class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+                <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('common.subject') }}</label>
+                <input v-model="form.subject" type="text" required class="w-full rounded-lg border agent-border px-3 py-2 text-sm" />
             </div>
 
             <div>
-                <label class="mb-1 block text-sm font-medium text-slate-700">Body (HTML)</label>
-                <textarea v-model="form.body_html" rows="16" required class="w-full rounded-lg border border-slate-300 px-3 py-2 font-mono text-sm" />
+                <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">Body (HTML)</label>
+                <textarea v-model="form.body_html" rows="16" required class="w-full rounded-lg border agent-border px-3 py-2 font-mono text-sm" />
             </div>
 
-            <label class="flex items-center gap-2 text-sm text-slate-700">
-                <input v-model="form.is_active" type="checkbox" class="rounded border-slate-300" />
+            <label class="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
+                <input v-model="form.is_active" type="checkbox" class="rounded agent-border" />
                 Active — when disabled, the built-in default email is used instead
             </label>
 
@@ -79,10 +79,10 @@ const placeholderTag = (key) => `{{${key}}}`;
                 <button type="submit" class="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800 disabled:opacity-50" :disabled="form.processing">
                     Save changes
                 </button>
-                <button v-if="is_system" type="button" class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50" @click="reset">
+                <button v-if="is_system" type="button" class="agent-btn-secondary" @click="reset">
                     Restore default
                 </button>
-                <Link href="/settings/email-templates" class="text-sm text-slate-500 hover:text-slate-700">{{ $t('common.cancel') }}</Link>
+                <Link href="/settings/email-templates" class="text-sm agent-text-subtle hover:text-slate-700 dark:hover:text-slate-300 dark:text-slate-300">{{ $t('common.cancel') }}</Link>
             </div>
         </form>
     </SettingsPage>

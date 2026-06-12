@@ -9,12 +9,12 @@ defineProps({
 
 <template>
     <div>
-        <label v-if="label" class="mb-1.5 block text-sm font-medium text-slate-700">
+        <label v-if="label" class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">
             {{ label }}
             <span v-if="required" class="text-red-500">*</span>
         </label>
         <slot />
         <p v-if="error" class="mt-1.5 text-sm text-red-600">{{ error }}</p>
-        <p v-else-if="hint" class="mt-1.5 text-xs leading-relaxed text-slate-500">{{ hint }}</p>
+        <p v-else-if="hint" class="mt-1.5 text-xs leading-relaxed text-slate-500 dark:text-slate-400">{{ hint }}</p>
     </div>
 </template>

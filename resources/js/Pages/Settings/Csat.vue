@@ -25,20 +25,20 @@ const save = () => {
         :title="$t('settings_csat.customer_satisfaction')"
         :description="$t('settings_csat.configure_post-resolution_surveys_on_the_customer_portal_and_by_email')"
     >
-        <div class="max-w-2xl rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div class="max-w-2xl agent-card">
             <form class="space-y-4" @submit.prevent="save">
-                <label class="flex items-center gap-2 text-sm text-slate-700">
-                    <input v-model="form.enabled" type="checkbox" class="rounded border-slate-300" />
+                <label class="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
+                    <input v-model="form.enabled" type="checkbox" class="rounded agent-border" />
                     Enable CSAT surveys on closed tickets
                 </label>
 
-                <label class="flex items-center gap-2 text-sm text-slate-700">
-                    <input v-model="form.comment_required" type="checkbox" class="rounded border-slate-300" :disabled="!form.enabled" />
+                <label class="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
+                    <input v-model="form.comment_required" type="checkbox" class="rounded agent-border" :disabled="!form.enabled" />
                     Require a comment with the rating on the portal
                 </label>
 
-                <label class="flex items-center gap-2 text-sm text-slate-700">
-                    <input v-model="form.email_enabled" type="checkbox" class="rounded border-slate-300" :disabled="!form.enabled" />
+                <label class="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
+                    <input v-model="form.email_enabled" type="checkbox" class="rounded agent-border" :disabled="!form.enabled" />
                     Send CSAT survey email when a ticket is resolved or closed
                 </label>
 

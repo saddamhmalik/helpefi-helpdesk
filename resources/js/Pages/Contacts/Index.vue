@@ -31,7 +31,7 @@ const accessTabs = [
     { id: 'guest', label: t('contacts.guest_only'), count: props.stats?.guest },
 ];
 
-const inputClass = 'w-full max-w-md rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20';
+const inputClass = 'w-full max-w-md rounded-lg border border-slate-300 dark:border-slate-700 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20';
 
 const applyFilters = (overrides = {}) => {
     router.get('/contacts', {
@@ -83,7 +83,7 @@ const removePortalAccess = (contact) => {
             <template #actions>
                 <a
                     :href="exportUrl"
-                    class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                    class="rounded-lg border border-slate-300 dark:border-slate-700 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
                 >
                     {{ $t('contacts.export_csv') }}
                 </a>
@@ -114,49 +114,49 @@ const removePortalAccess = (contact) => {
         <DataTable>
             <thead class="bg-slate-50">
                 <tr>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('contacts.customer') }}</th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('contacts.access') }}</th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('contacts.organization') }}</th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('contacts.tags') }}</th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('contacts.tickets') }}</th>
-                    <th v-if="isAdmin()" class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('contacts.actions') }}</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{{ $t('contacts.customer') }}</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{{ $t('contacts.access') }}</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{{ $t('contacts.organization') }}</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{{ $t('contacts.tags') }}</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{{ $t('contacts.tickets') }}</th>
+                    <th v-if="isAdmin()" class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{{ $t('contacts.actions') }}</th>
                 </tr>
             </thead>
-            <tbody class="divide-y divide-slate-100">
-                <tr v-for="contact in contacts.data" :key="contact.id" class="hover:bg-slate-50">
+            <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+                <tr v-for="contact in contacts.data" :key="contact.id" class="hover:bg-slate-50 dark:hover:bg-slate-800">
                     <td class="px-4 py-3">
-                        <Link :href="`/contacts/${contact.id}`" class="font-medium text-blue-600 hover:text-blue-700">{{ contact.name }}</Link>
-                        <p v-if="contact.email" class="text-xs text-slate-500">{{ contact.email }}</p>
+                        <Link :href="`/contacts/${contact.id}`" class="font-medium text-blue-600 hover:text-blue-700 dark:hover:text-blue-300 dark:text-blue-300">{{ contact.name }}</Link>
+                        <p v-if="contact.email" class="text-xs text-slate-500 dark:text-slate-400">{{ contact.email }}</p>
                     </td>
                     <td class="px-4 py-3">
                         <span
                             v-if="contact.portal_user"
-                            class="inline-flex items-center gap-1 rounded-full bg-indigo-50 px-2.5 py-0.5 text-xs font-medium text-indigo-700 ring-1 ring-inset ring-indigo-600/15"
+                            class="inline-flex items-center gap-1 rounded-full bg-indigo-50 dark:bg-indigo-950/40 px-2.5 py-0.5 text-xs font-medium text-indigo-700 dark:text-indigo-300 ring-1 ring-inset ring-indigo-600/15"
                         >
                             {{ $t('contacts.portal') }}
                         </span>
-                        <span v-else class="inline-flex rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-600">
+                        <span v-else class="inline-flex rounded-full bg-slate-100 dark:bg-slate-900 px-2.5 py-0.5 text-xs font-medium text-slate-600 dark:text-slate-400">
                             {{ $t('contacts.guest') }}
                         </span>
                     </td>
-                    <td class="px-4 py-3 text-sm text-slate-600">{{ contact.organization?.name || '—' }}</td>
+                    <td class="px-4 py-3 text-sm text-slate-600 dark:text-slate-400">{{ contact.organization?.name || '—' }}</td>
                     <td class="px-4 py-3">
-                        <span v-for="tag in contact.tags" :key="tag.id" class="mr-1 inline-block rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-700">{{ tag.name }}</span>
-                        <span v-if="!contact.tags?.length" class="text-sm text-slate-400">—</span>
+                        <span v-for="tag in contact.tags" :key="tag.id" class="mr-1 inline-block rounded-full bg-slate-100 dark:bg-slate-900 px-2 py-0.5 text-xs text-slate-700 dark:text-slate-300">{{ tag.name }}</span>
+                        <span v-if="!contact.tags?.length" class="text-sm text-slate-400 dark:text-slate-500">—</span>
                     </td>
-                    <td class="px-4 py-3 text-sm text-slate-600">{{ contact.tickets_count }}</td>
+                    <td class="px-4 py-3 text-sm text-slate-600 dark:text-slate-400">{{ contact.tickets_count }}</td>
                     <td v-if="isAdmin()" class="px-4 py-3">
                         <button
                             v-if="contact.portal_user"
                             type="button"
-                            class="text-sm text-red-600 hover:text-red-700"
+                            class="text-sm text-red-600 hover:text-red-700 dark:text-red-300"
                             @click="removePortalAccess(contact)"
                         >{{ $t('contacts.revoke_portal') }}</button>
-                        <span v-else class="text-xs text-slate-400">—</span>
+                        <span v-else class="text-xs text-slate-400 dark:text-slate-500">—</span>
                     </td>
                 </tr>
                 <tr v-if="!contacts.data.length">
-                    <td :colspan="isAdmin() ? 6 : 5" class="px-4 py-12 text-center text-sm text-slate-500">
+                    <td :colspan="isAdmin() ? 6 : 5" class="px-4 py-12 text-center text-sm text-slate-500 dark:text-slate-400">
                         No customers match your search.
                     </td>
                 </tr>

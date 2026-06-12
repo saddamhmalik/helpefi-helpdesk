@@ -155,16 +155,16 @@ const destroyRule = (rule) => {
         </template>
 
         <div class="space-y-4">
-            <div v-for="rule in rules" :key="rule.id" class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm transition hover:border-slate-300">
+            <div v-for="rule in rules" :key="rule.id" class="agent-card transition hover:border-slate-300 dark:border-slate-700 dark:hover:border-slate-600">
                 <div class="flex items-start justify-between gap-4">
                     <div>
                         <div class="flex items-center gap-2">
-                            <h2 class="text-lg font-semibold text-slate-900">{{ rule.name }}</h2>
-                            <span class="rounded-full px-2 py-0.5 text-xs font-medium" :class="rule.is_active ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-600'">
+                            <h2 class="text-lg font-semibold agent-text">{{ rule.name }}</h2>
+                            <span class="rounded-full px-2 py-0.5 text-xs font-medium" :class="rule.is_active ? 'bg-emerald-100 text-emerald-800 dark:text-emerald-200' : 'bg-slate-100 dark:bg-slate-900 agent-text-muted'">
                                 {{ rule.is_active ? 'Active' : 'Paused' }}
                             </span>
                         </div>
-                        <p class="mt-1 text-sm text-slate-500">{{ strategyLabel(rule.strategy) }} · Order {{ rule.sort_order }}</p>
+                        <p class="mt-1 text-sm agent-text-subtle">{{ strategyLabel(rule.strategy) }} · Order {{ rule.sort_order }}</p>
                     </div>
                     <div class="flex gap-2">
                         <AppRowActions>
@@ -176,30 +176,30 @@ const destroyRule = (rule) => {
 
                 <dl class="mt-4 grid gap-3 text-sm sm:grid-cols-2">
                     <div>
-                        <dt class="text-xs font-medium uppercase text-slate-500">{{ $t('settings_assignment.scope') }}</dt>
-                        <dd class="mt-1 text-slate-700">
+                        <dt class="text-xs font-medium uppercase agent-text-subtle">{{ $t('settings_assignment.scope') }}</dt>
+                        <dd class="mt-1 text-slate-700 dark:text-slate-300">
                             {{ departmentLabel(rule.department_id) }}
                             <span v-if="rule.team_id"> · {{ teamLabel(rule.team_id) }}</span>
                         </dd>
                     </div>
                     <div>
-                        <dt class="text-xs font-medium uppercase text-slate-500">{{ $t('settings.groups.channels') }}</dt>
-                        <dd class="mt-1 text-slate-700">{{ channelLabels(rule.channel_ids) }}</dd>
+                        <dt class="text-xs font-medium uppercase agent-text-subtle">{{ $t('settings.groups.channels') }}</dt>
+                        <dd class="mt-1 text-slate-700 dark:text-slate-300">{{ channelLabels(rule.channel_ids) }}</dd>
                     </div>
                     <div>
-                        <dt class="text-xs font-medium uppercase text-slate-500">{{ $t('settings_assignment.priority') }}</dt>
-                        <dd class="mt-1 text-slate-700">{{ rule.ticket_priority_id ? priorityLabel(rule.ticket_priority_id) : 'Any priority' }}</dd>
+                        <dt class="text-xs font-medium uppercase agent-text-subtle">{{ $t('settings_assignment.priority') }}</dt>
+                        <dd class="mt-1 text-slate-700 dark:text-slate-300">{{ rule.ticket_priority_id ? priorityLabel(rule.ticket_priority_id) : 'Any priority' }}</dd>
                     </div>
                     <div>
-                        <dt class="text-xs font-medium uppercase text-slate-500">{{ $t('settings.skills') }}</dt>
-                        <dd class="mt-1 text-slate-700">
+                        <dt class="text-xs font-medium uppercase agent-text-subtle">{{ $t('settings.skills') }}</dt>
+                        <dd class="mt-1 text-slate-700 dark:text-slate-300">
                             {{ rule.skill_ids?.length ? rule.skill_ids.map((id) => skillLabel(id)).join(', ') : 'Any agent' }}
                         </dd>
                     </div>
                 </dl>
             </div>
 
-            <div v-if="!rules.length" class="rounded-xl border border-dashed border-slate-300 bg-white px-6 py-12 text-center text-sm text-slate-500">
+            <div v-if="!rules.length" class="rounded-xl border border-dashed agent-border bg-white dark:bg-slate-900 px-6 py-12 text-center text-sm agent-text-subtle">
                 No assignment rules yet. Unassigned tickets will stay in the queue until an agent picks them up.
             </div>
         </div>
@@ -213,33 +213,33 @@ const destroyRule = (rule) => {
         >
             <form id="assignment-form" class="space-y-5" @submit.prevent="save">
                 <div>
-                    <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('profile.name') }}</label>
+                    <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('profile.name') }}</label>
                     <input v-model="form.name" type="text" required :class="formInputClass" />
                 </div>
 
                 <div class="grid gap-4 sm:grid-cols-2">
                     <div>
-                        <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('settings_assignment.strategy') }}</label>
+                        <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('settings_assignment.strategy') }}</label>
                         <select v-model="form.strategy" :class="formSelectClass">
                             <option v-for="strategy in meta.strategies" :key="strategy.value" :value="strategy.value">{{ strategy.label }}</option>
                         </select>
                     </div>
                     <div>
-                        <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('settings_assignment.sort_order') }}</label>
+                        <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('settings_assignment.sort_order') }}</label>
                         <input v-model.number="form.sort_order" type="number" min="0" :class="formInputClass" />
                     </div>
                 </div>
 
                 <div class="grid gap-4 sm:grid-cols-2">
                     <div>
-                        <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('settings_assignment.department') }}</label>
+                        <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('settings_assignment.department') }}</label>
                         <select v-model="form.department_id" :class="formSelectClass">
                             <option value="">{{ $t('settings_assignment.any_department') }}</option>
                             <option v-for="department in departments" :key="department.id" :value="department.id">{{ department.name }}</option>
                         </select>
                     </div>
                     <div>
-                        <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('settings.groups.team') }}</label>
+                        <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('settings.groups.team') }}</label>
                         <select v-model="form.team_id" :class="formSelectClass">
                             <option value="">{{ $t('settings_assignment.any_team') }}</option>
                             <option v-for="team in filteredTeams" :key="team.id" :value="team.id">{{ team.name }}</option>
@@ -248,15 +248,15 @@ const destroyRule = (rule) => {
                 </div>
 
                 <div>
-                    <p class="mb-2 text-sm font-medium text-slate-700">{{ $t('settings.groups.channels') }}</p>
-                    <p class="mb-3 text-xs text-slate-500">{{ $t('settings_assignment.leave_empty_to_apply_on_all_channels') }}</p>
+                    <p class="mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('settings.groups.channels') }}</p>
+                    <p class="mb-3 text-xs agent-text-subtle">{{ $t('settings_assignment.leave_empty_to_apply_on_all_channels') }}</p>
                     <div class="flex flex-wrap gap-2">
                         <button
                             v-for="channel in channels"
                             :key="channel.id"
                             type="button"
                             class="rounded-full px-3 py-1 text-xs font-medium transition"
-                            :class="form.channel_ids.includes(channel.id) ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'"
+                            :class="form.channel_ids.includes(channel.id) ? 'bg-blue-600 text-white' : 'bg-slate-100 dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-200'"
                             @click="toggleChannel(channel.id)"
                         >
                             {{ channel.name }}
@@ -265,7 +265,7 @@ const destroyRule = (rule) => {
                 </div>
 
                 <div>
-                    <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('settings_assignment.priority') }}</label>
+                    <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('settings_assignment.priority') }}</label>
                     <select v-model="form.ticket_priority_id" :class="formSelectClass">
                         <option value="">{{ $t('settings_assignment.any_priority') }}</option>
                         <option v-for="priority in priorities" :key="priority.id" :value="priority.id">{{ priority.name }}</option>
@@ -273,15 +273,15 @@ const destroyRule = (rule) => {
                 </div>
 
                 <div>
-                    <p class="mb-2 text-sm font-medium text-slate-700">{{ $t('settings_assignment.required_skills') }}</p>
-                    <p class="mb-3 text-xs text-slate-500">{{ $t('settings_assignment.only_agents_with_all_selected_skills_are_eligible') }}</p>
+                    <p class="mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('settings_assignment.required_skills') }}</p>
+                    <p class="mb-3 text-xs agent-text-subtle">{{ $t('settings_assignment.only_agents_with_all_selected_skills_are_eligible') }}</p>
                     <div class="flex flex-wrap gap-2">
                         <button
                             v-for="skill in skills"
                             :key="skill.id"
                             type="button"
                             class="rounded-full px-3 py-1 text-xs font-medium transition"
-                            :class="form.skill_ids.includes(skill.id) ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'"
+                            :class="form.skill_ids.includes(skill.id) ? 'bg-blue-600 text-white' : 'bg-slate-100 dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-200'"
                             @click="toggleSkill(skill.id)"
                         >
                             {{ skill.name }}
@@ -293,7 +293,7 @@ const destroyRule = (rule) => {
             </form>
 
             <template #footer>
-                <button type="button" class="rounded-lg border border-slate-300 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50" @click="closeForm">{{ $t('common.cancel') }}</button>
+                <button type="button" class="rounded-lg border agent-border px-4 py-2 text-sm text-slate-700 dark:text-slate-300 agent-hover-surface" @click="closeForm">{{ $t('common.cancel') }}</button>
                 <button type="submit" form="assignment-form" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700" :disabled="form.processing">
                     {{ editingRule ? 'Save changes' : 'Create rule' }}
                 </button>

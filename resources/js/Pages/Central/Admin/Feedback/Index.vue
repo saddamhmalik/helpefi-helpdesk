@@ -90,43 +90,43 @@ const formatDate = (value) => {
             <div
                 v-for="card in summaryCards"
                 :key="card.key"
-                class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"
+                class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-sm"
             >
-                <p class="text-xs font-medium uppercase tracking-wide text-slate-500">{{ typeLabel(card.type) }}</p>
-                <p class="mt-1 text-sm font-medium text-slate-900">{{ statusLabel(card.status) }}</p>
-                <p class="mt-2 text-2xl font-semibold text-slate-900">{{ card.total }}</p>
+                <p class="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">{{ typeLabel(card.type) }}</p>
+                <p class="mt-1 text-sm font-medium text-slate-900 dark:text-slate-100">{{ statusLabel(card.status) }}</p>
+                <p class="mt-2 text-2xl font-semibold text-slate-900 dark:text-slate-100">{{ card.total }}</p>
             </div>
         </div>
 
-        <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm">
             <div class="mb-4 flex flex-wrap items-end gap-3">
                 <div>
-                    <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('central.type') }}</label>
+                    <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('central.type') }}</label>
                     <select v-model="filterForm.type" :class="adminInputClass">
                         <option value="">{{ $t('central.all') }}</option>
                         <option v-for="(label, value) in types" :key="value" :value="value">{{ label }}</option>
                     </select>
                 </div>
                 <div>
-                    <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('central.status') }}</label>
+                    <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('central.status') }}</label>
                     <select v-model="filterForm.status" :class="adminInputClass">
                         <option value="">{{ $t('central.all') }}</option>
                         <option v-for="(label, value) in statuses" :key="value" :value="value">{{ label }}</option>
                     </select>
                 </div>
                 <div>
-                    <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('common.search') }}</label>
+                    <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('common.search') }}</label>
                     <input v-model="filterForm.search" type="text" :class="adminInputClass" :placeholder="$t('central.subject_body_user_workspace')" />
                 </div>
                 <div>
-                    <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('central.workspace_id') }}</label>
+                    <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('central.workspace_id') }}</label>
                     <input v-model="filterForm.tenant_id" type="text" :class="adminInputClass" :placeholder="$t('central.tenant_uuid')" />
                 </div>
-                <button type="button" class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50" @click="applyFilters">{{ $t('central.filter') }}</button>
-                <button type="button" class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50" @click="clearFilters">{{ $t('central.clear') }}</button>
+                <button type="button" class="rounded-lg border border-slate-300 dark:border-slate-700 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:bg-slate-950 dark:hover:bg-slate-800" @click="applyFilters">{{ $t('central.filter') }}</button>
+                <button type="button" class="rounded-lg border border-slate-300 dark:border-slate-700 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:bg-slate-950 dark:hover:bg-slate-800" @click="clearFilters">{{ $t('central.clear') }}</button>
             </div>
 
-            <div v-if="!submissions.data.length" class="rounded-lg border border-dashed border-slate-300 px-6 py-12 text-center text-sm text-slate-500">
+            <div v-if="!submissions.data.length" class="rounded-lg border border-dashed border-slate-300 dark:border-slate-700 px-6 py-12 text-center text-sm text-slate-500 dark:text-slate-400">
                 {{ $t('central.no_feedback_submissions') }}
             </div>
 
@@ -134,35 +134,35 @@ const formatDate = (value) => {
                 <article
                     v-for="submission in submissions.data"
                     :key="submission.id"
-                    class="rounded-xl border border-slate-200 p-5 transition hover:border-slate-300"
+                    class="rounded-xl border border-slate-200 dark:border-slate-800 p-5 transition hover:border-slate-300 dark:hover:border-slate-600 dark:border-slate-700"
                 >
                     <div class="flex flex-wrap items-start justify-between gap-3">
                         <div class="min-w-0 flex-1">
                             <div class="flex flex-wrap items-center gap-2">
-                                <span class="rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-semibold text-blue-700">
+                                <span class="rounded-full bg-blue-50 dark:bg-blue-950/40 px-2.5 py-0.5 text-xs font-semibold text-blue-700 dark:text-blue-300">
                                     {{ typeLabel(submission.type) }}
                                 </span>
                                 <span
                                     class="rounded-full px-2.5 py-0.5 text-xs font-semibold"
-                                    :class="submission.status === 'open' ? 'bg-amber-50 text-amber-700' : submission.status === 'reviewed' ? 'bg-sky-50 text-sky-700' : 'bg-slate-100 text-slate-600'"
+                                    :class="submission.status === 'open' ? 'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300' : submission.status === 'reviewed' ? 'bg-sky-50 text-sky-700' : 'bg-slate-100 dark:bg-slate-900 text-slate-600 dark:text-slate-400'"
                                 >
                                     {{ statusLabel(submission.status) }}
                                 </span>
                             </div>
 
-                            <div class="mt-3 inline-flex max-w-full flex-col rounded-lg border border-violet-200 bg-violet-50/70 px-3 py-2">
+                            <div class="mt-3 inline-flex max-w-full flex-col rounded-lg border border-violet-200 dark:border-violet-900/60 bg-violet-50 dark:bg-violet-950/40/70 px-3 py-2">
                                 <span class="text-[10px] font-semibold uppercase tracking-wide text-violet-600">{{ $t('central.workspace') }}</span>
                                 <span class="truncate text-sm font-semibold text-violet-950">{{ workspaceName(submission) }}</span>
-                                <span v-if="workspaceSlug(submission)" class="truncate font-mono text-xs text-violet-700/80">{{ workspaceSlug(submission) }}</span>
+                                <span v-if="workspaceSlug(submission)" class="truncate font-mono text-xs text-violet-700 dark:text-violet-300/80">{{ workspaceSlug(submission) }}</span>
                             </div>
 
-                            <h3 class="mt-3 text-base font-semibold text-slate-900">
-                                <Link :href="`/admin/feedback/${submission.id}`" class="hover:text-blue-700">
+                            <h3 class="mt-3 text-base font-semibold text-slate-900 dark:text-slate-100">
+                                <Link :href="`/admin/feedback/${submission.id}`" class="hover:text-blue-700 dark:hover:text-blue-300 dark:text-blue-300">
                                     {{ submission.subject }}
                                 </Link>
                             </h3>
 
-                            <p class="mt-1 text-sm text-slate-500">
+                            <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
                                 {{ submission.user_name }} ({{ submission.user_email }})
                                 · {{ formatDate(submission.created_at) }}
                             </p>
@@ -171,7 +171,7 @@ const formatDate = (value) => {
                         <div class="flex shrink-0 flex-col items-end gap-2">
                             <Link
                                 :href="`/admin/feedback/${submission.id}`"
-                                class="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-slate-50"
+                                class="rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-xs font-medium text-slate-700 dark:text-slate-300 transition hover:bg-slate-50 dark:bg-slate-950 dark:hover:bg-slate-800"
                             >
                                 {{ $t('central.view_details') }}
                             </Link>
@@ -182,7 +182,7 @@ const formatDate = (value) => {
                                     :key="value"
                                     type="button"
                                     class="rounded-lg border px-3 py-1.5 text-xs font-medium transition"
-                                    :class="submission.status === value ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-slate-300 text-slate-600 hover:bg-slate-50'"
+                                    :class="submission.status === value ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300' : 'border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:bg-slate-950 dark:hover:bg-slate-800'"
                                     @click="updateStatus(submission, value)"
                                 >
                                     {{ label }}
@@ -191,7 +191,7 @@ const formatDate = (value) => {
                         </div>
                     </div>
 
-                    <p class="mt-4 line-clamp-2 whitespace-pre-wrap text-sm leading-relaxed text-slate-700">{{ submission.body }}</p>
+                    <p class="mt-4 line-clamp-2 whitespace-pre-wrap text-sm leading-relaxed text-slate-700 dark:text-slate-300">{{ submission.body }}</p>
                 </article>
             </div>
 

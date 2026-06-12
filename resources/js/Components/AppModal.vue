@@ -57,23 +57,23 @@ const onBackdropClick = () => {
                 <Transition :name="variant === 'drawer' ? 'modal-drawer' : 'modal-scale'" appear>
                     <div
                         v-if="isOpen"
-                        class="relative flex max-h-[92vh] w-full flex-col overflow-hidden bg-white shadow-2xl"
+                        class="relative flex max-h-[92vh] w-full flex-col overflow-hidden agent-panel shadow-2xl"
                         :class="[
                             variant === 'drawer'
-                                ? 'h-full max-w-2xl rounded-l-2xl border-l border-slate-200'
-                                : `rounded-2xl border border-slate-200 ${sizeClass}`,
+                                ? 'h-full max-w-2xl rounded-l-2xl border-l agent-border'
+                                : `rounded-2xl border agent-border ${sizeClass}`,
                         ]"
                         @click.stop
                     >
-                        <div class="flex items-start justify-between gap-4 border-b border-slate-100 px-6 py-4">
+                        <div class="flex items-start justify-between gap-4 border-b agent-border-subtle px-6 py-4">
                             <div class="min-w-0">
-                                <h2 v-if="title" class="text-lg font-semibold text-slate-900">{{ title }}</h2>
-                                <p v-if="description" class="mt-1 text-sm text-slate-500">{{ description }}</p>
+                                <h2 v-if="title" class="text-lg font-semibold agent-text">{{ title }}</h2>
+                                <p v-if="description" class="mt-1 text-sm agent-text-subtle">{{ description }}</p>
                                 <slot name="header" />
                             </div>
                             <button
                                 type="button"
-                                class="shrink-0 rounded-lg p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600"
+                                class="shrink-0 rounded-lg p-2 text-slate-400 dark:text-slate-500 transition agent-hover-surface hover:text-slate-600 dark:text-slate-400 dark:hover:text-slate-200"
                                 :aria-label="$t('components.close')"
                                 @click="emit('close')"
                             >
@@ -87,7 +87,7 @@ const onBackdropClick = () => {
                             <slot />
                         </div>
 
-                        <div v-if="$slots.footer" class="border-t border-slate-100 bg-slate-50/80 px-6 py-4">
+                        <div v-if="$slots.footer" class="border-t agent-border-subtle agent-panel-muted px-6 py-4">
                             <slot name="footer" />
                         </div>
                     </div>

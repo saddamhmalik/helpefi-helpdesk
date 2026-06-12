@@ -4,6 +4,7 @@ import { computed } from 'vue';
 import AuthLayout from '../../Layouts/AuthLayout.vue';
 import HelpCenterSearch from '../../Components/HelpCenterSearch.vue';
 import { useI18n } from 'vue-i18n';
+import { formInputClass } from '../../composables/useFormControls.js';
 
 defineProps({
     sso: Object,
@@ -22,8 +23,6 @@ const form = useForm({
 });
 
 const submit = () => form.post('/login');
-
-const inputClass = 'w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 shadow-sm transition placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20';
 </script>
 
 <template>
@@ -36,7 +35,7 @@ const inputClass = 'w-full rounded-xl border border-slate-200 bg-white px-3.5 py
             <div class="space-y-4">
                 <HelpCenterSearch variant="hero" tone="dark" />
                 <div class="rounded-xl border border-white/10 bg-white/5 p-4 backdrop-blur-sm">
-                    <p class="text-xs font-medium uppercase tracking-wide text-slate-400">{{ $t('auth.looking_for_help') }}</p>
+                    <p class="text-xs font-medium uppercase tracking-wide text-slate-400 dark:text-slate-500">{{ $t('auth.looking_for_help') }}</p>
                     <p class="mt-1.5 text-sm text-slate-300">{{ $t('auth.customer_portal_description') }}</p>
                 </div>
             </div>
@@ -44,18 +43,18 @@ const inputClass = 'w-full rounded-xl border border-slate-200 bg-white px-3.5 py
 
         <HelpCenterSearch variant="hero" class="mb-8 sm:hidden" />
 
-        <h1 class="text-2xl font-semibold tracking-tight text-slate-900">{{ $t('auth.sign_in') }}</h1>
-        <p class="mt-2 text-sm text-slate-600">{{ $t('auth.access_your_helpdesk') }}</p>
+        <h1 class="text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-100">{{ $t('auth.sign_in') }}</h1>
+        <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">{{ $t('auth.access_your_helpdesk') }}</p>
 
         <div
             v-if="flashSuccess"
-            class="mt-6 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800"
+            class="mt-6 rounded-xl border border-emerald-200 dark:border-emerald-900/60 bg-emerald-50 dark:bg-emerald-950/40 px-4 py-3 text-sm text-emerald-800 dark:border-emerald-900 dark:bg-emerald-950/50 dark:text-emerald-200"
         >
             {{ flashSuccess }}
         </div>
         <div
             v-if="flashError"
-            class="mt-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800"
+            class="mt-6 rounded-xl border border-red-200 dark:border-red-900/60 bg-red-50 dark:bg-red-950/40 px-4 py-3 text-sm text-red-800 dark:border-red-900 dark:bg-red-950/50 dark:text-red-200"
         >
             {{ flashError }}
         </div>
@@ -63,28 +62,28 @@ const inputClass = 'w-full rounded-xl border border-slate-200 bg-white px-3.5 py
         <a
             v-if="sso?.enabled"
             :href="sso.redirect_url"
-            class="mt-8 flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-700 shadow-sm transition hover:border-slate-300 hover:bg-slate-50"
+            class="mt-8 flex w-full items-center justify-center gap-2 rounded-xl border agent-border agent-panel px-4 py-3 text-sm font-medium agent-text-muted shadow-sm transition agent-hover-surface"
         >
-            <svg class="h-4 w-4 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <svg class="h-4 w-4 text-slate-500 dark:text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
             </svg>
             {{ sso.label }}
         </a>
 
-        <div v-if="sso?.enabled" class="my-6 flex items-center gap-3 text-xs font-medium uppercase tracking-wide text-slate-400">
-            <span class="h-px flex-1 bg-slate-200" />
+        <div v-if="sso?.enabled" class="my-6 flex items-center gap-3 text-xs font-medium uppercase tracking-wide agent-text-subtle">
+            <span class="h-px flex-1 bg-slate-200 dark:bg-slate-700" />
             {{ $t('auth.or_continue_with_email') }}
-            <span class="h-px flex-1 bg-slate-200" />
+            <span class="h-px flex-1 bg-slate-200 dark:bg-slate-700" />
         </div>
 
         <form class="space-y-5" :class="sso?.enabled ? '' : 'mt-8'" @submit.prevent="submit">
             <div>
-                <label class="mb-1.5 block text-sm font-medium text-slate-700" for="email">{{ $t('auth.email') }}</label>
+                <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300" for="email">{{ $t('auth.email') }}</label>
                 <input
                     id="email"
                     v-model="form.email"
                     type="email"
-                    :class="inputClass"
+                    :class="formInputClass"
                     :placeholder="$t('auth.email_placeholder')"
                     autocomplete="email"
                     autofocus
@@ -95,8 +94,8 @@ const inputClass = 'w-full rounded-xl border border-slate-200 bg-white px-3.5 py
 
             <div>
                 <div class="mb-1.5 flex items-center justify-between gap-3">
-                    <label class="block text-sm font-medium text-slate-700" for="password">{{ $t('auth.password') }}</label>
-                    <Link href="/forgot-password" class="text-sm font-medium text-blue-600 transition hover:text-blue-700">
+                    <label class="block text-sm font-medium text-slate-700 dark:text-slate-300" for="password">{{ $t('auth.password') }}</label>
+                    <Link href="/forgot-password" class="text-sm font-medium text-blue-600 transition hover:text-blue-700 dark:hover:text-blue-300 dark:text-blue-300">
                         {{ $t('auth.forgot_password') }}
                     </Link>
                 </div>
@@ -104,15 +103,15 @@ const inputClass = 'w-full rounded-xl border border-slate-200 bg-white px-3.5 py
                     id="password"
                     v-model="form.password"
                     type="password"
-                    :class="inputClass"
+                    :class="formInputClass"
                     autocomplete="current-password"
                     required
                 />
                 <p v-if="form.errors.password" class="mt-1.5 text-xs text-red-600">{{ form.errors.password }}</p>
             </div>
 
-            <label class="flex cursor-pointer items-center gap-2.5 text-sm text-slate-600">
-                <input v-model="form.remember" type="checkbox" class="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500/20" />
+            <label class="flex cursor-pointer items-center gap-2.5 text-sm text-slate-600 dark:text-slate-400">
+                <input v-model="form.remember" type="checkbox" class="h-4 w-4 rounded border-slate-300 dark:border-slate-700 text-blue-600 focus:ring-blue-500/20" />
                 {{ $t('auth.remember_me') }}
             </label>
 
@@ -125,14 +124,14 @@ const inputClass = 'w-full rounded-xl border border-slate-200 bg-white px-3.5 py
             </button>
         </form>
 
-        <p class="mt-8 text-center text-sm text-slate-600">
+        <p class="mt-8 text-center text-sm text-slate-600 dark:text-slate-400">
             {{ $t('auth.no_account') }}
-            <Link href="/register" class="font-semibold text-blue-600 transition hover:text-blue-700">{{ $t('auth.create_one') }}</Link>
+            <Link href="/register" class="font-semibold text-blue-600 transition hover:text-blue-700 dark:hover:text-blue-300 dark:text-blue-300">{{ $t('auth.create_one') }}</Link>
         </p>
 
-        <p v-if="page.props.helpCenter" class="mt-4 text-center text-sm text-slate-500 lg:hidden">
+        <p v-if="page.props.helpCenter" class="mt-4 text-center text-sm text-slate-500 dark:text-slate-400 lg:hidden">
             {{ $t('auth.looking_for_help') }}
-            <Link :href="page.props.helpCenter.homeUrl" class="font-medium text-blue-600 hover:text-blue-700">{{ page.props.helpCenter.title }}</Link>
+            <Link :href="page.props.helpCenter.homeUrl" class="font-medium text-blue-600 hover:text-blue-700 dark:hover:text-blue-300 dark:text-blue-300">{{ page.props.helpCenter.title }}</Link>
         </p>
     </AuthLayout>
 </template>

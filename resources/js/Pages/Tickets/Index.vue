@@ -386,7 +386,7 @@ const activeFilterLabels = computed(() => {
             <template #actions>
                 <a
                     :href="exportUrl"
-                    class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 agent-hover-surface dark:border-slate-600 dark:text-slate-300"
+                    class="rounded-lg border border-slate-300 dark:border-slate-700 px-4 py-2 text-sm font-medium text-slate-700 agent-hover-surface dark:border-slate-600 dark:text-slate-300"
                 >
                     {{ $t('tickets.export_csv') }}
                 </a>
@@ -397,18 +397,18 @@ const activeFilterLabels = computed(() => {
             <button
                 type="button"
                 class="rounded-lg px-3 py-1.5 text-sm font-medium transition"
-                :class="!activeViewId ? 'bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900' : 'agent-panel agent-text-muted ring-1 agent-border agent-hover-surface'"
+                :class="!activeViewId ? 'bg-slate-900 text-white dark:bg-slate-100 dark:bg-slate-900 dark:text-slate-900 dark:text-slate-100' : 'agent-panel agent-text-muted ring-1 agent-border agent-hover-surface'"
                 @click="clearFilters"
             >{{ $t('tickets.all_tickets') }}</button>
 
             <template v-if="personalViews.length">
-                <span class="text-xs font-medium text-slate-400">|</span>
-                <span class="text-xs text-slate-500">{{ $t('tickets.my_views') }}</span>
+                <span class="text-xs font-medium text-slate-400 dark:text-slate-500">|</span>
+                <span class="text-xs text-slate-500 dark:text-slate-400">{{ $t('tickets.my_views') }}</span>
                 <div
                     v-for="view in personalViews"
                     :key="view.id"
-                    class="inline-flex overflow-hidden rounded-lg ring-1 ring-slate-200"
-                    :class="activeViewId === view.id ? 'bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900' : 'agent-panel agent-text-muted'"
+                    class="inline-flex overflow-hidden rounded-lg ring-1 ring-slate-200 dark:ring-slate-700"
+                    :class="activeViewId === view.id ? 'bg-slate-900 text-white dark:bg-slate-100 dark:bg-slate-900 dark:text-slate-900 dark:text-slate-100' : 'agent-panel agent-text-muted'"
                 >
                     <button type="button" class="px-3 py-1.5 text-sm font-medium" @click="loadView(view.id)">
                         {{ view.name }}
@@ -425,12 +425,12 @@ const activeFilterLabels = computed(() => {
             </template>
 
             <template v-if="sharedViews.length">
-                <span class="text-xs font-medium text-slate-400">|</span>
-                <span class="text-xs text-slate-500">{{ $t('tickets.team_views') }}</span>
+                <span class="text-xs font-medium text-slate-400 dark:text-slate-500">|</span>
+                <span class="text-xs text-slate-500 dark:text-slate-400">{{ $t('tickets.team_views') }}</span>
                 <div
                     v-for="view in sharedViews"
                     :key="view.id"
-                    class="inline-flex overflow-hidden rounded-lg ring-1 ring-slate-200"
+                    class="inline-flex overflow-hidden rounded-lg ring-1 ring-slate-200 dark:ring-slate-700"
                     :class="activeViewId === view.id ? 'bg-blue-600 text-white' : 'agent-panel agent-text-muted'"
                 >
                     <button type="button" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium" @click="loadView(view.id)">
@@ -459,7 +459,7 @@ const activeFilterLabels = computed(() => {
             <form @submit.prevent="applyFilters" class="p-3">
                 <div class="flex flex-col gap-2 xl:flex-row xl:items-center">
                     <div class="relative min-w-0 flex-1 xl:max-w-xs">
-                        <svg class="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <svg class="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 dark:text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                         </svg>
                         <input
@@ -508,7 +508,7 @@ const activeFilterLabels = computed(() => {
                             {{ $t('tickets.more') }}
                             <span
                                 v-if="extraFilterCount"
-                                class="rounded-full bg-blue-100 px-1.5 py-0.5 text-[10px] font-semibold text-blue-700"
+                                class="rounded-full bg-blue-100 px-1.5 py-0.5 text-[10px] font-semibold text-blue-700 dark:text-blue-300"
                             >
                                 {{ extraFilterCount }}
                             </span>
@@ -521,7 +521,7 @@ const activeFilterLabels = computed(() => {
                     </div>
                 </div>
 
-                <div v-if="showMoreFilters" class="mt-3 border-t border-slate-100 pt-3">
+                <div v-if="showMoreFilters" class="mt-3 border-t border-slate-100 dark:border-slate-800 pt-3">
                     <div class="grid gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
                         <select v-model="filterForm.channel_id" :aria-label="$t('tickets.channel')" :class="selectClass">
                             <option value="">{{ $t('tickets.all_channels') }}</option>
@@ -545,15 +545,15 @@ const activeFilterLabels = computed(() => {
                         <input v-model="filterForm.created_to" type="date" :aria-label="$t('tickets.created_to')" :class="inputClass" />
                     </div>
 
-                    <label class="mt-2 flex cursor-pointer items-center gap-2 text-xs font-medium text-slate-600">
-                        <input v-model="filterForm.watching" type="checkbox" class="rounded border-slate-300 text-blue-600 focus:ring-blue-500/30" />
+                    <label class="mt-2 flex cursor-pointer items-center gap-2 text-xs font-medium text-slate-600 dark:text-slate-400">
+                        <input v-model="filterForm.watching" type="checkbox" class="rounded border-slate-300 dark:border-slate-700 text-blue-600 focus:ring-blue-500/30" />
                         {{ $t('tickets.watching_only') }}
                     </label>
                 </div>
 
                 <ActiveFilterChips
                     v-if="activeFilterLabels.length"
-                    class="mt-3 border-t border-slate-100 pt-3"
+                    class="mt-3 border-t border-slate-100 dark:border-slate-800 pt-3"
                     :items="activeFilterLabels"
                     @remove="removeFilter"
                     @clear="clearFilters"
@@ -563,7 +563,7 @@ const activeFilterLabels = computed(() => {
 
         <div
             v-if="selectedIds.length"
-            class="mb-4 flex flex-wrap items-center gap-2 rounded-xl border border-blue-200 bg-blue-50 px-4 py-3"
+            class="mb-4 flex flex-wrap items-center gap-2 rounded-xl border border-blue-200 dark:border-blue-900/60 bg-blue-50 dark:bg-blue-950/40 px-4 py-3"
         >
             <span class="text-sm font-medium text-blue-900">{{ selectedIds.length }} selected</span>
             <button type="button" class="rounded-lg agent-panel px-3 py-1.5 text-xs font-semibold text-slate-700 ring-1 agent-border dark:text-slate-300" @click="openBulkModal('assign')">{{ $t('tickets.assign') }}</button>
@@ -571,7 +571,7 @@ const activeFilterLabels = computed(() => {
             <button type="button" class="rounded-lg agent-panel px-3 py-1.5 text-xs font-semibold text-slate-700 ring-1 agent-border dark:text-slate-300" @click="openBulkModal('priority')">{{ $t('tickets.priority') }}</button>
             <button type="button" class="rounded-lg agent-panel px-3 py-1.5 text-xs font-semibold text-slate-700 ring-1 agent-border dark:text-slate-300" @click="openBulkModal('snooze')">{{ $t('tickets.snooze') }}</button>
             <button type="button" class="rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white" @click="bulkForm.action = 'close'; submitBulk()">{{ $t('tickets.close') }}</button>
-            <button type="button" class="ml-auto text-xs font-medium text-blue-700" @click="selectedIds = []">{{ $t('tickets.clear') }}</button>
+            <button type="button" class="ml-auto text-xs font-medium text-blue-700 dark:text-blue-300" @click="selectedIds = []">{{ $t('tickets.clear') }}</button>
         </div>
 
         <DataTable>
@@ -580,26 +580,26 @@ const activeFilterLabels = computed(() => {
                     <th class="px-4 py-3">
                         <input
                             type="checkbox"
-                            class="rounded border-slate-300"
+                            class="rounded border-slate-300 dark:border-slate-700"
                             :checked="allVisibleSelected"
                             @change="toggleSelectAll"
                         >
                     </th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('tickets.ticket') }}</th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('tickets.customer') }}</th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('tickets.status') }}</th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('tickets.priority') }}</th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('tickets.channel') }}</th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('tickets.assignee') }}</th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('tickets.updated') }}</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{{ $t('tickets.ticket') }}</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{{ $t('tickets.customer') }}</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{{ $t('tickets.status') }}</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{{ $t('tickets.priority') }}</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{{ $t('tickets.channel') }}</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{{ $t('tickets.assignee') }}</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{{ $t('tickets.updated') }}</th>
                 </tr>
             </thead>
-            <tbody class="divide-y divide-slate-100">
+            <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
                 <tr v-for="ticket in tickets.data" :key="ticket.id" class="agent-hover-row">
                     <td class="px-4 py-3">
                         <input
                             type="checkbox"
-                            class="rounded border-slate-300"
+                            class="rounded border-slate-300 dark:border-slate-700"
                             :checked="selectedIds.includes(ticket.id)"
                             @change="toggleTicket(ticket.id)"
                         >
@@ -607,28 +607,28 @@ const activeFilterLabels = computed(() => {
                     <td class="px-4 py-3">
                         <Link :href="`/tickets/${ticket.id}`" class="block">
                             <div class="flex items-center gap-2">
-                                <span class="text-sm font-semibold text-blue-600 hover:text-blue-700">{{ ticket.number }}</span>
+                                <span class="text-sm font-semibold text-blue-600 hover:text-blue-700 dark:hover:text-blue-300 dark:text-blue-300">{{ ticket.number }}</span>
                                 <UnreadBadge :count="ticket.unread_count ?? 0" />
                             </div>
                             <span class="mt-0.5 block max-w-md truncate text-sm agent-text">{{ ticket.subject }}</span>
                         </Link>
                     </td>
                     <td class="px-4 py-3">
-                        <span class="block text-sm font-medium text-slate-800">{{ ticket.contact?.name || '—' }}</span>
-                        <span v-if="ticket.contact?.email" class="text-xs text-slate-500">{{ ticket.contact.email }}</span>
+                        <span class="block text-sm font-medium text-slate-800 dark:text-slate-200">{{ ticket.contact?.name || '—' }}</span>
+                        <span v-if="ticket.contact?.email" class="text-xs text-slate-500 dark:text-slate-400">{{ ticket.contact.email }}</span>
                     </td>
                     <td class="px-4 py-3">
                         <StatusBadge :label="ticket.status?.name" :color="ticket.status?.color" />
                     </td>
-                    <td class="px-4 py-3 text-sm text-slate-600">{{ ticket.priority?.name }}</td>
-                    <td class="px-4 py-3 text-sm text-slate-600">{{ ticket.channel?.name || '—' }}</td>
-                    <td class="px-4 py-3 text-sm text-slate-600">{{ ticket.assignee?.name || 'Unassigned' }}</td>
-                    <td class="px-4 py-3 text-sm text-slate-500">{{ formatDate(ticket.updated_at) }}</td>
+                    <td class="px-4 py-3 text-sm text-slate-600 dark:text-slate-400">{{ ticket.priority?.name }}</td>
+                    <td class="px-4 py-3 text-sm text-slate-600 dark:text-slate-400">{{ ticket.channel?.name || '—' }}</td>
+                    <td class="px-4 py-3 text-sm text-slate-600 dark:text-slate-400">{{ ticket.assignee?.name || 'Unassigned' }}</td>
+                    <td class="px-4 py-3 text-sm text-slate-500 dark:text-slate-400">{{ formatDate(ticket.updated_at) }}</td>
                 </tr>
                 <tr v-if="!tickets.data?.length">
                     <td colspan="8" class="px-4 py-12 text-center">
-                        <p class="text-sm font-medium text-slate-700">{{ $t('tickets.no_tickets_match_these_filters') }}</p>
-                        <button type="button" class="mt-3 text-sm font-medium text-blue-600 hover:text-blue-700" @click="clearFilters">{{ $t('tickets.clear_all_filters') }}</button>
+                        <p class="text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('tickets.no_tickets_match_these_filters') }}</p>
+                        <button type="button" class="mt-3 text-sm font-medium text-blue-600 hover:text-blue-700 dark:hover:text-blue-300 dark:text-blue-300" @click="clearFilters">{{ $t('tickets.clear_all_filters') }}</button>
                     </td>
                 </tr>
             </tbody>
@@ -659,7 +659,7 @@ const activeFilterLabels = computed(() => {
                             <input v-model="saveViewForm.visibility" type="radio" value="private" />
                             {{ $t('tickets.only_me') }}
                         </label>
-                        <label class="flex cursor-pointer items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 text-sm" :class="!userTeams.length ? 'opacity-50' : ''">
+                        <label class="flex cursor-pointer items-center gap-2 rounded-lg border border-slate-200 dark:border-slate-800 px-3 py-2 text-sm" :class="!userTeams.length ? 'opacity-50' : ''">
                             <input v-model="saveViewForm.visibility" type="radio" value="team" :disabled="!userTeams.length" />
                             {{ $t('tickets.share_with_team') }}
                         </label>
@@ -672,13 +672,13 @@ const activeFilterLabels = computed(() => {
                     </select>
                 </FilterField>
 
-                <label v-if="saveViewForm.visibility === 'private'" class="flex items-center gap-2 text-sm text-slate-700">
-                    <input v-model="saveViewForm.is_default" type="checkbox" class="rounded border-slate-300" />
+                <label v-if="saveViewForm.visibility === 'private'" class="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
+                    <input v-model="saveViewForm.is_default" type="checkbox" class="rounded border-slate-300 dark:border-slate-700" />
                     {{ $t('tickets.set_as_my_default_view') }}
                 </label>
 
                 <div v-if="activeFilterLabels.length" class="rounded-lg border agent-border agent-panel-muted px-3 py-3">
-                    <p class="text-sm font-medium text-slate-700">{{ $t('tickets.filters_to_save') }}</p>
+                    <p class="text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('tickets.filters_to_save') }}</p>
                     <div class="mt-2 flex flex-wrap gap-1.5">
                         <span
                             v-for="chip in activeFilterLabels"
@@ -693,7 +693,7 @@ const activeFilterLabels = computed(() => {
 
             <template #footer>
                 <div class="flex justify-end gap-2">
-                    <button type="button" class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700" @click="showSaveView = false">{{ $t('tickets.cancel') }}</button>
+                    <button type="button" class="rounded-lg border border-slate-300 dark:border-slate-700 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300" @click="showSaveView = false">{{ $t('tickets.cancel') }}</button>
                     <button type="submit" form="save-ticket-view-form" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700" :disabled="saveViewForm.processing">{{ $t('tickets.save_view') }}</button>
                 </div>
             </template>
@@ -707,7 +707,7 @@ const activeFilterLabels = computed(() => {
         >
             <form id="bulk-ticket-form" class="space-y-4" @submit.prevent="submitBulk">
                 <div v-if="bulkForm.action === 'assign'">
-                    <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('tickets.assignee') }}</label>
+                    <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('tickets.assignee') }}</label>
                     <select v-model="bulkForm.assigned_to" :class="selectClass">
                         <option value="">{{ $t('tickets.unassigned') }}</option>
                         <option v-for="agent in agents" :key="agent.id" :value="agent.id">{{ agent.name }}</option>
@@ -715,30 +715,30 @@ const activeFilterLabels = computed(() => {
                 </div>
 
                 <div v-if="bulkForm.action === 'status'">
-                    <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('tickets.status') }}</label>
+                    <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('tickets.status') }}</label>
                     <select v-model="bulkForm.ticket_status_id" :class="selectClass" required>
                         <option v-for="status in statuses" :key="status.id" :value="status.id">{{ status.name }}</option>
                     </select>
                 </div>
 
                 <div v-if="bulkForm.action === 'priority'">
-                    <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('tickets.priority') }}</label>
+                    <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('tickets.priority') }}</label>
                     <select v-model="bulkForm.ticket_priority_id" :class="selectClass" required>
                         <option v-for="priority in priorities" :key="priority.id" :value="priority.id">{{ priority.name }}</option>
                     </select>
                 </div>
 
                 <div v-if="bulkForm.action === 'snooze'">
-                    <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('tickets.snooze_for_minutes') }}</label>
+                    <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('tickets.snooze_for_minutes') }}</label>
                     <input v-model.number="bulkForm.minutes" type="number" min="15" max="10080" :class="inputClass" required />
                 </div>
 
-                <p v-if="bulkForm.action === 'close'" class="text-sm text-slate-600">{{ $t('tickets.close_all_selected_tickets') }}</p>
+                <p v-if="bulkForm.action === 'close'" class="text-sm text-slate-600 dark:text-slate-400">{{ $t('tickets.close_all_selected_tickets') }}</p>
             </form>
 
             <template #footer>
                 <div class="flex justify-end gap-2">
-                    <button type="button" class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700" @click="showBulkModal = false">{{ $t('tickets.cancel') }}</button>
+                    <button type="button" class="rounded-lg border border-slate-300 dark:border-slate-700 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300" @click="showBulkModal = false">{{ $t('tickets.cancel') }}</button>
                     <button type="submit" form="bulk-ticket-form" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700" :disabled="bulkForm.processing">{{ $t('tickets.apply') }}</button>
                 </div>
             </template>

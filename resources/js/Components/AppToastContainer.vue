@@ -5,17 +5,17 @@ const toast = useToast();
 
 const styles = {
     success: {
-        wrap: 'border-emerald-200 bg-emerald-50 text-emerald-900',
+        wrap: 'border-emerald-200 dark:border-emerald-900/60 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-900',
         icon: 'text-emerald-600',
         path: 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z',
     },
     error: {
-        wrap: 'border-red-200 bg-red-50 text-red-900',
+        wrap: 'border-red-200 dark:border-red-900/60 bg-red-50 dark:bg-red-950/40 text-red-900',
         icon: 'text-red-600',
         path: 'M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z',
     },
     info: {
-        wrap: 'border-blue-200 bg-blue-50 text-blue-900',
+        wrap: 'border-blue-200 dark:border-blue-900/60 bg-blue-50 dark:bg-blue-950/40 text-blue-900',
         icon: 'text-blue-600',
         path: 'M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z',
     },

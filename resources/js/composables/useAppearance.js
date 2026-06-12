@@ -58,15 +58,15 @@ export function useAppearance() {
     let mediaQuery = null;
 
     const currentAppearance = () => {
-        const fromPage = page.props.appearance ?? page.props.auth?.user?.appearance;
+        const user = page.props.auth?.user;
+        const fromPage = page.props.appearance ?? user?.appearance;
+        const stored = readStoredAppearance(page.props.tenantId, user?.id);
 
-        if (fromPage) {
+        if (user && fromPage) {
             return fromPage;
         }
 
-        const stored = readStoredAppearance(page.props.tenantId, page.props.auth?.user?.id);
-
-        return stored ?? 'system';
+        return stored ?? fromPage ?? 'system';
     };
 
     const syncAppearance = () => {
@@ -93,11 +93,12 @@ export function useAppearance() {
         mediaQuery.addEventListener('change', onSystemChange);
     });
 
-    onUnmounted(() => {
-        mediaQuery?.removeEventListener('change', onSystemChange);
+    const removeNavigateListener = router.on('navigate', () => {
+        syncAppearance();
     });
 
-    router.on('navigate', () => {
-        syncAppearance();
+    onUnmounted(() => {
+        mediaQuery?.removeEventListener('change', onSystemChange);
+        removeNavigateListener();
     });
 }

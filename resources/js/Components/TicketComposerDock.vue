@@ -71,13 +71,13 @@ defineExpose({ expand, collapse });
 
 <template>
     <div
-        class="rounded-xl border border-slate-200 bg-white shadow-[0_-4px_24px_rgba(15,23,42,0.06)] transition-shadow"
-        :class="editorLarge ? 'ring-1 ring-slate-200/80' : ''"
+        class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-[0_-4px_24px_rgba(15,23,42,0.06)] transition-shadow"
+        :class="editorLarge ? 'ring-1 ring-slate-200 dark:ring-slate-700/80' : ''"
     >
         <button
             v-if="editorLarge"
             type="button"
-            class="flex h-1.5 w-full cursor-row-resize items-center justify-center border-b border-slate-100 bg-slate-50/80 hover:bg-slate-100"
+            class="flex h-1.5 w-full cursor-row-resize items-center justify-center border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/80 hover:bg-slate-100 dark:bg-slate-900 dark:hover:bg-slate-800"
             :title="$t('components.composer_expanded')"
             @click="collapse"
         >
@@ -87,19 +87,19 @@ defineExpose({ expand, collapse });
         <TicketAiPanel
             v-if="aiEnabled && editorLarge"
             compact
-            class="border-b border-slate-100 px-3 pt-2"
+            class="border-b border-slate-100 dark:border-slate-800 px-3 pt-2"
             :ticket-id="ticketId"
             :base-path="aiBasePath"
             :ai-enabled="aiEnabled"
             :on-suggest-reply="onSuggestReply"
         />
 
-        <div class="flex min-w-0 items-center gap-2 border-b border-slate-100 px-3 py-2">
-            <div class="flex shrink-0 rounded-lg bg-slate-100 p-0.5">
+        <div class="flex min-w-0 items-center gap-2 border-b border-slate-100 dark:border-slate-800 px-3 py-2">
+            <div class="flex shrink-0 rounded-lg bg-slate-100 dark:bg-slate-900 p-0.5">
                 <button
                     type="button"
                     class="rounded-md px-3 py-1.5 text-xs font-semibold transition"
-                    :class="!isInternal ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'"
+                    :class="!isInternal ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300 dark:text-slate-300'"
                     @click="isInternal = false"
                 >
                     {{ $t('components.reply') }}
@@ -107,7 +107,7 @@ defineExpose({ expand, collapse });
                 <button
                     type="button"
                     class="rounded-md px-3 py-1.5 text-xs font-semibold transition"
-                    :class="isInternal ? 'bg-amber-500 text-white shadow-sm' : 'text-slate-500 hover:text-slate-700'"
+                    :class="isInternal ? 'bg-amber-500 text-white shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300 dark:text-slate-300'"
                     @click="isInternal = true"
                 >
                     {{ $t('components.internal_note') }}
@@ -129,7 +129,7 @@ defineExpose({ expand, collapse });
 
                 <button
                     type="button"
-                    class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-slate-500 transition hover:bg-slate-100 hover:text-slate-800"
+                    class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-slate-500 dark:text-slate-400 transition hover:bg-slate-100 dark:bg-slate-900 dark:hover:bg-slate-800 hover:text-slate-800 dark:text-slate-200"
                     :title="editorLarge ? $t('components.collapse_composer') : $t('components.expand_composer')"
                     @click="toggleExpanded"
                 >
@@ -167,7 +167,7 @@ defineExpose({ expand, collapse });
             </div>
             <div
                 class="overflow-hidden rounded-xl ring-1 transition"
-                :class="isInternal ? 'bg-amber-50/30 ring-amber-200 focus-within:ring-amber-400' : 'bg-white ring-slate-200 focus-within:ring-blue-400'"
+                :class="isInternal ? 'bg-amber-50 dark:bg-amber-950/40/30 ring-amber-200 focus-within:ring-amber-400' : 'bg-white dark:bg-slate-900 ring-slate-200 dark:ring-slate-700 focus-within:ring-blue-400'"
             >
                 <TicketReplyComposer
                     :key="editorKey"
@@ -181,11 +181,11 @@ defineExpose({ expand, collapse });
             </div>
 
             <div v-if="editorLarge" class="mt-2 flex items-center justify-between gap-3 px-1">
-                <p class="text-xs text-slate-400">
+                <p class="text-xs text-slate-400 dark:text-slate-500">
                     <span class="hidden sm:inline">{{ $t('components.formatting_lists_and_links_available') }} </span>
                     {{ $t('components.send_shortcut_hint') }}
                 </p>
-                <p v-if="attachments.length" class="text-xs text-slate-500">{{ $t('components.attachments_count', { count: attachments.length }) }}</p>
+                <p v-if="attachments.length" class="text-xs text-slate-500 dark:text-slate-400">{{ $t('components.attachments_count', { count: attachments.length }) }}</p>
             </div>
         </div>
     </div>

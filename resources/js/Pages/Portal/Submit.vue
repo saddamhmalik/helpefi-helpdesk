@@ -140,44 +140,44 @@ const submitAnyway = async () => {
     <Head :title="$t('portal.submit_request')" />
     <PortalLayout>
         <div class="mx-auto max-w-xl">
-            <Link :href="portalPath()" class="text-sm text-blue-600 hover:text-blue-700">← Help Center</Link>
-            <h1 class="mt-2 text-2xl font-bold text-slate-900">{{ $t('portal.submit_a_request') }}</h1>
-            <p class="mt-1 text-sm text-slate-600">
+            <Link :href="portalPath()" class="text-sm text-blue-600 hover:text-blue-700 dark:hover:text-blue-300 dark:text-blue-300">← Help Center</Link>
+            <h1 class="mt-2 text-2xl font-bold text-slate-900 dark:text-slate-100">{{ $t('portal.submit_a_request') }}</h1>
+            <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">
                 {{ customer ? 'Submitting as ' + customer.email : 'We\'ll create a ticket you can track by email or after signing in.' }}
             </p>
 
             <div
                 v-if="deflected"
-                class="mt-6 rounded-xl border border-emerald-200 bg-emerald-50 p-6 text-emerald-900"
+                class="mt-6 rounded-xl border border-emerald-200 dark:border-emerald-900/60 bg-emerald-50 dark:bg-emerald-950/40 p-6 text-emerald-900"
             >
                 <h2 class="text-lg font-semibold">{{ $t('portal.glad_we_could_help') }}</h2>
                 <p class="mt-2 text-sm">{{ $t('portal.your_issue_appears_resolved_no_ticket_was_created') }}</p>
-                <Link :href="portalPath()" class="mt-4 inline-block text-sm font-medium text-emerald-700 hover:text-emerald-800">
+                <Link :href="portalPath()" class="mt-4 inline-block text-sm font-medium text-emerald-700 dark:text-emerald-300 hover:text-emerald-800 dark:text-emerald-200">
                     Back to Help Center
                 </Link>
             </div>
 
             <form
                 v-else
-                class="mt-6 space-y-4 rounded-xl border border-slate-200 bg-white p-6 shadow-sm"
+                class="mt-6 space-y-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm"
                 @submit.prevent="submitAnyway"
             >
                 <template v-if="!customer">
                     <div>
-                        <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('portal.name') }}</label>
-                        <input v-model="form.name" type="text" required class="w-full rounded-lg border border-slate-300 px-3 py-2" />
+                        <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('portal.name') }}</label>
+                        <input v-model="form.name" type="text" required class="w-full rounded-lg border border-slate-300 dark:border-slate-700 px-3 py-2" />
                     </div>
                     <div>
-                        <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('portal.email') }}</label>
-                        <input v-model="form.email" type="email" required class="w-full rounded-lg border border-slate-300 px-3 py-2" />
+                        <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('portal.email') }}</label>
+                        <input v-model="form.email" type="email" required class="w-full rounded-lg border border-slate-300 dark:border-slate-700 px-3 py-2" />
                     </div>
                 </template>
                 <div>
-                    <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('portal.subject') }}</label>
-                    <input v-model="form.subject" type="text" required class="w-full rounded-lg border border-slate-300 px-3 py-2" />
+                    <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('portal.subject') }}</label>
+                    <input v-model="form.subject" type="text" required class="w-full rounded-lg border border-slate-300 dark:border-slate-700 px-3 py-2" />
                 </div>
                 <div>
-                    <label class="mb-1.5 block text-sm font-medium text-slate-700">{{ $t('portal.description') }}</label>
+                    <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('portal.description') }}</label>
                     <AppRichTextEditor
                         v-model="form.description"
                         form
@@ -186,7 +186,7 @@ const submitAnyway = async () => {
                 </div>
 
                 <div v-for="field in ticketFields" :key="field.name" class="space-y-1">
-                    <label class="block text-sm font-medium text-slate-700">
+                    <label class="block text-sm font-medium text-slate-700 dark:text-slate-300">
                         {{ field.label }}<span v-if="field.required" class="text-red-500"> *</span>
                     </label>
                     <input
@@ -194,20 +194,20 @@ const submitAnyway = async () => {
                         v-model="form.custom_fields[field.name]"
                         :type="field.type === 'number' ? 'number' : field.type === 'email' ? 'email' : 'text'"
                         :required="field.required"
-                        class="w-full rounded-lg border border-slate-300 px-3 py-2"
+                        class="w-full rounded-lg border border-slate-300 dark:border-slate-700 px-3 py-2"
                     />
                     <textarea
                         v-else-if="field.type === 'textarea'"
                         v-model="form.custom_fields[field.name]"
                         :required="field.required"
                         rows="3"
-                        class="w-full rounded-lg border border-slate-300 px-3 py-2"
+                        class="w-full rounded-lg border border-slate-300 dark:border-slate-700 px-3 py-2"
                     />
                     <select
                         v-else
                         v-model="form.custom_fields[field.name]"
                         :required="field.required"
-                        class="w-full rounded-lg border border-slate-300 px-3 py-2"
+                        class="w-full rounded-lg border border-slate-300 dark:border-slate-700 px-3 py-2"
                     >
                         <option value="">{{ $t('portal.select_ellipsis') }}</option>
                         <option v-for="option in field.options" :key="option" :value="option">{{ option }}</option>
@@ -216,19 +216,19 @@ const submitAnyway = async () => {
 
                 <div
                     v-if="kbDeflectionEnabled && (loadingSuggestions || showSuggestions)"
-                    class="rounded-lg border border-blue-100 bg-blue-50 p-4"
+                    class="rounded-lg border border-blue-100 bg-blue-50 dark:bg-blue-950/40 p-4"
                 >
                     <p class="text-sm font-medium text-blue-900">{{ $t('portal.these_articles_might_help') }}</p>
-                    <p v-if="loadingSuggestions" class="mt-2 text-sm text-blue-700">{{ $t('portal.searching_knowledge_base_ellipsis') }}</p>
+                    <p v-if="loadingSuggestions" class="mt-2 text-sm text-blue-700 dark:text-blue-300">{{ $t('portal.searching_knowledge_base_ellipsis') }}</p>
                     <ul v-else class="mt-3 space-y-2">
                         <li v-for="article in suggestions" :key="article.id">
                             <button
                                 type="button"
-                                class="w-full rounded-lg border border-blue-100 bg-white px-3 py-2 text-left hover:border-blue-200"
+                                class="w-full rounded-lg border border-blue-100 bg-white dark:bg-slate-900 px-3 py-2 text-left hover:border-blue-200 dark:border-blue-900/60"
                                 @click="openArticle(article)"
                             >
-                                <span class="block text-sm font-medium text-slate-900">{{ article.title }}</span>
-                                <span v-if="article.excerpt" class="mt-0.5 block text-xs text-slate-600 line-clamp-2">{{ article.excerpt }}</span>
+                                <span class="block text-sm font-medium text-slate-900 dark:text-slate-100">{{ article.title }}</span>
+                                <span v-if="article.excerpt" class="mt-0.5 block text-xs text-slate-600 dark:text-slate-400 line-clamp-2">{{ article.excerpt }}</span>
                             </button>
                         </li>
                     </ul>
@@ -240,7 +240,7 @@ const submitAnyway = async () => {
                         >{{ $t('portal.this_solved_my_issue') }}</button>
                         <button
                             type="submit"
-                            class="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                            class="rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:bg-slate-950 dark:hover:bg-slate-800"
                             :disabled="form.processing"
                         >{{ $t('portal.still_need_help_submit_request') }}</button>
                     </div>

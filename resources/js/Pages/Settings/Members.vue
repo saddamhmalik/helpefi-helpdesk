@@ -103,8 +103,8 @@ const removeMember = (member) => {
 <template>
     <SettingsPage :title="$t('settings_members.team_members')" :description="$t('settings_members.invite_members_description')">
         <template #actions>
-            <a href="/settings/members/export" class="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50">{{ $t('settings_members.export_csv') }}</a>
-            <Link href="/settings/profile" class="text-sm text-blue-600 transition hover:text-blue-700">{{ $t('settings.profile') }}</Link>
+            <a href="/settings/members/export" class="rounded-lg border agent-border agent-panel px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 transition agent-hover-surface">{{ $t('settings_members.export_csv') }}</a>
+            <Link href="/settings/profile" class="text-sm text-blue-600 transition hover:text-blue-700 dark:hover:text-blue-300 dark:text-blue-300">{{ $t('settings.profile') }}</Link>
             <button
                 type="button"
                 class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
@@ -124,57 +124,57 @@ const removeMember = (member) => {
 
         <div
             v-if="page.props.flash?.invite_url"
-            class="mb-4 rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-900"
+            class="mb-4 rounded-lg border border-blue-200 dark:border-blue-900/60 bg-blue-50 dark:bg-blue-950/40 px-4 py-3 text-sm text-blue-900"
         >
             <p class="font-medium">{{ $t('settings_members.share_this_invitation_link') }}</p>
             <p class="mt-1 text-xs text-blue-800">{{ $t('settings_members.outbound_email_is_not_configured_copy_the_link_below_for_the_invitee') }}</p>
             <a :href="page.props.flash.invite_url" class="mt-2 block break-all underline">{{ page.props.flash.invite_url }}</a>
         </div>
 
-        <div v-show="activeSection === 'invitations'" class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div v-show="activeSection === 'invitations'" class="agent-card">
             <ul class="space-y-3">
-                <li v-for="invitation in pendingInvitations" :key="invitation.id" class="text-sm text-slate-700">
+                <li v-for="invitation in pendingInvitations" :key="invitation.id" class="text-sm text-slate-700 dark:text-slate-300">
                     <span class="font-medium">{{ invitation.email }}</span>
-                    <span class="text-slate-500"> · {{ invitation.role }} · invited by {{ invitation.inviter?.name }}</span>
+                    <span class="agent-text-subtle"> · {{ invitation.role }} · invited by {{ invitation.inviter?.name }}</span>
                 </li>
-                <li v-if="!pendingInvitations.length" class="text-sm text-slate-500">{{ $t('settings_members.no_pending_invitations') }}</li>
+                <li v-if="!pendingInvitations.length" class="text-sm agent-text-subtle">{{ $t('settings_members.no_pending_invitations') }}</li>
             </ul>
         </div>
 
-        <div v-show="activeSection === 'members'" class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-            <table class="min-w-full divide-y divide-slate-200">
-                <thead class="bg-slate-50">
+        <div v-show="activeSection === 'members'" class="overflow-hidden rounded-xl border agent-border agent-panel shadow-sm">
+            <table class="min-w-full divide-y divide-slate-200 dark:divide-slate-800 dark:divide-slate-700">
+                <thead class="agent-panel-muted">
                     <tr>
-                        <th class="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500">{{ $t('profile.name') }}</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500">{{ $t('profile.email') }}</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500">{{ $t('settings_members.role') }}</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500">{{ $t('nav.teams') }}</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500">{{ $t('settings_members.score') }}</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500">{{ $t('settings_members.actions') }}</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium uppercase agent-text-subtle">{{ $t('profile.name') }}</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium uppercase agent-text-subtle">{{ $t('profile.email') }}</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium uppercase agent-text-subtle">{{ $t('settings_members.role') }}</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium uppercase agent-text-subtle">{{ $t('nav.teams') }}</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium uppercase agent-text-subtle">{{ $t('settings_members.score') }}</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium uppercase agent-text-subtle">{{ $t('settings_members.actions') }}</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-slate-200">
-                    <tr v-for="member in employees.data" :key="member.id" class="hover:bg-slate-50/60">
-                        <td class="px-4 py-3 text-sm font-medium text-slate-900">
-                            <Link :href="`/settings/members/${member.id}`" class="text-slate-900 hover:text-blue-600">{{ member.name }}</Link>
+                <tbody class="divide-y divide-slate-200 dark:divide-slate-800 dark:divide-slate-700">
+                    <tr v-for="member in employees.data" :key="member.id" class="agent-hover-surface/60">
+                        <td class="px-4 py-3 text-sm font-medium agent-text">
+                            <Link :href="`/settings/members/${member.id}`" class="agent-text hover:text-blue-600 dark:hover:text-blue-400">{{ member.name }}</Link>
                         </td>
-                        <td class="px-4 py-3 text-sm text-slate-600">{{ member.email }}</td>
+                        <td class="px-4 py-3 text-sm agent-text-muted">{{ member.email }}</td>
                         <td class="px-4 py-3">
                             <select
                                 :value="member.roles[0]?.name"
-                                class="rounded-lg border border-slate-300 px-2 py-1 text-sm transition focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                                class="rounded-lg border agent-border px-2 py-1 text-sm transition focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                                 :disabled="member.id === page.props.auth.user.id"
                                 @change="updateRole(member.id, $event.target.value)"
                             >
                                 <option v-for="role in roles" :key="role" :value="role">{{ role }}</option>
                             </select>
                         </td>
-                        <td class="px-4 py-3 text-sm text-slate-600">
+                        <td class="px-4 py-3 text-sm agent-text-muted">
                             <span v-if="member.teams?.length">{{ member.teams.map((team) => team.name).join(', ') }}</span>
-                            <span v-else class="text-slate-400">—</span>
+                            <span v-else class="text-slate-400 dark:text-slate-500">—</span>
                         </td>
                         <td class="px-4 py-3">
-                            <Link :href="`/settings/performance/${member.id}`" class="text-sm font-medium" :class="member.performance_score >= 80 ? 'text-emerald-700' : member.performance_score >= 60 ? 'text-amber-600' : 'text-red-600'">
+                            <Link :href="`/settings/performance/${member.id}`" class="text-sm font-medium" :class="member.performance_score >= 80 ? 'text-emerald-700 dark:text-emerald-300' : member.performance_score >= 60 ? 'text-amber-600' : 'text-red-600'">
                                 {{ Number(member.performance_score ?? 100).toFixed(1) }}
                             </Link>
                         </td>
@@ -202,7 +202,7 @@ const removeMember = (member) => {
                         </td>
                     </tr>
                     <tr v-if="!employees.data.length">
-                        <td colspan="6" class="px-4 py-6 text-center text-sm text-slate-500">No team members yet.</td>
+                        <td colspan="6" class="px-4 py-6 text-center text-sm agent-text-subtle">No team members yet.</td>
                     </tr>
                 </tbody>
             </table>
@@ -217,19 +217,19 @@ const removeMember = (member) => {
         >
             <form id="invite-form" class="space-y-4" @submit.prevent="invite">
                 <div>
-                    <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('profile.email') }}</label>
-                    <input v-model="inviteForm.email" type="email" class="w-full rounded-lg border border-slate-300 px-3 py-2 transition focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20" required />
+                    <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('profile.email') }}</label>
+                    <input v-model="inviteForm.email" type="email" class="w-full rounded-lg border agent-border px-3 py-2 transition focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20" required />
                     <p v-if="inviteForm.errors.email" class="mt-1 text-sm text-red-600">{{ inviteForm.errors.email }}</p>
                 </div>
                 <div>
-                    <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('settings_members.role') }}</label>
-                    <select v-model="inviteForm.role" class="w-full rounded-lg border border-slate-300 px-3 py-2 transition focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20">
+                    <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('settings_members.role') }}</label>
+                    <select v-model="inviteForm.role" class="w-full rounded-lg border agent-border px-3 py-2 transition focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20">
                         <option v-for="role in roles" :key="role" :value="role">{{ role }}</option>
                     </select>
                 </div>
                 <div>
-                    <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('settings.groups.team') }}</label>
-                    <select v-model="inviteForm.team_id" class="w-full rounded-lg border border-slate-300 px-3 py-2 transition focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20">
+                    <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('settings.groups.team') }}</label>
+                    <select v-model="inviteForm.team_id" class="w-full rounded-lg border agent-border px-3 py-2 transition focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20">
                         <option value="">{{ $t('settings_members.none') }}</option>
                         <option v-for="team in teams" :key="team.id" :value="team.id">{{ team.name }}</option>
                     </select>
@@ -239,7 +239,7 @@ const removeMember = (member) => {
 
             <template #footer>
                 <div class="flex justify-end gap-2">
-                    <button type="button" class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-white" @click="closeInvite">{{ $t('common.cancel') }}</button>
+                    <button type="button" class="rounded-lg border agent-border px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 transition agent-hover-surface" @click="closeInvite">{{ $t('common.cancel') }}</button>
                     <button type="submit" form="invite-form" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700 disabled:opacity-60" :disabled="inviteForm.processing">{{ $t('settings_members.send_invitation') }}</button>
                 </div>
             </template>
@@ -262,7 +262,7 @@ const removeMember = (member) => {
 
             <template #footer>
                 <div class="flex justify-end gap-2">
-                    <button type="button" class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-white" @click="closeEditFields">{{ $t('common.cancel') }}</button>
+                    <button type="button" class="rounded-lg border agent-border px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 transition agent-hover-surface" @click="closeEditFields">{{ $t('common.cancel') }}</button>
                     <button type="submit" form="edit-fields-form" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700 disabled:opacity-60" :disabled="editFieldsForm.processing">{{ $t('settings_members.save_fields') }}</button>
                 </div>
             </template>

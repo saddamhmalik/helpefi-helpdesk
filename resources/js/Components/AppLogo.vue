@@ -31,7 +31,7 @@ const imageClass = (size, markOnly) => [
 <template>
     <span
         v-if="surface === 'light'"
-        class="inline-flex items-center rounded-xl bg-white px-3 py-1.5 shadow-sm shadow-black/10 ring-1 ring-black/5"
+        class="inline-flex items-center rounded-xl bg-white dark:bg-slate-900 px-3 py-1.5 shadow-sm shadow-black/10 ring-1 ring-black/5"
     >
         <img
             :src="markOnly ? '/icon.png' : '/logo.png'"

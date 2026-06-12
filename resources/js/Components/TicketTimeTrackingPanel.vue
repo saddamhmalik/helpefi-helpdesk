@@ -64,21 +64,21 @@ const removeEntry = (entryId) => {
     <section class="px-4 py-3">
         <div class="flex items-center justify-between gap-2">
             <div>
-                <p class="text-[11px] font-semibold uppercase tracking-wide text-slate-400">{{ $t('components.time_tracking') }}</p>
-                <p class="mt-0.5 text-xs text-slate-500">
+                <p class="text-[11px] font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500">{{ $t('components.time_tracking') }}</p>
+                <p class="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
                     {{ totalLoggedLabel }}
                 </p>
             </div>
             <button
                 type="button"
-                class="rounded-md border border-slate-200 px-2.5 py-1 text-xs font-medium text-slate-700 transition hover:bg-slate-50"
+                class="rounded-md border border-slate-200 dark:border-slate-800 px-2.5 py-1 text-xs font-medium text-slate-700 dark:text-slate-300 transition hover:bg-slate-50 dark:bg-slate-950 dark:hover:bg-slate-800"
                 @click="showForm = !showForm"
             >
                 {{ showForm ? $t('components.cancel') : $t('components.log_time') }}
             </button>
         </div>
 
-        <form v-if="showForm" class="mt-3 space-y-2 rounded-lg border border-slate-200 bg-slate-50/70 p-3" @submit.prevent="submit">
+        <form v-if="showForm" class="mt-3 space-y-2 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/70 p-3" @submit.prevent="submit">
             <div class="grid grid-cols-2 gap-2">
                 <input
                     v-model.number="form.minutes"
@@ -106,18 +106,18 @@ const removeEntry = (entryId) => {
             <li
                 v-for="entry in timeTracking.entries"
                 :key="entry.id"
-                class="rounded-lg border border-slate-200 bg-white px-3 py-2"
+                class="rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-2"
             >
                 <div class="flex items-start justify-between gap-2">
                     <div class="min-w-0">
-                        <p class="text-sm font-medium text-slate-900">{{ formatDuration(entry.minutes) }}</p>
-                        <p class="text-xs text-slate-500">{{ entry.user?.name || $t('components.unknown') }} · {{ formatDateTime(entry.logged_at) }}</p>
-                        <p v-if="entry.note" class="mt-1 text-xs text-slate-600">{{ entry.note }}</p>
+                        <p class="text-sm font-medium text-slate-900 dark:text-slate-100">{{ formatDuration(entry.minutes) }}</p>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">{{ entry.user?.name || $t('components.unknown') }} · {{ formatDateTime(entry.logged_at) }}</p>
+                        <p v-if="entry.note" class="mt-1 text-xs text-slate-600 dark:text-slate-400">{{ entry.note }}</p>
                     </div>
                     <button
                         v-if="canDelete(entry)"
                         type="button"
-                        class="shrink-0 rounded px-1.5 py-0.5 text-xs text-slate-400 hover:bg-slate-100 hover:text-red-600"
+                        class="shrink-0 rounded px-1.5 py-0.5 text-xs text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:bg-slate-900 dark:hover:bg-slate-800 hover:text-red-600"
                         @click="removeEntry(entry.id)"
                     >
                         {{ $t('components.remove') }}
@@ -126,6 +126,6 @@ const removeEntry = (entryId) => {
             </li>
         </ul>
 
-        <p v-else class="mt-3 text-xs text-slate-500">{{ $t('components.no_time_logged_yet') }}</p>
+        <p v-else class="mt-3 text-xs text-slate-500 dark:text-slate-400">{{ $t('components.no_time_logged_yet') }}</p>
     </section>
 </template>

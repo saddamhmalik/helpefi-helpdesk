@@ -16,10 +16,10 @@ const emit = defineEmits(['click']);
 const buttonClass = computed(() => {
     const base = 'inline-flex items-center justify-center rounded-lg p-2 transition disabled:cursor-not-allowed disabled:opacity-40';
     const variants = {
-        neutral: 'text-slate-400 hover:bg-slate-100 hover:text-slate-700',
-        primary: 'text-slate-400 hover:bg-blue-50 hover:text-blue-600',
-        danger: 'text-slate-400 hover:bg-red-50 hover:text-red-600',
-        violet: 'text-slate-400 hover:bg-violet-50 hover:text-violet-600',
+        neutral: 'text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-300 dark:text-slate-300',
+        primary: 'text-slate-400 dark:text-slate-500 hover:bg-blue-50 dark:bg-blue-950/40 hover:text-blue-600 dark:hover:text-blue-400',
+        danger: 'text-slate-400 dark:text-slate-500 hover:bg-red-50 dark:bg-red-950/40 hover:text-red-600',
+        violet: 'text-slate-400 dark:text-slate-500 hover:bg-violet-50 dark:bg-violet-950/40 hover:text-violet-600',
     };
 
     return `${base} ${variants[props.variant] ?? variants.primary}`;

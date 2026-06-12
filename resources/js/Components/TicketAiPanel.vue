@@ -33,7 +33,7 @@ const handleSuggestReply = async () => {
 
 const hasResults = () => Boolean(aiError || aiSummary || aiArticles.length);
 
-const iconButtonClass = 'flex h-8 w-8 items-center justify-center rounded-md text-violet-700 transition hover:bg-violet-100 disabled:opacity-50';
+const iconButtonClass = 'flex h-8 w-8 items-center justify-center rounded-md text-violet-700 dark:text-violet-300 transition hover:bg-violet-100 disabled:opacity-50';
 
 const actionClass = 'inline-flex items-center gap-1 rounded-md px-2 py-1 text-[11px] font-medium transition disabled:opacity-50';
 </script>
@@ -42,7 +42,7 @@ const actionClass = 'inline-flex items-center gap-1 rounded-md px-2 py-1 text-[1
     <div v-if="aiEnabled">
         <div
             v-if="dock && hasResults() && resultsOpen"
-            class="mb-1.5 max-h-24 overflow-y-auto rounded-lg border border-violet-100 bg-violet-50/80 px-2.5 py-2 text-xs text-slate-700"
+            class="mb-1.5 max-h-24 overflow-y-auto rounded-lg border border-violet-100 dark:border-violet-900/50 bg-violet-50 dark:bg-violet-950/40/80 px-2.5 py-2 text-xs text-slate-700 dark:text-slate-300"
         >
             <p v-if="aiError" class="text-red-600">{{ aiError }}</p>
             <p v-if="aiSummary" class="whitespace-pre-wrap">{{ aiSummary }}</p>
@@ -90,18 +90,18 @@ const actionClass = 'inline-flex items-center gap-1 rounded-md px-2 py-1 text-[1
         </div>
 
         <template v-else>
-            <div :class="compact ? 'flex min-w-0 flex-1 flex-col gap-1' : 'rounded-lg border border-violet-200 bg-violet-50/60 p-3'">
+            <div :class="compact ? 'flex min-w-0 flex-1 flex-col gap-1' : 'rounded-lg border border-violet-200 dark:border-violet-900/60 dark:border-violet-800 bg-violet-50 dark:bg-violet-950/40 p-3'">
                 <div :class="compact ? 'flex flex-wrap items-center gap-1' : 'flex flex-wrap items-center gap-2'">
-                    <span class="inline-flex items-center gap-1 font-semibold uppercase tracking-wide text-violet-700" :class="compact ? 'text-[10px]' : 'text-xs'">
+                    <span class="inline-flex items-center gap-1 font-semibold uppercase tracking-wide text-violet-700 dark:text-violet-300" :class="compact ? 'text-[10px]' : 'text-xs'">
                         {{ $t('components.ai') }}
                     </span>
-                    <button type="button" :class="[actionClass, compact ? 'bg-violet-100/80 text-violet-800 hover:bg-violet-100' : 'border border-violet-200 bg-white text-violet-800 hover:bg-violet-50']" :disabled="!!aiLoading" @click="handleSuggestReply">
+                    <button type="button" :class="[actionClass, compact ? 'bg-violet-100/80 text-violet-800 hover:bg-violet-100' : 'border border-violet-200 dark:border-violet-900/60 dark:border-violet-800 bg-white dark:bg-slate-900 text-violet-800 hover:bg-violet-50 dark:bg-violet-950/40']" :disabled="!!aiLoading" @click="handleSuggestReply">
                         {{ aiLoading === 'suggest-reply' ? $t('components.loading_ellipsis_short') : $t('components.suggest_reply') }}
                     </button>
-                    <button type="button" :class="[actionClass, compact ? 'bg-violet-100/80 text-violet-800 hover:bg-violet-100' : 'border border-violet-200 bg-white text-violet-800 hover:bg-violet-50']" :disabled="!!aiLoading" @click="summarize">
+                    <button type="button" :class="[actionClass, compact ? 'bg-violet-100/80 text-violet-800 hover:bg-violet-100' : 'border border-violet-200 dark:border-violet-900/60 dark:border-violet-800 bg-white dark:bg-slate-900 text-violet-800 hover:bg-violet-50 dark:bg-violet-950/40']" :disabled="!!aiLoading" @click="summarize">
                         {{ aiLoading === 'summarize' ? $t('components.loading_ellipsis_short') : $t('components.summarize') }}
                     </button>
-                    <button type="button" :class="[actionClass, compact ? 'bg-violet-100/80 text-violet-800 hover:bg-violet-100' : 'border border-violet-200 bg-white text-violet-800 hover:bg-violet-50']" :disabled="!!aiLoading" @click="kbAssist">
+                    <button type="button" :class="[actionClass, compact ? 'bg-violet-100/80 text-violet-800 hover:bg-violet-100' : 'border border-violet-200 dark:border-violet-900/60 dark:border-violet-800 bg-white dark:bg-slate-900 text-violet-800 hover:bg-violet-50 dark:bg-violet-950/40']" :disabled="!!aiLoading" @click="kbAssist">
                         {{ aiLoading === 'kb-assist' ? $t('components.loading_ellipsis_short') : $t('components.kb_articles') }}
                     </button>
                     <button v-if="compact && hasResults()" type="button" class="ml-auto text-[10px] font-medium text-violet-600 hover:text-violet-800" @click="resultsOpen = !resultsOpen">
@@ -111,7 +111,7 @@ const actionClass = 'inline-flex items-center gap-1 rounded-md px-2 py-1 text-[1
 
                 <template v-if="!compact || resultsOpen">
                     <p v-if="aiError" class="mt-1.5 text-[11px] text-red-600">{{ aiError }}</p>
-                    <div v-if="aiSummary" class="mt-1.5 whitespace-pre-wrap text-xs text-slate-700" :class="compact ? 'max-h-20 overflow-y-auto rounded-md bg-violet-50/80 px-2 py-1.5' : 'rounded-md border border-violet-100 bg-white p-3 text-sm'">
+                    <div v-if="aiSummary" class="mt-1.5 whitespace-pre-wrap text-xs text-slate-700 dark:text-slate-300" :class="compact ? 'max-h-20 overflow-y-auto rounded-md bg-violet-50 dark:bg-violet-950/40/80 px-2 py-1.5' : 'rounded-md border border-violet-100 dark:border-violet-900/50 bg-white dark:bg-slate-900 p-3 text-sm'">
                         {{ aiSummary }}
                     </div>
                     <div v-if="aiArticles.length" class="mt-1.5 space-y-1" :class="compact ? 'max-h-24 overflow-y-auto' : ''">

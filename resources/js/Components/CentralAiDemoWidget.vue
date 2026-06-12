@@ -63,7 +63,7 @@ const ask = async (text) => {
 </script>
 
 <template>
-    <div class="overflow-hidden rounded-2xl border border-violet-200/80 bg-white shadow-2xl shadow-violet-900/10 ring-1 ring-violet-100">
+    <div class="overflow-hidden rounded-2xl border border-violet-200 dark:border-violet-900/60/80 bg-white dark:bg-slate-900 shadow-2xl shadow-violet-900/10 ring-1 ring-violet-100">
         <div class="flex flex-col gap-2 border-b border-violet-100 bg-gradient-to-r from-violet-600 to-indigo-600 px-4 py-3 text-white sm:flex-row sm:items-center sm:justify-between sm:px-5 sm:py-4">
             <div class="min-w-0">
                 <p class="text-sm font-semibold">Try AI deflection</p>
@@ -71,22 +71,22 @@ const ask = async (text) => {
             </div>
             <span
                 v-if="source"
-                class="rounded-full bg-white/15 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-violet-100 ring-1 ring-white/20"
+                class="rounded-full bg-white dark:bg-slate-900/15 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-violet-100 ring-1 ring-white/20"
             >
                 {{ source }}
             </span>
         </div>
 
-        <div class="space-y-4 bg-slate-50/80 p-4 sm:p-5">
-            <div v-if="!answer && !loading && !error" class="rounded-xl border border-dashed border-violet-200 bg-white px-4 py-6 text-center">
-                <p class="text-sm font-medium text-slate-700">Ask a support-style question</p>
-                <p class="mt-1 text-xs text-slate-500">See how customers get instant answers from your knowledge base.</p>
+        <div class="space-y-4 bg-slate-50 dark:bg-slate-950/80 p-4 sm:p-5">
+            <div v-if="!answer && !loading && !error" class="rounded-xl border border-dashed border-violet-200 dark:border-violet-900/60 bg-white dark:bg-slate-900 px-4 py-6 text-center">
+                <p class="text-sm font-medium text-slate-700 dark:text-slate-300">Ask a support-style question</p>
+                <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">See how customers get instant answers from your knowledge base.</p>
                 <div class="mt-4 flex flex-wrap justify-center gap-2">
                     <button
                         v-for="prompt in samplePrompts"
                         :key="prompt"
                         type="button"
-                        class="rounded-full border border-violet-200 bg-violet-50 px-3 py-1.5 text-xs font-medium text-violet-700 transition hover:border-violet-300 hover:bg-violet-100"
+                        class="rounded-full border border-violet-200 dark:border-violet-900/60 bg-violet-50 dark:bg-violet-950/40 px-3 py-1.5 text-xs font-medium text-violet-700 dark:text-violet-300 transition hover:border-violet-300 hover:bg-violet-100"
                         @click="ask(prompt)"
                     >
                         {{ prompt }}
@@ -94,17 +94,17 @@ const ask = async (text) => {
                 </div>
             </div>
 
-            <div v-if="loading" class="flex items-center gap-3 rounded-xl border border-violet-100 bg-white px-4 py-5">
+            <div v-if="loading" class="flex items-center gap-3 rounded-xl border border-violet-100 bg-white dark:bg-slate-900 px-4 py-5">
                 <span class="flex h-8 w-8 items-center justify-center rounded-full bg-violet-100">
                     <svg class="h-4 w-4 animate-spin text-violet-600" fill="none" viewBox="0 0 24 24">
                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
                         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                     </svg>
                 </span>
-                <p class="text-sm text-slate-600">Searching knowledge base and drafting an answer…</p>
+                <p class="text-sm text-slate-600 dark:text-slate-400">Searching knowledge base and drafting an answer…</p>
             </div>
 
-            <div v-if="error" class="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            <div v-if="error" class="rounded-xl border border-red-200 dark:border-red-900/60 bg-red-50 dark:bg-red-950/40 px-4 py-3 text-sm text-red-700 dark:text-red-300">
                 {{ error }}
             </div>
 
@@ -115,20 +115,20 @@ const ask = async (text) => {
                     </div>
                 </div>
                 <div class="flex justify-start">
-                    <div class="max-w-[90%] rounded-2xl rounded-bl-md border border-violet-100 bg-white px-4 py-3 text-sm leading-relaxed text-slate-800 shadow-sm whitespace-pre-wrap">
+                    <div class="max-w-[90%] rounded-2xl rounded-bl-md border border-violet-100 bg-white dark:bg-slate-900 px-4 py-3 text-sm leading-relaxed text-slate-800 dark:text-slate-200 shadow-sm whitespace-pre-wrap">
                         {{ answer }}
                     </div>
                 </div>
-                <div v-if="articles.length" class="rounded-xl border border-slate-200 bg-white p-3">
-                    <p class="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Sources</p>
+                <div v-if="articles.length" class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-3">
+                    <p class="text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">Sources</p>
                     <ul class="mt-2 space-y-1.5">
                         <li
                             v-for="article in articles"
                             :key="article.title"
-                            class="text-xs text-slate-600"
+                            class="text-xs text-slate-600 dark:text-slate-400"
                         >
-                            <span class="font-medium text-violet-700">{{ article.title }}</span>
-                            <span v-if="article.excerpt" class="text-slate-500"> — {{ article.excerpt }}</span>
+                            <span class="font-medium text-violet-700 dark:text-violet-300">{{ article.title }}</span>
+                            <span v-if="article.excerpt" class="text-slate-500 dark:text-slate-400"> — {{ article.excerpt }}</span>
                         </li>
                     </ul>
                 </div>
@@ -141,7 +141,7 @@ const ask = async (text) => {
                     maxlength="500"
                     :disabled="loading || !enabled"
                     placeholder="e.g. How do AI reply drafts work?"
-                    class="min-w-0 flex-1 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-violet-400 focus:outline-none focus:ring-2 focus:ring-violet-400/20 disabled:opacity-60"
+                    class="min-w-0 flex-1 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-3 text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:text-slate-500 focus:border-violet-400 focus:outline-none focus:ring-2 focus:ring-violet-400/20 disabled:opacity-60"
                 />
                 <button
                     type="submit"

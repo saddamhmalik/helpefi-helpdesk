@@ -22,18 +22,18 @@ const healthClass = computed(() => {
     const level = context.value?.health?.level;
 
     if (level === 'healthy') {
-        return 'bg-emerald-50 text-emerald-700 ring-emerald-200';
+        return 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 ring-emerald-200';
     }
 
     if (level === 'at_risk') {
-        return 'bg-amber-50 text-amber-700 ring-amber-200';
+        return 'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 ring-amber-200';
     }
 
     if (level === 'critical') {
-        return 'bg-red-50 text-red-700 ring-red-200';
+        return 'bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300 ring-red-200';
     }
 
-    return 'bg-slate-50 text-slate-600 ring-slate-200';
+    return 'bg-slate-50 dark:bg-slate-950 text-slate-600 dark:text-slate-400 ring-slate-200 dark:ring-slate-700';
 });
 
 const formatMoney = (value, currency) => {
@@ -118,11 +118,11 @@ watch(() => props.ticketId, () => {
 <template>
     <section class="px-4 py-3">
         <div class="flex items-center justify-between gap-2">
-            <p class="text-[11px] font-semibold uppercase tracking-wide text-slate-400">{{ $t('components.customer_context') }}</p>
+            <p class="text-[11px] font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500">{{ $t('components.customer_context') }}</p>
             <button
                 v-if="context?.crm"
                 type="button"
-                class="text-[10px] font-medium text-blue-600 hover:text-blue-700 disabled:opacity-50"
+                class="text-[10px] font-medium text-blue-600 hover:text-blue-700 dark:hover:text-blue-300 dark:text-blue-300 disabled:opacity-50"
                 :disabled="refreshing"
                 @click="refreshCrm"
             >
@@ -130,19 +130,19 @@ watch(() => props.ticketId, () => {
             </button>
         </div>
 
-        <p v-if="loading" class="mt-2 text-xs text-slate-500">{{ $t('components.loading_customer_context_ellipsis') }}</p>
+        <p v-if="loading" class="mt-2 text-xs text-slate-500 dark:text-slate-400">{{ $t('components.loading_customer_context_ellipsis') }}</p>
         <p v-else-if="error" class="mt-2 text-xs text-red-600">{{ error }}</p>
 
         <div v-else-if="context" class="mt-2 space-y-3">
             <div class="flex items-center justify-between gap-2">
                 <div class="min-w-0">
-                    <p v-if="context.organization?.name" class="truncate text-sm font-medium text-slate-900">
+                    <p v-if="context.organization?.name" class="truncate text-sm font-medium text-slate-900 dark:text-slate-100">
                         {{ context.organization.name }}
                     </p>
-                    <p v-else class="truncate text-sm font-medium text-slate-900">
+                    <p v-else class="truncate text-sm font-medium text-slate-900 dark:text-slate-100">
                         {{ context.contact.name || context.contact.email }}
                     </p>
-                    <p v-if="context.organization?.customer_tier" class="mt-0.5 text-[11px] uppercase tracking-wide text-slate-500">
+                    <p v-if="context.organization?.customer_tier" class="mt-0.5 text-[11px] uppercase tracking-wide text-slate-500 dark:text-slate-400">
                         {{ $t('components.customer_tier', { tier: context.organization.customer_tier }) }}
                     </p>
                 </div>
@@ -155,68 +155,68 @@ watch(() => props.ticketId, () => {
             </div>
 
             <dl class="grid grid-cols-2 gap-2 text-xs">
-                <div class="rounded-lg bg-slate-50 px-2.5 py-2">
-                    <dt class="text-slate-500">{{ $t('components.open_tickets') }}</dt>
-                    <dd class="mt-0.5 font-semibold text-slate-900">{{ context.metrics.open_tickets }}</dd>
+                <div class="rounded-lg bg-slate-50 dark:bg-slate-950 px-2.5 py-2">
+                    <dt class="text-slate-500 dark:text-slate-400">{{ $t('components.open_tickets') }}</dt>
+                    <dd class="mt-0.5 font-semibold text-slate-900 dark:text-slate-100">{{ context.metrics.open_tickets }}</dd>
                 </div>
-                <div class="rounded-lg bg-slate-50 px-2.5 py-2">
-                    <dt class="text-slate-500">{{ $t('components.csat_90d') }}</dt>
-                    <dd class="mt-0.5 font-semibold text-slate-900">
+                <div class="rounded-lg bg-slate-50 dark:bg-slate-950 px-2.5 py-2">
+                    <dt class="text-slate-500 dark:text-slate-400">{{ $t('components.csat_90d') }}</dt>
+                    <dd class="mt-0.5 font-semibold text-slate-900 dark:text-slate-100">
                         <span v-if="context.metrics.csat_average_90d !== null">
                             {{ context.metrics.csat_average_90d }}/5
                         </span>
                         <span v-else>{{ $t('components.em_dash') }}</span>
                     </dd>
                 </div>
-                <div class="rounded-lg bg-slate-50 px-2.5 py-2">
-                    <dt class="text-slate-500">{{ $t('components.sla_breaches') }}</dt>
-                    <dd class="mt-0.5 font-semibold text-slate-900">{{ context.metrics.sla_breaches_90d }}</dd>
+                <div class="rounded-lg bg-slate-50 dark:bg-slate-950 px-2.5 py-2">
+                    <dt class="text-slate-500 dark:text-slate-400">{{ $t('components.sla_breaches') }}</dt>
+                    <dd class="mt-0.5 font-semibold text-slate-900 dark:text-slate-100">{{ context.metrics.sla_breaches_90d }}</dd>
                 </div>
-                <div class="rounded-lg bg-slate-50 px-2.5 py-2">
-                    <dt class="text-slate-500">{{ $t('components.last_contact') }}</dt>
-                    <dd class="mt-0.5 font-semibold text-slate-900">{{ formatDate(context.metrics.last_contact_at, dateOptions) }}</dd>
+                <div class="rounded-lg bg-slate-50 dark:bg-slate-950 px-2.5 py-2">
+                    <dt class="text-slate-500 dark:text-slate-400">{{ $t('components.last_contact') }}</dt>
+                    <dd class="mt-0.5 font-semibold text-slate-900 dark:text-slate-100">{{ formatDate(context.metrics.last_contact_at, dateOptions) }}</dd>
                 </div>
             </dl>
 
-            <div v-if="context.crm" class="rounded-lg border border-slate-200 bg-white p-2.5">
+            <div v-if="context.crm" class="rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-2.5">
                 <div class="flex items-start justify-between gap-2">
                     <div class="min-w-0">
-                        <p class="text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+                        <p class="text-[11px] font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500">
                             {{ context.crm.provider_label }}
                         </p>
-                        <p v-if="context.crm.name" class="mt-1 truncate text-sm font-medium text-slate-900">
+                        <p v-if="context.crm.name" class="mt-1 truncate text-sm font-medium text-slate-900 dark:text-slate-100">
                             {{ context.crm.name }}
                         </p>
-                        <p v-if="context.crm.company" class="truncate text-xs text-slate-500">{{ context.crm.company }}</p>
+                        <p v-if="context.crm.company" class="truncate text-xs text-slate-500 dark:text-slate-400">{{ context.crm.company }}</p>
                     </div>
                     <a
                         v-if="context.crm.url"
                         :href="context.crm.url"
                         target="_blank"
                         rel="noopener noreferrer"
-                        class="shrink-0 text-[11px] font-medium text-blue-600 hover:text-blue-700"
+                        class="shrink-0 text-[11px] font-medium text-blue-600 hover:text-blue-700 dark:hover:text-blue-300 dark:text-blue-300"
                     >
                         {{ $t('components.open') }}
                     </a>
                 </div>
                 <dl class="mt-2 space-y-1 text-xs">
                     <div v-if="context.crm.lifecycle_stage" class="flex justify-between gap-2">
-                        <dt class="text-slate-500">{{ $t('components.lifecycle') }}</dt>
-                        <dd class="font-medium capitalize text-slate-800">{{ context.crm.lifecycle_stage }}</dd>
+                        <dt class="text-slate-500 dark:text-slate-400">{{ $t('components.lifecycle') }}</dt>
+                        <dd class="font-medium capitalize text-slate-800 dark:text-slate-200">{{ context.crm.lifecycle_stage }}</dd>
                     </div>
                     <div v-if="context.crm.owner" class="flex justify-between gap-2">
-                        <dt class="text-slate-500">{{ $t('components.owner') }}</dt>
-                        <dd class="truncate font-medium text-slate-800">{{ context.crm.owner }}</dd>
+                        <dt class="text-slate-500 dark:text-slate-400">{{ $t('components.owner') }}</dt>
+                        <dd class="truncate font-medium text-slate-800 dark:text-slate-200">{{ context.crm.owner }}</dd>
                     </div>
                     <div v-if="context.crm.deal_value !== null && context.crm.deal_value !== undefined" class="flex justify-between gap-2">
-                        <dt class="text-slate-500">{{ $t('components.deal_value') }}</dt>
-                        <dd class="font-medium text-slate-800">{{ formatMoney(context.crm.deal_value) }}</dd>
+                        <dt class="text-slate-500 dark:text-slate-400">{{ $t('components.deal_value') }}</dt>
+                        <dd class="font-medium text-slate-800 dark:text-slate-200">{{ formatMoney(context.crm.deal_value) }}</dd>
                     </div>
                 </dl>
             </div>
 
-            <div v-if="context.commerce?.recent_orders?.length" class="rounded-lg border border-slate-200 bg-white p-2.5">
-                <p class="text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+            <div v-if="context.commerce?.recent_orders?.length" class="rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-2.5">
+                <p class="text-[11px] font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500">
                     {{ $t('components.commerce_orders', { provider: context.commerce.provider_label }) }}
                 </p>
                 <ul class="mt-2 space-y-1.5">
@@ -231,14 +231,14 @@ watch(() => props.ticketId, () => {
                                 :href="order.url"
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                class="font-medium text-blue-600 hover:text-blue-700"
+                                class="font-medium text-blue-600 hover:text-blue-700 dark:hover:text-blue-300 dark:text-blue-300"
                             >
                                 {{ order.name }}
                             </a>
-                            <span v-else class="font-medium text-slate-800">{{ order.name }}</span>
-                            <p class="text-slate-500">{{ formatDate(order.created_at, dateOptions) }}</p>
+                            <span v-else class="font-medium text-slate-800 dark:text-slate-200">{{ order.name }}</span>
+                            <p class="text-slate-500 dark:text-slate-400">{{ formatDate(order.created_at, dateOptions) }}</p>
                         </div>
-                        <span class="shrink-0 font-medium text-slate-800">
+                        <span class="shrink-0 font-medium text-slate-800 dark:text-slate-200">
                             {{ formatMoney(order.total, order.currency) }}
                         </span>
                     </li>
@@ -248,7 +248,7 @@ watch(() => props.ticketId, () => {
             <Link
                 v-if="context.contact?.id"
                 :href="`/contacts/${context.contact.id}`"
-                class="inline-flex text-xs font-medium text-blue-600 hover:text-blue-700"
+                class="inline-flex text-xs font-medium text-blue-600 hover:text-blue-700 dark:hover:text-blue-300 dark:text-blue-300"
             >
                 {{ $t('components.view_full_contact_profile') }}
             </Link>

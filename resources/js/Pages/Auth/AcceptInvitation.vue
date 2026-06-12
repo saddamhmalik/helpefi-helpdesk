@@ -1,6 +1,7 @@
 <script setup>
 import { Head, useForm } from '@inertiajs/vue3';
-import AppLayout from '../../Layouts/AppLayout.vue';
+import AuthLayout from '../../Layouts/AuthLayout.vue';
+import { formInputClass } from '../../composables/useFormControls.js';
 import { useI18n } from 'vue-i18n';
 
 const props = defineProps({
@@ -20,30 +21,37 @@ const submit = () => form.post(`/invitations/${props.invitation.token}`);
 
 <template>
     <Head :title="$t('auth.accept_invitation')" />
-    <AppLayout>
-        <div class="mx-auto max-w-md rounded-xl border border-slate-200 bg-white p-8 shadow-sm">
-            <h1 class="text-2xl font-semibold text-slate-900">{{ $t('auth.join_helpdesk') }}</h1>
-            <p class="mt-2 text-sm text-slate-600">
-                You were invited as <span class="font-medium">{{ invitation.role }}</span> for {{ invitation.email }}.
-            </p>
+    <AuthLayout
+        :aside-title="$t('auth.join_helpdesk')"
+        :aside-description="$t('auth.accept_invitation')"
+    >
+        <h1 class="text-2xl font-semibold tracking-tight agent-text">{{ $t('auth.join_helpdesk') }}</h1>
+        <p class="mt-2 text-sm agent-text-muted">
+            You were invited as <span class="font-medium agent-text">{{ invitation.role }}</span> for {{ invitation.email }}.
+        </p>
 
-            <form class="mt-6 space-y-4" @submit.prevent="submit">
-                <div>
-                    <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('auth.your_name') }}</label>
-                    <input v-model="form.name" type="text" class="w-full rounded-lg border border-slate-300 px-3 py-2" required />
-                    <p v-if="form.errors.name" class="mt-1 text-sm text-red-600">{{ form.errors.name }}</p>
-                </div>
-                <div>
-                    <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('auth.password') }}</label>
-                    <input v-model="form.password" type="password" class="w-full rounded-lg border border-slate-300 px-3 py-2" required />
-                    <p v-if="form.errors.password" class="mt-1 text-sm text-red-600">{{ form.errors.password }}</p>
-                </div>
-                <div>
-                    <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('auth.confirm_password') }}</label>
-                    <input v-model="form.password_confirmation" type="password" class="w-full rounded-lg border border-slate-300 px-3 py-2" required />
-                </div>
-                <button type="submit" class="w-full rounded-lg bg-blue-600 px-4 py-2 font-medium text-white hover:bg-blue-700" :disabled="form.processing">{{ $t('auth.accept_invitation') }}</button>
-            </form>
-        </div>
-    </AppLayout>
+        <form class="mt-8 space-y-5" @submit.prevent="submit">
+            <div>
+                <label class="mb-1.5 block text-sm font-medium agent-text-muted">{{ $t('auth.your_name') }}</label>
+                <input v-model="form.name" type="text" :class="formInputClass" required autofocus />
+                <p v-if="form.errors.name" class="mt-1.5 text-xs text-red-600">{{ form.errors.name }}</p>
+            </div>
+            <div>
+                <label class="mb-1.5 block text-sm font-medium agent-text-muted">{{ $t('auth.password') }}</label>
+                <input v-model="form.password" type="password" :class="formInputClass" required />
+                <p v-if="form.errors.password" class="mt-1.5 text-xs text-red-600">{{ form.errors.password }}</p>
+            </div>
+            <div>
+                <label class="mb-1.5 block text-sm font-medium agent-text-muted">{{ $t('auth.confirm_password') }}</label>
+                <input v-model="form.password_confirmation" type="password" :class="formInputClass" required />
+            </div>
+            <button
+                type="submit"
+                class="w-full rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-3 text-sm font-semibold text-white shadow-md shadow-blue-600/25 transition hover:from-blue-700 hover:to-indigo-700 disabled:opacity-60"
+                :disabled="form.processing"
+            >
+                {{ $t('auth.accept_invitation') }}
+            </button>
+        </form>
+    </AuthLayout>
 </template>

@@ -98,17 +98,17 @@ const destroy = (type) => {
         <DataTable>
             <thead class="bg-slate-50">
                 <tr>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('assets.name') }}</th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('assets.slug') }}</th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('assets.assets') }}</th>
-                    <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('assets.actions') }}</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{{ $t('assets.name') }}</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{{ $t('assets.slug') }}</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{{ $t('assets.assets') }}</th>
+                    <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{{ $t('assets.actions') }}</th>
                 </tr>
             </thead>
-            <tbody class="divide-y divide-slate-100">
-                <tr v-for="type in types" :key="type.id" class="hover:bg-slate-50">
-                    <td class="px-4 py-3 text-sm font-medium text-slate-900">{{ type.name }}</td>
-                    <td class="px-4 py-3 text-sm text-slate-500">{{ type.slug }}</td>
-                    <td class="px-4 py-3 text-sm text-slate-600">{{ type.assets_count }}</td>
+            <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+                <tr v-for="type in types" :key="type.id" class="hover:bg-slate-50 dark:hover:bg-slate-800">
+                    <td class="px-4 py-3 text-sm font-medium text-slate-900 dark:text-slate-100">{{ type.name }}</td>
+                    <td class="px-4 py-3 text-sm text-slate-500 dark:text-slate-400">{{ type.slug }}</td>
+                    <td class="px-4 py-3 text-sm text-slate-600 dark:text-slate-400">{{ type.assets_count }}</td>
                     <td class="px-4 py-3 text-right text-sm">
                         <AppRowActions>
                             <AppEditAction :label="$t('assets.edit')" @click="openEdit(type)" />
@@ -121,22 +121,22 @@ const destroy = (type) => {
                     </td>
                 </tr>
                 <tr v-if="!types?.length">
-                    <td colspan="4" class="px-4 py-12 text-center text-sm text-slate-500">No asset types yet.</td>
+                    <td colspan="4" class="px-4 py-12 text-center text-sm text-slate-500 dark:text-slate-400">No asset types yet.</td>
                 </tr>
             </tbody>
         </DataTable>
 
         <AppModal :show="showForm" @close="showForm = false">
             <form class="w-full max-w-md p-6" @submit.prevent="submit">
-                <h2 class="text-lg font-semibold text-slate-900">{{ editing ? 'Edit asset type' : 'New asset type' }}</h2>
-                <p class="mt-1 text-sm text-slate-500">{{ $t('assets.examples_printer_router_docking_station_vpn_license') }}</p>
+                <h2 class="text-lg font-semibold text-slate-900 dark:text-slate-100">{{ editing ? 'Edit asset type' : 'New asset type' }}</h2>
+                <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">{{ $t('assets.examples_printer_router_docking_station_vpn_license') }}</p>
                 <div class="mt-4">
-                    <label class="mb-1 block text-sm font-medium text-slate-700" for="type-name">{{ $t('assets.name') }}</label>
+                    <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300" for="type-name">{{ $t('assets.name') }}</label>
                     <input id="type-name" v-model="form.name" type="text" required :class="formInputClass" :placeholder="$t('assets.printer')" />
                     <p v-if="form.errors.name" class="mt-1 text-sm text-red-600">{{ form.errors.name }}</p>
                 </div>
                 <div class="mt-6 flex justify-end gap-2">
-                    <button type="button" class="rounded-lg border border-slate-300 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50" @click="showForm = false">{{ $t('assets.cancel') }}</button>
+                    <button type="button" class="rounded-lg border border-slate-300 dark:border-slate-700 px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800" @click="showForm = false">{{ $t('assets.cancel') }}</button>
                     <button type="submit" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700" :disabled="form.processing">
                         {{ editing ? 'Save changes' : 'Create type' }}
                     </button>

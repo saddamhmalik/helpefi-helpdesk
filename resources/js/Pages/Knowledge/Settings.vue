@@ -53,16 +53,16 @@ const submit = () => form.put('/knowledge/settings');
                     <label
                         v-for="choice in locale_choices"
                         :key="choice.code"
-                        class="flex cursor-pointer items-center gap-3 rounded-xl border border-slate-200 px-4 py-3 transition hover:bg-slate-50"
+                        class="flex cursor-pointer items-center gap-3 rounded-xl border agent-border px-4 py-3 transition agent-hover-surface"
                     >
                         <input
                             type="checkbox"
-                            class="rounded border-slate-300 text-blue-600"
+                            class="rounded agent-border text-blue-600"
                             :checked="form.kb_locales.includes(choice.code)"
                             @change="toggleLocale(choice.code)"
                         >
-                        <span class="text-sm font-medium text-slate-900">{{ choice.label }}</span>
-                        <span class="ml-auto text-xs uppercase text-slate-400">{{ choice.code }}</span>
+                        <span class="text-sm font-medium agent-text">{{ choice.label }}</span>
+                        <span class="ml-auto text-xs uppercase text-slate-400 dark:text-slate-500">{{ choice.code }}</span>
                     </label>
                 </div>
             </FormSection>

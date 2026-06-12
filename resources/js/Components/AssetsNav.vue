@@ -15,18 +15,22 @@ const tabs = computed(() => [
 ]);
 
 const isActive = (tab) => tab.match(currentPath.value);
+
+const tabClass = (tab) => (
+    isActive(tab)
+        ? 'bg-slate-900 text-white shadow-sm dark:bg-slate-100 dark:text-slate-900'
+        : 'agent-text-muted agent-hover-surface hover:text-slate-900 dark:hover:text-slate-100'
+);
 </script>
 
 <template>
-    <nav class="mb-6 flex flex-wrap gap-2 border-b border-slate-200 pb-3" :aria-label="$t('components.assets_sections')">
+    <nav class="mb-6 flex flex-wrap gap-2 border-b agent-border pb-3" :aria-label="$t('components.assets_sections')">
         <Link
             v-for="tab in tabs"
             :key="tab.href"
             :href="tab.href"
             class="rounded-lg px-3 py-2 text-sm font-medium transition"
-            :class="isActive(tab)
-                ? 'bg-slate-900 text-white'
-                : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'"
+            :class="tabClass(tab)"
         >
             {{ tab.label }}
         </Link>

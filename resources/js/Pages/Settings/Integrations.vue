@@ -202,7 +202,7 @@ const testSlack = () => {
 };
 
 const formatTime = (value) => value ? formatDateTime(value) : t('common.never');
-const inputClass = 'w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20';
+const inputClass = 'w-full rounded-lg border agent-border px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20';
 </script>
 
 <template>
@@ -225,35 +225,35 @@ const inputClass = 'w-full rounded-lg border border-slate-300 px-3 py-2 text-sm 
             >{{ $t('settings_integrations.add_webhook') }}</button>
         </template>
 
-        <div v-if="revealedSecret" class="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+        <div v-if="revealedSecret" class="mb-4 rounded-lg border border-amber-200 dark:border-amber-900/60 bg-amber-50 dark:bg-amber-950/40 px-4 py-3 text-sm text-amber-900">
             <p class="font-medium">{{ $t('settings_integrations.webhook_signing_secret_copy_now') }}</p>
             <p class="mt-1 break-all font-mono text-xs">{{ revealedSecret }}</p>
         </div>
 
-        <div v-if="revealedIntegrationSecret" class="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+        <div v-if="revealedIntegrationSecret" class="mb-4 rounded-lg border border-amber-200 dark:border-amber-900/60 bg-amber-50 dark:bg-amber-950/40 px-4 py-3 text-sm text-amber-900">
             <p class="font-medium">{{ $t('settings_integrations.inbound_webhook_secret_copy_now') }}</p>
             <p class="mt-1 break-all font-mono text-xs">{{ revealedIntegrationSecret }}</p>
         </div>
 
         <div v-show="activeSection === 'webhooks'" class="space-y-4">
-                    <div v-for="webhook in webhooks" :key="webhook.id" class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm transition hover:border-slate-300">
+                    <div v-for="webhook in webhooks" :key="webhook.id" class="agent-card transition hover:border-slate-300 dark:border-slate-700 dark:hover:border-slate-600">
                         <div class="flex flex-wrap items-start justify-between gap-4">
                             <div class="min-w-0">
                                 <div class="flex items-center gap-2">
-                                    <h2 class="text-lg font-semibold text-slate-900">{{ webhook.name }}</h2>
-                                    <span class="rounded-full px-2 py-0.5 text-xs font-medium" :class="webhook.is_active ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-600'">
+                                    <h2 class="text-lg font-semibold agent-text">{{ webhook.name }}</h2>
+                                    <span class="rounded-full px-2 py-0.5 text-xs font-medium" :class="webhook.is_active ? 'bg-emerald-100 text-emerald-800 dark:text-emerald-200' : 'bg-slate-100 dark:bg-slate-900 agent-text-muted'">
                                         {{ webhook.is_active ? 'Active' : 'Paused' }}
                                     </span>
                                 </div>
-                                <p class="mt-1 truncate text-sm text-slate-500">{{ webhook.url }}</p>
-                                <p class="mt-2 text-xs text-slate-500">
+                                <p class="mt-1 truncate text-sm agent-text-subtle">{{ webhook.url }}</p>
+                                <p class="mt-2 text-xs agent-text-subtle">
                                     Last delivery: {{ formatTime(webhook.last_delivered_at) }}
                                     <span v-if="webhook.last_status_code"> · HTTP {{ webhook.last_status_code }}</span>
                                 </p>
                             </div>
                             <div class="flex flex-wrap gap-2">
-                                <button type="button" class="rounded-lg border border-slate-300 px-3 py-1.5 text-sm text-slate-700 transition hover:bg-slate-50" @click="testWebhook(webhook.id)">{{ $t('settings_integrations.send_test') }}</button>
-                                <button type="button" class="rounded-lg border border-slate-300 px-3 py-1.5 text-sm text-slate-700 transition hover:bg-slate-50" @click="regenerateSecret(webhook.id)">{{ $t('settings_integrations.new_secret') }}</button>
+                                <button type="button" class="rounded-lg border agent-border px-3 py-1.5 text-sm text-slate-700 dark:text-slate-300 transition agent-hover-surface" @click="testWebhook(webhook.id)">{{ $t('settings_integrations.send_test') }}</button>
+                                <button type="button" class="rounded-lg border agent-border px-3 py-1.5 text-sm text-slate-700 dark:text-slate-300 transition agent-hover-surface" @click="regenerateSecret(webhook.id)">{{ $t('settings_integrations.new_secret') }}</button>
                                 <AppRowActions>
                                     <AppEditAction :label="$t('settings_integrations.edit')" @click="openEdit(webhook)" />
                                     <AppDeleteAction :label="$t('settings_integrations.delete')" @click="destroyWebhook(webhook)" />
@@ -262,33 +262,33 @@ const inputClass = 'w-full rounded-lg border border-slate-300 px-3 py-2 text-sm 
                         </div>
 
                         <div class="mt-4 flex flex-wrap gap-2">
-                            <span v-for="event in webhook.events" :key="event" class="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs text-slate-700">
+                            <span v-for="event in webhook.events" :key="event" class="rounded-full bg-slate-100 dark:bg-slate-900 px-2.5 py-0.5 text-xs text-slate-700 dark:text-slate-300">
                                 {{ eventLabel(event) }}
                             </span>
                         </div>
                     </div>
 
-                    <div v-if="!webhooks.length" class="rounded-xl border border-dashed border-slate-300 bg-white px-6 py-12 text-center text-sm text-slate-500">
+                    <div v-if="!webhooks.length" class="rounded-xl border border-dashed agent-border bg-white dark:bg-slate-900 px-6 py-12 text-center text-sm agent-text-subtle">
                         No webhooks configured yet.
                     </div>
                 </div>
 
-        <form v-show="activeSection === 'slack'" class="max-w-2xl rounded-xl border border-slate-200 bg-white p-6 shadow-sm" @submit.prevent="saveSlack">
-                    <h2 class="text-lg font-medium text-slate-900">{{ $t('settings_integrations.slack_notifications') }}</h2>
-                    <p class="mt-1 text-sm text-slate-500">{{ $t('settings_integrations.post_ticket_events_to_a_slack_channel_using_an_incoming_webhook') }}</p>
+        <form v-show="activeSection === 'slack'" class="max-w-2xl agent-card" @submit.prevent="saveSlack">
+                    <h2 class="text-lg font-medium agent-text">{{ $t('settings_integrations.slack_notifications') }}</h2>
+                    <p class="mt-1 text-sm agent-text-subtle">{{ $t('settings_integrations.post_ticket_events_to_a_slack_channel_using_an_incoming_webhook') }}</p>
 
                     <div class="mt-4 space-y-4">
                         <div>
-                            <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('settings_integrations.incoming_webhook_url') }}</label>
+                            <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('settings_integrations.incoming_webhook_url') }}</label>
                             <input v-model="slackForm.webhook_url" type="url" :class="inputClass" placeholder="https://hooks.slack.com/services/..." />
                         </div>
                         <div>
-                            <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('settings_integrations.channel_override') }}</label>
+                            <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('settings_integrations.channel_override') }}</label>
                             <input v-model="slackForm.channel" type="text" :class="inputClass" :placeholder="$t('settings_integrations.support_optional')" />
                         </div>
                         <AppChipSelect v-model="slackForm.events" :label="$t('settings_integrations.events')" :options="slackEventOptions" />
                         <AppToggle v-model="slackForm.is_active" :label="$t('common.active')" />
-                        <p v-if="connection('slack').last_delivered_at" class="text-xs text-slate-500">
+                        <p v-if="connection('slack').last_delivered_at" class="text-xs agent-text-subtle">
                             Last delivery: {{ formatTime(connection('slack').last_delivered_at) }}
                         </p>
                         <p v-if="connection('slack').last_error" class="text-xs text-red-600">{{ connection('slack').last_error }}</p>
@@ -296,48 +296,48 @@ const inputClass = 'w-full rounded-lg border border-slate-300 px-3 py-2 text-sm 
 
                     <div class="mt-4 flex flex-wrap gap-2">
                         <button type="submit" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700" :disabled="slackForm.processing">{{ $t('common.save') }}</button>
-                        <button type="button" class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50" @click="testSlack">{{ $t('settings_integrations.send_test') }}</button>
+                        <button type="button" class="agent-btn-secondary" @click="testSlack">{{ $t('settings_integrations.send_test') }}</button>
                     </div>
                 </form>
 
-        <form v-show="activeSection === 'jira'" class="max-w-2xl rounded-xl border border-slate-200 bg-white p-6 shadow-sm" @submit.prevent="saveJira">
-                    <h2 class="text-lg font-medium text-slate-900">{{ $t('settings.jira') }}</h2>
-                    <p class="mt-1 text-sm text-slate-500">{{ $t('settings_integrations.create_and_link_jira_issues_from_tickets_status_changes_sync_both_ways') }}</p>
+        <form v-show="activeSection === 'jira'" class="max-w-2xl agent-card" @submit.prevent="saveJira">
+                    <h2 class="text-lg font-medium agent-text">{{ $t('settings.jira') }}</h2>
+                    <p class="mt-1 text-sm agent-text-subtle">{{ $t('settings_integrations.create_and_link_jira_issues_from_tickets_status_changes_sync_both_ways') }}</p>
 
                     <div class="mt-4 grid gap-4 md:grid-cols-2">
                         <div class="md:col-span-2">
-                            <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('settings_integrations.site_url') }}</label>
+                            <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('settings_integrations.site_url') }}</label>
                             <input v-model="jiraForm.site_url" type="url" :class="inputClass" placeholder="https://yourcompany.atlassian.net" />
                         </div>
                         <div>
-                            <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('profile.email') }}</label>
+                            <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('profile.email') }}</label>
                             <input v-model="jiraForm.email" type="email" :class="inputClass" />
                         </div>
                         <div>
-                            <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('settings_integrations.api_token') }}</label>
+                            <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('settings_integrations.api_token') }}</label>
                             <input v-model="jiraForm.api_token" type="password" :class="inputClass" :placeholder="connection('jira').config?.has_api_token ? 'Saved — leave blank to keep' : ''" />
                         </div>
                         <div>
-                            <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('settings_integrations.project_key') }}</label>
+                            <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('settings_integrations.project_key') }}</label>
                             <input v-model="jiraForm.project_key" type="text" :class="inputClass" :placeholder="$t('settings_integrations.sup')" />
                         </div>
                         <div>
-                            <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('settings_integrations.issue_type') }}</label>
+                            <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('settings_integrations.issue_type') }}</label>
                             <input v-model="jiraForm.issue_type" type="text" :class="inputClass" />
                         </div>
                         <div>
-                            <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('settings_integrations.done_transition') }}</label>
+                            <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('settings_integrations.done_transition') }}</label>
                             <input v-model="jiraForm.done_transition" type="text" :class="inputClass" />
                         </div>
                         <div>
-                            <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('settings_integrations.reopen_transition') }}</label>
+                            <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('settings_integrations.reopen_transition') }}</label>
                             <input v-model="jiraForm.reopen_transition" type="text" :class="inputClass" />
                         </div>
                         <div class="md:col-span-2">
                             <AppToggle v-model="jiraForm.is_active" :label="$t('common.active')" />
                         </div>
-                        <div class="md:col-span-2 rounded-lg bg-slate-50 p-3 text-xs text-slate-600">
-                            <p class="font-medium text-slate-700">{{ $t('settings_integrations.inbound_webhook_url') }}</p>
+                        <div class="md:col-span-2 rounded-lg agent-panel-muted p-3 text-xs agent-text-muted">
+                            <p class="font-medium text-slate-700 dark:text-slate-300">{{ $t('settings_integrations.inbound_webhook_url') }}</p>
                             <p class="mt-1 break-all font-mono">{{ meta.inbound_urls?.jira }}</p>
                             <p class="mt-2">Send header <span class="font-mono">{{ $t('settings_integrations.x-integration-secret') }}</span> with the secret shown after save.</p>
                         </div>
@@ -346,32 +346,32 @@ const inputClass = 'w-full rounded-lg border border-slate-300 px-3 py-2 text-sm 
                     <button type="submit" class="mt-4 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700" :disabled="jiraForm.processing">{{ $t('common.save') }}</button>
                 </form>
 
-        <form v-show="activeSection === 'linear'" class="max-w-2xl rounded-xl border border-slate-200 bg-white p-6 shadow-sm" @submit.prevent="saveLinear">
-                    <h2 class="text-lg font-medium text-slate-900">{{ $t('settings.linear') }}</h2>
-                    <p class="mt-1 text-sm text-slate-500">{{ $t('settings_integrations.create_and_link_linear_issues_from_tickets_status_changes_sync_both_wa') }}</p>
+        <form v-show="activeSection === 'linear'" class="max-w-2xl agent-card" @submit.prevent="saveLinear">
+                    <h2 class="text-lg font-medium agent-text">{{ $t('settings.linear') }}</h2>
+                    <p class="mt-1 text-sm agent-text-subtle">{{ $t('settings_integrations.create_and_link_linear_issues_from_tickets_status_changes_sync_both_wa') }}</p>
 
                     <div class="mt-4 grid gap-4 md:grid-cols-2">
                         <div class="md:col-span-2">
-                            <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('settings_integrations.api_key') }}</label>
+                            <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('settings_integrations.api_key') }}</label>
                             <input v-model="linearForm.api_key" type="password" :class="inputClass" :placeholder="connection('linear').config?.has_api_key ? 'Saved — leave blank to keep' : ''" />
                         </div>
                         <div class="md:col-span-2">
-                            <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('settings_integrations.team_id') }}</label>
+                            <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('settings_integrations.team_id') }}</label>
                             <input v-model="linearForm.team_id" type="text" :class="inputClass" />
                         </div>
                         <div>
-                            <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('settings_integrations.done_state') }}</label>
+                            <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('settings_integrations.done_state') }}</label>
                             <input v-model="linearForm.done_state" type="text" :class="inputClass" />
                         </div>
                         <div>
-                            <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('settings_integrations.open_state') }}</label>
+                            <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('settings_integrations.open_state') }}</label>
                             <input v-model="linearForm.open_state" type="text" :class="inputClass" />
                         </div>
                         <div class="md:col-span-2">
                             <AppToggle v-model="linearForm.is_active" :label="$t('common.active')" />
                         </div>
-                        <div class="md:col-span-2 rounded-lg bg-slate-50 p-3 text-xs text-slate-600">
-                            <p class="font-medium text-slate-700">{{ $t('settings_integrations.inbound_webhook_url') }}</p>
+                        <div class="md:col-span-2 rounded-lg agent-panel-muted p-3 text-xs agent-text-muted">
+                            <p class="font-medium text-slate-700 dark:text-slate-300">{{ $t('settings_integrations.inbound_webhook_url') }}</p>
                             <p class="mt-1 break-all font-mono">{{ meta.inbound_urls?.linear }}</p>
                             <p class="mt-2">Linear sends <span class="font-mono">{{ $t('settings_integrations.linear-signature') }}</span> HMAC signed with the secret shown after save.</p>
                         </div>
@@ -380,9 +380,9 @@ const inputClass = 'w-full rounded-lg border border-slate-300 px-3 py-2 text-sm 
                     <button type="submit" class="mt-4 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700" :disabled="linearForm.processing">{{ $t('common.save') }}</button>
                 </form>
 
-        <form v-show="activeSection === 'shopify'" class="max-w-2xl rounded-xl border border-slate-200 bg-white p-6 shadow-sm" @submit.prevent="saveShopify">
-            <h2 class="text-lg font-medium text-slate-900">{{ $t('settings.shopify') }}</h2>
-            <p class="mt-1 text-sm text-slate-500">{{ $t('settings_integrations.connect_your_shopify_store_using_the_official_shopify_api_client') }}</p>
+        <form v-show="activeSection === 'shopify'" class="max-w-2xl agent-card" @submit.prevent="saveShopify">
+            <h2 class="text-lg font-medium agent-text">{{ $t('settings.shopify') }}</h2>
+            <p class="mt-1 text-sm agent-text-subtle">{{ $t('settings_integrations.connect_your_shopify_store_using_the_official_shopify_api_client') }}</p>
             <div class="mt-4 space-y-4">
                 <input v-model="shopifyForm.shop" type="text" :placeholder="$t('settings_integrations.your-store_myshopify_com')" :class="inputClass" />
                 <input v-model="shopifyForm.access_token" type="password" :placeholder="$t('settings_integrations.admin_api_access_token')" :class="inputClass" />
@@ -391,9 +391,9 @@ const inputClass = 'w-full rounded-lg border border-slate-300 px-3 py-2 text-sm 
             </div>
         </form>
 
-        <form v-show="activeSection === 'hubspot'" class="max-w-2xl rounded-xl border border-slate-200 bg-white p-6 shadow-sm" @submit.prevent="saveHubspot">
-            <h2 class="text-lg font-medium text-slate-900">{{ $t('settings_integrations.hubspot_crm') }}</h2>
-            <p class="mt-1 text-sm text-slate-500">{{ $t('settings_integrations.enrich_tickets_with_hubspot_contact_data_via_hubspot_api-client') }}</p>
+        <form v-show="activeSection === 'hubspot'" class="max-w-2xl agent-card" @submit.prevent="saveHubspot">
+            <h2 class="text-lg font-medium agent-text">{{ $t('settings_integrations.hubspot_crm') }}</h2>
+            <p class="mt-1 text-sm agent-text-subtle">{{ $t('settings_integrations.enrich_tickets_with_hubspot_contact_data_via_hubspot_api-client') }}</p>
             <div class="mt-4 space-y-4">
                 <input v-model="hubspotForm.access_token" type="password" :placeholder="$t('settings_integrations.private_app_access_token')" :class="inputClass" />
                 <AppToggle v-model="hubspotForm.is_active" :label="$t('common.active')" />
@@ -401,9 +401,9 @@ const inputClass = 'w-full rounded-lg border border-slate-300 px-3 py-2 text-sm 
             </div>
         </form>
 
-        <form v-show="activeSection === 'salesforce'" class="max-w-2xl rounded-xl border border-slate-200 bg-white p-6 shadow-sm" @submit.prevent="saveSalesforce">
-            <h2 class="text-lg font-medium text-slate-900">{{ $t('settings.salesforce') }}</h2>
-            <p class="mt-1 text-sm text-slate-500">{{ $t('settings_integrations.connect_salesforce_using_omniphx_forrest_for_contact_lookup') }}</p>
+        <form v-show="activeSection === 'salesforce'" class="max-w-2xl agent-card" @submit.prevent="saveSalesforce">
+            <h2 class="text-lg font-medium agent-text">{{ $t('settings.salesforce') }}</h2>
+            <p class="mt-1 text-sm agent-text-subtle">{{ $t('settings_integrations.connect_salesforce_using_omniphx_forrest_for_contact_lookup') }}</p>
             <div class="mt-4 grid gap-4 md:grid-cols-2">
                 <input v-model="salesforceForm.username" type="text" :placeholder="$t('settings_integrations.username')" :class="inputClass" />
                 <input v-model="salesforceForm.password" type="password" :placeholder="$t('settings.password')" :class="inputClass" />
@@ -414,9 +414,9 @@ const inputClass = 'w-full rounded-lg border border-slate-300 px-3 py-2 text-sm 
             </div>
         </form>
 
-        <form v-show="activeSection === 'teams'" class="max-w-2xl rounded-xl border border-slate-200 bg-white p-6 shadow-sm" @submit.prevent="saveTeams">
-            <h2 class="text-lg font-medium text-slate-900">{{ $t('settings.microsoft_teams') }}</h2>
-            <p class="mt-1 text-sm text-slate-500">{{ $t('settings_integrations.post_ticket_notifications_to_a_teams_incoming_webhook') }}</p>
+        <form v-show="activeSection === 'teams'" class="max-w-2xl agent-card" @submit.prevent="saveTeams">
+            <h2 class="text-lg font-medium agent-text">{{ $t('settings.microsoft_teams') }}</h2>
+            <p class="mt-1 text-sm agent-text-subtle">{{ $t('settings_integrations.post_ticket_notifications_to_a_teams_incoming_webhook') }}</p>
             <div class="mt-4 space-y-4">
                 <input v-model="teamsForm.webhook_url" type="url" :placeholder="$t('settings_integrations.incoming_webhook_url')" :class="inputClass" />
                 <AppToggle v-model="teamsForm.is_active" :label="$t('common.active')" />
@@ -424,12 +424,12 @@ const inputClass = 'w-full rounded-lg border border-slate-300 px-3 py-2 text-sm 
             </div>
         </form>
 
-        <form v-show="activeSection === 'zapier'" class="max-w-2xl rounded-xl border border-slate-200 bg-white p-6 shadow-sm" @submit.prevent="saveZapier">
-            <h2 class="text-lg font-medium text-slate-900">{{ $t('settings.zapier') }}</h2>
-            <p class="mt-1 text-sm text-slate-500">{{ $t('settings_integrations.use_outbound_webhooks_or_the_subscribe_url_below_in_zapier_triggers') }}</p>
+        <form v-show="activeSection === 'zapier'" class="max-w-2xl agent-card" @submit.prevent="saveZapier">
+            <h2 class="text-lg font-medium agent-text">{{ $t('settings.zapier') }}</h2>
+            <p class="mt-1 text-sm agent-text-subtle">{{ $t('settings_integrations.use_outbound_webhooks_or_the_subscribe_url_below_in_zapier_triggers') }}</p>
             <div class="mt-4 space-y-4">
-                <div class="rounded-lg bg-slate-50 p-3 text-xs text-slate-600">
-                    <p class="font-medium text-slate-700">{{ $t('settings_integrations.hook_url') }}</p>
+                <div class="rounded-lg agent-panel-muted p-3 text-xs agent-text-muted">
+                    <p class="font-medium text-slate-700 dark:text-slate-300">{{ $t('settings_integrations.hook_url') }}</p>
                     <p class="mt-1 break-all font-mono">{{ meta.zapier_hook_url }}</p>
                 </div>
                 <AppToggle v-model="zapierForm.is_active" :label="$t('common.active')" />
@@ -446,12 +446,12 @@ const inputClass = 'w-full rounded-lg border border-slate-300 px-3 py-2 text-sm 
         >
             <form id="webhook-form" class="space-y-4" @submit.prevent="save">
                 <div>
-                    <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('profile.name') }}</label>
-                    <input v-model="form.name" type="text" required class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm transition focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20" />
+                    <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('profile.name') }}</label>
+                    <input v-model="form.name" type="text" required class="w-full rounded-lg border agent-border px-3 py-2 text-sm transition focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20" />
                 </div>
                 <div>
-                    <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('settings_integrations.url') }}</label>
-                    <input v-model="form.url" type="url" required class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm transition focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20" placeholder="https://example.com/webhooks/helpdesk" />
+                    <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('settings_integrations.url') }}</label>
+                    <input v-model="form.url" type="url" required class="w-full rounded-lg border agent-border px-3 py-2 text-sm transition focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20" placeholder="https://example.com/webhooks/helpdesk" />
                 </div>
                 <AppChipSelect v-model="form.events" :label="$t('settings_integrations.events')" :options="webhookEventOptions" />
                 <p v-if="!form.events.length" class="text-xs text-amber-600">{{ $t('settings_integrations.select_at_least_one_event') }}</p>
@@ -460,7 +460,7 @@ const inputClass = 'w-full rounded-lg border border-slate-300 px-3 py-2 text-sm 
 
             <template #footer>
                 <div class="flex justify-end gap-2">
-                    <button type="button" class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-white" @click="closeForm">{{ $t('common.cancel') }}</button>
+                    <button type="button" class="rounded-lg border agent-border px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 transition agent-hover-surface" @click="closeForm">{{ $t('common.cancel') }}</button>
                     <button type="submit" form="webhook-form" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700 disabled:opacity-60" :disabled="form.processing || !form.events.length">{{ $t('common.save') }}</button>
                 </div>
             </template>

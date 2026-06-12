@@ -156,17 +156,17 @@ const isProtected = (role) => props.protectedRoles.includes(role.name);
         </template>
 
         <div class="mb-6 grid gap-4 sm:grid-cols-3">
-            <div class="rounded-xl border border-slate-200 bg-white px-5 py-4 shadow-sm">
-                <p class="text-sm text-slate-500">{{ $t('settings_roles.roles') }}</p>
-                <p class="mt-1 text-2xl font-semibold text-slate-900">{{ roles.length }}</p>
+            <div class="rounded-xl border agent-border agent-panel px-5 py-4 shadow-sm">
+                <p class="text-sm agent-text-subtle">{{ $t('settings_roles.roles') }}</p>
+                <p class="mt-1 text-2xl font-semibold agent-text">{{ roles.length }}</p>
             </div>
-            <div class="rounded-xl border border-slate-200 bg-white px-5 py-4 shadow-sm">
-                <p class="text-sm text-slate-500">{{ $t('settings_roles.available_permissions') }}</p>
-                <p class="mt-1 text-2xl font-semibold text-slate-900">{{ totalPermissions }}</p>
+            <div class="rounded-xl border agent-border agent-panel px-5 py-4 shadow-sm">
+                <p class="text-sm agent-text-subtle">{{ $t('settings_roles.available_permissions') }}</p>
+                <p class="mt-1 text-2xl font-semibold agent-text">{{ totalPermissions }}</p>
             </div>
-            <div class="rounded-xl border border-slate-200 bg-white px-5 py-4 shadow-sm">
-                <p class="text-sm text-slate-500">{{ $t('settings_roles.system_roles') }}</p>
-                <p class="mt-1 text-2xl font-semibold text-slate-900">{{ protectedRoles.length }}</p>
+            <div class="rounded-xl border agent-border agent-panel px-5 py-4 shadow-sm">
+                <p class="text-sm agent-text-subtle">{{ $t('settings_roles.system_roles') }}</p>
+                <p class="mt-1 text-2xl font-semibold agent-text">{{ protectedRoles.length }}</p>
             </div>
         </div>
 
@@ -174,7 +174,7 @@ const isProtected = (role) => props.protectedRoles.includes(role.name);
             <article
                 v-for="role in sortedRoles"
                 :key="role.id"
-                class="flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition hover:border-slate-300 hover:shadow-md"
+                class="flex flex-col overflow-hidden rounded-xl border agent-border agent-panel shadow-sm transition hover:border-slate-300 dark:border-slate-700 dark:hover:border-slate-600 hover:shadow-md"
             >
                 <div class="flex items-start gap-4 p-5">
                     <span
@@ -186,41 +186,41 @@ const isProtected = (role) => props.protectedRoles.includes(role.name);
 
                     <div class="min-w-0 flex-1">
                         <div class="flex flex-wrap items-center gap-2">
-                            <h2 class="text-base font-semibold text-slate-900">{{ formatRoleName(role.name) }}</h2>
+                            <h2 class="text-base font-semibold agent-text">{{ formatRoleName(role.name) }}</h2>
                             <span
                                 v-if="isProtected(role)"
-                                class="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-medium uppercase tracking-wide text-slate-600"
+                                class="rounded-full bg-slate-100 dark:bg-slate-900 px-2 py-0.5 text-[11px] font-medium uppercase tracking-wide agent-text-muted"
                             >
                                 {{ $t('settings_roles.system') }}
                             </span>
                         </div>
-                        <p class="mt-0.5 font-mono text-xs text-slate-400">{{ role.name }}</p>
-                        <div class="mt-3 flex flex-wrap gap-2 text-xs text-slate-600">
-                            <span class="rounded-full bg-blue-50 px-2.5 py-1 font-medium text-blue-700">
+                        <p class="mt-0.5 font-mono text-xs text-slate-400 dark:text-slate-500">{{ role.name }}</p>
+                        <div class="mt-3 flex flex-wrap gap-2 text-xs agent-text-muted">
+                            <span class="rounded-full bg-blue-50 dark:bg-blue-950/40 px-2.5 py-1 font-medium text-blue-700 dark:text-blue-300">
                                 {{ role.permissions.length }} permissions
                             </span>
-                            <span class="rounded-full bg-slate-100 px-2.5 py-1 font-medium text-slate-700">
+                            <span class="rounded-full bg-slate-100 dark:bg-slate-900 px-2.5 py-1 font-medium text-slate-700 dark:text-slate-300">
                                 {{ role.users_count ?? 0 }} members
                             </span>
                         </div>
                     </div>
                 </div>
 
-                <div v-if="permissionGroupsForRole(role).length" class="border-t border-slate-100 px-5 py-4">
-                    <p class="text-[11px] font-semibold uppercase tracking-wide text-slate-400">{{ $t('settings_roles.access_areas') }}</p>
+                <div v-if="permissionGroupsForRole(role).length" class="border-t agent-border-subtle px-5 py-4">
+                    <p class="text-[11px] font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500">{{ $t('settings_roles.access_areas') }}</p>
                     <div class="mt-2 flex flex-wrap gap-1.5">
                         <span
                             v-for="group in permissionGroupsForRole(role)"
                             :key="`${role.id}-${group.group}`"
-                            class="rounded-md bg-slate-50 px-2 py-1 text-xs text-slate-600 ring-1 ring-inset ring-slate-200"
+                            class="rounded-md agent-panel-muted px-2 py-1 text-xs agent-text-muted ring-1 ring-inset ring-slate-200 dark:ring-slate-700"
                         >
                             {{ group.group }}
-                            <span class="font-medium text-slate-900">{{ group.count }}</span>
+                            <span class="font-medium agent-text">{{ group.count }}</span>
                         </span>
                     </div>
                 </div>
 
-                <div class="mt-auto flex justify-end gap-1 border-t border-slate-100 bg-slate-50/60 px-4 py-3">
+                <div class="mt-auto flex justify-end gap-1 border-t agent-border-subtle agent-panel-muted/60 px-4 py-3">
                     <AppEditAction :label="$t('settings_roles.edit_permissions')" @click="openEdit(role)" />
                     <AppDeleteAction
                         v-if="!isProtected(role)"
@@ -240,25 +240,25 @@ const isProtected = (role) => props.protectedRoles.includes(role.name);
         >
             <form id="create-role-form" class="space-y-6" @submit.prevent="createRole">
                 <div class="max-w-md">
-                    <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('settings_roles.role_name') }}</label>
+                    <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('settings_roles.role_name') }}</label>
                     <input
                         v-model="createForm.name"
                         type="text"
                         required
                         :placeholder="$t('settings_roles.support_lead')"
-                        class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm transition focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                        class="w-full rounded-lg border agent-border px-3 py-2 text-sm transition focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                     />
-                    <p class="mt-1 text-xs text-slate-500">{{ $t('settings_roles.stored_as_a_slug_e_g_support_lead') }}</p>
+                    <p class="mt-1 text-xs agent-text-subtle">{{ $t('settings_roles.stored_as_a_slug_e_g_support_lead') }}</p>
                     <p v-if="createForm.errors.name" class="mt-1 text-sm text-red-600">{{ createForm.errors.name }}</p>
                 </div>
 
                 <div class="space-y-5">
-                    <div v-for="group in catalog" :key="group.group" class="rounded-xl border border-slate-200 bg-slate-50/60 p-4">
+                    <div v-for="group in catalog" :key="group.group" class="rounded-xl border agent-border agent-panel-muted/60 p-4">
                         <div class="flex items-center justify-between gap-3">
-                            <p class="text-sm font-semibold text-slate-900">{{ group.group }}</p>
+                            <p class="text-sm font-semibold agent-text">{{ group.group }}</p>
                             <button
                                 type="button"
-                                class="text-xs font-medium text-blue-600 hover:text-blue-700"
+                                class="text-xs font-medium text-blue-600 hover:text-blue-700 dark:hover:text-blue-300 dark:text-blue-300"
                                 @click="toggleGroup(createForm, group)"
                             >
                                 {{ groupAllSelected(createForm, group) ? 'Clear all' : 'Select all' }}
@@ -268,7 +268,7 @@ const isProtected = (role) => props.protectedRoles.includes(role.name);
                             <label
                                 v-for="permission in group.permissions"
                                 :key="permission.name"
-                                class="flex cursor-pointer items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 transition hover:border-blue-200 hover:bg-blue-50/50"
+                                class="flex cursor-pointer items-center gap-2 rounded-lg border agent-border agent-panel px-3 py-2 text-sm text-slate-700 dark:text-slate-300 transition hover:border-blue-200 dark:border-blue-900/60 hover:bg-blue-50 dark:bg-blue-950/40/50"
                             >
                                 <input
                                     type="checkbox"
@@ -284,7 +284,7 @@ const isProtected = (role) => props.protectedRoles.includes(role.name);
 
             <template #footer>
                 <div class="flex justify-end gap-2">
-                    <button type="button" class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-white" @click="closeCreate">{{ $t('common.cancel') }}</button>
+                    <button type="button" class="rounded-lg border agent-border px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 transition agent-hover-surface" @click="closeCreate">{{ $t('common.cancel') }}</button>
                     <button type="submit" form="create-role-form" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700 disabled:opacity-60" :disabled="createForm.processing">{{ $t('settings_roles.create_role') }}</button>
                 </div>
             </template>
@@ -299,20 +299,20 @@ const isProtected = (role) => props.protectedRoles.includes(role.name);
         >
             <form v-if="editingRole && editForms[editingRole.id]" :id="`edit-role-${editingRole.id}`" class="space-y-6" @submit.prevent="saveRole(editingRole)">
                 <div v-if="!isProtected(editingRole)" class="max-w-md">
-                    <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('settings_roles.role_name') }}</label>
-                    <input v-model="editForms[editingRole.id].name" type="text" required class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+                    <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('settings_roles.role_name') }}</label>
+                    <input v-model="editForms[editingRole.id].name" type="text" required class="w-full rounded-lg border agent-border px-3 py-2 text-sm" />
                 </div>
-                <div v-else class="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">
+                <div v-else class="rounded-lg border agent-border agent-panel-muted px-4 py-3 text-sm agent-text-muted">
                     System roles keep their slug. You can still update which permissions they include.
                 </div>
 
                 <div class="space-y-5">
-                    <div v-for="group in catalog" :key="`${editingRole.id}-${group.group}`" class="rounded-xl border border-slate-200 bg-slate-50/60 p-4">
+                    <div v-for="group in catalog" :key="`${editingRole.id}-${group.group}`" class="rounded-xl border agent-border agent-panel-muted/60 p-4">
                         <div class="flex items-center justify-between gap-3">
-                            <p class="text-sm font-semibold text-slate-900">{{ group.group }}</p>
+                            <p class="text-sm font-semibold agent-text">{{ group.group }}</p>
                             <button
                                 type="button"
-                                class="text-xs font-medium text-blue-600 hover:text-blue-700"
+                                class="text-xs font-medium text-blue-600 hover:text-blue-700 dark:hover:text-blue-300 dark:text-blue-300"
                                 @click="toggleGroup(editForms[editingRole.id], group)"
                             >
                                 {{ groupAllSelected(editForms[editingRole.id], group) ? 'Clear all' : 'Select all' }}
@@ -322,7 +322,7 @@ const isProtected = (role) => props.protectedRoles.includes(role.name);
                             <label
                                 v-for="permission in group.permissions"
                                 :key="permission.name"
-                                class="flex cursor-pointer items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 transition hover:border-blue-200 hover:bg-blue-50/50"
+                                class="flex cursor-pointer items-center gap-2 rounded-lg border agent-border agent-panel px-3 py-2 text-sm text-slate-700 dark:text-slate-300 transition hover:border-blue-200 dark:border-blue-900/60 hover:bg-blue-50 dark:bg-blue-950/40/50"
                             >
                                 <input
                                     type="checkbox"
@@ -338,7 +338,7 @@ const isProtected = (role) => props.protectedRoles.includes(role.name);
 
             <template #footer>
                 <div v-if="editingRole" class="flex justify-end gap-2">
-                    <button type="button" class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-white" @click="closeEdit">{{ $t('common.cancel') }}</button>
+                    <button type="button" class="rounded-lg border agent-border px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 transition agent-hover-surface" @click="closeEdit">{{ $t('common.cancel') }}</button>
                     <button type="submit" :form="`edit-role-${editingRole.id}`" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700 disabled:opacity-60" :disabled="editForms[editingRole.id]?.processing">{{ $t('settings_roles.save_role') }}</button>
                 </div>
             </template>

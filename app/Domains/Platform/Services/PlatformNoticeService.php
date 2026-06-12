@@ -278,7 +278,9 @@ class PlatformNoticeService
         return [
             'id' => $notice->id,
             'title' => $notice->title,
-            'body_html' => $notice->body_html,
+            'body_html' => $notice->body_html
+                ? MessageBodySanitizer::sanitize($notice->body_html)
+                : null,
             'notice_type' => $notice->notice_type,
             'target_scope' => $notice->target_scope,
             'tenant_ids' => $notice->tenant_ids ?? [],

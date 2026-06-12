@@ -42,14 +42,14 @@ const openPreview = () => {
         :href="interactive && !isImage ? attachment.url : undefined"
         :target="interactive && !isImage ? '_blank' : undefined"
         :rel="interactive && !isImage ? 'noopener' : undefined"
-        class="group block overflow-hidden rounded-lg border border-slate-200/80 bg-white text-left transition duration-200"
+        class="group block overflow-hidden rounded-lg border border-slate-200 dark:border-slate-800/80 bg-white dark:bg-slate-900 text-left transition duration-200"
         :class="[
             isImage ? 'max-w-[220px]' : 'max-w-[260px]',
             interactive ? 'cursor-pointer hover:-translate-y-0.5 hover:border-blue-300 hover:shadow-md active:translate-y-0' : '',
         ]"
         @click="isImage ? openPreview() : undefined"
     >
-        <div v-if="isImage" class="relative aspect-[4/3] bg-slate-100">
+        <div v-if="isImage" class="relative aspect-[4/3] bg-slate-100 dark:bg-slate-900">
             <img
                 :src="attachment.url"
                 :alt="attachment.filename"
@@ -63,17 +63,17 @@ const openPreview = () => {
             </div>
         </div>
         <div v-else class="flex items-center gap-3 px-3 py-2.5">
-            <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-slate-100 text-[10px] font-bold uppercase tracking-wide text-slate-600 transition group-hover:bg-blue-50 group-hover:text-blue-700">
+            <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-slate-100 dark:bg-slate-900 text-[10px] font-bold uppercase tracking-wide text-slate-600 dark:text-slate-400 transition group-hover:bg-blue-50 dark:bg-blue-950/40 group-hover:text-blue-700 dark:text-blue-300">
                 {{ extension }}
             </div>
             <div class="min-w-0">
-                <p class="truncate text-sm font-medium text-slate-800 group-hover:text-blue-700">{{ attachment.filename }}</p>
-                <p class="text-xs text-slate-500">{{ formatFileSize(attachment.size) }}</p>
+                <p class="truncate text-sm font-medium text-slate-800 dark:text-slate-200 group-hover:text-blue-700 dark:text-blue-300">{{ attachment.filename }}</p>
+                <p class="text-xs text-slate-500 dark:text-slate-400">{{ formatFileSize(attachment.size) }}</p>
             </div>
         </div>
-        <div v-if="isImage" class="border-t border-slate-100 px-2.5 py-1.5">
-            <p class="truncate text-xs text-slate-600">{{ attachment.filename }}</p>
-            <p class="text-[11px] text-slate-400">{{ formatFileSize(attachment.size) }}</p>
+        <div v-if="isImage" class="border-t border-slate-100 dark:border-slate-800 px-2.5 py-1.5">
+            <p class="truncate text-xs text-slate-600 dark:text-slate-400">{{ attachment.filename }}</p>
+            <p class="text-[11px] text-slate-400 dark:text-slate-500">{{ formatFileSize(attachment.size) }}</p>
         </div>
     </component>
 
@@ -89,13 +89,13 @@ const openPreview = () => {
             :alt="attachment.filename"
             class="mx-auto max-h-[70vh] w-auto max-w-full rounded-lg object-contain"
         />
-        <div class="mt-4 flex items-center justify-between gap-3 text-sm text-slate-500">
+        <div class="mt-4 flex items-center justify-between gap-3 text-sm text-slate-500 dark:text-slate-400">
             <span>{{ formatFileSize(attachment.size) }}</span>
             <a
                 :href="attachment.url"
                 target="_blank"
                 rel="noopener"
-                class="font-medium text-blue-600 hover:text-blue-700"
+                class="font-medium text-blue-600 hover:text-blue-700 dark:hover:text-blue-300 dark:text-blue-300"
             >
                 {{ $t('components.open_original') }}
             </a>

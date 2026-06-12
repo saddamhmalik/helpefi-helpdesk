@@ -18,7 +18,7 @@ const statusClass = (ticket) => {
     if (ticket.sla_timer?.first_response_breached || ticket.sla_timer?.resolution_breached) {
         return 'text-red-600';
     }
-    return 'text-slate-500';
+    return 'text-slate-500 dark:text-slate-400';
 };
 </script>
 
@@ -27,8 +27,8 @@ const statusClass = (ticket) => {
     <PortalLayout>
         <div class="mb-6 flex items-center justify-between">
             <div>
-                <h1 class="text-2xl font-bold text-slate-900">{{ $t('portal.my_tickets') }}</h1>
-                <p class="mt-1 text-sm text-slate-600">{{ $t('portal.all_support_requests_linked_to_your_account') }}</p>
+                <h1 class="text-2xl font-bold text-slate-900 dark:text-slate-100">{{ $t('portal.my_tickets') }}</h1>
+                <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">{{ $t('portal.all_support_requests_linked_to_your_account') }}</p>
             </div>
             <Link :href="portalPath('/submit')" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">{{ $t('portal.new_request') }}</Link>
         </div>
@@ -38,23 +38,23 @@ const statusClass = (ticket) => {
                 v-for="ticket in tickets.data"
                 :key="ticket.id"
                 :href="portalPath(`/my-tickets/${ticket.id}`)"
-                class="block rounded-xl border border-slate-200 bg-white p-5 shadow-sm hover:border-blue-300"
+                class="block rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-sm hover:border-blue-300"
             >
                 <div class="flex items-start justify-between gap-4">
                     <div>
-                        <p class="text-sm font-medium text-slate-500">{{ ticket.number }}</p>
-                        <h2 class="font-semibold text-slate-900">{{ ticket.subject }}</h2>
+                        <p class="text-sm font-medium text-slate-500 dark:text-slate-400">{{ ticket.number }}</p>
+                        <h2 class="font-semibold text-slate-900 dark:text-slate-100">{{ ticket.subject }}</h2>
                     </div>
-                    <span class="rounded-full bg-slate-100 px-3 py-1 text-sm text-slate-700">{{ ticket.status?.name }}</span>
+                    <span class="rounded-full bg-slate-100 dark:bg-slate-900 px-3 py-1 text-sm text-slate-700 dark:text-slate-300">{{ ticket.status?.name }}</span>
                 </div>
                 <p class="mt-2 text-xs" :class="statusClass(ticket)">
                     {{ formatDateTime(ticket.created_at) }}
                     <span v-if="ticket.sla_timer?.resolution_breached"> · Resolution overdue</span>
                 </p>
             </Link>
-            <p v-if="!tickets.data?.length" class="rounded-xl border border-slate-200 bg-white p-8 text-center text-sm text-slate-500">
+            <p v-if="!tickets.data?.length" class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-8 text-center text-sm text-slate-500 dark:text-slate-400">
                 You have no tickets yet.
-                <Link :href="portalPath('/submit')" class="text-blue-600 hover:text-blue-700">{{ $t('portal.submit_a_request') }}</Link>
+                <Link :href="portalPath('/submit')" class="text-blue-600 hover:text-blue-700 dark:hover:text-blue-300 dark:text-blue-300">{{ $t('portal.submit_a_request') }}</Link>
             </p>
         </div>
     </PortalLayout>

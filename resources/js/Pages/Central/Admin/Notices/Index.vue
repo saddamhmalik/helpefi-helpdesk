@@ -49,19 +49,19 @@ const typeLabel = (type, types) => types[type] ?? type;
 const audienceLabel = (audience, audiences) => audiences[audience] ?? audience;
 const priorityClass = (priority) => {
     if (priority === 'high') {
-        return 'bg-red-100 text-red-700';
+        return 'bg-red-100 text-red-700 dark:text-red-300';
     }
 
     if (priority === 'low') {
-        return 'bg-slate-100 text-slate-600';
+        return 'bg-slate-100 dark:bg-slate-900 text-slate-600 dark:text-slate-400';
     }
 
-    return 'bg-blue-100 text-blue-700';
+    return 'bg-blue-100 text-blue-700 dark:text-blue-300';
 };
 
 const statusClass = (notice) => {
     if (notice.schedule_state === 'live') {
-        return 'bg-emerald-100 text-emerald-700';
+        return 'bg-emerald-100 text-emerald-700 dark:text-emerald-300';
     }
 
     if (notice.schedule_state === 'scheduled') {
@@ -69,14 +69,14 @@ const statusClass = (notice) => {
     }
 
     if (notice.schedule_state === 'expired') {
-        return 'bg-amber-100 text-amber-700';
+        return 'bg-amber-100 text-amber-700 dark:text-amber-300';
     }
 
     if (notice.status === 'published') {
-        return 'bg-amber-100 text-amber-700';
+        return 'bg-amber-100 text-amber-700 dark:text-amber-300';
     }
 
-    return 'bg-slate-100 text-slate-600';
+    return 'bg-slate-100 dark:bg-slate-900 text-slate-600 dark:text-slate-400';
 };
 
 const statusLabel = (notice) => {
@@ -124,46 +124,46 @@ const targetLabel = (notice) => {
                 </template>
             </PageHeader>
 
-            <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+            <div class="overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm">
                 <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-slate-200 text-sm">
+                <table class="min-w-full divide-y divide-slate-200 dark:divide-slate-800 text-sm">
                     <thead class="bg-slate-50">
                         <tr>
-                            <th class="px-5 py-3.5 text-left font-medium text-slate-600">{{ $t('central.notice') }}</th>
-                            <th class="px-5 py-3.5 text-left font-medium text-slate-600">{{ $t('central.audience') }}</th>
-                            <th class="px-5 py-3.5 text-left font-medium text-slate-600">{{ $t('central.target') }}</th>
-                            <th class="px-5 py-3.5 text-left font-medium text-slate-600">{{ $t('central.schedule') }}</th>
-                            <th class="px-5 py-3.5 text-left font-medium text-slate-600">{{ $t('central.status') }}</th>
-                            <th class="px-5 py-3.5 text-right font-medium text-slate-600">{{ $t('central.actions') }}</th>
+                            <th class="px-5 py-3.5 text-left font-medium text-slate-600 dark:text-slate-400">{{ $t('central.notice') }}</th>
+                            <th class="px-5 py-3.5 text-left font-medium text-slate-600 dark:text-slate-400">{{ $t('central.audience') }}</th>
+                            <th class="px-5 py-3.5 text-left font-medium text-slate-600 dark:text-slate-400">{{ $t('central.target') }}</th>
+                            <th class="px-5 py-3.5 text-left font-medium text-slate-600 dark:text-slate-400">{{ $t('central.schedule') }}</th>
+                            <th class="px-5 py-3.5 text-left font-medium text-slate-600 dark:text-slate-400">{{ $t('central.status') }}</th>
+                            <th class="px-5 py-3.5 text-right font-medium text-slate-600 dark:text-slate-400">{{ $t('central.actions') }}</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-slate-100">
+                    <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
                         <tr v-if="!notices.length">
-                            <td colspan="6" class="px-5 py-10 text-center text-slate-500">{{ $t('central.no_notices_yet') }}</td>
+                            <td colspan="6" class="px-5 py-10 text-center text-slate-500 dark:text-slate-400">{{ $t('central.no_notices_yet') }}</td>
                         </tr>
-                        <tr v-for="notice in notices" :key="notice.id" class="hover:bg-slate-50/80">
+                        <tr v-for="notice in notices" :key="notice.id" class="hover:bg-slate-50 dark:bg-slate-950 dark:hover:bg-slate-800/80">
                             <td class="px-5 py-4 align-top">
                                 <div class="flex items-start gap-3">
                                     <img
                                         v-if="notice.image_url"
                                         :src="notice.image_url"
                                         :alt="notice.title"
-                                        class="h-12 w-12 shrink-0 rounded-lg border border-slate-200 object-cover"
+                                        class="h-12 w-12 shrink-0 rounded-lg border border-slate-200 dark:border-slate-800 object-cover"
                                     />
                                     <div class="min-w-0">
-                                        <p class="font-medium text-slate-900">{{ notice.title }}</p>
+                                        <p class="font-medium text-slate-900 dark:text-slate-100">{{ notice.title }}</p>
                                         <div class="mt-1 flex flex-wrap items-center gap-2">
                                             <span class="inline-flex rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide" :class="priorityClass(notice.priority)">
                                                 {{ priorities[notice.priority] ?? notice.priority }}
                                             </span>
-                                            <span class="text-xs text-slate-500">{{ typeLabel(notice.notice_type, types) }}</span>
+                                            <span class="text-xs text-slate-500 dark:text-slate-400">{{ typeLabel(notice.notice_type, types) }}</span>
                                         </div>
                                     </div>
                                 </div>
                             </td>
-                            <td class="px-5 py-4 align-top text-slate-600">{{ audienceLabel(notice.audience, audiences) }}</td>
-                            <td class="px-5 py-4 align-top text-slate-600">{{ targetLabel(notice) }}</td>
-                            <td class="px-5 py-4 align-top text-xs text-slate-500">
+                            <td class="px-5 py-4 align-top text-slate-600 dark:text-slate-400">{{ audienceLabel(notice.audience, audiences) }}</td>
+                            <td class="px-5 py-4 align-top text-slate-600 dark:text-slate-400">{{ targetLabel(notice) }}</td>
+                            <td class="px-5 py-4 align-top text-xs text-slate-500 dark:text-slate-400">
                                 <p v-if="notice.starts_at">{{ $t('central.notice_schedule_from', { date: formatDateTime(notice.starts_at) }) }}</p>
                                 <p v-if="notice.ends_at">{{ $t('central.notice_schedule_until', { date: formatDateTime(notice.ends_at) }) }}</p>
                                 <p v-if="!notice.starts_at && !notice.ends_at">{{ $t('central.always_on_when_live') }}</p>
@@ -186,13 +186,13 @@ const targetLabel = (notice) => {
                                     <button
                                         v-if="canManage && notice.status === 'draft'"
                                         type="button"
-                                        class="rounded-lg px-3 py-1.5 text-xs font-medium text-emerald-700 hover:bg-emerald-50"
+                                        class="rounded-lg px-3 py-1.5 text-xs font-medium text-emerald-700 dark:text-emerald-300 hover:bg-emerald-50 dark:bg-emerald-950/40"
                                         @click="publish(notice)"
                                     >{{ $t('central.publish') }}</button>
                                     <button
                                         v-if="canManage && notice.status === 'published' && notice.is_active"
                                         type="button"
-                                        class="rounded-lg px-3 py-1.5 text-xs font-medium text-amber-700 hover:bg-amber-50"
+                                        class="rounded-lg px-3 py-1.5 text-xs font-medium text-amber-700 dark:text-amber-300 hover:bg-amber-50 dark:bg-amber-950/40"
                                         @click="deactivate(notice)"
                                     >{{ $t('central.deactivate') }}</button>
                                 </div>

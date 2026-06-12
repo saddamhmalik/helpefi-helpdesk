@@ -348,26 +348,26 @@ const onUseInboxSmtpChange = () => {
             :active-section="activeSection"
         />
 
-        <div class="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
-            <p class="text-sm text-slate-600">
+        <div class="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border agent-border agent-panel-muted px-4 py-3">
+            <p class="text-sm agent-text-muted">
                 {{ $t('settings_email_templates.page_description') }}
             </p>
-            <Link href="/settings/email-templates" class="shrink-0 text-sm font-medium text-blue-600 hover:text-blue-700">
+            <Link href="/settings/email-templates" class="shrink-0 text-sm font-medium text-blue-600 hover:text-blue-700 dark:hover:text-blue-300 dark:text-blue-300">
                 {{ $t('settings.email_templates') }} →
             </Link>
         </div>
 
-        <div v-if="flashSuccess" class="mb-4 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+        <div v-if="flashSuccess" class="mb-4 rounded-lg border border-emerald-200 dark:border-emerald-900/60 bg-emerald-50 dark:bg-emerald-950/40 px-4 py-3 text-sm text-emerald-800 dark:text-emerald-200">
             {{ flashSuccess }}
         </div>
 
         <div v-if="activeSection === 'incoming'">
 
-            <div class="rounded-2xl border border-slate-200 bg-white shadow-sm">
-                <div class="flex flex-wrap items-start justify-between gap-4 border-b border-slate-100 px-6 py-5">
+            <div class="rounded-2xl border agent-border agent-panel shadow-sm">
+                <div class="flex flex-wrap items-start justify-between gap-4 border-b agent-border-subtle px-6 py-5">
                     <div>
-                        <h2 class="text-lg font-semibold text-slate-900">{{ $t('settings.incoming_email') }}</h2>
-                        <p class="mt-1 text-sm text-slate-600">
+                        <h2 class="text-lg font-semibold agent-text">{{ $t('settings.incoming_email') }}</h2>
+                        <p class="mt-1 text-sm agent-text-muted">
                             {{ $t('settings_email.receive_tickets_via_webhook_forwarding_imap_pop3_polling_or_oauth_mail') }}
                         </p>
                     </div>
@@ -375,9 +375,9 @@ const onUseInboxSmtpChange = () => {
                 </div>
 
                 <div class="px-6 py-5">
-                    <div v-if="!inboxes?.length" class="rounded-xl border border-dashed border-slate-200 py-12 text-center">
-                        <p class="text-sm font-medium text-slate-700">{{ $t('settings_email.no_inboxes_yet') }}</p>
-                        <p class="mt-1 text-sm text-slate-500">{{ $t('settings_email.add_your_first_support_email_address_to_start_receiving_tickets') }}</p>
+                    <div v-if="!inboxes?.length" class="rounded-xl border border-dashed agent-border py-12 text-center">
+                        <p class="text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('settings_email.no_inboxes_yet') }}</p>
+                        <p class="mt-1 text-sm agent-text-subtle">{{ $t('settings_email.add_your_first_support_email_address_to_start_receiving_tickets') }}</p>
                     </div>
 
                     <div class="space-y-6">
@@ -404,40 +404,40 @@ const onUseInboxSmtpChange = () => {
         </div>
 
         <div v-if="activeSection === 'outgoing'">
-            <div class="rounded-2xl border border-slate-200 bg-white shadow-sm">
-                <div class="border-b border-slate-100 px-6 py-5">
-                    <h2 class="text-lg font-semibold text-slate-900">{{ $t('settings_email.outgoing_email_smtp') }}</h2>
-                    <p class="mt-1 text-sm text-slate-600">
+            <div class="rounded-2xl border agent-border agent-panel shadow-sm">
+                <div class="border-b agent-border-subtle px-6 py-5">
+                    <h2 class="text-lg font-semibold agent-text">{{ $t('settings_email.outgoing_email_smtp') }}</h2>
+                    <p class="mt-1 text-sm agent-text-muted">
                         {{ $t('settings_email.when_an_agent_replies_on_a_ticket_we_can_email_the_customer_from_your_') }}
                     </p>
                 </div>
 
                 <form class="space-y-6 px-6 py-5" @submit.prevent="saveOutbound">
                     <div class="flex flex-wrap gap-6">
-                        <label class="flex items-start gap-2 text-sm text-slate-700">
-                            <input v-model="outboundForm.enabled" type="checkbox" class="mt-0.5 rounded border-slate-300 text-blue-600" />
+                        <label class="flex items-start gap-2 text-sm text-slate-700 dark:text-slate-300">
+                            <input v-model="outboundForm.enabled" type="checkbox" class="mt-0.5 rounded agent-border text-blue-600" />
                             <span>
                                 <span class="font-medium">{{ $t('settings_email.enable_outgoing_email') }}</span>
-                                <span class="mt-0.5 block text-xs text-slate-500">{{ $t('settings_email.required_before_any_emails_can_be_sent_from_the_helpdesk') }}</span>
+                                <span class="mt-0.5 block text-xs agent-text-subtle">{{ $t('settings_email.required_before_any_emails_can_be_sent_from_the_helpdesk') }}</span>
                             </span>
                         </label>
-                        <label class="flex items-start gap-2 text-sm text-slate-700">
-                            <input v-model="outboundForm.reply_enabled" type="checkbox" class="mt-0.5 rounded border-slate-300 text-blue-600" :disabled="!outboundForm.enabled" />
+                        <label class="flex items-start gap-2 text-sm text-slate-700 dark:text-slate-300">
+                            <input v-model="outboundForm.reply_enabled" type="checkbox" class="mt-0.5 rounded agent-border text-blue-600" :disabled="!outboundForm.enabled" />
                             <span>
                                 <span class="font-medium">{{ $t('settings_email.email_customers_when_agents_reply') }}</span>
-                                <span class="mt-0.5 block text-xs text-slate-500">{{ $t('settings_email.sends_the_agents_message_to_the_ticket_contact_automatically') }}</span>
+                                <span class="mt-0.5 block text-xs agent-text-subtle">{{ $t('settings_email.sends_the_agents_message_to_the_ticket_contact_automatically') }}</span>
                             </span>
                         </label>
                     </div>
 
                     <div class="grid gap-4 sm:grid-cols-2">
                         <div>
-                            <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('settings_email.reply-to_address') }}</label>
-                            <input v-model="outboundForm.reply_to_address" type="email" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" :placeholder="$t('settings_email.replies_company_com')" />
+                            <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('settings_email.reply-to_address') }}</label>
+                            <input v-model="outboundForm.reply_to_address" type="email" class="w-full rounded-lg border agent-border px-3 py-2 text-sm" :placeholder="$t('settings_email.replies_company_com')" />
                         </div>
                         <div>
-                            <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('settings_email.automatic_bcc') }}</label>
-                            <input v-model="outboundForm.automatic_bcc" type="email" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" :placeholder="$t('settings_email.archive_company_com')" />
+                            <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('settings_email.automatic_bcc') }}</label>
+                            <input v-model="outboundForm.automatic_bcc" type="email" class="w-full rounded-lg border agent-border px-3 py-2 text-sm" :placeholder="$t('settings_email.archive_company_com')" />
                         </div>
                     </div>
 
@@ -447,32 +447,32 @@ const onUseInboxSmtpChange = () => {
                         description="Shows the replying agent's name alongside the support address."
                     />
 
-                    <div class="rounded-xl border border-blue-100 bg-blue-50/40 p-4">
-                        <label class="flex items-start gap-3 text-sm text-slate-800">
+                    <div class="rounded-xl border border-blue-100 bg-blue-50 dark:bg-blue-950/40/40 p-4">
+                        <label class="flex items-start gap-3 text-sm text-slate-800 dark:text-slate-200">
                             <input
                                 v-model="outboundForm.use_inbox_smtp"
                                 type="checkbox"
-                                class="mt-0.5 rounded border-slate-300 text-blue-600"
+                                class="mt-0.5 rounded agent-border text-blue-600"
                                 :disabled="!outboundForm.enabled || !inboxSmtpOptions.length"
                                 @change="onUseInboxSmtpChange"
                             />
                             <span>
                                 <span class="font-medium">{{ $t('settings_email.use_same_address_as_inbound_inbox') }}</span>
-                                <span class="mt-0.5 block text-xs text-slate-600">{{ $t('settings_email.replies_are_sent_from_the_same_support_address_customers_emailed') }}</span>
+                                <span class="mt-0.5 block text-xs agent-text-muted">{{ $t('settings_email.replies_are_sent_from_the_same_support_address_customers_emailed') }}</span>
                             </span>
                         </label>
 
                         <div v-if="outboundForm.use_inbox_smtp" class="mt-4 space-y-4 border-t border-blue-100 pt-4">
                             <div>
-                                <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('settings_email.inbound_inbox') }}</label>
-                                <select v-model="outboundForm.email_inbox_id" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm">
+                                <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('settings_email.inbound_inbox') }}</label>
+                                <select v-model="outboundForm.email_inbox_id" class="w-full rounded-lg border agent-border px-3 py-2 text-sm">
                                     <option v-for="option in inboxSmtpOptions" :key="option.inbox_id" :value="option.inbox_id">
                                         {{ option.name }} — {{ option.address }}
                                     </option>
                                 </select>
                             </div>
 
-                            <div v-if="selectedInboxSmtp" class="rounded-lg border border-blue-200 bg-white p-4 text-sm text-slate-700">
+                            <div v-if="selectedInboxSmtp" class="rounded-lg border border-blue-200 dark:border-blue-900/60 bg-white dark:bg-slate-900 p-4 text-sm text-slate-700 dark:text-slate-300">
                                 <p><span class="font-medium">{{ $t('settings_email.send_as') }}</span> {{ selectedInboxSmtp.address }}</p>
                                 <p class="mt-1"><span class="font-medium">{{ $t('settings_email.smtp') }}</span> {{ selectedInboxSmtp.host }}:{{ selectedInboxSmtp.port }} ({{ selectedInboxSmtp.encryption?.toUpperCase() }})</p>
                             </div>
@@ -483,21 +483,21 @@ const onUseInboxSmtpChange = () => {
                                 </p>
                                 <div class="flex flex-wrap items-end gap-3">
                                     <div class="min-w-[16rem] flex-1">
-                                        <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('settings_email.send_a_test_email') }}</label>
-                                        <input v-model="inboxTestForm.to" type="email" :placeholder="$t('settings_email.you_example_com')" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+                                        <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('settings_email.send_a_test_email') }}</label>
+                                        <input v-model="inboxTestForm.to" type="email" :placeholder="$t('settings_email.you_example_com')" class="w-full rounded-lg border agent-border px-3 py-2 text-sm" />
                                     </div>
                                     <div class="min-w-[16rem] flex-1">
-                                        <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('components.app_password') }}</label>
+                                        <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('components.app_password') }}</label>
                                         <input
                                             v-model="inboxTestForm.password"
                                             type="password"
                                             :placeholder="selectedInboxSmtp?.has_inbound_password ? $t('components.app_password_keep') : $t('components.app_password_enter')"
-                                            class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                                            class="w-full rounded-lg border agent-border px-3 py-2 text-sm"
                                         />
                                     </div>
                                     <button
                                         type="button"
-                                        class="rounded-lg border border-blue-200 bg-white px-4 py-2 text-sm font-medium text-blue-800 hover:bg-blue-50"
+                                        class="rounded-lg border border-blue-200 dark:border-blue-900/60 bg-white dark:bg-slate-900 px-4 py-2 text-sm font-medium text-blue-800 hover:bg-blue-50 dark:bg-blue-950/40"
                                         :disabled="inboxTestForm.processing || !outboundForm.email_inbox_id || !inboxTestForm.to"
                                         @click="sendInboxSmtpTest"
                                     >{{ $t('settings_email.test_inbox_smtp') }}</button>
@@ -510,53 +510,53 @@ const onUseInboxSmtpChange = () => {
                     <div v-if="!outboundForm.use_inbox_smtp" class="space-y-4">
                         <div class="grid gap-4 sm:grid-cols-2">
                             <div>
-                                <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('settings_email.driver') }}</label>
-                                <select v-model="outboundForm.driver" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm">
+                                <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('settings_email.driver') }}</label>
+                                <select v-model="outboundForm.driver" class="w-full rounded-lg border agent-border px-3 py-2 text-sm">
                                     <option value="smtp">{{ $t('settings_email.smtp_real_email') }}</option>
                                     <option value="log">{{ $t('settings_email.log_only_testing') }}</option>
                                 </select>
                             </div>
                             <div v-if="outboundForm.driver === 'smtp'">
-                                <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('settings_email.provider_preset') }}</label>
+                                <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('settings_email.provider_preset') }}</label>
                                 <div class="flex gap-2">
-                                    <select v-model="smtpProvider" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm">
+                                    <select v-model="smtpProvider" class="w-full rounded-lg border agent-border px-3 py-2 text-sm">
                                         <option v-for="provider in smtpProviderOptions()" :key="provider.key" :value="provider.key">{{ provider.label }}</option>
                                     </select>
-                                    <button type="button" class="shrink-0 rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-700 hover:bg-slate-50" @click="applySmtpProvider">{{ $t('settings_email.apply') }}</button>
+                                    <button type="button" class="shrink-0 rounded-lg border agent-border px-3 py-2 text-sm text-slate-700 dark:text-slate-300 agent-hover-surface" @click="applySmtpProvider">{{ $t('settings_email.apply') }}</button>
                                 </div>
                             </div>
                             <div>
-                                <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('settings_email.from_name') }}</label>
-                                <input v-model="outboundForm.from_name" type="text" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+                                <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('settings_email.from_name') }}</label>
+                                <input v-model="outboundForm.from_name" type="text" class="w-full rounded-lg border agent-border px-3 py-2 text-sm" />
                             </div>
                             <div>
-                                <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('settings_email.from_address') }}</label>
-                                <input v-model="outboundForm.from_address" type="email" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+                                <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('settings_email.from_address') }}</label>
+                                <input v-model="outboundForm.from_address" type="email" class="w-full rounded-lg border agent-border px-3 py-2 text-sm" />
                             </div>
                             <template v-if="outboundForm.driver === 'smtp'">
                                 <div>
-                                    <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('settings_email.smtp_host') }}</label>
-                                    <input v-model="outboundForm.host" type="text" placeholder="smtp.gmail.com" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+                                    <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('settings_email.smtp_host') }}</label>
+                                    <input v-model="outboundForm.host" type="text" placeholder="smtp.gmail.com" class="w-full rounded-lg border agent-border px-3 py-2 text-sm" />
                                 </div>
                                 <div>
-                                    <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('settings_email.port') }}</label>
-                                    <input v-model.number="outboundForm.port" type="number" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+                                    <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('settings_email.port') }}</label>
+                                    <input v-model.number="outboundForm.port" type="number" class="w-full rounded-lg border agent-border px-3 py-2 text-sm" />
                                 </div>
                                 <div>
-                                    <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('settings_email.encryption') }}</label>
-                                    <select v-model="outboundForm.encryption" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm">
+                                    <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('settings_email.encryption') }}</label>
+                                    <select v-model="outboundForm.encryption" class="w-full rounded-lg border agent-border px-3 py-2 text-sm">
                                         <option value="tls">{{ $t('settings_email.tls_recommended') }}</option>
                                         <option value="ssl">{{ $t('settings_email.ssl') }}</option>
                                         <option value="null">{{ $t('settings_email.none') }}</option>
                                     </select>
                                 </div>
                                 <div>
-                                    <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('settings_email.username') }}</label>
-                                    <input v-model="outboundForm.username" type="text" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+                                    <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('settings_email.username') }}</label>
+                                    <input v-model="outboundForm.username" type="text" class="w-full rounded-lg border agent-border px-3 py-2 text-sm" />
                                 </div>
                                 <div>
-                                    <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('settings.password') }}</label>
-                                    <input v-model="outboundForm.password" type="password" :placeholder="outbound.has_password ? 'Leave blank to keep current' : ''" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+                                    <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('settings.password') }}</label>
+                                    <input v-model="outboundForm.password" type="password" :placeholder="outbound.has_password ? 'Leave blank to keep current' : ''" class="w-full rounded-lg border agent-border px-3 py-2 text-sm" />
                                 </div>
                             </template>
                         </div>
@@ -565,21 +565,21 @@ const onUseInboxSmtpChange = () => {
                     <button type="submit" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700" :disabled="outboundForm.processing">{{ $t('settings_email.save_outgoing_settings') }}</button>
                 </form>
 
-                <form class="flex flex-wrap items-end gap-3 border-t border-slate-100 px-6 py-5" @submit.prevent="sendTest">
+                <form class="flex flex-wrap items-end gap-3 border-t agent-border-subtle px-6 py-5" @submit.prevent="sendTest">
                     <div class="min-w-[16rem] flex-1">
-                        <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('settings_email.send_a_test_email') }}</label>
-                        <input v-model="testForm.to" type="email" required :placeholder="$t('settings_email.you_example_com')" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+                        <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('settings_email.send_a_test_email') }}</label>
+                        <input v-model="testForm.to" type="email" required :placeholder="$t('settings_email.you_example_com')" class="w-full rounded-lg border agent-border px-3 py-2 text-sm" />
                     </div>
-                    <button type="submit" class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50" :disabled="testForm.processing">{{ $t('settings_email.send_test') }}</button>
+                    <button type="submit" class="agent-btn-secondary" :disabled="testForm.processing">{{ $t('settings_email.send_test') }}</button>
                 </form>
             </div>
         </div>
 
         <div v-if="activeSection === 'advanced'">
             <form class="max-w-3xl space-y-6" @submit.prevent="saveAdvanced">
-                <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-                    <h2 class="text-lg font-semibold text-slate-900">{{ $t('settings_email.sender_delivery_policies') }}</h2>
-                    <p class="mt-1 text-sm text-slate-500">{{ $t('settings_email.global_defaults_for_outbound_email_behavior_across_all_channels') }}</p>
+                <div class="rounded-2xl border agent-border agent-panel p-6 shadow-sm">
+                    <h2 class="text-lg font-semibold agent-text">{{ $t('settings_email.sender_delivery_policies') }}</h2>
+                    <p class="mt-1 text-sm agent-text-subtle">{{ $t('settings_email.global_defaults_for_outbound_email_behavior_across_all_channels') }}</p>
 
                     <div class="mt-6 space-y-4">
                         <AppToggle v-model="advancedForm.email_allow_agent_initiated" :label="$t('settings_email.allow_agent-initiated_outbound_email')" />
@@ -590,18 +590,18 @@ const onUseInboxSmtpChange = () => {
 
                     <div class="mt-6 grid gap-4 sm:grid-cols-2">
                         <div>
-                            <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('settings_email.global_reply-to') }}</label>
-                            <input v-model="advancedForm.email_reply_to_address" type="email" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+                            <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('settings_email.global_reply-to') }}</label>
+                            <input v-model="advancedForm.email_reply_to_address" type="email" class="w-full rounded-lg border agent-border px-3 py-2 text-sm" />
                         </div>
                         <div>
-                            <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('settings_email.global_automatic_bcc') }}</label>
-                            <input v-model="advancedForm.email_automatic_bcc" type="email" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+                            <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('settings_email.global_automatic_bcc') }}</label>
+                            <input v-model="advancedForm.email_automatic_bcc" type="email" class="w-full rounded-lg border agent-border px-3 py-2 text-sm" />
                         </div>
                     </div>
                 </div>
 
-                <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-                    <h2 class="text-lg font-semibold text-slate-900">{{ $t('settings_email.inbound_threading_routing') }}</h2>
+                <div class="rounded-2xl border agent-border agent-panel p-6 shadow-sm">
+                    <h2 class="text-lg font-semibold agent-text">{{ $t('settings_email.inbound_threading_routing') }}</h2>
                     <div class="mt-6 space-y-4">
                         <AppToggle v-model="advancedForm.email_use_original_sender_for_forwarded" :label="$t('settings_email.use_original_sender_for_forwarded_mail')" />
                         <AppToggle v-model="advancedForm.email_ignore_ticket_id_threading" :label="$t('settings_email.ignore_ticket_id_in_subject_for_threading')" />
@@ -610,39 +610,39 @@ const onUseInboxSmtpChange = () => {
                     </div>
                 </div>
 
-                <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+                <div class="rounded-2xl border agent-border agent-panel p-6 shadow-sm">
                     <div class="flex items-start justify-between gap-4">
                         <div>
-                            <h2 class="text-lg font-semibold text-slate-900">{{ $t('settings_email.automatic_first_response') }}</h2>
-                            <p class="mt-1 text-sm text-slate-500">{{ $t('settings_email.send_an_acknowledgment_when_a_new_email_ticket_is_created') }}</p>
+                            <h2 class="text-lg font-semibold agent-text">{{ $t('settings_email.automatic_first_response') }}</h2>
+                            <p class="mt-1 text-sm agent-text-subtle">{{ $t('settings_email.send_an_acknowledgment_when_a_new_email_ticket_is_created') }}</p>
                         </div>
                         <AppToggle v-model="advancedForm.auto_first_response_enabled" />
                     </div>
                     <div class="mt-4">
-                        <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('settings_email.message_template') }}</label>
-                        <p class="mb-2 text-xs text-slate-500">{{ $t('settings_email.first_response_placeholders_hint') }}</p>
+                        <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('settings_email.message_template') }}</label>
+                        <p class="mb-2 text-xs agent-text-subtle">{{ $t('settings_email.first_response_placeholders_hint') }}</p>
                         <div class="mb-3 flex flex-wrap gap-2">
-                            <code v-pre class="rounded bg-slate-100 px-2 py-0.5 text-xs text-slate-700">{{contact_name}}</code>
-                            <code v-pre class="rounded bg-slate-100 px-2 py-0.5 text-xs text-slate-700">{{ticket_number}}</code>
-                            <code v-pre class="rounded bg-slate-100 px-2 py-0.5 text-xs text-slate-700">{{ticket_subject}}</code>
+                            <code v-pre class="rounded bg-slate-100 dark:bg-slate-900 px-2 py-0.5 text-xs text-slate-700 dark:text-slate-300">{{contact_name}}</code>
+                            <code v-pre class="rounded bg-slate-100 dark:bg-slate-900 px-2 py-0.5 text-xs text-slate-700 dark:text-slate-300">{{ticket_number}}</code>
+                            <code v-pre class="rounded bg-slate-100 dark:bg-slate-900 px-2 py-0.5 text-xs text-slate-700 dark:text-slate-300">{{ticket_subject}}</code>
                         </div>
                         <textarea
                             v-model="advancedForm.auto_first_response_body"
                             rows="8"
-                            class="w-full rounded-lg border border-slate-300 px-3 py-2 font-mono text-sm"
+                            class="w-full rounded-lg border agent-border px-3 py-2 font-mono text-sm"
                             :disabled="!advancedForm.auto_first_response_enabled"
                         />
                     </div>
                 </div>
 
-                <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-                    <h2 class="text-lg font-semibold text-slate-900">{{ $t('settings_email.email_blocklist') }}</h2>
-                    <p class="mt-1 text-sm text-slate-500">{{ $t('settings_email.inbound_messages_from_these_addresses_or_domains_are_ignored') }}</p>
+                <div class="rounded-2xl border agent-border agent-panel p-6 shadow-sm">
+                    <h2 class="text-lg font-semibold agent-text">{{ $t('settings_email.email_blocklist') }}</h2>
+                    <p class="mt-1 text-sm agent-text-subtle">{{ $t('settings_email.inbound_messages_from_these_addresses_or_domains_are_ignored') }}</p>
                     <textarea
                         v-model="blocklistText"
                         rows="6"
                         :placeholder="$t('settings_email.noreply_mailer-daemon')"
-                        class="mt-4 w-full rounded-lg border border-slate-300 px-3 py-2 font-mono text-sm"
+                        class="mt-4 w-full rounded-lg border agent-border px-3 py-2 font-mono text-sm"
                     />
                 </div>
 
@@ -658,7 +658,7 @@ const onUseInboxSmtpChange = () => {
             @close="closeAddInbox"
         >
             <form id="add-inbox-form" class="space-y-4" @submit.prevent="addInbox">
-                <div v-if="hasInboxFormErrors" class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+                <div v-if="hasInboxFormErrors" class="rounded-lg border border-red-200 dark:border-red-900/60 bg-red-50 dark:bg-red-950/40 px-4 py-3 text-sm text-red-800 dark:text-red-200">
                     <p class="font-medium">{{ $t('settings_email.inbox_form_errors_title') }}</p>
                     <ul class="mt-2 list-disc space-y-1 pl-5">
                         <li v-for="(message, field) in inboxForm.errors" :key="field">{{ message }}</li>
@@ -666,33 +666,33 @@ const onUseInboxSmtpChange = () => {
                 </div>
 
                 <div>
-                    <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('settings_email.display_name') }}</label>
-                    <input v-model="inboxForm.name" type="text" required :placeholder="$t('nav.sections.support')" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" :class="inboxFormError('name') ? 'border-red-400' : ''" />
+                    <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('settings_email.display_name') }}</label>
+                    <input v-model="inboxForm.name" type="text" required :placeholder="$t('nav.sections.support')" class="w-full rounded-lg border agent-border px-3 py-2 text-sm" :class="inboxFormError('name') ? 'border-red-400' : ''" />
                     <p v-if="inboxFormError('name')" class="mt-1 text-xs text-red-600">{{ inboxFormError('name') }}</p>
                 </div>
                 <div>
-                    <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('settings_email.email_address') }}</label>
-                    <input v-model="inboxForm.address" type="email" required :placeholder="$t('settings_email.support_company_com')" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" :class="inboxFormError('address') ? 'border-red-400' : ''" />
+                    <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('settings_email.email_address') }}</label>
+                    <input v-model="inboxForm.address" type="email" required :placeholder="$t('settings_email.support_company_com')" class="w-full rounded-lg border agent-border px-3 py-2 text-sm" :class="inboxFormError('address') ? 'border-red-400' : ''" />
                     <p v-if="inboxFormError('address')" class="mt-1 text-xs text-red-600">{{ inboxFormError('address') }}</p>
                 </div>
                 <div>
-                    <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('settings_email.brand') }}</label>
-                    <select v-model="inboxForm.brand_id" required class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" :class="inboxFormError('brand_id') ? 'border-red-400' : ''">
+                    <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('settings_email.brand') }}</label>
+                    <select v-model="inboxForm.brand_id" required class="w-full rounded-lg border agent-border px-3 py-2 text-sm" :class="inboxFormError('brand_id') ? 'border-red-400' : ''">
                         <option v-for="brand in brands" :key="brand.id" :value="brand.id">{{ brand.name }}</option>
                     </select>
                     <p v-if="inboxFormError('brand_id')" class="mt-1 text-xs text-red-600">{{ inboxFormError('brand_id') }}</p>
-                    <p v-else-if="!brands.length" class="mt-1 text-xs text-amber-700">{{ $t('settings_email.create_a_brand_first') }}</p>
+                    <p v-else-if="!brands.length" class="mt-1 text-xs text-amber-700 dark:text-amber-300">{{ $t('settings_email.create_a_brand_first') }}</p>
                 </div>
                 <div>
-                    <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('settings_email.inbound_method') }}</label>
-                    <select v-model="inboxForm.inbound_method" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm">
+                    <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('settings_email.inbound_method') }}</label>
+                    <select v-model="inboxForm.inbound_method" class="w-full rounded-lg border agent-border px-3 py-2 text-sm">
                         <option value="webhook">{{ $t('settings_email.forward_webhook') }}</option>
                         <option value="poll">{{ $t('settings_email.imap_pop3') }}</option>
                         <option value="oauth">{{ $t('settings_email.oauth_google_microsoft_zoho') }}</option>
                     </select>
                 </div>
 
-                <div v-if="inboxForm.inbound_method === 'poll'" class="space-y-4 rounded-xl border border-violet-100 bg-violet-50/30 p-4">
+                <div v-if="inboxForm.inbound_method === 'poll'" class="space-y-4 rounded-xl border border-violet-100 bg-violet-50 dark:bg-violet-950/40/30 p-4">
                     <div class="rounded-lg border border-violet-100 bg-white/80 p-3">
                         <p class="text-sm font-medium text-violet-900">{{ $t('components.mailbox_connection') }}</p>
                         <p class="mt-1 text-xs leading-relaxed text-violet-800/90">
@@ -701,63 +701,63 @@ const onUseInboxSmtpChange = () => {
                     </div>
 
                     <div>
-                        <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('components.email_provider') }}</label>
-                        <select v-model="inboxForm.mailbox_provider" class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm" @change="applyAddInboxProvider">
+                        <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('components.email_provider') }}</label>
+                        <select v-model="inboxForm.mailbox_provider" class="w-full rounded-lg border agent-border agent-panel px-3 py-2 text-sm" @change="applyAddInboxProvider">
                             <option :value="null">{{ $t('components.choose_your_provider_ellipsis') }}</option>
                             <option v-for="provider in addInboxProviderOptions()" :key="provider.key" :value="provider.key">{{ provider.label }}</option>
                         </select>
-                        <p v-if="mailboxProviders?.[inboxForm.mailbox_provider]?.help" class="mt-2 rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-900">
+                        <p v-if="mailboxProviders?.[inboxForm.mailbox_provider]?.help" class="mt-2 rounded-lg bg-amber-50 dark:bg-amber-950/40 px-3 py-2 text-xs text-amber-900">
                             {{ mailboxProviders[inboxForm.mailbox_provider].help }}
                         </p>
                     </div>
 
                     <div class="grid gap-4 sm:grid-cols-2">
                         <div>
-                            <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('components.protocol') }}</label>
-                            <select v-model="inboxForm.mailbox_protocol" class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm">
+                            <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('components.protocol') }}</label>
+                            <select v-model="inboxForm.mailbox_protocol" class="w-full rounded-lg border agent-border agent-panel px-3 py-2 text-sm">
                                 <option value="imap">{{ $t('components.imap') }}</option>
                                 <option value="pop3">{{ $t('components.pop3') }}</option>
                             </select>
                         </div>
                         <div>
-                            <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('components.server_host') }}</label>
-                            <input v-model="inboxForm.mailbox_host" type="text" placeholder="pop.gmail.com" class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm" />
+                            <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('components.server_host') }}</label>
+                            <input v-model="inboxForm.mailbox_host" type="text" placeholder="pop.gmail.com" class="w-full rounded-lg border agent-border agent-panel px-3 py-2 text-sm" />
                         </div>
                         <div>
-                            <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('components.port') }}</label>
-                            <input v-model.number="inboxForm.mailbox_port" type="number" placeholder="995" class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm" />
+                            <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('components.port') }}</label>
+                            <input v-model.number="inboxForm.mailbox_port" type="number" placeholder="995" class="w-full rounded-lg border agent-border agent-panel px-3 py-2 text-sm" />
                         </div>
                         <div>
-                            <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('components.encryption') }}</label>
-                            <select v-model="inboxForm.mailbox_encryption" class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm">
+                            <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('components.encryption') }}</label>
+                            <select v-model="inboxForm.mailbox_encryption" class="w-full rounded-lg border agent-border agent-panel px-3 py-2 text-sm">
                                 <option value="ssl">{{ $t('components.ssl') }}</option>
                                 <option value="tls">{{ $t('components.tls_starttls') }}</option>
                                 <option value="none">{{ $t('components.none') }}</option>
                             </select>
                         </div>
                         <div>
-                            <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('components.username') }}</label>
-                            <input v-model="inboxForm.mailbox_username" type="text" class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm" />
+                            <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('components.username') }}</label>
+                            <input v-model="inboxForm.mailbox_username" type="text" class="w-full rounded-lg border agent-border agent-panel px-3 py-2 text-sm" />
                         </div>
                         <div>
-                            <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('components.app_password') }}</label>
-                            <input v-model="inboxForm.mailbox_password" type="password" :placeholder="$t('components.app_password_enter')" class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm" />
+                            <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('components.app_password') }}</label>
+                            <input v-model="inboxForm.mailbox_password" type="password" :placeholder="$t('components.app_password_enter')" class="w-full rounded-lg border agent-border agent-panel px-3 py-2 text-sm" />
                         </div>
                         <div v-if="inboxForm.mailbox_protocol === 'imap'">
-                            <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('components.folder') }}</label>
-                            <input v-model="inboxForm.mailbox_folder" type="text" class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm" />
+                            <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('components.folder') }}</label>
+                            <input v-model="inboxForm.mailbox_folder" type="text" class="w-full rounded-lg border agent-border agent-panel px-3 py-2 text-sm" />
                         </div>
                     </div>
                 </div>
 
-                <p v-else-if="inboxForm.inbound_method === 'oauth'" class="rounded-lg border border-indigo-100 bg-indigo-50/40 px-4 py-3 text-sm text-indigo-900">
+                <p v-else-if="inboxForm.inbound_method === 'oauth'" class="rounded-lg border border-indigo-100 bg-indigo-50 dark:bg-indigo-950/40/40 px-4 py-3 text-sm text-indigo-900">
                     {{ $t('components.connect_google_microsoft_or_zoho_to_sync_mail_without_storing_password') }}
                 </p>
             </form>
 
             <template #footer>
                 <div class="flex justify-end gap-2">
-                    <button type="button" class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-white" @click="closeAddInbox">{{ $t('common.cancel') }}</button>
+                    <button type="button" class="rounded-lg border agent-border px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 transition agent-hover-surface" @click="closeAddInbox">{{ $t('common.cancel') }}</button>
                     <button type="submit" form="add-inbox-form" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700 disabled:opacity-60" :disabled="inboxForm.processing">{{ $t('settings_email.create_inbox') }}</button>
                 </div>
             </template>

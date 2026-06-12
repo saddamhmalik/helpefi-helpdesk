@@ -36,14 +36,14 @@ const dismiss = () => {
 <template>
     <div
         v-if="show"
-        class="mb-2 flex items-center gap-2 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2"
+        class="mb-2 flex items-center gap-2 rounded-lg border border-blue-200 dark:border-blue-900/60 bg-blue-50 dark:bg-blue-950/40 px-3 py-2"
         role="status"
     >
         <span class="shrink-0 text-sm font-semibold text-blue-900">{{ $t('components.free_trial_active') }}</span>
         <span class="min-w-0 flex-1 truncate text-sm text-blue-800">{{ message }}</span>
         <button
             type="button"
-            class="shrink-0 rounded-md p-1.5 text-blue-700 transition hover:bg-blue-100 hover:text-blue-900"
+            class="shrink-0 rounded-md p-1.5 text-blue-700 dark:text-blue-300 transition hover:bg-blue-100 hover:text-blue-900"
             :title="$t('components.dismiss')"
             :aria-label="$t('components.dismiss')"
             @click="dismiss"

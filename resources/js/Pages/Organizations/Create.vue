@@ -67,13 +67,13 @@ const submit = () => form.post('/organizations');
                         <button
                             v-if="form.domains.length > 1"
                             type="button"
-                            class="mb-0.5 shrink-0 rounded-lg px-3 py-2.5 text-sm font-medium text-red-600 transition hover:bg-red-50"
+                            class="mb-0.5 shrink-0 rounded-lg px-3 py-2.5 text-sm font-medium text-red-600 transition hover:bg-red-50 dark:bg-red-950/40"
                             @click="removeDomain(index)"
                         >{{ $t('common.remove') }}</button>
                     </div>
                     <button
                         type="button"
-                        class="text-sm font-medium text-blue-600 transition hover:text-blue-700"
+                        class="text-sm font-medium text-blue-600 transition hover:text-blue-700 dark:hover:text-blue-300 dark:text-blue-300"
                         @click="addDomain"
                     >{{ $t('organizations.add_domain') }}</button>
                 </div>

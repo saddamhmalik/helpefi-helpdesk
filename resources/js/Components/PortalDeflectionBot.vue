@@ -156,17 +156,17 @@ const reset = () => {
 
         <div
             v-if="open"
-            class="fixed bottom-24 right-5 z-50 flex w-[360px] max-w-[calc(100vw-2rem)] flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl"
+            class="fixed bottom-24 right-5 z-50 flex w-[360px] max-w-[calc(100vw-2rem)] flex-col overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xl"
         >
             <div class="bg-blue-600 px-4 py-3 text-sm font-semibold text-white">{{ $t('components.ask_our_help_bot') }}</div>
 
             <div class="max-h-[420px] flex-1 overflow-y-auto p-4">
                 <div v-if="mode === 'ask'" class="space-y-3">
-                    <p class="text-sm text-slate-600">{{ $t('components.deflection_search_hint') }}</p>
+                    <p class="text-sm text-slate-600 dark:text-slate-400">{{ $t('components.deflection_search_hint') }}</p>
                     <textarea
                         v-model="query"
                         rows="3"
-                        class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                        class="agent-input w-full rounded-lg px-3 py-2 text-sm"
                         :placeholder="$t('components.deflection_placeholder')"
                     />
                     <button
@@ -180,15 +180,15 @@ const reset = () => {
                 </div>
 
                 <div v-else-if="mode === 'answer'" class="space-y-4">
-                    <p class="whitespace-pre-wrap text-sm text-slate-800">{{ answer }}</p>
+                    <p class="whitespace-pre-wrap text-sm text-slate-800 dark:text-slate-200">{{ answer }}</p>
 
                     <div v-if="articles.length" class="space-y-2">
-                        <p class="text-xs font-medium uppercase tracking-wide text-slate-500">{{ $t('components.related_articles') }}</p>
+                        <p class="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">{{ $t('components.related_articles') }}</p>
                         <Link
                             v-for="article in articles"
                             :key="article.id"
                             :href="article.url"
-                            class="block rounded-lg border border-slate-200 px-3 py-2 text-sm text-blue-600 hover:bg-slate-50"
+                            class="block rounded-lg border border-slate-200 dark:border-slate-800 px-3 py-2 text-sm text-blue-600 hover:bg-slate-50 dark:bg-slate-950 dark:hover:bg-slate-800 dark:text-blue-400"
                         >
                             {{ article.title }}
                         </Link>
@@ -196,25 +196,25 @@ const reset = () => {
 
                     <div class="flex gap-2">
                         <button type="button" class="flex-1 rounded-lg bg-emerald-600 px-3 py-2 text-sm text-white" @click="feedback(true)">{{ $t('components.helpful') }}</button>
-                        <button type="button" class="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm" @click="feedback(false)">{{ $t('components.need_more_help') }}</button>
+                        <button type="button" class="flex-1 rounded-lg border border-slate-300 dark:border-slate-700 px-3 py-2 text-sm" @click="feedback(false)">{{ $t('components.need_more_help') }}</button>
                     </div>
                 </div>
 
                 <form v-else-if="mode === 'escalate'" class="space-y-3" @submit.prevent="escalate">
-                    <p class="text-sm text-slate-600">{{ $t('components.submit_a_support_request_and_we_will_follow_up_by_email') }}</p>
-                    <input v-model="escalateForm.name" type="text" required :placeholder="$t('components.your_name')" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
-                    <input v-model="escalateForm.email" type="email" required :placeholder="$t('components.email')" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
-                    <input v-model="escalateForm.subject" type="text" required :placeholder="$t('components.subject')" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
-                    <textarea v-model="escalateForm.description" rows="3" required class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+                    <p class="text-sm text-slate-600 dark:text-slate-400">{{ $t('components.submit_a_support_request_and_we_will_follow_up_by_email') }}</p>
+                    <input v-model="escalateForm.name" type="text" required :placeholder="$t('components.your_name')" class="agent-input w-full rounded-lg px-3 py-2 text-sm" />
+                    <input v-model="escalateForm.email" type="email" required :placeholder="$t('components.email')" class="agent-input w-full rounded-lg px-3 py-2 text-sm" />
+                    <input v-model="escalateForm.subject" type="text" required :placeholder="$t('components.subject')" class="agent-input w-full rounded-lg px-3 py-2 text-sm" />
+                    <textarea v-model="escalateForm.description" rows="3" required class="agent-input w-full rounded-lg px-3 py-2 text-sm" />
                     <button type="submit" class="w-full rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white" :disabled="loading">{{ $t('components.submit_request') }}</button>
                 </form>
 
-                <div v-else class="space-y-3 text-sm text-slate-700">
+                <div v-else class="space-y-3 text-sm text-slate-700 dark:text-slate-300">
                     <p>{{ statusMessage || $t('components.thanks_help_bot') }}</p>
-                    <button type="button" class="rounded-lg border border-slate-300 px-3 py-2 text-sm" @click="reset">{{ $t('components.ask_another_question') }}</button>
+                    <button type="button" class="rounded-lg border border-slate-300 dark:border-slate-700 px-3 py-2 text-sm" @click="reset">{{ $t('components.ask_another_question') }}</button>
                 </div>
 
-                <p v-if="statusMessage && mode !== 'done'" class="mt-3 text-sm text-slate-500">{{ statusMessage }}</p>
+                <p v-if="statusMessage && mode !== 'done'" class="mt-3 text-sm text-slate-500 dark:text-slate-400">{{ statusMessage }}</p>
             </div>
         </div>
     </div>

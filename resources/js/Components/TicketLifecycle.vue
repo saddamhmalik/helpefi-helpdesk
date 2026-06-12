@@ -17,19 +17,19 @@ const entries = computed(() => [...props.lifecycle].reverse());
         <ol v-if="entries.length" class="space-y-3">
             <li v-for="entry in entries" :key="entry.id" class="relative pl-4">
                 <span class="absolute left-0 top-1.5 h-2 w-2 rounded-full bg-blue-500 ring-2 ring-blue-50" />
-                <p class="text-xs font-medium text-slate-900">{{ entry.description }}</p>
-                <p class="mt-0.5 text-[11px] text-slate-500">
+                <p class="text-xs font-medium text-slate-900 dark:text-slate-100">{{ entry.description }}</p>
+                <p class="mt-0.5 text-[11px] text-slate-500 dark:text-slate-400">
                     {{ entry.actor }}
                     <span v-if="entry.created_at"> · {{ formatDateTime(entry.created_at) }}</span>
                 </p>
             </li>
         </ol>
-        <p v-else class="text-xs text-slate-500">{{ $t('components.no_activity_yet') }}</p>
+        <p v-else class="text-xs text-slate-500 dark:text-slate-400">{{ $t('components.no_activity_yet') }}</p>
     </div>
 
-    <div v-else class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h2 class="text-lg font-semibold text-slate-900">{{ $t('components.lifecycle_title') }}</h2>
-        <p class="mt-1 text-sm text-slate-500">{{ $t('components.ticket_activity_excluding_replies') }}</p>
+    <div v-else class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm">
+        <h2 class="text-lg font-semibold text-slate-900 dark:text-slate-100">{{ $t('components.lifecycle_title') }}</h2>
+        <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">{{ $t('components.ticket_activity_excluding_replies') }}</p>
 
         <ol v-if="entries.length" class="mt-4 space-y-0">
             <li
@@ -42,8 +42,8 @@ const entries = computed(() => [...props.lifecycle].reverse());
                     <span v-if="index < entries.length - 1" class="mt-1 w-px flex-1 bg-slate-200" />
                 </div>
                 <div class="min-w-0 flex-1 pt-0.5">
-                    <p class="text-sm font-medium text-slate-900">{{ entry.description }}</p>
-                    <p class="mt-0.5 text-xs text-slate-500">
+                    <p class="text-sm font-medium text-slate-900 dark:text-slate-100">{{ entry.description }}</p>
+                    <p class="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
                         {{ entry.actor }}
                         <span v-if="entry.created_at"> · {{ formatDateTime(entry.created_at) }}</span>
                     </p>
@@ -51,6 +51,6 @@ const entries = computed(() => [...props.lifecycle].reverse());
             </li>
         </ol>
 
-        <p v-else class="mt-4 text-sm text-slate-500">{{ $t('components.no_lifecycle_events_yet') }}</p>
+        <p v-else class="mt-4 text-sm text-slate-500 dark:text-slate-400">{{ $t('components.no_lifecycle_events_yet') }}</p>
     </div>
 </template>

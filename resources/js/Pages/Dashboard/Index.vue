@@ -110,35 +110,35 @@ const statCards = computed(() => [
 ]);
 
 const toneClasses = {
-    blue: { bg: 'bg-blue-50', icon: 'bg-blue-500/10 text-blue-600', ring: 'ring-blue-100' },
-    violet: { bg: 'bg-violet-50', icon: 'bg-violet-500/10 text-violet-600', ring: 'ring-violet-100' },
-    emerald: { bg: 'bg-emerald-50', icon: 'bg-emerald-500/10 text-emerald-600', ring: 'ring-emerald-100' },
-    red: { bg: 'bg-red-50', icon: 'bg-red-500/10 text-red-600', ring: 'ring-red-100' },
-    slate: { bg: 'bg-slate-50', icon: 'bg-slate-500/10 text-slate-600', ring: 'ring-slate-100' },
-    cyan: { bg: 'bg-cyan-50', icon: 'bg-cyan-500/10 text-cyan-600', ring: 'ring-cyan-100' },
-    amber: { bg: 'bg-amber-50', icon: 'bg-amber-500/10 text-amber-600', ring: 'ring-amber-100' },
+    blue: { bg: 'bg-blue-50 dark:bg-blue-950/40 dark:bg-blue-500/10', icon: 'bg-blue-500/10 text-blue-600 dark:text-blue-400', ring: 'ring-blue-100 dark:ring-blue-900/40' },
+    violet: { bg: 'bg-violet-50 dark:bg-violet-950/40 dark:bg-violet-500/10', icon: 'bg-violet-500/10 text-violet-600 dark:text-violet-400', ring: 'ring-violet-100 dark:ring-violet-900/40' },
+    emerald: { bg: 'bg-emerald-50 dark:bg-emerald-950/40 dark:bg-emerald-500/10', icon: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400', ring: 'ring-emerald-100 dark:ring-emerald-900/40' },
+    red: { bg: 'bg-red-50 dark:bg-red-950/40 dark:bg-red-500/10', icon: 'bg-red-500/10 text-red-600 dark:text-red-400', ring: 'ring-red-100 dark:ring-red-900/40' },
+    slate: { bg: 'bg-slate-50 dark:bg-slate-950 dark:bg-slate-500/10', icon: 'bg-slate-500/10 text-slate-600 dark:text-slate-400', ring: 'ring-slate-100 dark:ring-slate-800' },
+    cyan: { bg: 'bg-cyan-50 dark:bg-cyan-500/10', icon: 'bg-cyan-500/10 text-cyan-600 dark:text-cyan-400', ring: 'ring-cyan-100 dark:ring-cyan-900/40' },
+    amber: { bg: 'bg-amber-50 dark:bg-amber-950/40 dark:bg-amber-500/10', icon: 'bg-amber-500/10 text-amber-600 dark:text-amber-400', ring: 'ring-amber-100 dark:ring-amber-900/40' },
 };
 
 const priorityTone = (slug) => ({
-    low: { bar: 'bg-slate-400', badge: 'bg-slate-100 text-slate-700' },
-    normal: { bar: 'bg-blue-500', badge: 'bg-blue-50 text-blue-700' },
-    high: { bar: 'bg-orange-500', badge: 'bg-orange-50 text-orange-700' },
-    urgent: { bar: 'bg-red-500', badge: 'bg-red-50 text-red-700' },
-}[slug] ?? { bar: 'bg-slate-400', badge: 'bg-slate-100 text-slate-700' });
+    low: { bar: 'bg-slate-400', badge: 'bg-slate-100 dark:bg-slate-900 text-slate-700 dark:bg-slate-800 dark:text-slate-300' },
+    normal: { bar: 'bg-blue-500', badge: 'bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:bg-blue-950/50 dark:text-blue-300' },
+    high: { bar: 'bg-orange-500', badge: 'bg-orange-50 dark:bg-orange-950/40 text-orange-700 dark:bg-orange-950/50 dark:text-orange-300' },
+    urgent: { bar: 'bg-red-500', badge: 'bg-red-50 dark:bg-red-950/40 text-red-700 dark:bg-red-950/50 dark:text-red-300' },
+}[slug] ?? { bar: 'bg-slate-400', badge: 'bg-slate-100 dark:bg-slate-900 text-slate-700 dark:bg-slate-800 dark:text-slate-300' });
 
 const statusTone = (status) => {
     if (status.color) {
-        return { bar: '', badge: 'text-slate-700', dot: status.color };
+        return { bar: '', badge: 'text-slate-700 dark:text-slate-300', dot: status.color };
     }
 
     const slug = (status.slug ?? '').toLowerCase();
 
     return {
-        open: { bar: 'bg-emerald-500', badge: 'bg-emerald-50 text-emerald-700', dot: '#10b981' },
-        pending: { bar: 'bg-amber-500', badge: 'bg-amber-50 text-amber-700', dot: '#f59e0b' },
-        resolved: { bar: 'bg-blue-500', badge: 'bg-blue-50 text-blue-700', dot: '#3b82f6' },
-        closed: { bar: 'bg-slate-400', badge: 'bg-slate-100 text-slate-600', dot: '#94a3b8' },
-    }[slug] ?? { bar: 'bg-slate-400', badge: 'bg-slate-100 text-slate-700', dot: '#94a3b8' };
+        open: { bar: 'bg-emerald-500', badge: 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300', dot: '#10b981' },
+        pending: { bar: 'bg-amber-500', badge: 'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300', dot: '#f59e0b' },
+        resolved: { bar: 'bg-blue-500', badge: 'bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:bg-blue-950/50 dark:text-blue-300', dot: '#3b82f6' },
+        closed: { bar: 'bg-slate-400', badge: 'bg-slate-100 dark:bg-slate-900 text-slate-600 dark:bg-slate-800 dark:text-slate-400', dot: '#94a3b8' },
+    }[slug] ?? { bar: 'bg-slate-400', badge: 'bg-slate-100 dark:bg-slate-900 text-slate-700 dark:bg-slate-800 dark:text-slate-300', dot: '#94a3b8' };
 };
 
 const csatStars = computed(() => {
@@ -161,8 +161,8 @@ const greeting = computed(() => {
     <Head :title="$t('dashboard.dashboard')" />
     <AgentLayout>
         <div class="space-y-6 pb-8">
-            <div class="relative overflow-hidden rounded-2xl border border-slate-200/60 agent-panel px-5 py-6 sm:px-6 sm:py-8 dark:border-slate-700/60">
-                <div class="pointer-events-none absolute inset-0 bg-gradient-to-br from-blue-600/[0.07] via-violet-500/[0.04] to-transparent" />
+            <div class="relative overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800/60 agent-panel px-5 py-6 sm:px-6 sm:py-8 dark:border-slate-700/60">
+                <div class="pointer-events-none absolute inset-0 bg-gradient-to-br from-blue-600/[0.07] via-violet-500/[0.04] to-transparent dark:from-blue-500/[0.12] dark:via-violet-500/[0.06]" />
 
                 <div class="relative flex flex-wrap items-start justify-between gap-4">
                     <div>
@@ -172,18 +172,18 @@ const greeting = computed(() => {
                     <div class="flex flex-wrap items-center gap-2">
                         <Link
                             href="/workspace"
-                            class="inline-flex items-center gap-2 rounded-xl border border-slate-200/80 agent-panel px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm backdrop-blur transition agent-hover-surface dark:border-slate-700/80 dark:text-slate-200"
+                            class="inline-flex items-center gap-2 rounded-xl border border-slate-200 dark:border-slate-800/80 agent-panel px-4 py-2.5 text-sm font-semibold text-slate-700 dark:text-slate-300 shadow-sm backdrop-blur transition agent-hover-surface dark:border-slate-700/80 dark:text-slate-200"
                         >
-                            <svg class="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <svg class="h-4 w-4 text-slate-400 dark:text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h7" />
                             </svg>
                             {{ $t('dashboard.workspace_link') }}
                         </Link>
                         <Link
                             href="/reports"
-                            class="inline-flex items-center gap-2 rounded-xl border border-slate-200/80 agent-panel px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm backdrop-blur transition agent-hover-surface dark:border-slate-700/80 dark:text-slate-200"
+                            class="inline-flex items-center gap-2 rounded-xl border border-slate-200 dark:border-slate-800/80 agent-panel px-4 py-2.5 text-sm font-semibold text-slate-700 dark:text-slate-300 shadow-sm backdrop-blur transition agent-hover-surface dark:border-slate-700/80 dark:text-slate-200"
                         >
-                            <svg class="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <svg class="h-4 w-4 text-slate-400 dark:text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                             </svg>
                             {{ $t('dashboard.reports_link') }}
@@ -197,13 +197,13 @@ const greeting = computed(() => {
                     v-for="card in statCards"
                     :key="card.label"
                     :href="card.href"
-                    class="group relative overflow-hidden rounded-2xl border border-white/60 agent-panel p-5 shadow-sm ring-1 backdrop-blur transition hover:-translate-y-0.5 hover:shadow-lg dark:border-slate-700/60"
+                    class="group relative overflow-hidden rounded-2xl border agent-border agent-panel p-5 shadow-sm ring-1 backdrop-blur transition hover:-translate-y-0.5 hover:shadow-lg dark:border-slate-700/60"
                     :class="toneClasses[card.tone].ring"
                 >
                     <div class="absolute -right-4 -top-4 h-20 w-20 rounded-full opacity-60 blur-2xl transition group-hover:opacity-80" :class="toneClasses[card.tone].bg" />
                     <div class="relative flex items-start justify-between gap-3">
                         <div>
-                            <p class="text-xs font-medium uppercase tracking-wide text-slate-500">{{ card.label }}</p>
+                            <p class="text-xs font-medium uppercase tracking-wide agent-text-subtle">{{ card.label }}</p>
                             <p
                                 class="mt-2 text-3xl font-bold tabular-nums tracking-tight"
                                 :class="card.alert ? 'text-red-600' : card.tone === 'emerald' ? 'text-emerald-600' : 'agent-text'"
@@ -236,15 +236,15 @@ const greeting = computed(() => {
             </div>
 
             <div class="grid gap-6 lg:grid-cols-12">
-                <div class="rounded-2xl border border-white/60 agent-panel p-6 shadow-sm ring-1 ring-slate-100 backdrop-blur dark:border-slate-700/60 dark:ring-slate-800 lg:col-span-5">
+                <div class="agent-card lg:col-span-5">
                     <div class="flex items-start justify-between gap-4">
                         <div>
                             <h2 class="text-base font-semibold agent-text">{{ $t('dashboard.ticket_volume') }}</h2>
                             <p class="mt-0.5 text-sm agent-text-subtle">{{ $t('dashboard.last_7_days') }}</p>
                         </div>
-                        <div class="rounded-xl bg-blue-50 px-3 py-1.5 text-right">
-                            <p class="text-lg font-bold tabular-nums text-blue-700">{{ totalVolume }}</p>
-                            <p class="text-[10px] font-medium uppercase tracking-wide text-blue-600/80">{{ $t('dashboard.total') }}</p>
+                        <div class="rounded-xl bg-blue-50 dark:bg-blue-950/40 px-3 py-1.5 text-right dark:bg-blue-950/50">
+                            <p class="text-lg font-bold tabular-nums text-blue-700 dark:text-blue-300">{{ totalVolume }}</p>
+                            <p class="text-[10px] font-medium uppercase tracking-wide text-blue-600/80 dark:text-blue-400/80">{{ $t('dashboard.total') }}</p>
                         </div>
                     </div>
 
@@ -269,7 +269,7 @@ const greeting = computed(() => {
                             />
                         </svg>
                         <div class="absolute inset-x-0 bottom-0 flex justify-between px-0.5">
-                            <span v-for="day in volumeTrend" :key="day.date" class="text-[10px] font-medium text-slate-400">{{ day.label }}</span>
+                            <span v-for="day in volumeTrend" :key="day.date" class="text-[10px] font-medium text-slate-400 dark:text-slate-500">{{ day.label }}</span>
                         </div>
                     </div>
 
@@ -277,67 +277,67 @@ const greeting = computed(() => {
                         <span
                             v-for="day in volumeTrend"
                             :key="`${day.date}-pill`"
-                            class="inline-flex items-center gap-1.5 rounded-lg bg-slate-50 px-2.5 py-1 text-xs text-slate-600"
+                            class="inline-flex items-center gap-1.5 rounded-lg agent-panel-muted px-2.5 py-1 text-xs agent-text-muted"
                         >
-                            <span class="font-semibold text-slate-900">{{ day.count }}</span>
+                            <span class="font-semibold agent-text">{{ day.count }}</span>
                             {{ day.label }}
                         </span>
                     </div>
                 </div>
 
-                <div class="rounded-2xl border border-white/60 agent-panel p-6 shadow-sm ring-1 ring-slate-100 backdrop-blur dark:border-slate-700/60 dark:ring-slate-800 lg:col-span-3">
+                <div class="agent-card lg:col-span-3">
                     <h2 class="text-base font-semibold agent-text">{{ $t('dashboard.csat_score') }}</h2>
                     <p class="mt-0.5 text-sm agent-text-subtle">{{ $t('dashboard.last_30_days') }}</p>
 
                     <div class="mt-6 flex items-end gap-4">
                         <div>
-                            <p class="text-4xl font-bold tracking-tight text-slate-900">
+                            <p class="text-4xl font-bold tracking-tight agent-text">
                                 {{ csat?.average_rating ?? '—' }}
                             </p>
-                            <p v-if="csat?.average_rating" class="mt-1 text-sm text-slate-500">{{ $t('dashboard.out_of_5') }}</p>
+                            <p v-if="csat?.average_rating" class="mt-1 text-sm agent-text-subtle">{{ $t('dashboard.out_of_5') }}</p>
                         </div>
                         <div v-if="csat?.average_rating" class="mb-1 flex gap-0.5">
                             <span
                                 v-for="star in 5"
                                 :key="star"
                                 class="text-xl"
-                                :class="star <= csatStars ? 'text-amber-400' : 'text-slate-200'"
+                                :class="star <= csatStars ? 'text-amber-400' : 'text-slate-200 dark:text-slate-700 dark:text-slate-300'"
                             >★</span>
                         </div>
                     </div>
 
-                    <p class="mt-3 text-sm text-slate-500">{{ csat?.total_responses ?? 0 }} responses</p>
+                    <p class="mt-3 text-sm agent-text-subtle">{{ csat?.total_responses ?? 0 }} responses</p>
 
                     <div v-if="csat?.breakdown && Object.keys(csat.breakdown).length" class="mt-5 space-y-2.5">
                         <div v-for="rating in [5, 4, 3, 2, 1]" :key="rating" class="flex items-center gap-3">
-                            <span class="w-3 text-xs font-medium text-slate-500">{{ rating }}</span>
-                            <div class="h-2 flex-1 overflow-hidden rounded-full bg-slate-100">
+                            <span class="w-3 text-xs font-medium agent-text-subtle">{{ rating }}</span>
+                            <div class="h-2 flex-1 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-900 dark:bg-slate-800">
                                 <div
                                     class="h-full rounded-full bg-gradient-to-r from-amber-400 to-amber-500 transition-all duration-500"
                                     :style="{ width: `${csat.total_responses ? ((csat.breakdown[rating] ?? 0) / csat.total_responses) * 100 : 0}%` }"
                                 />
                             </div>
-                            <span class="w-5 text-right text-xs tabular-nums text-slate-400">{{ csat.breakdown[rating] ?? 0 }}</span>
+                            <span class="w-5 text-right text-xs tabular-nums text-slate-400 dark:text-slate-500">{{ csat.breakdown[rating] ?? 0 }}</span>
                         </div>
                     </div>
-                    <div v-else class="mt-6 rounded-xl border border-dashed border-slate-200 px-4 py-8 text-center text-sm text-slate-400">
+                    <div v-else class="mt-6 rounded-xl border border-dashed agent-border px-4 py-8 text-center text-sm agent-text-subtle">
                         {{ $t('dashboard.no_csat_responses_yet') }}
                     </div>
                 </div>
 
-                <div class="rounded-2xl border border-white/60 bg-white/90 p-6 shadow-sm ring-1 ring-slate-100 backdrop-blur lg:col-span-4">
-                    <h2 class="text-base font-semibold text-slate-900">{{ $t('dashboard.agent_workload') }}</h2>
-                    <p class="mt-0.5 text-sm text-slate-500">{{ $t('dashboard.open_tickets_by_assignee') }}</p>
+                <div class="agent-card lg:col-span-4">
+                    <h2 class="text-base font-semibold agent-text">{{ $t('dashboard.agent_workload') }}</h2>
+                    <p class="mt-0.5 text-sm agent-text-subtle">{{ $t('dashboard.open_tickets_by_assignee') }}</p>
 
                     <ul class="mt-5 space-y-4">
                         <li v-for="agent in topAgents" :key="agent.agent_id" class="flex items-center gap-3">
                             <AppAvatar :name="agent.agent_name" size="sm" />
                             <div class="min-w-0 flex-1">
                                 <div class="flex items-center justify-between gap-2">
-                                    <span class="truncate text-sm font-medium text-slate-800">{{ agent.agent_name }}</span>
-                                    <span class="shrink-0 rounded-full bg-slate-100 px-2 py-0.5 text-xs font-semibold tabular-nums text-slate-700">{{ agent.open_count }}</span>
+                                    <span class="truncate text-sm font-medium text-slate-800 dark:text-slate-200">{{ agent.agent_name }}</span>
+                                    <span class="shrink-0 rounded-full agent-panel-muted px-2 py-0.5 text-xs font-semibold tabular-nums text-slate-700 dark:text-slate-300">{{ agent.open_count }}</span>
                                 </div>
-                                <div class="mt-1.5 h-1.5 overflow-hidden rounded-full bg-slate-100">
+                                <div class="mt-1.5 h-1.5 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-900 dark:bg-slate-800">
                                     <div
                                         class="h-full rounded-full bg-gradient-to-r from-blue-500 to-violet-500 transition-all duration-500"
                                         :style="{ width: `${(agent.open_count / maxAgentCount) * 100}%` }"
@@ -345,7 +345,7 @@ const greeting = computed(() => {
                                 </div>
                             </div>
                         </li>
-                        <li v-if="!topAgents?.length" class="rounded-xl border border-dashed border-slate-200 px-4 py-8 text-center text-sm text-slate-400">
+                        <li v-if="!topAgents?.length" class="rounded-xl border border-dashed agent-border px-4 py-8 text-center text-sm agent-text-subtle">
                             {{ $t('dashboard.no_assigned_open_tickets') }}
                         </li>
                     </ul>
@@ -353,32 +353,32 @@ const greeting = computed(() => {
             </div>
 
             <div class="grid gap-6 lg:grid-cols-2">
-                <div class="rounded-2xl border border-white/60 bg-white/90 p-6 shadow-sm ring-1 ring-slate-100 backdrop-blur">
+                <div class="agent-card">
                     <div class="flex items-center justify-between gap-4">
                         <div>
-                            <h2 class="text-base font-semibold text-slate-900">{{ $t('dashboard.tickets_by_status') }}</h2>
-                            <p class="mt-0.5 text-sm text-slate-500">{{ $t('dashboard.all_non-merged_tickets') }}</p>
+                            <h2 class="text-base font-semibold agent-text">{{ $t('dashboard.tickets_by_status') }}</h2>
+                            <p class="mt-0.5 text-sm agent-text-subtle">{{ $t('dashboard.all_non-merged_tickets') }}</p>
                         </div>
-                        <Link href="/tickets" class="text-xs font-semibold text-blue-600 hover:text-blue-700">{{ $t('dashboard.view_all') }}</Link>
+                        <Link href="/tickets" class="text-xs font-semibold text-blue-600 hover:text-blue-700 dark:text-blue-300 dark:text-blue-400 dark:hover:text-blue-300">{{ $t('dashboard.view_all') }}</Link>
                     </div>
 
                     <div class="mt-5 space-y-3">
                         <div
                             v-for="status in ticketStatuses"
                             :key="status.id"
-                            class="group rounded-xl border border-slate-100 bg-slate-50/50 p-4 transition hover:border-slate-200 hover:bg-white"
+                            class="group agent-card-item agent-hover-surface"
                         >
                             <div class="flex items-center justify-between gap-3">
                                 <div class="flex items-center gap-2.5">
                                     <span
-                                        class="h-2.5 w-2.5 shrink-0 rounded-full ring-2 ring-white"
+                                        class="h-2.5 w-2.5 shrink-0 rounded-full ring-2 ring-white dark:ring-slate-900"
                                         :style="{ backgroundColor: statusTone(status).dot ?? status.color }"
                                     />
-                                    <span class="text-sm font-medium text-slate-700">{{ status.name }}</span>
+                                    <span class="text-sm font-medium text-slate-700 dark:text-slate-300">{{ status.name }}</span>
                                 </div>
-                                <span class="text-xl font-bold tabular-nums text-slate-900">{{ status.tickets_count }}</span>
+                                <span class="text-xl font-bold tabular-nums agent-text">{{ status.tickets_count }}</span>
                             </div>
-                            <div class="mt-3 h-1.5 overflow-hidden rounded-full bg-slate-200/60">
+                            <div class="mt-3 h-1.5 overflow-hidden rounded-full bg-slate-200/60 dark:bg-slate-700/60">
                                 <div
                                     class="h-full rounded-full transition-all duration-500"
                                     :class="statusTone(status).bar"
@@ -389,20 +389,20 @@ const greeting = computed(() => {
                     </div>
                 </div>
 
-                <div class="rounded-2xl border border-white/60 bg-white/90 p-6 shadow-sm ring-1 ring-slate-100 backdrop-blur">
+                <div class="agent-card">
                     <div class="flex items-center justify-between gap-4">
                         <div>
-                            <h2 class="text-base font-semibold text-slate-900">{{ $t('dashboard.open_by_priority') }}</h2>
-                            <p class="mt-0.5 text-sm text-slate-500">{{ $t('dashboard.active_ticket_queue_breakdown') }}</p>
+                            <h2 class="text-base font-semibold agent-text">{{ $t('dashboard.open_by_priority') }}</h2>
+                            <p class="mt-0.5 text-sm agent-text-subtle">{{ $t('dashboard.active_ticket_queue_breakdown') }}</p>
                         </div>
-                        <Link href="/workspace" class="text-xs font-semibold text-blue-600 hover:text-blue-700">Open queue →</Link>
+                        <Link href="/workspace" class="text-xs font-semibold text-blue-600 hover:text-blue-700 dark:text-blue-300 dark:text-blue-400 dark:hover:text-blue-300">Open queue →</Link>
                     </div>
 
                     <div class="mt-5 grid gap-3 sm:grid-cols-2">
                         <div
                             v-for="priority in ticketPriorities"
                             :key="priority.id"
-                            class="relative overflow-hidden rounded-xl border border-slate-100 p-4 transition hover:shadow-md"
+                            class="relative overflow-hidden rounded-xl border agent-border agent-panel p-4 transition hover:shadow-md dark:hover:shadow-slate-900/40"
                         >
                             <div
                                 class="absolute inset-x-0 top-0 h-1"
@@ -412,9 +412,9 @@ const greeting = computed(() => {
                                 <span class="rounded-lg px-2 py-0.5 text-xs font-semibold uppercase tracking-wide" :class="priorityTone(priority.slug).badge">
                                     {{ priority.name }}
                                 </span>
-                                <span class="text-2xl font-bold tabular-nums text-slate-900">{{ priority.tickets_count }}</span>
+                                <span class="text-2xl font-bold tabular-nums agent-text">{{ priority.tickets_count }}</span>
                             </div>
-                            <div class="mt-3 h-1.5 overflow-hidden rounded-full bg-slate-100">
+                            <div class="mt-3 h-1.5 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-900 dark:bg-slate-800">
                                 <div
                                     class="h-full rounded-full transition-all duration-500"
                                     :class="priorityTone(priority.slug).bar"
@@ -425,43 +425,43 @@ const greeting = computed(() => {
                     </div>
                 </div>
 
-                <div class="rounded-2xl border border-white/60 bg-white/90 p-6 shadow-sm ring-1 ring-slate-100 backdrop-blur lg:col-span-3">
-                    <h2 class="text-base font-semibold text-slate-900">{{ $t('dashboard.kb_deflection') }}</h2>
-                    <p class="mt-0.5 text-sm text-slate-500">{{ $t('dashboard.last_30_days_portal_submit') }}</p>
+                <div class="agent-card lg:col-span-3">
+                    <h2 class="text-base font-semibold agent-text">{{ $t('dashboard.kb_deflection') }}</h2>
+                    <p class="mt-0.5 text-sm agent-text-subtle">{{ $t('dashboard.last_30_days_portal_submit') }}</p>
 
                     <div class="mt-6 flex items-end gap-6">
                         <div>
-                            <p class="text-4xl font-bold tracking-tight text-slate-900">{{ kbDeflection?.suggestions_shown ?? 0 }}</p>
-                            <p class="mt-1 text-sm text-slate-500">{{ $t('dashboard.suggestion_views') }}</p>
+                            <p class="text-4xl font-bold tracking-tight agent-text">{{ kbDeflection?.suggestions_shown ?? 0 }}</p>
+                            <p class="mt-1 text-sm agent-text-subtle">{{ $t('dashboard.suggestion_views') }}</p>
                         </div>
                         <div>
-                            <p class="text-3xl font-bold tracking-tight text-emerald-600">{{ kbDeflection?.deflection_rate ?? '—' }}<span v-if="kbDeflection?.deflection_rate != null" class="text-lg">%</span></p>
-                            <p class="mt-1 text-sm text-slate-500">{{ $t('dashboard.deflection_rate') }}</p>
+                            <p class="text-3xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400">{{ kbDeflection?.deflection_rate ?? '—' }}<span v-if="kbDeflection?.deflection_rate != null" class="text-lg">%</span></p>
+                            <p class="mt-1 text-sm agent-text-subtle">{{ $t('dashboard.deflection_rate') }}</p>
                         </div>
                     </div>
 
-                    <p class="mt-4 text-sm text-slate-500">
+                    <p class="mt-4 text-sm agent-text-subtle">
                         {{ kbDeflection?.deflected ?? 0 }} resolved without ticket
                         · {{ kbDeflection?.tickets_created ?? 0 }} still submitted
                     </p>
                 </div>
 
-                <div class="rounded-2xl border border-white/60 bg-white/90 p-6 shadow-sm ring-1 ring-slate-100 backdrop-blur lg:col-span-3">
-                    <h2 class="text-base font-semibold text-slate-900">{{ $t('dashboard.ai_deflection') }}</h2>
-                    <p class="mt-0.5 text-sm text-slate-500">{{ $t('dashboard.last_30_days') }}</p>
+                <div class="agent-card lg:col-span-3">
+                    <h2 class="text-base font-semibold agent-text">{{ $t('dashboard.ai_deflection') }}</h2>
+                    <p class="mt-0.5 text-sm agent-text-subtle">{{ $t('dashboard.last_30_days') }}</p>
 
                     <div class="mt-6 flex items-end gap-6">
                         <div>
-                            <p class="text-4xl font-bold tracking-tight text-slate-900">{{ deflection?.queries ?? 0 }}</p>
-                            <p class="mt-1 text-sm text-slate-500">{{ $t('dashboard.bot_queries') }}</p>
+                            <p class="text-4xl font-bold tracking-tight agent-text">{{ deflection?.queries ?? 0 }}</p>
+                            <p class="mt-1 text-sm agent-text-subtle">{{ $t('dashboard.bot_queries') }}</p>
                         </div>
                         <div>
-                            <p class="text-3xl font-bold tracking-tight text-emerald-600">{{ deflection?.deflection_rate ?? '—' }}<span v-if="deflection?.deflection_rate != null" class="text-lg">%</span></p>
-                            <p class="mt-1 text-sm text-slate-500">{{ $t('dashboard.marked_helpful') }}</p>
+                            <p class="text-3xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400">{{ deflection?.deflection_rate ?? '—' }}<span v-if="deflection?.deflection_rate != null" class="text-lg">%</span></p>
+                            <p class="mt-1 text-sm agent-text-subtle">{{ $t('dashboard.marked_helpful') }}</p>
                         </div>
                     </div>
 
-                    <p class="mt-4 text-sm text-slate-500">
+                    <p class="mt-4 text-sm agent-text-subtle">
                         {{ deflection?.tickets_created ?? 0 }} escalated to tickets
                         <span v-if="deflection?.by_channel?.portal != null"> · {{ deflection.by_channel.portal ?? 0 }} portal / {{ deflection.by_channel.widget ?? 0 }} widget</span>
                     </p>

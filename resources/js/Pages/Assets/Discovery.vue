@@ -34,13 +34,13 @@ const statusLabel = (status) => {
 
 const statusClass = (status) => {
     const classes = {
-        pending: 'bg-slate-100 text-slate-700',
-        running: 'bg-blue-50 text-blue-700',
-        completed: 'bg-emerald-50 text-emerald-700',
-        failed: 'bg-red-50 text-red-700',
+        pending: 'bg-slate-100 dark:bg-slate-900 text-slate-700 dark:text-slate-300',
+        running: 'bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300',
+        completed: 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300',
+        failed: 'bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300',
     };
 
-    return classes[status] ?? 'bg-slate-100 text-slate-700';
+    return classes[status] ?? 'bg-slate-100 dark:bg-slate-900 text-slate-700 dark:text-slate-300';
 };
 </script>
 
@@ -55,14 +55,14 @@ const statusClass = (status) => {
             <form class="space-y-2" @submit.prevent="submit">
                 <div class="flex flex-col gap-3 sm:flex-row sm:items-end">
                     <div class="min-w-0 flex-1">
-                        <label class="mb-1 block text-sm font-medium text-slate-700" for="subnet">{{ $t('assets.subnet_or_ip') }}</label>
+                        <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300" for="subnet">{{ $t('assets.subnet_or_ip') }}</label>
                         <input
                             id="subnet"
                             v-model="form.subnet"
                             type="text"
                             required
                             :placeholder="$t('assets.192_168_1_0_24_or_10_0_0_42')"
-                            class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                            class="w-full rounded-lg border border-slate-300 dark:border-slate-700 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                         />
                         <p v-if="form.errors.subnet" class="mt-1 text-sm text-red-600">{{ form.errors.subnet }}</p>
                     </div>
@@ -72,7 +72,7 @@ const statusClass = (status) => {
                         :disabled="form.processing"
                     >{{ $t('assets.start_scan') }}</button>
                 </div>
-                <p class="text-sm text-slate-500">
+                <p class="text-sm text-slate-500 dark:text-slate-400">
                     {{ $t('assets.scan_runs_in_the_background_a_24_subnet_scan_may_take_several_minutes') }}
                 </p>
             </form>
@@ -81,29 +81,29 @@ const statusClass = (status) => {
         <DataTable>
             <thead class="bg-slate-50">
                 <tr>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('assets.subnet') }}</th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('assets.status') }}</th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('assets.devices_found') }}</th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('assets.started_by') }}</th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('assets.started') }}</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{{ $t('assets.subnet') }}</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{{ $t('assets.status') }}</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{{ $t('assets.devices_found') }}</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{{ $t('assets.started_by') }}</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{{ $t('assets.started') }}</th>
                 </tr>
             </thead>
-            <tbody class="divide-y divide-slate-100">
-                <tr v-for="scan in scans.data" :key="scan.id" class="hover:bg-slate-50">
+            <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+                <tr v-for="scan in scans.data" :key="scan.id" class="hover:bg-slate-50 dark:hover:bg-slate-800">
                     <td class="px-4 py-3 text-sm font-medium">
-                        <Link :href="`/assets/discovery/scans/${scan.id}`" class="text-blue-600 hover:text-blue-700">{{ scan.subnet }}</Link>
+                        <Link :href="`/assets/discovery/scans/${scan.id}`" class="text-blue-600 hover:text-blue-700 dark:hover:text-blue-300 dark:text-blue-300">{{ scan.subnet }}</Link>
                     </td>
                     <td class="px-4 py-3 text-sm">
                         <span class="rounded-full px-2 py-0.5 text-xs font-medium" :class="statusClass(scan.status)">
                             {{ statusLabel(scan.status) }}
                         </span>
                     </td>
-                    <td class="px-4 py-3 text-sm text-slate-600">{{ scan.devices_found }}</td>
-                    <td class="px-4 py-3 text-sm text-slate-600">{{ scan.started_by?.name || '—' }}</td>
-                    <td class="px-4 py-3 text-sm text-slate-600">{{ scan.started_at?.slice(0, 16).replace('T', ' ') || scan.created_at?.slice(0, 16).replace('T', ' ') }}</td>
+                    <td class="px-4 py-3 text-sm text-slate-600 dark:text-slate-400">{{ scan.devices_found }}</td>
+                    <td class="px-4 py-3 text-sm text-slate-600 dark:text-slate-400">{{ scan.started_by?.name || '—' }}</td>
+                    <td class="px-4 py-3 text-sm text-slate-600 dark:text-slate-400">{{ scan.started_at?.slice(0, 16).replace('T', ' ') || scan.created_at?.slice(0, 16).replace('T', ' ') }}</td>
                 </tr>
                 <tr v-if="!scans.data?.length">
-                    <td colspan="5" class="px-4 py-12 text-center text-sm text-slate-500">No discovery scans yet.</td>
+                    <td colspan="5" class="px-4 py-12 text-center text-sm text-slate-500 dark:text-slate-400">No discovery scans yet.</td>
                 </tr>
             </tbody>
             <template #footer>

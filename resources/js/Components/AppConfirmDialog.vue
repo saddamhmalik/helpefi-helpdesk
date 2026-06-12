@@ -34,13 +34,13 @@ const resolvedLoading = computed(() => props.state?.loading ?? props.loading);
         size="sm"
         @close="emit('close')"
     >
-        <p class="text-sm leading-relaxed text-slate-600">{{ resolvedMessage }}</p>
+        <p class="text-sm leading-relaxed agent-text-muted">{{ resolvedMessage }}</p>
 
         <template #footer>
             <div class="flex justify-end gap-2">
                 <button
                     type="button"
-                    class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-white"
+                    class="agent-btn-secondary rounded-lg px-4 py-2 text-sm"
                     :disabled="resolvedLoading"
                     @click="emit('close')"
                 >

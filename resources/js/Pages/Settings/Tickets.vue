@@ -99,71 +99,71 @@ const save = () => {
         />
 
         <form @submit.prevent="save">
-            <div v-show="activeSection === 'general'" class="max-w-2xl rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-                        <h2 class="text-lg font-semibold text-slate-900">{{ $t('settings.ticket_numbering') }}</h2>
-                        <p class="mt-1 text-sm text-slate-500">{{ $t('settings_tickets.new_tickets_use_this_prefix_followed_by_a_sequential_number_e_g_hd-000') }}</p>
+            <div v-show="activeSection === 'general'" class="max-w-2xl agent-card">
+                        <h2 class="text-lg font-semibold agent-text">{{ $t('settings.ticket_numbering') }}</h2>
+                        <p class="mt-1 text-sm agent-text-subtle">{{ $t('settings_tickets.new_tickets_use_this_prefix_followed_by_a_sequential_number_e_g_hd-000') }}</p>
 
                         <div class="mt-4 sm:max-w-xs">
-                            <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('settings_tickets.number_prefix') }}</label>
+                            <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('settings_tickets.number_prefix') }}</label>
                             <input
                                 v-model="form.ticket_number_prefix"
                                 type="text"
                                 maxlength="20"
-                                class="w-full rounded-lg border border-slate-300 px-3 py-2 uppercase"
+                                class="w-full rounded-lg border agent-border px-3 py-2 uppercase"
                                 :placeholder="$t('settings_tickets.hd-')"
                                 required
                             />
                             <p v-if="form.errors.ticket_number_prefix" class="mt-1 text-sm text-red-600">{{ form.errors.ticket_number_prefix }}</p>
-                            <p class="mt-1 text-xs text-slate-500">{{ $t('settings_tickets.a_hyphen_is_added_automatically_if_omitted_existing_ticket_numbers_are') }}</p>
+                            <p class="mt-1 text-xs agent-text-subtle">{{ $t('settings_tickets.a_hyphen_is_added_automatically_if_omitted_existing_ticket_numbers_are') }}</p>
                         </div>
                     </div>
 
             <div v-show="activeSection === 'email'" class="space-y-6">
-                        <div class="max-w-3xl rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+                        <div class="max-w-3xl agent-card">
                             <div class="flex items-start justify-between gap-4">
                                 <div>
-                                    <h2 class="text-lg font-semibold text-slate-900">{{ $t('settings_tickets.automatic_first_response') }}</h2>
-                                    <p class="mt-1 text-sm text-slate-500">{{ $t('settings_tickets.send_an_acknowledgment_email_when_a_new_email_ticket_is_created') }}</p>
+                                    <h2 class="text-lg font-semibold agent-text">{{ $t('settings_tickets.automatic_first_response') }}</h2>
+                                    <p class="mt-1 text-sm agent-text-subtle">{{ $t('settings_tickets.send_an_acknowledgment_email_when_a_new_email_ticket_is_created') }}</p>
                                 </div>
                                 <label class="relative inline-flex cursor-pointer items-center">
                                     <input v-model="form.auto_first_response_enabled" type="checkbox" class="peer sr-only" />
-                                    <span class="h-6 w-11 rounded-full bg-slate-200 transition peer-checked:bg-blue-600 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-500/30 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition after:content-[''] peer-checked:after:translate-x-full" />
+                                    <span class="h-6 w-11 rounded-full bg-slate-200 transition peer-checked:bg-blue-600 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-500/30 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white dark:bg-slate-900 after:transition after:content-[''] peer-checked:after:translate-x-full" />
                                 </label>
                             </div>
 
                             <div class="mt-4">
-                                <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('settings_tickets.message_template') }}</label>
+                                <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('settings_tickets.message_template') }}</label>
                                 <textarea
                                     v-model="form.auto_first_response_body"
                                     rows="8"
-                                    class="w-full rounded-lg border border-slate-300 px-3 py-2 font-mono text-sm"
+                                    class="w-full rounded-lg border agent-border px-3 py-2 font-mono text-sm"
                                     :disabled="!form.auto_first_response_enabled"
                                 />
                                 <p v-if="form.errors.auto_first_response_body" class="mt-1 text-sm text-red-600">{{ form.errors.auto_first_response_body }}</p>
-                                <p class="mt-2 text-xs text-slate-500">
+                                <p class="mt-2 text-xs agent-text-subtle">
                                     Placeholders:
-                                    <code v-pre class="rounded bg-slate-100 px-1">{{ticket_number}}</code>,
-                                    <code v-pre class="rounded bg-slate-100 px-1">{{ticket_subject}}</code>,
-                                    <code v-pre class="rounded bg-slate-100 px-1">{{contact_name}}</code>,
-                                    <code v-pre class="rounded bg-slate-100 px-1">{{contact_email}}</code>
+                                    <code v-pre class="rounded bg-slate-100 dark:bg-slate-900 px-1">{{ticket_number}}</code>,
+                                    <code v-pre class="rounded bg-slate-100 dark:bg-slate-900 px-1">{{ticket_subject}}</code>,
+                                    <code v-pre class="rounded bg-slate-100 dark:bg-slate-900 px-1">{{contact_name}}</code>,
+                                    <code v-pre class="rounded bg-slate-100 dark:bg-slate-900 px-1">{{contact_email}}</code>
                                 </p>
                             </div>
                         </div>
 
-                        <div class="max-w-3xl rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-                            <h2 class="text-lg font-semibold text-slate-900">{{ $t('settings_tickets.email_blocklist') }}</h2>
-                            <p class="mt-1 text-sm text-slate-500">{{ $t('settings_tickets.inbound_email_from_these_addresses_or_domains_will_be_ignored_no_ticke') }}</p>
+                        <div class="max-w-3xl agent-card">
+                            <h2 class="text-lg font-semibold agent-text">{{ $t('settings_tickets.email_blocklist') }}</h2>
+                            <p class="mt-1 text-sm agent-text-subtle">{{ $t('settings_tickets.inbound_email_from_these_addresses_or_domains_will_be_ignored_no_ticke') }}</p>
 
                             <div class="mt-4">
-                                <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('settings_tickets.blocked_senders') }}</label>
+                                <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('settings_tickets.blocked_senders') }}</label>
                                 <textarea
                                     v-model="blocklistText"
                                     rows="6"
-                                    class="w-full rounded-lg border border-slate-300 px-3 py-2 font-mono text-sm"
+                                    class="w-full rounded-lg border agent-border px-3 py-2 font-mono text-sm"
                                     placeholder="noreply@company.com&#10;mailer-daemon@&#10;spam-domain.com"
                                 />
                                 <p v-if="form.errors.email_blocklist" class="mt-1 text-sm text-red-600">{{ form.errors.email_blocklist }}</p>
-                                <p class="mt-2 text-xs text-slate-500">One entry per line. Use a full email address or a domain name (e.g. <code class="rounded bg-slate-100 px-1">example.com</code>).</p>
+                                <p class="mt-2 text-xs agent-text-subtle">One entry per line. Use a full email address or a domain name (e.g. <code class="rounded bg-slate-100 dark:bg-slate-900 px-1">example.com</code>).</p>
                             </div>
                         </div>
                     </div>
@@ -195,7 +195,7 @@ const save = () => {
                         @remove="(index) => removeField('user_fields', index)"
             />
 
-            <div class="mt-6 flex items-center justify-end border-t border-slate-200 pt-4">
+            <div class="mt-6 flex items-center justify-end border-t agent-border pt-4">
                 <button type="submit" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700" :disabled="form.processing">{{ $t('settings_tickets.save_settings') }}</button>
             </div>
         </form>

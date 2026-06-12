@@ -115,38 +115,38 @@ const statusLabel = (status) => {
     <Head :title="`Scan ${scan.subnet}`" />
     <AgentLayout>
         <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
-            <Link href="/assets/discovery" class="text-sm text-blue-600 hover:text-blue-700">← Back to discovery</Link>
+            <Link href="/assets/discovery" class="text-sm text-blue-600 hover:text-blue-700 dark:hover:text-blue-300 dark:text-blue-300">← Back to discovery</Link>
             <button
                 v-if="isRunning"
                 type="button"
-                class="rounded-lg border border-slate-300 px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-50"
+                class="rounded-lg border border-slate-300 dark:border-slate-700 px-3 py-1.5 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
                 @click="refresh"
             >{{ $t('assets.refresh') }}</button>
         </div>
 
         <AssetsNav />
 
-        <div class="mb-6 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div class="mb-6 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm">
             <div class="flex flex-wrap items-start justify-between gap-4">
                 <div>
-                    <h1 class="font-mono text-2xl font-semibold text-slate-900">{{ scan.subnet }}</h1>
-                    <p class="mt-1 text-sm text-slate-600">
+                    <h1 class="font-mono text-2xl font-semibold text-slate-900 dark:text-slate-100">{{ scan.subnet }}</h1>
+                    <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">
                         {{ scan.devices_found }} devices found
                         <span v-if="scan.started_by"> · started by {{ scan.started_by.name }}</span>
                     </p>
                 </div>
-                <span class="rounded-full bg-slate-100 px-3 py-1 text-sm font-medium capitalize text-slate-700">{{ scan.status }}</span>
+                <span class="rounded-full bg-slate-100 dark:bg-slate-900 px-3 py-1 text-sm font-medium capitalize text-slate-700 dark:text-slate-300">{{ scan.status }}</span>
             </div>
-            <p v-if="scan.error_message" class="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{{ scan.error_message }}</p>
-            <p v-else class="mt-4 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">
+            <p v-if="scan.error_message" class="mt-4 rounded-lg border border-red-200 dark:border-red-900/60 bg-red-50 dark:bg-red-950/40 px-4 py-3 text-sm text-red-700 dark:text-red-300">{{ scan.error_message }}</p>
+            <p v-else class="mt-4 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 px-4 py-3 text-sm text-slate-600 dark:text-slate-400">
                 {{ $t('assets.device_names_come_from_dns_bonjour_and_mac_vendor_lookup_edit_names_be') }}
             </p>
         </div>
 
         <form v-if="importableDevices.length" class="mb-4 flex flex-wrap items-end gap-3" @submit.prevent="importDevices">
             <div>
-                <label class="mb-1 block text-sm font-medium text-slate-700">{{ $t('assets.import_as_type') }}</label>
-                <select v-model="selected.asset_type_id" class="rounded-lg border border-slate-300 px-3 py-2 text-sm">
+                <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('assets.import_as_type') }}</label>
+                <select v-model="selected.asset_type_id" class="rounded-lg border border-slate-300 dark:border-slate-700 px-3 py-2 text-sm">
                     <option v-for="type in meta.types" :key="type.id" :value="type.id">{{ type.name }}</option>
                 </select>
             </div>
@@ -166,64 +166,64 @@ const statusLabel = (status) => {
                         <input
                             v-if="importableDevices.length"
                             type="checkbox"
-                            class="rounded border-slate-300"
+                            class="rounded border-slate-300 dark:border-slate-700"
                             :checked="selected.device_ids.length === importableDevices.length && importableDevices.length > 0"
                             @change="toggleAll"
                         >
                     </th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('assets.ip') }}</th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('assets.device_name') }}</th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('assets.mac') }}</th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('assets.vendor') }}</th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('assets.status') }}</th>
-                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">{{ $t('assets.matched_asset') }}</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{{ $t('assets.ip') }}</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{{ $t('assets.device_name') }}</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{{ $t('assets.mac') }}</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{{ $t('assets.vendor') }}</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{{ $t('assets.status') }}</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{{ $t('assets.matched_asset') }}</th>
                 </tr>
             </thead>
-            <tbody class="divide-y divide-slate-100">
-                <tr v-for="device in scan.devices" :key="device.id" class="hover:bg-slate-50">
+            <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+                <tr v-for="device in scan.devices" :key="device.id" class="hover:bg-slate-50 dark:hover:bg-slate-800">
                     <td class="px-4 py-3">
                         <input
                             v-if="['new', 'matched'].includes(device.status)"
                             type="checkbox"
-                            class="rounded border-slate-300"
+                            class="rounded border-slate-300 dark:border-slate-700"
                             :checked="selected.device_ids.includes(device.id)"
                             @change="toggleDevice(device.id)"
                         >
                     </td>
-                    <td class="whitespace-nowrap px-4 py-3 font-mono text-sm text-slate-900">{{ device.ip_address }}</td>
+                    <td class="whitespace-nowrap px-4 py-3 font-mono text-sm text-slate-900 dark:text-slate-100">{{ device.ip_address }}</td>
                     <td class="px-4 py-3 text-sm">
                         <input
                             v-if="['new', 'matched'].includes(device.status)"
                             v-model="deviceNames[device.id]"
                             type="text"
-                            class="w-full min-w-[12rem] rounded-lg border border-slate-300 px-2.5 py-1.5 text-sm"
+                            class="w-full min-w-[12rem] rounded-lg border border-slate-300 dark:border-slate-700 px-2.5 py-1.5 text-sm"
                             :placeholder="suggestedName(device)"
                         >
-                        <span v-else class="text-slate-700">{{ deviceNames[device.id] || suggestedName(device) }}</span>
+                        <span v-else class="text-slate-700 dark:text-slate-300">{{ deviceNames[device.id] || suggestedName(device) }}</span>
                     </td>
-                    <td class="whitespace-nowrap px-4 py-3 font-mono text-xs text-slate-600">{{ device.mac_address || '—' }}</td>
-                    <td class="px-4 py-3 text-sm text-slate-600">{{ device.vendor || '—' }}</td>
-                    <td class="px-4 py-3 text-sm text-slate-600">{{ statusLabel(device.status) }}</td>
+                    <td class="whitespace-nowrap px-4 py-3 font-mono text-xs text-slate-600 dark:text-slate-400">{{ device.mac_address || '—' }}</td>
+                    <td class="px-4 py-3 text-sm text-slate-600 dark:text-slate-400">{{ device.vendor || '—' }}</td>
+                    <td class="px-4 py-3 text-sm text-slate-600 dark:text-slate-400">{{ statusLabel(device.status) }}</td>
                     <td class="px-4 py-3 text-sm">
                         <Link
                             v-if="device.matched_asset"
                             :href="`/assets/${device.matched_asset.id}`"
-                            class="text-blue-600 hover:text-blue-700"
+                            class="text-blue-600 hover:text-blue-700 dark:hover:text-blue-300 dark:text-blue-300"
                         >
                             {{ device.matched_asset.asset_tag }} — {{ device.matched_asset.name }}
                         </Link>
                         <Link
                             v-else-if="device.imported_asset"
                             :href="`/assets/${device.imported_asset.id}`"
-                            class="text-blue-600 hover:text-blue-700"
+                            class="text-blue-600 hover:text-blue-700 dark:hover:text-blue-300 dark:text-blue-300"
                         >
                             {{ device.imported_asset.asset_tag }} — {{ device.imported_asset.name }}
                         </Link>
-                        <span v-else class="text-slate-500">—</span>
+                        <span v-else class="text-slate-500 dark:text-slate-400">—</span>
                     </td>
                 </tr>
                 <tr v-if="!scan.devices?.length">
-                    <td colspan="7" class="px-4 py-12 text-center text-sm text-slate-500">
+                    <td colspan="7" class="px-4 py-12 text-center text-sm text-slate-500 dark:text-slate-400">
                         <span v-if="isRunning">{{ $t('assets.scan_in_progress_ellipsis') }}</span>
                         <span v-else>{{ $t('assets.no_reachable_devices_found') }}</span>
                     </td>

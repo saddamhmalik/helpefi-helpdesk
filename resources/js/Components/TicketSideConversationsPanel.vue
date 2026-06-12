@@ -58,19 +58,19 @@ const closeConversation = (conversationId) => {
     <section class="px-4 py-3">
         <div class="flex items-center justify-between gap-2">
             <div>
-                <p class="text-[11px] font-semibold uppercase tracking-wide text-slate-400">{{ $t('components.side_conversations') }}</p>
-                <p class="mt-0.5 text-xs text-slate-500">{{ $t('components.email_third_parties_without_exposing_the_main_thread') }}</p>
+                <p class="text-[11px] font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500">{{ $t('components.side_conversations') }}</p>
+                <p class="mt-0.5 text-xs text-slate-500 dark:text-slate-400">{{ $t('components.email_third_parties_without_exposing_the_main_thread') }}</p>
             </div>
             <button
                 type="button"
-                class="rounded-md border border-slate-200 px-2.5 py-1 text-xs font-medium text-slate-700 transition hover:bg-slate-50"
+                class="rounded-md border border-slate-200 dark:border-slate-800 px-2.5 py-1 text-xs font-medium text-slate-700 dark:text-slate-300 transition hover:bg-slate-50 dark:bg-slate-950 dark:hover:bg-slate-800"
                 @click="showCreate = !showCreate"
             >
                 {{ showCreate ? $t('components.cancel') : $t('components.new') }}
             </button>
         </div>
 
-        <form v-if="showCreate" class="mt-3 space-y-2 rounded-lg border border-slate-200 bg-slate-50/70 p-3" @submit.prevent="submitCreate">
+        <form v-if="showCreate" class="mt-3 space-y-2 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/70 p-3" @submit.prevent="submitCreate">
             <input v-model="createForm.recipient_email" type="email" required :placeholder="$t('components.recipient_email')" :class="formInputClass" />
             <input v-model="createForm.recipient_name" type="text" :placeholder="$t('components.recipient_name_optional')" :class="formInputClass" />
             <input v-model="createForm.subject" type="text" required :placeholder="$t('components.subject')" :class="formInputClass" />
@@ -88,34 +88,34 @@ const closeConversation = (conversationId) => {
             <li
                 v-for="conversation in conversations"
                 :key="conversation.id"
-                class="overflow-hidden rounded-lg border border-slate-200"
+                class="overflow-hidden rounded-lg border border-slate-200 dark:border-slate-800"
             >
                 <button
                     type="button"
-                    class="flex w-full items-start justify-between gap-2 px-3 py-2 text-left hover:bg-slate-50"
+                    class="flex w-full items-start justify-between gap-2 px-3 py-2 text-left hover:bg-slate-50 dark:bg-slate-950 dark:hover:bg-slate-800"
                     @click="toggleExpanded(conversation.id)"
                 >
                     <div class="min-w-0">
-                        <p class="truncate text-sm font-medium text-slate-900">{{ conversation.subject }}</p>
-                        <p class="truncate text-xs text-slate-500">{{ conversation.recipient_email }}</p>
+                        <p class="truncate text-sm font-medium text-slate-900 dark:text-slate-100">{{ conversation.subject }}</p>
+                        <p class="truncate text-xs text-slate-500 dark:text-slate-400">{{ conversation.recipient_email }}</p>
                     </div>
                     <span
                         class="shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold"
-                        :class="conversation.status === 'open' ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-600'"
+                        :class="conversation.status === 'open' ? 'bg-emerald-100 text-emerald-800 dark:text-emerald-200' : 'bg-slate-100 dark:bg-slate-900 text-slate-600 dark:text-slate-400'"
                     >
                         {{ conversation.status }}
                     </span>
                 </button>
 
-                <div v-if="expandedId === conversation.id" class="border-t border-slate-100 bg-white px-3 py-3">
+                <div v-if="expandedId === conversation.id" class="border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-3">
                     <div class="max-h-48 space-y-2 overflow-y-auto">
                         <div
                             v-for="message in conversation.messages"
                             :key="message.id"
                             class="rounded-lg px-2.5 py-2 text-xs"
-                            :class="message.is_inbound ? 'bg-slate-100 text-slate-800' : 'bg-blue-50 text-blue-950'"
+                            :class="message.is_inbound ? 'bg-slate-100 dark:bg-slate-900 text-slate-800 dark:text-slate-200' : 'bg-blue-50 dark:bg-blue-950/40 text-blue-950'"
                         >
-                            <div class="mb-1 flex items-center justify-between gap-2 text-[10px] text-slate-500">
+                            <div class="mb-1 flex items-center justify-between gap-2 text-[10px] text-slate-500 dark:text-slate-400">
                                 <span>{{ message.is_inbound ? conversation.recipient_email : message.user?.name || $t('components.agent') }}</span>
                                 <span>{{ formatDateTime(message.created_at) }}</span>
                             </div>
@@ -140,7 +140,7 @@ const closeConversation = (conversationId) => {
                             </button>
                             <button
                                 type="button"
-                                class="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50"
+                                class="rounded-lg border border-slate-200 dark:border-slate-800 px-3 py-1.5 text-xs font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:bg-slate-950 dark:hover:bg-slate-800"
                                 @click="closeConversation(conversation.id)"
                             >
                                 {{ $t('components.close') }}
@@ -151,6 +151,6 @@ const closeConversation = (conversationId) => {
             </li>
         </ul>
 
-        <p v-else-if="!showCreate" class="mt-3 text-xs text-slate-500">{{ $t('components.no_side_conversations_yet') }}</p>
+        <p v-else-if="!showCreate" class="mt-3 text-xs text-slate-500 dark:text-slate-400">{{ $t('components.no_side_conversations_yet') }}</p>
     </section>
 </template>

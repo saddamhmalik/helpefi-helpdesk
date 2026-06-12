@@ -37,16 +37,16 @@ const submit = () => {
 </script>
 
 <template>
-    <div v-if="csat?.enabled && (showForm || submitted)" class="mt-6 border-t border-slate-100 pt-6">
-        <h3 class="text-sm font-semibold text-slate-900">{{ $t('components.how_was_support_experience') }}</h3>
+    <div v-if="csat?.enabled && (showForm || submitted)" class="mt-6 border-t border-slate-100 dark:border-slate-800 pt-6">
+        <h3 class="text-sm font-semibold text-slate-900 dark:text-slate-100">{{ $t('components.how_was_support_experience') }}</h3>
 
-        <div v-if="submitted" class="mt-3 rounded-lg bg-emerald-50 px-4 py-3 text-sm text-emerald-900">
+        <div v-if="submitted" class="mt-3 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 px-4 py-3 text-sm text-emerald-900">
             <p class="font-medium">{{ $t('components.thank_you_for_your_feedback') }}</p>
             <div class="mt-2 flex items-center gap-1">
                 <span v-for="star in 5" :key="star" class="text-lg" :class="star <= submitted.rating ? 'text-amber-400' : 'text-slate-300'">★</span>
-                <span class="ml-2 text-slate-600">{{ submitted.rating }}/5</span>
+                <span class="ml-2 text-slate-600 dark:text-slate-400">{{ submitted.rating }}/5</span>
             </div>
-            <p v-if="submitted.comment" class="mt-2 whitespace-pre-wrap text-slate-700">{{ submitted.comment }}</p>
+            <p v-if="submitted.comment" class="mt-2 whitespace-pre-wrap text-slate-700 dark:text-slate-300">{{ submitted.comment }}</p>
         </div>
 
         <form v-else-if="showForm" class="mt-4 space-y-4" @submit.prevent="submit">
@@ -66,14 +66,14 @@ const submit = () => {
             </div>
 
             <div>
-                <label class="mb-1 block text-sm font-medium text-slate-700">
+                <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">
                     {{ $t('components.comment') }}
-                    <span v-if="!csat.comment_required" class="font-normal text-slate-500">{{ $t('components.optional') }}</span>
+                    <span v-if="!csat.comment_required" class="font-normal text-slate-500 dark:text-slate-400">{{ $t('components.optional') }}</span>
                 </label>
                 <textarea
                     v-model="form.comment"
                     rows="3"
-                    class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                    class="w-full rounded-lg border border-slate-300 dark:border-slate-700 px-3 py-2 text-sm"
                     :required="csat.comment_required"
                     :placeholder="$t('components.tell_us_more_about_your_experience')"
                 />

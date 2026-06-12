@@ -407,6 +407,7 @@
         "save": "Save",
         "settings": "Settings",
         "forwarding_instructions_detail": "Configure your email provider to forward messages to {address} and POST the parsed payload to the webhook URL with the token as a query parameter or header.",
-        "new_ticket": "New ticket"
+        "new_ticket": "New ticket",
+        "theme": "Theme"
     }
 }
