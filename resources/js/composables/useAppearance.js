@@ -1,4 +1,5 @@
 import { router, usePage } from '@inertiajs/vue3';
+import { applyMarketingAppearance, isMarketingPage } from './useMarketingAppearance.js';
 import { onMounted, onUnmounted, watch } from 'vue';
 
 export const APPEARANCE_MODES = ['light', 'dark', 'system'];
@@ -66,10 +67,16 @@ export function useAppearance() {
             return fromPage;
         }
 
-        return stored ?? fromPage ?? 'system';
+        return stored ?? fromPage ?? 'light';
     };
 
     const syncAppearance = () => {
+        if (isMarketingPage(page.component)) {
+            applyMarketingAppearance();
+
+            return;
+        }
+
         const appearance = currentAppearance();
 
         applyAppearance(appearance);
@@ -83,7 +90,7 @@ export function useAppearance() {
     };
 
     watch(
-        () => [page.props.appearance, page.props.auth?.user?.appearance, page.props.tenantId, page.props.auth?.user?.id],
+        () => [page.component, page.props.appearance, page.props.auth?.user?.appearance, page.props.tenantId, page.props.auth?.user?.id],
         syncAppearance,
         { immediate: true },
     );

@@ -131,7 +131,7 @@ const inputClass = 'w-full rounded-xl border border-slate-200 dark:border-slate-
                     </div>
                     <div class="relative">
                         <Link href="/" class="text-sm text-slate-400 dark:text-slate-500 transition hover:text-white">← Back to home</Link>
-                        <div class="mt-8 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white dark:bg-slate-900/5 px-3 py-1 text-xs font-medium text-blue-200">
+                        <div class="mt-8 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-3 py-1 text-xs font-medium text-blue-200">
                             {{ trialDays }}-day free trial · No credit card
                         </div>
                         <h1 class="mt-6 text-3xl font-semibold leading-tight tracking-tight">
@@ -237,7 +237,7 @@ const inputClass = 'w-full rounded-xl border border-slate-200 dark:border-slate-
         <Teleport to="body">
             <Transition name="provision-fade">
                 <div v-if="form.processing" class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/80 px-4 backdrop-blur-sm">
-                    <div class="provision-card w-full max-w-md rounded-2xl border border-white/10 bg-white dark:bg-slate-900 p-8 text-center shadow-2xl">
+                    <div class="provision-card w-full max-w-md rounded-2xl border border-white/10 bg-slate-900 p-8 text-center shadow-2xl">
                         <div class="provision-ring mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-blue-50 dark:bg-blue-950/40">
                             <div class="provision-spinner h-10 w-10 rounded-full border-[3px] border-blue-200 dark:border-blue-900/60 border-t-blue-600" />
                         </div>

@@ -5,6 +5,7 @@ namespace App\Domains\Billing\Services;
 use App\Domains\Billing\Models\Subscription;
 use App\Domains\Billing\Repositories\PlanRepository;
 use App\Domains\Billing\Repositories\SubscriptionRepository;
+use App\Domains\Billing\Support\RazorpaySubscriptionCheckout;
 use App\Domains\Tenancy\Services\CentralSettingsService;
 use App\Domains\Tenancy\Support\AddonCatalogDefinition;
 use App\Domains\Tenancy\Support\PlanCatalogDefinition;
@@ -57,14 +58,16 @@ class RazorpayBillingService
         $tenant = Tenant::query()->findOrFail(tenant('id'));
         $customerId = $this->ensureCustomer($tenant, $customerEmail);
 
-        if ($subscription->razorpay_subscription_id && $subscription->isActive()) {
-            $this->client()->subscription->update($subscription->razorpay_subscription_id, [
-                'plan_id' => $planId,
-                'schedule_change_at' => 'now',
-                'customer_notify' => 1,
-            ]);
+        if ($subscription->razorpay_subscription_id) {
+            $existingUrl = $this->resolveExistingCheckoutUrl(
+                $subscription,
+                $planId,
+                $successUrl,
+            );
 
-            return $successUrl;
+            if ($existingUrl !== null) {
+                return $existingUrl;
+            }
         }
 
         $razorpaySubscription = $this->client()->subscription->create([
@@ -72,6 +75,7 @@ class RazorpayBillingService
             'customer_id' => $customerId,
             'customer_notify' => 1,
             'total_count' => $interval === 'year' ? 10 : 120,
+            'expire_by' => now()->addDays(3)->getTimestamp(),
             'notes' => [
                 'tenant_id' => $tenant->id,
                 'plan' => $planSlug,
@@ -79,15 +83,9 @@ class RazorpayBillingService
             ],
         ])->toArray();
 
-        $shortUrl = $razorpaySubscription['short_url'] ?? null;
+        $this->persistPendingCheckoutSubscription($subscription, $razorpaySubscription, $planSlug, $planId, $interval);
 
-        if (! is_string($shortUrl) || $shortUrl === '') {
-            throw ValidationException::withMessages([
-                'plan' => 'Unable to start Razorpay checkout. Please try again.',
-            ]);
-        }
-
-        return $shortUrl;
+        return $this->requireCheckoutShortUrl($razorpaySubscription);
     }
 
     public function purchaseAddon(string $addonKey, string $customerEmail): Subscription
@@ -359,6 +357,116 @@ class RazorpayBillingService
                 'plan' => 'Razorpay billing is not configured.',
             ]);
         }
+    }
+
+    private function resolveExistingCheckoutUrl(
+        Subscription $subscription,
+        string $planId,
+        string $successUrl,
+    ): ?string {
+        try {
+            $entity = $this->client()->subscription->fetch($subscription->razorpay_subscription_id)->toArray();
+        } catch (Error $exception) {
+            Log::warning('Razorpay subscription fetch failed during checkout', [
+                'subscription_id' => $subscription->razorpay_subscription_id,
+                'message' => $exception->getMessage(),
+            ]);
+
+            $this->clearRazorpaySubscriptionReference($subscription);
+
+            return null;
+        }
+
+        $status = (string) ($entity['status'] ?? '');
+
+        if (in_array($status, ['active', 'authenticated'], true)) {
+            $subscription = $this->lifecycle->applyRazorpaySubscription(
+                $subscription,
+                $this->normalizeSubscriptionPayload($entity),
+            );
+
+            if ($subscription->isActive()) {
+                if (($entity['plan_id'] ?? null) !== $planId) {
+                    $this->client()->subscription->update($subscription->razorpay_subscription_id, [
+                        'plan_id' => $planId,
+                        'schedule_change_at' => 'now',
+                        'customer_notify' => 1,
+                    ]);
+                }
+
+                return $successUrl;
+            }
+        }
+
+        if ($status === 'created') {
+            $shortUrl = RazorpaySubscriptionCheckout::hostedPageUrl($entity);
+
+            if ($shortUrl !== null) {
+                return $shortUrl;
+            }
+        }
+
+        if (RazorpaySubscriptionCheckout::shouldResetIncompleteSubscription($entity)) {
+            $this->cancelRazorpaySubscriptionImmediately($subscription->razorpay_subscription_id);
+        }
+
+        $this->clearRazorpaySubscriptionReference($subscription);
+
+        return null;
+    }
+
+    private function persistPendingCheckoutSubscription(
+        Subscription $subscription,
+        array $razorpaySubscription,
+        string $planSlug,
+        string $planId,
+        string $interval,
+    ): void {
+        $this->subscriptions->update($subscription, [
+            'razorpay_subscription_id' => (string) ($razorpaySubscription['id'] ?? ''),
+            'razorpay_plan_id' => $planId,
+            'plan' => $planSlug,
+            'billing_interval' => $interval,
+        ]);
+    }
+
+    private function requireCheckoutShortUrl(array $razorpaySubscription): string
+    {
+        $shortUrl = $razorpaySubscription['short_url'] ?? null;
+
+        if (! is_string($shortUrl) || $shortUrl === '') {
+            throw ValidationException::withMessages([
+                'plan' => 'Unable to start Razorpay checkout. Confirm Subscriptions are enabled in your Razorpay dashboard, then try again.',
+            ]);
+        }
+
+        return $shortUrl;
+    }
+
+    private function cancelRazorpaySubscriptionImmediately(string $subscriptionId): void
+    {
+        try {
+            $this->client()->subscription->cancel($subscriptionId, [
+                'cancel_at_cycle_end' => 0,
+            ]);
+        } catch (Error $exception) {
+            Log::warning('Razorpay subscription cancellation failed during checkout reset', [
+                'subscription_id' => $subscriptionId,
+                'message' => $exception->getMessage(),
+            ]);
+        }
+    }
+
+    private function clearRazorpaySubscriptionReference(Subscription $subscription): void
+    {
+        if (! $subscription->razorpay_subscription_id) {
+            return;
+        }
+
+        $this->subscriptions->update($subscription, [
+            'razorpay_subscription_id' => null,
+            'razorpay_plan_id' => null,
+        ]);
     }
 
     private function client(): Api

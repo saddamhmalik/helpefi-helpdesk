@@ -41,7 +41,7 @@ const inputClass = 'w-full rounded-xl border border-slate-200 dark:border-slate-
                             {{ $t('central.enter_your_workspace_url_to_open_the_agent_login_for_your_team') }}
                         </p>
                     </div>
-                    <div class="rounded-xl border border-white/10 bg-white dark:bg-slate-900/5 p-4">
+                    <div class="rounded-xl border border-white/10 bg-white/10 p-4">
                         <p class="text-xs font-medium text-slate-300">{{ t('central.new_to_brand', { brand }) }}</p>
                         <p class="mt-1 text-sm text-white">{{ t('central.start_trial_no_card', { days: trialDays }) }}</p>
                         <Link href="/register" class="mt-3 inline-flex text-sm font-semibold text-blue-400 hover:text-blue-300">
