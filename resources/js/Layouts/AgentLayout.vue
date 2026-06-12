@@ -3,7 +3,7 @@ import AgentTopBar from '../Components/AgentTopBar.vue';
 import AppAvatar from '../Components/AppAvatar.vue';
 import AppLogo from '../Components/AppLogo.vue';
 import DummyDataBanner from '../Components/DummyDataBanner.vue';
-import PlatformNoticeBanner from '../Components/PlatformNoticeBanner.vue';
+import PlatformNoticeModal from '../Components/PlatformNoticeModal.vue';
 import SetupWarningNotifier from '../Components/SetupWarningNotifier.vue';
 import TrialBanner from '../Components/TrialBanner.vue';
 import CancellationGraceBanner from '../Components/CancellationGraceBanner.vue';
@@ -166,9 +166,9 @@ const iconWrapClass = (href) => isActive(href)
                 <div class="mb-3 shrink-0 space-y-2">
                     <TrialBanner />
                     <CancellationGraceBanner />
-                    <PlatformNoticeBanner />
                     <DummyDataBanner />
                 </div>
+                <PlatformNoticeModal />
                 <SetupWarningNotifier />
                 <div class="flex min-h-0 flex-1 flex-col overflow-y-auto overflow-x-hidden">
                     <Transition name="page" mode="out-in">

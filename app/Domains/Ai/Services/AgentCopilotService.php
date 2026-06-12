@@ -104,12 +104,6 @@ class AgentCopilotService
 
         $message = trim($message);
 
-        if ($message === '') {
-            throw ValidationException::withMessages([
-                'message' => 'Enter a message.',
-            ]);
-        }
-
         $articles = $this->knowledge->searchPublished($message, 5);
         $messages = [
             ['role' => 'system', 'content' => $this->workspaceSystemPrompt($articles)],

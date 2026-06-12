@@ -150,6 +150,7 @@ watch(open, async (isOpen) => {
                             :key="article.id"
                             :href="article.url"
                             target="_blank"
+                            rel="noopener noreferrer"
                             class="block text-xs font-medium text-violet-800 hover:underline"
                         >
                             {{ article.title }}

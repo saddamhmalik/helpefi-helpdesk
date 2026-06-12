@@ -210,6 +210,8 @@
         "setup_modal_intro": "{count} configuration items still need attention before your workspace is fully ready.",
         "setup_toast_summary": "Setup incomplete — {count} item(s) need your attention.",
         "remind_me_later": "Remind me later",
+        "got_it": "Got it",
+        "notice_queue_progress": "{current} of {total}",
         "suggest_reply": "Suggest reply",
         "summarize": "Summarize",
         "kb_articles": "KB articles",

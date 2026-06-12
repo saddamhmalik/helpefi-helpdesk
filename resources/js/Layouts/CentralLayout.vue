@@ -1,8 +1,9 @@
 <script setup>
 import { Link } from '@inertiajs/vue3';
-import { computed, ref, watch } from 'vue';
+import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import AppLogo from '../Components/AppLogo.vue';
+import { useBodyScrollLock } from '../composables/useModal.js';
 
 defineProps({
     brand: { type: String, default: 'helpefi' },
@@ -24,9 +25,7 @@ const navLinks = computed(() => [
     { href: '/#faq', label: t('layouts.central.faq') },
 ]);
 
-watch(mobileOpen, (open) => {
-    document.body.style.overflow = open ? 'hidden' : '';
-});
+useBodyScrollLock(mobileOpen);
 </script>
 
 <template>
