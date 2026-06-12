@@ -34,7 +34,6 @@ const mapPlan = (plan) => {
         name: plan.name,
         price: plan.price_monthly ?? plan.price,
         price_yearly: plan.price_yearly ?? (plan.price_monthly ?? plan.price) * 10,
-        razorpay_plan_id: plan.razorpay_plan_id ?? '',
         razorpay_plan_id: plan.razorpay_plan_id_monthly ?? plan.razorpay_plan_id ?? '',
         razorpay_plan_id_yearly: plan.razorpay_plan_id_yearly ?? '',
         limits,
@@ -105,9 +104,8 @@ const submit = () => {
             slug: plan.slug,
             name: plan.name,
             price: plan.price,
+            price_monthly: plan.price,
             price_yearly: plan.price_yearly,
-            razorpay_plan_id: plan.razorpay_plan_id || null,
-            razorpay_plan_id_yearly: plan.razorpay_plan_id_yearly || null,
             limits: Object.fromEntries(
                 props.planCatalog.limits.map(({ key }) => [
                     key,
@@ -227,9 +225,8 @@ const submit = () => {
                                 <p class="text-sm font-medium text-emerald-900">{{ $t('central.stripe_sync_enabled') }}</p>
                                 <p class="mt-1 text-xs text-emerald-800 dark:text-emerald-200">{{ $t('central.saving_updates_the_stripe_product_and_creates_new_monthly_or_yearly_pr') }}</p>
                                 <div v-if="plan.razorpay_plan_id || plan.razorpay_plan_id_yearly" class="mt-3 space-y-1 font-mono text-xs text-emerald-900">
-                                    <p v-if="plan.razorpay_plan_id">Product: {{ plan.razorpay_plan_id }}</p>
-                                    <p v-if="plan.razorpay_plan_id">Monthly price: {{ plan.razorpay_plan_id }}</p>
-                                    <p v-if="plan.razorpay_plan_id_yearly">Yearly price: {{ plan.razorpay_plan_id_yearly }}</p>
+                                    <p v-if="plan.razorpay_plan_id">Monthly plan: {{ plan.razorpay_plan_id }}</p>
+                                    <p v-if="plan.razorpay_plan_id_yearly">Yearly plan: {{ plan.razorpay_plan_id_yearly }}</p>
                                 </div>
                                 <p v-else class="mt-2 text-xs text-emerald-800 dark:text-emerald-200">{{ $t('central.stripe_ids_will_appear_here_after_the_first_save') }}</p>
                             </div>

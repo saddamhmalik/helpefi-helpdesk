@@ -162,7 +162,7 @@ class BillingService
         ]);
     }
 
-    public function purchaseAddon(string $addonKey, string $customerEmail): Subscription|string
+    public function purchaseAddon(string $addonKey, string $customerEmail, string $customerName = ''): Subscription|array
     {
         $this->centralSettings->findAddon($addonKey);
 
@@ -173,7 +173,7 @@ class BillingService
         }
 
         if ($this->razorpay->isEnabled()) {
-            return $this->razorpay->purchaseAddon($addonKey, $customerEmail);
+            return $this->razorpay->purchaseAddon($addonKey, $customerEmail, $customerName);
         }
 
         return $this->activateAddon($addonKey);

@@ -131,7 +131,9 @@ class CentralSettingsService
         foreach ($data['plans'] as $plan) {
             $slug = $plan['slug'];
             $existing = $currentCatalog[$slug] ?? [];
-            $catalog[$slug] = PlanCatalogDefinition::normalizePlan($slug, array_merge($existing, $plan));
+            $incoming = $this->normalizeIncomingPlan($plan, $existing);
+
+            $catalog[$slug] = PlanCatalogDefinition::normalizePlan($slug, array_merge($existing, $incoming));
         }
 
         $currency = isset($data['currency'])
@@ -145,7 +147,13 @@ class CentralSettingsService
         foreach ($data['addons'] ?? [] as $addon) {
             $key = $addon['key'];
             $existing = $this->addonCatalog()[$key] ?? [];
-            $addonCatalog[$key] = AddonCatalogDefinition::normalizeAddon($key, array_merge($existing, $addon));
+            $incoming = $addon;
+
+            if ($this->razorpayAddonSync->isEnabled()) {
+                unset($incoming['razorpay_plan_id_monthly']);
+            }
+
+            $addonCatalog[$key] = AddonCatalogDefinition::normalizeAddon($key, array_merge($existing, $incoming));
         }
 
         foreach ($this->addonCatalog() as $key => $existing) {
@@ -171,5 +179,24 @@ class CentralSettingsService
         $this->settings->update($this->settings->current(), $payload);
 
         return $this->snapshot();
+    }
+
+    private function normalizeIncomingPlan(array $plan, array $existing): array
+    {
+        $incoming = $plan;
+
+        if (array_key_exists('price', $incoming)) {
+            $incoming['price_monthly'] = $incoming['price'];
+        }
+
+        if ($this->razorpayPlanSync->isEnabled()) {
+            unset(
+                $incoming['razorpay_plan_id'],
+                $incoming['razorpay_plan_id_monthly'],
+                $incoming['razorpay_plan_id_yearly'],
+            );
+        }
+
+        return $incoming;
     }
 }

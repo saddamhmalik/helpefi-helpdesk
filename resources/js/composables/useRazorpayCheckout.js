@@ -65,12 +65,12 @@ export function useRazorpayCheckout() {
                         razorpay_payment_id: response.razorpay_payment_id,
                         razorpay_subscription_id: response.razorpay_subscription_id,
                         razorpay_signature: response.razorpay_signature,
-                        redirect: redirectOnSuccess,
+                        redirect: session.redirect_on_success ?? redirectOnSuccess,
                     });
                 },
                 modal: {
                     ondismiss() {
-                        router.get(redirectOnCancel, {}, { preserveScroll: true });
+                        router.get(session.redirect_on_cancel ?? redirectOnCancel, {}, { preserveScroll: true });
                     },
                 },
             });
