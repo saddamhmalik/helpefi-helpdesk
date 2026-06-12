@@ -64,8 +64,8 @@ const ask = async (text) => {
 
 <template>
     <div class="overflow-hidden rounded-2xl border border-violet-200/80 bg-white shadow-2xl shadow-violet-900/10 ring-1 ring-violet-100">
-        <div class="flex items-center justify-between border-b border-violet-100 bg-gradient-to-r from-violet-600 to-indigo-600 px-5 py-4 text-white">
-            <div>
+        <div class="flex flex-col gap-2 border-b border-violet-100 bg-gradient-to-r from-violet-600 to-indigo-600 px-4 py-3 text-white sm:flex-row sm:items-center sm:justify-between sm:px-5 sm:py-4">
+            <div class="min-w-0">
                 <p class="text-sm font-semibold">Try AI deflection</p>
                 <p class="text-[11px] text-violet-100">Live demo — ask about helpefi AI features</p>
             </div>
@@ -77,7 +77,7 @@ const ask = async (text) => {
             </span>
         </div>
 
-        <div class="space-y-4 bg-slate-50/80 p-5">
+        <div class="space-y-4 bg-slate-50/80 p-4 sm:p-5">
             <div v-if="!answer && !loading && !error" class="rounded-xl border border-dashed border-violet-200 bg-white px-4 py-6 text-center">
                 <p class="text-sm font-medium text-slate-700">Ask a support-style question</p>
                 <p class="mt-1 text-xs text-slate-500">See how customers get instant answers from your knowledge base.</p>

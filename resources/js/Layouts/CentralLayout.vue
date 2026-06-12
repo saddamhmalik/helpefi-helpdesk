@@ -1,6 +1,6 @@
 <script setup>
 import { Link } from '@inertiajs/vue3';
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import AppLogo from '../Components/AppLogo.vue';
 
@@ -23,24 +23,28 @@ const navLinks = computed(() => [
     { href: '/#pricing', label: t('layouts.central.pricing') },
     { href: '/#faq', label: t('layouts.central.faq') },
 ]);
+
+watch(mobileOpen, (open) => {
+    document.body.style.overflow = open ? 'hidden' : '';
+});
 </script>
 
 <template>
-    <div class="flex min-h-screen flex-col">
+    <div class="flex min-h-screen flex-col overflow-x-hidden">
         <div
             v-if="showPromoBar && trialDays"
-            class="relative z-50 bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 px-4 py-2.5 text-center text-sm font-medium text-white"
+            class="relative z-50 bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 px-4 py-2.5 text-center text-xs font-medium text-white sm:text-sm"
         >
-            <span>
-                🎉 {{ trialDays }}-day free trial — full platform access, no credit card.
-            </span>
-            <Link href="/register" class="ml-2 font-bold underline underline-offset-2 hover:text-blue-100">
-                Start now →
-            </Link>
+            <div class="mx-auto flex max-w-4xl flex-col items-center justify-center gap-1 sm:flex-row sm:gap-2">
+                <span>🎉 {{ trialDays }}-day free trial — full platform access, no credit card.</span>
+                <Link href="/register" class="font-bold underline underline-offset-2 hover:text-blue-100">
+                    Start now →
+                </Link>
+            </div>
         </div>
         <header class="sticky top-0 z-40 border-b border-slate-200/80 bg-white shadow-sm">
-            <div class="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-                <Link href="/" class="flex items-center">
+            <div class="mx-auto flex h-14 min-w-0 max-w-7xl items-center justify-between gap-3 px-4 sm:h-16 sm:px-6 lg:px-8">
+                <Link href="/" class="flex min-w-0 shrink items-center">
                     <AppLogo size="md" />
                 </Link>
 
@@ -70,39 +74,57 @@ const navLinks = computed(() => [
                     </Link>
                 </div>
 
-                <button
-                    type="button"
-                    class="rounded-lg p-2 text-slate-700 lg:hidden"
-                    @click="mobileOpen = !mobileOpen"
-                >
-                    <svg v-if="!mobileOpen" class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-                    </svg>
-                    <svg v-else class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                </button>
+                <div class="flex items-center gap-2 lg:hidden">
+                    <Link
+                        href="/register"
+                        class="rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-bold text-white shadow-sm sm:hidden"
+                    >
+                        Try free
+                    </Link>
+                    <button
+                        type="button"
+                        class="rounded-lg p-2 text-slate-700"
+                        :aria-expanded="mobileOpen"
+                        aria-label="Toggle menu"
+                        @click="mobileOpen = !mobileOpen"
+                    >
+                        <svg v-if="!mobileOpen" class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
+                        <svg v-else class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
             </div>
 
             <Transition name="fade">
                 <div
                     v-if="mobileOpen"
-                    class="border-t border-slate-200 bg-white px-4 py-4 lg:hidden"
+                    class="fixed inset-0 top-14 z-30 bg-slate-900/20 backdrop-blur-[1px] sm:top-16 lg:hidden"
+                    @click="mobileOpen = false"
+                />
+            </Transition>
+
+            <Transition name="fade">
+                <div
+                    v-if="mobileOpen"
+                    class="absolute left-0 right-0 z-40 max-h-[calc(100dvh-3.5rem)] overflow-y-auto border-t border-slate-200 bg-white px-4 py-4 shadow-lg sm:max-h-[calc(100dvh-4rem)] lg:hidden"
                 >
                     <nav class="flex flex-col gap-1">
                         <a
                             v-for="link in navLinks"
                             :key="link.href"
                             :href="link.href"
-                            class="rounded-lg px-3 py-2.5 text-sm font-medium text-slate-700"
+                            class="rounded-lg px-3 py-3 text-sm font-medium text-slate-700 active:bg-slate-100"
                             @click="mobileOpen = false"
                         >
                             {{ link.label }}
                         </a>
-                        <Link href="/login" class="rounded-lg px-3 py-2.5 text-sm font-medium text-slate-600" @click="mobileOpen = false">
+                        <Link href="/login" class="rounded-lg px-3 py-3 text-sm font-medium text-slate-600 active:bg-slate-100" @click="mobileOpen = false">
                             {{ $t('layouts.central.sign_in') }}
                         </Link>
-                        <Link href="/register" class="mt-2 rounded-xl bg-blue-600 px-3 py-2.5 text-center text-sm font-semibold text-white" @click="mobileOpen = false">
+                        <Link href="/register" class="mt-2 rounded-xl bg-blue-600 px-3 py-3 text-center text-sm font-semibold text-white" @click="mobileOpen = false">
                             {{ $t('layouts.central.start_free_trial') }}
                         </Link>
                     </nav>
@@ -110,13 +132,13 @@ const navLinks = computed(() => [
             </Transition>
         </header>
 
-        <main class="flex-1">
+        <main class="flex-1 overflow-x-hidden">
             <slot />
         </main>
 
         <footer v-if="showFooter" class="border-t border-slate-200 bg-slate-950 text-slate-300">
-            <div class="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
-                <div class="grid gap-10 md:grid-cols-2 lg:grid-cols-4">
+            <div class="mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-14 lg:px-8">
+                <div class="grid gap-8 sm:grid-cols-2 sm:gap-10 lg:grid-cols-4">
                     <div class="lg:col-span-1">
                         <AppLogo size="md" surface="light" />
                         <p class="mt-3 text-sm leading-relaxed text-slate-400">
@@ -153,10 +175,22 @@ const navLinks = computed(() => [
                         </ul>
                     </div>
                 </div>
-                <div class="mt-12 border-t border-white/10 pt-8">
+                <div class="mt-8 border-t border-white/10 pt-6 sm:mt-12 sm:pt-8">
                     <p class="text-xs text-slate-500">© {{ new Date().getFullYear() }} {{ brand }}. {{ $t('layouts.central.footer_rights') }}</p>
                 </div>
             </div>
         </footer>
     </div>
 </template>
+
+<style scoped>
+.fade-enter-active,
+.fade-leave-active {
+    transition: opacity 0.2s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+    opacity: 0;
+}
+</style>

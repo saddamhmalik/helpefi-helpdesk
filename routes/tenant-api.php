@@ -245,6 +245,7 @@ Route::middleware([
         Route::get('/ai/tickets/{ticket}/copilot', [ApiAgentCopilotController::class, 'index']);
         Route::post('/ai/tickets/{ticket}/copilot', [ApiAgentCopilotController::class, 'store']);
         Route::delete('/ai/tickets/{ticket}/copilot', [ApiAgentCopilotController::class, 'destroy']);
+        Route::post('/ai/copilot/ask', [ApiAgentCopilotController::class, 'ask']);
         Route::get('/deflection/metrics', [ApiAiDeflectionController::class, 'metrics']);
         Route::get('/kb-deflection/metrics', [ApiKbDeflectionController::class, 'metrics']);
 

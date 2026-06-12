@@ -20,14 +20,14 @@ const navLinkClass = (href) => {
     const active = isSettingsNavActive(href, currentUrl.value);
 
     if (active) {
-        return 'border-blue-600 bg-blue-50/80 text-blue-900';
+        return 'text-slate-900 font-medium';
     }
 
-    return 'border-transparent text-slate-600 hover:border-slate-200 hover:bg-slate-50 hover:text-slate-900';
+    return 'text-slate-600 hover:text-slate-900';
 };
 
 const iconClass = (href) => isSettingsNavActive(href, currentUrl.value)
-    ? 'text-blue-600'
+    ? 'text-slate-700'
     : 'text-slate-400 group-hover:text-slate-600';
 </script>
 
@@ -53,7 +53,7 @@ const iconClass = (href) => isSettingsNavActive(href, currentUrl.value)
                     v-model="query"
                     type="search"
                     :placeholder="t('settings_overview.search_by_name_e_g_domain_billing_sla')"
-                    class="w-full rounded-lg border border-slate-200 bg-slate-50 py-2 pl-9 pr-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-100"
+                    class="w-full rounded-md border-0 bg-slate-100 py-2 pl-9 pr-3 text-sm text-slate-900 placeholder:text-slate-400 focus:bg-slate-100 focus:outline-none focus:ring-1 focus:ring-slate-300"
                 />
             </div>
         </div>
@@ -64,14 +64,14 @@ const iconClass = (href) => isSettingsNavActive(href, currentUrl.value)
             </p>
 
             <div v-for="group in filteredGroups" :key="group.id">
-                <p class="mb-1.5 px-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-400">
+                <p class="mb-1 px-2 text-[11px] font-medium text-slate-400">
                     {{ group.label }}
                 </p>
-                <ul class="w-full space-y-0.5">
+                <ul class="w-full space-y-0">
                     <li v-for="item in group.items" :key="item.href" class="w-full">
                         <Link
                             :href="item.href"
-                            class="group flex w-full items-center gap-2.5 rounded-lg border-l-2 px-2.5 py-2 text-sm font-medium transition-ui"
+                            class="group flex w-full items-center gap-2.5 rounded-md px-2 py-1.5 text-sm transition-ui"
                             :class="navLinkClass(item.href)"
                             :title="item.description"
                             :aria-label="item.locked ? `${item.label} (${item.lockedLabel})` : item.label"

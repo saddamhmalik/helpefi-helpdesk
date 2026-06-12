@@ -4,7 +4,7 @@ import AppAvatar from '../Components/AppAvatar.vue';
 import AppLogo from '../Components/AppLogo.vue';
 import DummyDataBanner from '../Components/DummyDataBanner.vue';
 import PlatformNoticeBanner from '../Components/PlatformNoticeBanner.vue';
-import SetupWarningBanner from '../Components/SetupWarningBanner.vue';
+import SetupWarningNotifier from '../Components/SetupWarningNotifier.vue';
 import TrialBanner from '../Components/TrialBanner.vue';
 import CancellationGraceBanner from '../Components/CancellationGraceBanner.vue';
 import { Link, usePage } from '@inertiajs/vue3';
@@ -168,8 +168,8 @@ const iconWrapClass = (href) => isActive(href)
                     <CancellationGraceBanner />
                     <PlatformNoticeBanner />
                     <DummyDataBanner />
-                    <SetupWarningBanner />
                 </div>
+                <SetupWarningNotifier />
                 <div class="flex min-h-0 flex-1 flex-col overflow-y-auto overflow-x-hidden">
                     <Transition name="page" mode="out-in">
                         <div :key="pageKey" class="flex min-h-0 flex-1 flex-col">

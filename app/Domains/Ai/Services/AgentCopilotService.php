@@ -97,6 +97,40 @@ class AgentCopilotService
         $this->copilot->clear($ticketId, $userId);
     }
 
+    public function askWorkspace(int $userId, string $message): array
+    {
+        $this->assertEnabled();
+        $this->assertAgent($userId);
+
+        $message = trim($message);
+
+        if ($message === '') {
+            throw ValidationException::withMessages([
+                'message' => 'Enter a message.',
+            ]);
+        }
+
+        $articles = $this->knowledge->searchPublished($message, 5);
+        $messages = [
+            ['role' => 'system', 'content' => $this->workspaceSystemPrompt($articles)],
+            ['role' => 'user', 'content' => $message],
+        ];
+
+        if ($this->client->available()) {
+            $reply = $this->client->chat($messages);
+            $source = (string) config('ai.provider', 'openai');
+        } else {
+            $reply = $this->localWorkspaceReply($message, $articles);
+            $source = 'local';
+        }
+
+        return [
+            'answer' => $reply,
+            'articles' => $this->mapArticles($articles),
+            'source' => $source,
+        ];
+    }
+
     private function buildProviderMessages(Ticket $ticket, Collection $history, string $message, Collection $articles): array
     {
         $messages = [
@@ -143,6 +177,29 @@ class AgentCopilotService
         if ($articles->isNotEmpty()) {
             $lines[] = '';
             $lines[] = 'Knowledge base excerpts:';
+            foreach ($articles as $article) {
+                $excerpt = trim(strip_tags((string) ($article->excerpt ?: mb_substr((string) $article->body, 0, 400))));
+                $lines[] = "- {$article->title}: {$excerpt}";
+            }
+        }
+
+        return implode("\n", $lines);
+    }
+
+    private function workspaceSystemPrompt(Collection $articles): string
+    {
+        $lines = [
+            'You are an internal helpdesk copilot assisting a support agent in their workspace.',
+            'Answer questions about helpdesk workflows, settings, tickets, SLAs, channels, and knowledge base usage.',
+            'Keep answers concise, practical, and actionable.',
+            'If you are unsure, say what the agent should check in settings or documentation.',
+            'Do not invent policies, pricing, or features not supported by the excerpts provided.',
+        ];
+
+        if ($articles->isNotEmpty()) {
+            $lines[] = '';
+            $lines[] = 'Knowledge base excerpts:';
+
             foreach ($articles as $article) {
                 $excerpt = trim(strip_tags((string) ($article->excerpt ?: mb_substr((string) $article->body, 0, 400))));
                 $lines[] = "- {$article->title}: {$excerpt}";
@@ -199,6 +256,17 @@ class AgentCopilotService
         }
 
         return $summary."\n\n(AI provider is not configured. Set GROQ_API_KEY or OPENAI_API_KEY to enable full copilot responses.)";
+    }
+
+    private function localWorkspaceReply(string $message, Collection $articles): string
+    {
+        $articleHint = $articles->first()?->title;
+
+        if ($articleHint) {
+            return "Based on your knowledge base, \"{$articleHint}\" may help.\n\n(AI provider is not configured. Set GROQ_API_KEY or OPENAI_API_KEY for full copilot responses.)";
+        }
+
+        return 'I can help with ticket workflows, settings, and knowledge base questions once an AI provider is configured. Set GROQ_API_KEY or OPENAI_API_KEY in your environment.';
     }
 
     private function assertEnabled(): void

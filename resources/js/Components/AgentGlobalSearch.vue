@@ -1,7 +1,16 @@
 <script setup>
-import { Link, router } from '@inertiajs/vue3';
+import { Link, router, usePage } from '@inertiajs/vue3';
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
+import { useAgentNavigation } from '../composables/useAgentNavigation.js';
+import { useSettingsNavFilter } from '../composables/useSettingsNavFilter.js';
 import { csrfHeaders } from '../support/csrf.js';
+
+const { t } = useI18n();
+const page = usePage();
+const { settingsNavGroups } = useAgentNavigation();
+const settingsQuery = ref('');
+const { filteredGroups: settingsGroups } = useSettingsNavFilter(settingsNavGroups, settingsQuery);
 
 const query = ref('');
 const open = ref(false);
@@ -11,18 +20,59 @@ const activeIndex = ref(-1);
 const panelRef = ref(null);
 const inputRef = ref(null);
 
+const copilotLoading = ref(false);
+const copilotAnswer = ref('');
+const copilotArticles = ref([]);
+const copilotError = ref('');
+const copilotSource = ref('');
+
+const aiEnabled = computed(() => {
+    const billing = page.props.billing;
+    const ai = page.props.ai;
+
+    return (billing?.features?.includes('ai') ?? false) && (ai?.enabled ?? false);
+});
+
 let debounceTimer = null;
 let abortController = null;
 
-const flatResults = computed(() => groups.value.flatMap((group) => group.items.map((item) => ({ ...item, group: group.label }))));
+const settingsItems = computed(() => settingsGroups.value.flatMap((group) => group.items.map((item) => ({
+    id: item.href,
+    title: item.label,
+    subtitle: item.description,
+    meta: group.label,
+    href: item.href,
+    kind: 'settings',
+}))));
+
+const mergedGroups = computed(() => {
+    const result = [];
+
+    if (settingsItems.value.length) {
+        result.push({
+            type: 'settings',
+            label: t('common.settings'),
+            items: settingsItems.value.slice(0, 8),
+        });
+    }
+
+    return [...result, ...groups.value];
+});
+
+const flatResults = computed(() => mergedGroups.value.flatMap((group) => group.items.map((item) => ({ ...item, group: group.label, kind: item.kind ?? group.type }))));
 
 const hasResults = computed(() => flatResults.value.length > 0);
 const hasQuery = computed(() => query.value.trim().length >= 2);
 const showResults = computed(() => open.value && hasQuery.value);
+const showCopilotPrompt = computed(() => open.value && hasQuery.value && aiEnabled.value && !copilotAnswer.value);
 
 const resetResults = () => {
     groups.value = [];
     activeIndex.value = -1;
+    copilotAnswer.value = '';
+    copilotArticles.value = [];
+    copilotError.value = '';
+    copilotSource.value = '';
 };
 
 const fetchResults = async (value) => {
@@ -38,6 +88,8 @@ const fetchResults = async (value) => {
 
     abortController = new AbortController();
     loading.value = true;
+    copilotAnswer.value = '';
+    copilotError.value = '';
 
     try {
         const response = await fetch(`/global-search?q=${encodeURIComponent(value.trim())}`, {
@@ -56,14 +108,57 @@ const fetchResults = async (value) => {
 
         const payload = await response.json();
         groups.value = payload.groups ?? [];
-        const count = groups.value.reduce((sum, group) => sum + group.items.length, 0);
+        const count = flatResults.value.length;
         activeIndex.value = count ? 0 : -1;
     } catch (error) {
         if (error.name !== 'AbortError') {
-            resetResults();
+            groups.value = [];
+            activeIndex.value = -1;
         }
     } finally {
         loading.value = false;
+    }
+};
+
+const askCopilot = async () => {
+    const message = query.value.trim();
+
+    if (!message || copilotLoading.value || !aiEnabled.value) {
+        return;
+    }
+
+    copilotLoading.value = true;
+    copilotError.value = '';
+    copilotAnswer.value = '';
+    copilotArticles.value = [];
+
+    try {
+        const response = await fetch('/ai/copilot/ask', {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+                ...csrfHeaders(),
+            },
+            body: JSON.stringify({ message }),
+        });
+
+        const data = await response.json().catch(() => ({}));
+
+        if (!response.ok) {
+            copilotError.value = data.message || t('components.copilot_request_failed');
+            return;
+        }
+
+        copilotAnswer.value = data.answer ?? '';
+        copilotArticles.value = data.articles ?? [];
+        copilotSource.value = data.source ?? '';
+        activeIndex.value = -1;
+    } catch {
+        copilotError.value = t('components.copilot_request_failed');
+    } finally {
+        copilotLoading.value = false;
     }
 };
 
@@ -73,6 +168,10 @@ const scheduleSearch = (value) => {
 };
 
 watch(query, (value) => {
+    settingsQuery.value = value;
+    copilotAnswer.value = '';
+    copilotError.value = '';
+
     if (value.trim().length < 2) {
         loading.value = false;
         resetResults();
@@ -97,6 +196,7 @@ const openSearch = async () => {
 const closeSearch = () => {
     open.value = false;
     query.value = '';
+    settingsQuery.value = '';
     resetResults();
 };
 
@@ -112,7 +212,17 @@ const onInputKeydown = (event) => {
         return;
     }
 
+    if (event.key === 'Enter' && event.metaKey && aiEnabled.value && hasQuery.value) {
+        event.preventDefault();
+        askCopilot();
+        return;
+    }
+
     if (!hasQuery.value || !flatResults.value.length) {
+        if (event.key === 'Enter' && hasQuery.value && aiEnabled.value) {
+            event.preventDefault();
+            askCopilot();
+        }
         return;
     }
 
@@ -127,6 +237,9 @@ const onInputKeydown = (event) => {
     } else if (event.key === 'Enter' && activeIndex.value >= 0) {
         event.preventDefault();
         visitResult(flatResults.value[activeIndex.value].href);
+    } else if (event.key === 'Enter' && aiEnabled.value) {
+        event.preventDefault();
+        askCopilot();
     }
 };
 
@@ -153,7 +266,7 @@ const onGlobalShortcut = (event) => {
 const resultIndex = (group, item) => {
     let index = 0;
 
-    for (const currentGroup of groups.value) {
+    for (const currentGroup of mergedGroups.value) {
         for (const currentItem of currentGroup.items) {
             if (currentGroup === group && currentItem === item) {
                 return index;
@@ -192,7 +305,7 @@ defineExpose({ openSearch });
         <svg class="h-4 w-4 shrink-0 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
         </svg>
-        <span class="truncate">{{ $t('components.search_tickets_customers_organizations_ellipsis') }}</span>
+        <span class="truncate">{{ t('components.global_search_placeholder') }}</span>
         <kbd class="ml-auto hidden shrink-0 rounded-md border border-slate-200/80 bg-white/80 px-1.5 py-0.5 text-[10px] font-medium text-slate-400 sm:inline">⌘K</kbd>
     </button>
 
@@ -230,7 +343,7 @@ defineExpose({ openSearch });
                         class="relative w-full max-w-2xl"
                         role="dialog"
                         aria-modal="true"
-                        :aria-label="$t('components.search')"
+                        :aria-label="t('components.search')"
                         @mousedown.stop
                     >
                         <div class="overflow-hidden rounded-[1.75rem] border border-white/60 bg-white/85 shadow-[0_24px_80px_rgba(15,23,42,0.22)] backdrop-blur-2xl">
@@ -242,21 +355,63 @@ defineExpose({ openSearch });
                                     ref="inputRef"
                                     v-model="query"
                                     type="search"
-                                    :placeholder="$t('components.search_tickets_customers_organizations_ellipsis')"
+                                    :placeholder="t('components.global_search_placeholder')"
                                     class="min-w-0 flex-1 bg-transparent text-lg font-normal text-slate-900 placeholder:text-slate-400 focus:outline-none sm:text-[1.35rem]"
                                     @keydown="onInputKeydown"
                                 >
                             </div>
 
+                            <div v-if="showCopilotPrompt" class="border-b border-violet-100 bg-violet-50/60 px-4 py-2.5">
+                                <button
+                                    type="button"
+                                    class="flex w-full items-center gap-3 rounded-xl px-2 py-2 text-left transition hover:bg-violet-100/80"
+                                    :disabled="copilotLoading"
+                                    @click="askCopilot"
+                                >
+                                    <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-violet-600 text-white">
+                                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" />
+                                        </svg>
+                                    </span>
+                                    <span class="min-w-0 flex-1">
+                                        <span class="block text-sm font-medium text-violet-950">{{ t('components.ask_copilot') }}</span>
+                                        <span class="block truncate text-xs text-violet-700">“{{ query.trim() }}”</span>
+                                    </span>
+                                    <span v-if="copilotLoading" class="text-xs text-violet-600">{{ t('components.thinking') }}</span>
+                                    <kbd v-else class="hidden shrink-0 rounded border border-violet-200 bg-white px-1.5 py-0.5 text-[10px] text-violet-500 sm:inline">↵</kbd>
+                                </button>
+                            </div>
+
+                            <div v-if="copilotAnswer || copilotError" class="border-b border-slate-200/70 bg-slate-50/80 px-5 py-4">
+                                <div class="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wide text-violet-700">
+                                    <span>{{ t('components.ai_copilot') }}</span>
+                                    <span v-if="copilotSource" class="rounded-full bg-violet-100 px-2 py-0.5 text-[10px] normal-case text-violet-600">{{ copilotSource }}</span>
+                                </div>
+                                <p v-if="copilotError" class="mt-2 text-sm text-red-600">{{ copilotError }}</p>
+                                <p v-else class="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-slate-800">{{ copilotAnswer }}</p>
+                                <div v-if="copilotArticles.length" class="mt-3 space-y-1">
+                                    <p class="text-[11px] font-medium text-slate-500">{{ t('components.related_articles') }}</p>
+                                    <a
+                                        v-for="article in copilotArticles"
+                                        :key="article.id"
+                                        :href="article.url"
+                                        target="_blank"
+                                        class="block text-xs font-medium text-violet-700 hover:underline"
+                                    >
+                                        {{ article.title }}
+                                    </a>
+                                </div>
+                            </div>
+
                             <div v-if="showResults" class="max-h-[min(50vh,28rem)] overflow-y-auto">
                                 <div v-if="loading" class="px-6 py-8 text-center text-sm text-slate-500">
-                                    {{ $t('components.searching_ellipsis') }}
+                                    {{ t('components.searching_ellipsis') }}
                                 </div>
-                                <div v-else-if="!hasResults" class="px-6 py-8 text-center text-sm text-slate-500">
-                                    {{ $t('components.no_results_for_query', { query: query.trim() }) }}
+                                <div v-else-if="!hasResults && !copilotAnswer" class="px-6 py-8 text-center text-sm text-slate-500">
+                                    {{ t('components.no_results_for_query', { query: query.trim() }) }}
                                 </div>
                                 <div v-else class="py-2">
-                                    <div v-for="group in groups" :key="group.type">
+                                    <div v-for="group in mergedGroups" :key="group.type">
                                         <p class="px-5 py-2 text-[11px] font-semibold uppercase tracking-wide text-slate-400">
                                             {{ group.label }}
                                         </p>
@@ -268,6 +423,15 @@ defineExpose({ openSearch });
                                             :class="resultIndex(group, item) === activeIndex ? 'bg-blue-500/10' : 'hover:bg-slate-100/80'"
                                             @click="visitResult(item.href)"
                                         >
+                                            <svg
+                                                v-if="group.type === 'settings'"
+                                                class="mt-0.5 h-4 w-4 shrink-0 text-slate-400"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                viewBox="0 0 24 24"
+                                            >
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                            </svg>
                                             <div class="min-w-0 flex-1 px-1">
                                                 <p class="truncate text-sm font-medium text-slate-900">{{ item.title }}</p>
                                                 <p v-if="item.subtitle" class="truncate text-xs text-slate-500">{{ item.subtitle }}</p>
@@ -282,19 +446,19 @@ defineExpose({ openSearch });
                                 v-else
                                 class="px-6 py-5 text-sm text-slate-400"
                             >
-                                {{ $t('components.search_min_chars_hint') }}
+                                {{ t('components.global_search_hint') }}
                             </div>
 
                             <div class="flex items-center justify-between border-t border-slate-200/70 px-5 py-3 text-xs text-slate-400">
-                                <span class="hidden sm:inline">{{ $t('components.navigate_open_esc_close') }}</span>
-                                <span class="sm:hidden">{{ $t('components.open_esc_close') }}</span>
+                                <span class="hidden sm:inline">{{ aiEnabled ? t('components.global_search_shortcuts') : t('components.navigate_open_esc_close') }}</span>
+                                <span class="sm:hidden">{{ t('components.open_esc_close') }}</span>
                                 <Link
                                     v-if="hasQuery"
                                     :href="`/tickets?search=${encodeURIComponent(query.trim())}`"
                                     class="font-medium text-blue-600 hover:text-blue-700"
                                     @click="closeSearch"
                                 >
-                                    {{ $t('components.view_all_tickets') }}
+                                    {{ t('components.view_all_tickets') }}
                                 </Link>
                             </div>
                         </div>

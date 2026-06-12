@@ -33,7 +33,7 @@ const { formatPrice } = useCurrency(() => props.currency);
 
 const { billingInterval, intervalSuffix, planPrice, yearlySavingsPercent } = useBillingInterval();
 
-const previewTab = ref('inbox');
+const previewTab = ref('ai');
 const featureCategory = ref('operations');
 const openFaq = ref(null);
 
@@ -52,8 +52,8 @@ const featureLabels = {
 };
 
 const previewTabs = [
-    { id: 'inbox', label: t('central.shared_inbox') },
     { id: 'ai', label: 'AI Copilot' },
+    { id: 'inbox', label: t('central.shared_inbox') },
     { id: 'chat', label: t('central.live_chat') },
     { id: 'servicedesk', label: t('nav.service_desk') },
     { id: 'analytics', label: t('central.analytics') },
@@ -296,6 +296,19 @@ const trustBadges = [
     'Cancel anytime',
 ];
 
+const heroAiPills = [
+    { label: 'Agent Copilot', icon: 'M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z' },
+    { label: 'Smart deflection', icon: 'M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z' },
+    { label: 'AI triage', icon: 'M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z' },
+    { label: 'Reply drafts', icon: 'M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z' },
+];
+
+const heroAiStats = [
+    { value: '40%', label: 'fewer tickets', detail: 'with AI deflection' },
+    { value: '3×', label: 'faster replies', detail: 'with Copilot drafts' },
+    { value: 'Included', label: 'in free trial', detail: 'no add-on fees' },
+];
+
 const outcomeStats = [
     { value: '3×', label: 'Faster first response', detail: 'vs. scattered inboxes' },
     { value: '40%', label: 'Fewer repeat tickets', detail: 'with KB deflection' },
@@ -499,38 +512,74 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
                 <div class="absolute -left-40 top-0 h-[36rem] w-[36rem] rounded-full bg-blue-600/30 blur-3xl" />
                 <div class="absolute right-[-10%] top-10 h-[28rem] w-[28rem] rounded-full bg-indigo-500/25 blur-3xl" />
                 <div class="absolute bottom-[-10%] left-1/3 h-96 w-96 rounded-full bg-violet-600/20 blur-3xl" />
+                <div class="absolute right-1/4 top-1/3 h-72 w-72 rounded-full bg-fuchsia-600/15 blur-3xl" />
                 <div class="absolute inset-0 bg-[linear-gradient(to_right,#ffffff06_1px,transparent_1px),linear-gradient(to_bottom,#ffffff06_1px,transparent_1px)] bg-[size:3.5rem_3.5rem]" />
                 <div class="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
             </div>
 
-            <div class="relative mx-auto max-w-7xl px-4 pb-20 pt-14 sm:px-6 lg:px-8 lg:pb-28 lg:pt-20">
-                <div class="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
+            <div class="relative mx-auto max-w-7xl px-4 pb-16 pt-10 sm:px-6 sm:pb-20 sm:pt-14 lg:px-8 lg:pb-28 lg:pt-20">
+                <div class="grid items-center gap-10 lg:grid-cols-2 lg:gap-16">
                     <div class="max-w-xl lg:max-w-none">
-                        <div class="inline-flex items-center gap-2 rounded-full border border-emerald-400/30 bg-emerald-500/10 px-4 py-1.5 text-xs font-semibold text-emerald-300 backdrop-blur">
-                            <span class="relative flex h-2 w-2">
-                                <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
-                                <span class="relative inline-flex h-2 w-2 rounded-full bg-emerald-400" />
-                            </span>
-                            {{ trialDays }}-day free trial · No credit card · Cancel anytime
+                        <div class="flex flex-wrap items-center gap-2">
+                            <div class="inline-flex max-w-full flex-wrap items-center gap-2 rounded-full border border-emerald-400/30 bg-emerald-500/10 px-3 py-1.5 text-[11px] font-semibold text-emerald-300 backdrop-blur sm:px-4 sm:text-xs">
+                                <span class="relative flex h-2 w-2">
+                                    <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+                                    <span class="relative inline-flex h-2 w-2 rounded-full bg-emerald-400" />
+                                </span>
+                                {{ trialDays }}-day free trial · No credit card · Cancel anytime
+                            </div>
+                            <a
+                                href="#ai"
+                                class="inline-flex items-center gap-1.5 rounded-full border border-violet-400/40 bg-gradient-to-r from-violet-600/25 to-fuchsia-600/20 px-3 py-1.5 text-[11px] font-bold text-violet-200 shadow-lg shadow-violet-900/20 backdrop-blur transition hover:border-violet-300/50 hover:text-white sm:px-4 sm:text-xs"
+                            >
+                                <svg class="h-3.5 w-3.5 text-violet-300" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>
+                                AI Copilot built in
+                            </a>
                         </div>
 
-                        <h1 class="mt-8 text-[2.75rem] font-extrabold leading-[1.05] tracking-tight sm:text-5xl lg:text-[3.5rem]">
+                        <h1 class="mt-6 text-3xl font-extrabold leading-[1.08] tracking-tight sm:mt-8 sm:text-[2.75rem] sm:leading-[1.05] lg:text-5xl xl:text-[3.5rem]">
                             Stop juggling tools.
                             <span class="mt-1 block bg-gradient-to-r from-blue-400 via-indigo-300 to-violet-400 bg-clip-text text-transparent">
                                 Start delighting customers.
                             </span>
                         </h1>
 
-                        <p class="mt-6 text-lg leading-relaxed text-slate-300 sm:text-xl">
-                            {{ platformName }} replaces your inbox, chat, knowledge base, SLAs, AI assist, and ITSM — in one beautiful workspace your team will actually love using.
+                        <p class="mt-5 text-base leading-relaxed text-slate-300 sm:mt-6 sm:text-lg lg:text-xl">
+                            <span class="font-semibold text-violet-200">Built-in AI</span> drafts replies, deflects tickets, and triages your queue —
+                            plus inbox, chat, knowledge base, SLAs, and ITSM in one workspace your team will actually love.
                         </p>
 
-                        <div class="mt-9 flex flex-col gap-3 sm:flex-row sm:items-center">
+                        <div class="mt-6 overflow-hidden rounded-2xl border border-violet-500/25 bg-gradient-to-br from-violet-950/50 via-slate-900/80 to-indigo-950/50 p-4 ring-1 ring-violet-400/10 sm:mt-7 sm:p-5">
+                            <div class="flex items-center justify-between gap-3">
+                                <p class="text-xs font-bold uppercase tracking-wider text-violet-300">AI-native from day one</p>
+                                <a href="#ai" class="shrink-0 text-[11px] font-semibold text-violet-300 underline-offset-2 hover:text-white hover:underline sm:text-xs">See it live →</a>
+                            </div>
+                            <div class="mt-3 flex gap-2 overflow-x-auto pb-0.5 sm:flex-wrap sm:overflow-visible">
+                                <span
+                                    v-for="pill in heroAiPills"
+                                    :key="pill.label"
+                                    class="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-[11px] font-medium text-slate-200 sm:text-xs"
+                                >
+                                    <svg class="h-3.5 w-3.5 shrink-0 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" :d="pill.icon" /></svg>
+                                    {{ pill.label }}
+                                </span>
+                            </div>
+                            <div class="mt-4 grid grid-cols-3 gap-2 border-t border-white/10 pt-4 sm:gap-3">
+                                <div v-for="stat in heroAiStats" :key="stat.label" class="text-center sm:text-left">
+                                    <p class="text-base font-extrabold text-white sm:text-lg">{{ stat.value }}</p>
+                                    <p class="text-[10px] font-medium text-violet-200 sm:text-xs">{{ stat.label }}</p>
+                                    <p class="hidden text-[10px] text-slate-500 sm:block">{{ stat.detail }}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-7 flex flex-col gap-3 sm:mt-9 sm:flex-row sm:items-center">
                             <Link
                                 href="/register"
-                                class="group relative inline-flex items-center justify-center gap-2 overflow-hidden rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 px-8 py-4 text-base font-bold text-white shadow-2xl shadow-blue-600/40 transition hover:from-blue-500 hover:to-indigo-500 hover:shadow-blue-500/50"
+                                class="group relative inline-flex items-center justify-center gap-2 overflow-hidden rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-3.5 text-sm font-bold text-white shadow-2xl shadow-blue-600/40 transition hover:from-blue-500 hover:to-indigo-500 hover:shadow-blue-500/50 sm:px-8 sm:py-4 sm:text-base"
                             >
-                                Start free trial — it takes 2 minutes
+                                <span class="sm:hidden">Start free trial</span>
+                                <span class="hidden sm:inline">Start free trial — it takes 2 minutes</span>
                                 <svg class="h-5 w-5 transition group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
                             </Link>
                             <a
@@ -549,7 +598,7 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
                             </span>
                         </div>
 
-                        <div class="mt-10 flex items-center gap-4 border-t border-white/10 pt-8">
+                        <div class="mt-8 flex flex-col gap-4 border-t border-white/10 pt-6 sm:mt-10 sm:flex-row sm:items-center sm:pt-8">
                             <div class="flex -space-x-2.5">
                                 <span
                                     v-for="t in heroAvatars"
@@ -571,23 +620,52 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
                         </div>
                     </div>
 
-                    <div class="relative lg:pl-4">
-                        <div class="pointer-events-none absolute -inset-4 rounded-3xl bg-gradient-to-r from-blue-600/20 via-indigo-500/20 to-violet-600/20 blur-2xl" />
-                        <div class="relative">
-                            <div class="rounded-2xl border border-white/15 bg-white/5 p-2 shadow-2xl shadow-black/60 backdrop-blur-xl ring-1 ring-white/10">
+                    <div class="mx-auto w-full max-w-xl md:max-w-none lg:pl-4">
+                        <div class="md:hidden rounded-2xl border border-violet-500/25 bg-gradient-to-br from-violet-950/40 to-slate-900/80 p-5 shadow-xl backdrop-blur-xl ring-1 ring-violet-400/15">
+                            <div class="flex items-center gap-2">
+                                <span class="flex h-8 w-8 items-center justify-center rounded-xl bg-violet-500/20 text-violet-300">
+                                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg>
+                                </span>
+                                <div>
+                                    <p class="text-sm font-semibold text-white">AI Copilot on every ticket</p>
+                                    <p class="text-xs text-violet-200">Drafts, deflection & triage included</p>
+                                </div>
+                            </div>
+                            <ul class="mt-4 space-y-2.5 text-sm text-slate-300">
+                                <li v-for="item in ['Agent Copilot side panel with full context', 'Portal & chat deflection before tickets', 'Shared inbox, KB, SLA & ITSM in one place']" :key="item" class="flex items-start gap-2">
+                                    <svg class="mt-0.5 h-4 w-4 shrink-0 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" /></svg>
+                                    {{ item }}
+                                </li>
+                            </ul>
+                            <a href="#ai" class="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-violet-300 hover:text-white">
+                                Try AI live
+                                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
+                            </a>
+                        </div>
+
+                        <div class="relative mt-6 hidden md:block lg:mt-0">
+                            <div class="pointer-events-none absolute -right-2 -top-3 z-10 flex items-center gap-1.5 rounded-full border border-violet-400/40 bg-violet-600/90 px-3 py-1.5 text-[11px] font-bold text-white shadow-lg shadow-violet-900/40 backdrop-blur">
+                                <span class="relative flex h-1.5 w-1.5">
+                                    <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-white opacity-75" />
+                                    <span class="relative inline-flex h-1.5 w-1.5 rounded-full bg-white" />
+                                </span>
+                                AI Copilot live
+                            </div>
+                            <div class="pointer-events-none absolute -inset-4 rounded-3xl bg-gradient-to-r from-blue-600/20 via-indigo-500/20 to-violet-600/20 blur-2xl" />
+                            <div class="relative rounded-2xl border border-white/15 bg-white/5 p-2 shadow-2xl shadow-black/60 backdrop-blur-xl ring-1 ring-white/10">
                                 <div class="overflow-hidden rounded-xl bg-slate-900 ring-1 ring-white/10">
-                                <div class="flex items-center gap-2 border-b border-white/10 px-4 py-3">
+                                <div class="flex items-center gap-2 border-b border-white/10 px-3 py-2.5 sm:px-4 sm:py-3">
                                     <span class="h-2.5 w-2.5 rounded-full bg-red-400/90" />
                                     <span class="h-2.5 w-2.5 rounded-full bg-amber-400/90" />
                                     <span class="h-2.5 w-2.5 rounded-full bg-emerald-400/90" />
-                                    <span class="ml-2 text-xs text-slate-500">{{ workspaceDomainExample }}</span>
+                                    <span class="ml-2 min-w-0 truncate text-[10px] text-slate-500 sm:text-xs">{{ workspaceDomainExample }}</span>
                                 </div>
-                                <div class="flex flex-wrap gap-1 border-b border-white/10 bg-slate-950/60 px-3 py-2">
+                                <div class="flex gap-1 overflow-x-auto border-b border-white/10 bg-slate-950/60 px-2 py-2 sm:flex-wrap sm:px-3">
                                     <button
                                         v-for="tab in previewTabs"
                                         :key="tab.id"
                                         type="button"
-                                        class="rounded-lg px-3 py-1.5 text-[11px] font-semibold transition"
+                                        class="shrink-0 rounded-lg px-2.5 py-1.5 text-[10px] font-semibold transition sm:px-3 sm:text-[11px]"
                                         :class="previewTab === tab.id ? 'bg-white/15 text-white ring-1 ring-white/20' : 'text-slate-400 hover:bg-white/5 hover:text-slate-200'"
                                         @click="previewTab = tab.id"
                                     >
@@ -721,7 +799,7 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
             </div>
         </section>
 
-        <section class="border-b border-slate-200 bg-white py-14">
+        <section class="border-b border-slate-200 bg-white py-10 sm:py-14">
             <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                 <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
                     <div
@@ -729,7 +807,7 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
                         :key="stat.label"
                         class="rounded-2xl border border-slate-100 bg-gradient-to-br from-slate-50 to-white p-6 text-center shadow-sm"
                     >
-                        <p class="text-4xl font-extrabold tracking-tight text-slate-900">{{ stat.value }}</p>
+                        <p class="text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">{{ stat.value }}</p>
                         <p class="mt-1 text-sm font-semibold text-slate-800">{{ stat.label }}</p>
                         <p class="mt-1 text-xs text-slate-500">{{ stat.detail }}</p>
                     </div>
@@ -737,7 +815,7 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
             </div>
         </section>
 
-        <section class="relative overflow-hidden bg-white py-24">
+        <section class="relative overflow-hidden bg-white py-16 sm:py-24">
             <div class="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-50 via-white to-white" />
             <div class="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                 <div class="mx-auto max-w-3xl text-center">
@@ -770,13 +848,13 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
                                     Agents hunt across disconnected tools while customers wait — and nothing syncs.
                                 </p>
 
-                                <div class="relative mt-8 h-36">
-                                    <span class="absolute left-0 top-0 rotate-[-6deg] rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-600 shadow-md">Email</span>
-                                    <span class="absolute left-24 top-6 rotate-[3deg] rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-600 shadow-md">Slack</span>
-                                    <span class="absolute right-8 top-0 rotate-[6deg] rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-600 shadow-md">Spreadsheet</span>
-                                    <span class="absolute bottom-4 left-8 rotate-[-3deg] rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-600 shadow-md">Legacy ITSM</span>
-                                    <span class="absolute bottom-0 right-12 rotate-[2deg] rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-600 shadow-md">Add-on KB</span>
-                                    <svg class="absolute inset-0 h-full w-full text-slate-300" fill="none" viewBox="0 0 300 120">
+                                <div class="mt-8 flex flex-wrap gap-2 sm:relative sm:h-36">
+                                    <span class="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-600 shadow-md sm:absolute sm:left-0 sm:top-0 sm:rotate-[-6deg]">Email</span>
+                                    <span class="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-600 shadow-md sm:absolute sm:left-24 sm:top-6 sm:rotate-[3deg]">Slack</span>
+                                    <span class="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-600 shadow-md sm:absolute sm:right-8 sm:top-0 sm:rotate-[6deg]">Spreadsheet</span>
+                                    <span class="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-600 shadow-md sm:absolute sm:bottom-4 sm:left-8 sm:rotate-[-3deg]">Legacy ITSM</span>
+                                    <span class="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-600 shadow-md sm:absolute sm:bottom-0 sm:right-12 sm:rotate-[2deg]">Add-on KB</span>
+                                    <svg class="hidden h-full w-full text-slate-300 sm:absolute sm:inset-0 sm:block" fill="none" viewBox="0 0 300 120">
                                         <path d="M40 20 L120 50 M120 50 L220 25 M80 90 L160 60 M160 60 L240 85" stroke="currentColor" stroke-dasharray="4 4" stroke-width="1.5" />
                                     </svg>
                                 </div>
@@ -883,7 +961,7 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
             </div>
         </section>
 
-        <section id="ai" class="relative overflow-hidden border-b border-slate-200 bg-slate-950 py-24 text-white">
+        <section id="ai" class="relative overflow-hidden border-b border-slate-200 bg-slate-950 py-16 sm:py-24 text-white">
             <div class="pointer-events-none absolute inset-0">
                 <div class="absolute -left-32 top-0 h-[28rem] w-[28rem] rounded-full bg-violet-600/25 blur-3xl" />
                 <div class="absolute bottom-0 right-0 h-96 w-96 rounded-full bg-indigo-600/20 blur-3xl" />
@@ -936,14 +1014,14 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
                         </div>
                     </div>
 
-                    <div class="lg:sticky lg:top-24">
+                    <div class="lg:sticky lg:top-24 lg:self-start">
                         <CentralAiDemoWidget :enabled="aiDemoEnabled" />
                     </div>
                 </div>
             </div>
         </section>
 
-        <section class="border-b border-slate-200 bg-white py-12">
+        <section class="border-b border-slate-200 bg-white py-10 sm:py-12">
             <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                 <p class="text-center text-xs font-semibold uppercase tracking-wider text-slate-400">{{ $t('central.works_with_your_stack') }}</p>
                 <div class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -968,7 +1046,7 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
             </div>
         </section>
 
-        <section id="product" class="bg-slate-50 py-24">
+        <section id="product" class="bg-slate-50 py-16 sm:py-24">
             <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                 <div class="max-w-3xl">
                     <p class="text-sm font-semibold uppercase tracking-wider text-blue-600">{{ $t('central.platform_overview') }}</p>
@@ -999,7 +1077,7 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
             </div>
         </section>
 
-        <section id="differentiators" class="relative overflow-hidden bg-white py-24">
+        <section id="differentiators" class="relative overflow-hidden bg-white py-16 sm:py-24">
             <div class="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-blue-50 via-white to-white" />
             <div class="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                 <div class="mx-auto max-w-3xl text-center">
@@ -1055,7 +1133,7 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
             </div>
         </section>
 
-        <section id="features" class="border-y border-slate-200 bg-slate-50 py-24">
+        <section id="features" class="border-y border-slate-200 bg-slate-50 py-16 sm:py-24">
             <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                 <div class="max-w-3xl">
                     <p class="text-sm font-semibold uppercase tracking-wider text-blue-600">{{ $t('central.deep_dive') }}</p>
@@ -1072,7 +1150,7 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
                                 v-for="cat in featureCategories"
                                 :key="cat.id"
                                 type="button"
-                                class="group flex min-w-[220px] shrink-0 items-center gap-3 rounded-2xl border px-4 py-3.5 text-left transition lg:min-w-0 lg:w-full"
+                                class="group flex min-w-[11rem] shrink-0 items-center gap-3 rounded-2xl border px-3 py-3 text-left transition sm:min-w-[220px] sm:px-4 sm:py-3.5 lg:min-w-0 lg:w-full"
                                 :class="featureCategory === cat.id
                                     ? 'border-slate-200 bg-white shadow-md ring-1 ring-slate-200/80'
                                     : 'border-transparent bg-white/60 hover:border-slate-200 hover:bg-white'"
@@ -1178,7 +1256,7 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
                                 All plans include core ticketing. Professional and Enterprise unlock automation, channels, AI, and ITSM capabilities.
                             </p>
                         </div>
-                        <div class="flex shrink-0 gap-6 rounded-2xl border border-slate-200/80 bg-white/80 px-6 py-4 backdrop-blur-sm">
+                        <div class="mt-5 flex w-full flex-wrap justify-center gap-4 sm:mt-8 sm:w-auto sm:shrink-0 sm:gap-6 rounded-2xl border border-slate-200/80 bg-white/80 px-4 py-3 backdrop-blur-sm sm:px-6 sm:py-4">
                             <div class="text-center">
                                 <p class="text-2xl font-extrabold text-slate-900">{{ allFeatures.length }}</p>
                                 <p class="text-xs font-medium text-slate-500">Capabilities</p>
@@ -1234,7 +1312,7 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
             </div>
         </section>
 
-        <section id="compare" class="bg-slate-900 py-24 text-white">
+        <section id="compare" class="bg-slate-900 py-16 sm:py-24 text-white">
             <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                 <div class="text-center">
                     <p class="text-sm font-semibold uppercase tracking-wider text-blue-400">{{ $t('central.why_teams_switch') }}</p>
@@ -1305,7 +1383,7 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
             </div>
         </section>
 
-        <section id="how-it-works" class="bg-white py-24">
+        <section id="how-it-works" class="bg-white py-16 sm:py-24">
             <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                 <div class="text-center">
                     <p class="text-sm font-semibold uppercase tracking-wider text-blue-600">{{ $t('central.how_it_works') }}</p>
@@ -1332,7 +1410,7 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
             </div>
         </section>
 
-        <section id="pricing" class="relative overflow-hidden bg-slate-950 py-24 text-white">
+        <section id="pricing" class="relative overflow-hidden bg-slate-950 py-16 sm:py-24 text-white">
             <div class="pointer-events-none absolute inset-0">
                 <div class="absolute left-1/2 top-0 h-96 w-96 -translate-x-1/2 rounded-full bg-blue-600/20 blur-3xl" />
             </div>
@@ -1365,7 +1443,7 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
                     <article
                         v-for="plan in plans"
                         :key="plan.slug"
-                        class="relative flex flex-col rounded-3xl border p-8 transition"
+                        class="relative flex flex-col rounded-3xl border p-6 sm:p-8 transition"
                         :class="plan.slug === 'professional'
                             ? 'border-blue-500/50 bg-gradient-to-b from-blue-600/20 to-slate-900/80 shadow-2xl shadow-blue-600/20 ring-2 ring-blue-500/40 lg:scale-105'
                             : 'border-white/10 bg-white/5 backdrop-blur hover:border-white/20'"
@@ -1374,7 +1452,7 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
                         <h3 class="text-xl font-bold text-white">{{ plan.name }}</h3>
                         <p v-if="planTaglines[plan.slug]" class="mt-1 text-sm text-slate-400">{{ planTaglines[plan.slug] }}</p>
                         <p class="mt-5 flex items-baseline gap-1">
-                            <span class="text-5xl font-extrabold tracking-tight text-white">{{ formatPrice(planPrice(plan)) }}</span>
+                            <span class="text-4xl font-extrabold tracking-tight text-white sm:text-5xl">{{ formatPrice(planPrice(plan)) }}</span>
                             <span class="text-slate-400">{{ intervalSuffix }}</span>
                         </p>
                         <p v-if="billingInterval === 'year' && yearlySavingsPercent(plan) > 0" class="mt-2 text-sm font-semibold text-emerald-400">
@@ -1401,7 +1479,7 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
             </div>
         </section>
 
-        <section id="faq" class="bg-white py-24">
+        <section id="faq" class="bg-white py-16 sm:py-24">
             <div class="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
                 <div class="text-center">
                     <p class="text-sm font-semibold uppercase tracking-wider text-blue-600">{{ $t('central.faq') }}</p>
@@ -1409,11 +1487,11 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
                 </div>
                 <div class="mt-12 space-y-3">
                     <div v-for="(item, index) in faqs" :key="item.q" class="overflow-hidden rounded-2xl border border-slate-200 bg-slate-50 transition hover:border-slate-300">
-                        <button type="button" class="flex w-full items-center justify-between gap-4 px-6 py-5 text-left" @click="toggleFaq(index)">
-                            <span class="font-semibold text-slate-900">{{ item.q }}</span>
+                        <button type="button" class="flex w-full items-center justify-between gap-3 px-4 py-4 text-left sm:gap-4 sm:px-6 sm:py-5" @click="toggleFaq(index)">
+                            <span class="text-sm font-semibold text-slate-900 sm:text-base">{{ item.q }}</span>
                             <svg class="h-5 w-5 shrink-0 text-slate-400 transition" :class="openFaq === index ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
                         </button>
-                        <div v-show="openFaq === index" class="border-t border-slate-200 px-6 pb-5 pt-2">
+                        <div v-show="openFaq === index" class="border-t border-slate-200 px-4 pb-4 pt-2 sm:px-6 sm:pb-5">
                             <p class="text-sm leading-relaxed text-slate-600">{{ item.a }}</p>
                         </div>
                     </div>
@@ -1421,13 +1499,13 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
             </div>
         </section>
 
-        <section class="relative overflow-hidden bg-slate-950 py-28">
+        <section class="relative overflow-hidden bg-slate-950 py-20 sm:py-28">
             <div class="pointer-events-none absolute inset-0">
                 <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-blue-900/50 via-slate-950 to-slate-950" />
                 <div class="absolute left-1/2 top-1/2 h-[32rem] w-[32rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-blue-600/10 blur-3xl" />
             </div>
             <div class="relative mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
-                <div class="overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-b from-white/10 to-white/5 p-10 text-center backdrop-blur-xl sm:p-14">
+                <div class="overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-b from-white/10 to-white/5 p-6 text-center backdrop-blur-xl sm:p-10 lg:p-14">
                     <p class="text-sm font-semibold uppercase tracking-wider text-blue-300">Limited-time offer</p>
                     <h2 class="mt-4 text-3xl font-extrabold tracking-tight text-white sm:text-4xl lg:text-5xl">
                         Your customers are waiting.<br class="hidden sm:block" />

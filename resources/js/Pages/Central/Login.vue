@@ -32,7 +32,7 @@ const inputClass = 'w-full rounded-xl border border-slate-200 bg-white px-3.5 py
 <template>
     <CentralSeoHead page="login" :brand="platformName" :trial-days="trialDays" :seo="seo" />
     <CentralLayout :brand="platformName" :trial-days="trialDays" :show-footer="false">
-        <div class="min-h-[calc(100vh-4rem)] bg-slate-50 px-4 py-12 sm:px-6">
+        <div class="min-h-[calc(100dvh-3.5rem)] bg-slate-50 px-4 py-8 sm:min-h-[calc(100vh-4rem)] sm:px-6 sm:py-12">
             <div class="mx-auto grid max-w-4xl overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm lg:grid-cols-5">
                 <aside class="hidden bg-slate-950 p-8 text-white lg:col-span-2 lg:flex lg:flex-col lg:justify-between">
                     <div>
@@ -50,7 +50,7 @@ const inputClass = 'w-full rounded-xl border border-slate-200 bg-white px-3.5 py
                     </div>
                 </aside>
 
-                <div class="p-8 lg:col-span-3">
+                <div class="p-6 sm:p-8 lg:col-span-3">
                     <Link href="/" class="text-sm text-slate-500 hover:text-slate-700 lg:hidden">{{ t('central.back_to_home') }}</Link>
                     <h1 class="mt-4 text-2xl font-semibold text-slate-900 lg:mt-0">{{ $t('central.sign_in_to_your_workspace') }}</h1>
                     <p class="mt-2 text-sm text-slate-600">
@@ -70,7 +70,7 @@ const inputClass = 'w-full rounded-xl border border-slate-200 bg-white px-3.5 py
                                     :placeholder="$t('central.acme')"
                                     autofocus
                                 />
-                                <span v-if="centralDomain" class="flex items-center bg-slate-50 px-3 text-sm text-slate-500">.{{ centralDomain }}</span>
+                                <span v-if="centralDomain" class="flex min-w-0 shrink items-center bg-slate-50 px-2 text-xs text-slate-500 sm:px-3 sm:text-sm">.{{ centralDomain }}</span>
                             </div>
                             <p v-if="form.errors.slug" class="mt-1.5 text-xs text-red-600">{{ form.errors.slug }}</p>
                         </div>

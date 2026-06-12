@@ -122,7 +122,7 @@ const inputClass = 'w-full rounded-xl border border-slate-200 bg-white px-3.5 py
 <template>
     <CentralSeoHead page="register" :brand="platformName" :trial-days="trialDays" :seo="seo" />
     <CentralLayout :brand="platformName" :trial-days="trialDays" :show-footer="false">
-        <div class="min-h-[calc(100vh-4rem)] bg-slate-50">
+        <div class="min-h-[calc(100dvh-3.5rem)] bg-slate-50 sm:min-h-[calc(100vh-4rem)]">
             <div class="mx-auto grid max-w-6xl lg:min-h-[calc(100vh-4rem)] lg:grid-cols-2">
                 <aside class="relative hidden overflow-hidden bg-slate-950 px-10 py-12 text-white lg:flex lg:flex-col lg:justify-between">
                     <div class="pointer-events-none absolute inset-0">
@@ -160,7 +160,7 @@ const inputClass = 'w-full rounded-xl border border-slate-200 bg-white px-3.5 py
                         </div>
 
                         <form class="space-y-6" @submit.prevent="submit">
-                            <section class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+                            <section class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6">
                                 <div class="mb-5 flex items-center gap-3">
                                     <span class="flex h-8 w-8 items-center justify-center rounded-full bg-blue-600 text-sm font-bold text-white">1</span>
                                     <div>
@@ -178,14 +178,14 @@ const inputClass = 'w-full rounded-xl border border-slate-200 bg-white px-3.5 py
                                         <label class="mb-1.5 block text-sm font-medium text-slate-700">{{ $t('central.workspace_url') }}</label>
                                         <div class="flex overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/20">
                                             <input v-model="form.slug" type="text" required pattern="[a-z0-9]+(?:-[a-z0-9]+)*" class="min-w-0 flex-1 border-0 bg-transparent px-3.5 py-2.5 text-sm focus:outline-none" :placeholder="$t('central.acme')" @input="onSlugInput" />
-                                            <span class="flex items-center bg-slate-50 px-3 text-sm text-slate-500">.{{ workspaceDomainSuffix }}</span>
+                                            <span class="flex min-w-0 shrink items-center bg-slate-50 px-2 text-xs text-slate-500 sm:px-3 sm:text-sm">.{{ workspaceDomainSuffix }}</span>
                                         </div>
                                         <p v-if="form.errors.slug" class="mt-1.5 text-xs text-red-600">{{ form.errors.slug }}</p>
                                     </div>
                                 </div>
                             </section>
 
-                            <section class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+                            <section class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6">
                                 <div class="mb-5 flex items-center gap-3">
                                     <span class="flex h-8 w-8 items-center justify-center rounded-full bg-blue-600 text-sm font-bold text-white">2</span>
                                     <div>
