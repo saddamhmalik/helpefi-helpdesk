@@ -19,15 +19,18 @@ function deepMerge(target, source) {
     return result;
 }
 
-export function loadLocaleMessages(locale) {
-    const modules = import.meta.glob('./**/*.json', { eager: true });
+const localeModules = import.meta.glob('./**/*.json');
+
+export async function loadLocaleMessages(locale) {
     let messages = {};
 
-    for (const [path, module] of Object.entries(modules)) {
-        if (!path.startsWith(`./${locale}/`)) {
-            continue;
-        }
+    const loaders = Object.entries(localeModules)
+        .filter(([path]) => path.startsWith(`./${locale}/`))
+        .map(([, loader]) => loader);
 
+    const modules = await Promise.all(loaders.map((loader) => loader()));
+
+    for (const module of modules) {
         messages = deepMerge(messages, module.default ?? module);
     }
 

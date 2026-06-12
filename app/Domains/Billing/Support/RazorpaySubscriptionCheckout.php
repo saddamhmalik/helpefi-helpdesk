@@ -23,7 +23,11 @@ final class RazorpaySubscriptionCheckout
     {
         $expireBy = $entity['expire_by'] ?? null;
 
-        return is_numeric($expireBy) && now()->getTimestamp() > (int) $expireBy;
+        if (! is_numeric($expireBy)) {
+            return true;
+        }
+
+        return now()->getTimestamp() > (int) $expireBy;
     }
 
     public static function shouldResetIncompleteSubscription(array $entity): bool

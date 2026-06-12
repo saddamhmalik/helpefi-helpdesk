@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onMounted, watch } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import { router, useForm, usePage } from '@inertiajs/vue3';
 import SettingsPage from '../../Components/SettingsPage.vue';
 import SettingsSectionNav from '../../Components/SettingsSectionNav.vue';
@@ -38,6 +38,8 @@ const sectionTabs = computed(() => [
 const form = useForm({
     plan: props.billing.plan?.slug ?? props.billing.available_plans[0]?.slug ?? 'starter',
 });
+
+const checkoutProcessing = ref(false);
 
 const { billingInterval, intervalSuffix, planPrice, billingReadyForInterval } = useBillingInterval();
 
@@ -84,11 +86,18 @@ const savePlan = () => {
             return;
         }
 
+        checkoutProcessing.value = true;
+
         router.post('/settings/billing/checkout', {
             plan: form.plan,
             interval: billingInterval.value,
             redirect: '/settings/billing?section=plans',
-        }, { preserveScroll: true });
+        }, {
+            preserveScroll: true,
+            onFinish: () => {
+                checkoutProcessing.value = false;
+            },
+        });
 
         return;
     }
@@ -103,6 +112,7 @@ const openCheckoutFromFlash = (session) => {
     if (session?.subscription_id) {
         openRazorpayCheckout(session, {
             redirectOnSuccess: '/settings/billing?checkout=success&section=usage',
+            redirectOnCancel: '/settings/billing?checkout=cancelled&section=plans',
         });
     }
 };
@@ -383,7 +393,7 @@ const formatLimit = (limit) => (limit === 'unlimited' ? t('settings_billing.unli
                                 v-if="!billing.on_trial"
                                 type="submit"
                                 class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
-                                :disabled="form.processing || (billing.razorpay_enabled && !selectedPlanBillingReady)"
+                                :disabled="form.processing || checkoutProcessing || (billing.razorpay_enabled && !selectedPlanBillingReady)"
                             >
                                 {{ billing.razorpay_enabled ? (billing.trial_expired ? 'Continue to checkout' : 'Change plan via Razorpay') : (billing.trial_expired ? 'Activate plan' : 'Update plan') }}
                             </button>

@@ -184,15 +184,15 @@ class SubscriptionLifecycleService
         }
 
         foreach ($razorpaySubscription->addons ?? [] as $item) {
-            $item = is_array($item) ? (object) $item : $item;
-            $addonKey = $planToAddon[$item->item->id ?? ''] ?? ($item->notes->addon_key ?? null);
+            $itemPlanId = (string) data_get($item, 'item.id', '');
+            $addonKey = $planToAddon[$itemPlanId] ?? data_get($item, 'notes.addon_key');
 
             if (! is_string($addonKey) || $addonKey === '') {
                 continue;
             }
 
             $activeAddons[] = $addonKey;
-            $razorpayAddonItems[$addonKey] = (string) ($item->id ?? '');
+            $razorpayAddonItems[$addonKey] = (string) data_get($item, 'id', '');
         }
 
         return [array_values(array_unique($activeAddons)), $razorpayAddonItems];

@@ -20,14 +20,14 @@ createInertiaApp({
 
         return page.default;
     },
-    setup({ el, App, props, plugin }) {
+    setup: async ({ el, App, props, plugin }) => {
         registerCsrfHandling();
         registerFlashToasts();
         syncCsrfMeta(props.initialPage.props.csrf_token);
 
         const initialLocale = props.initialPage.props.locale ?? 'en';
         const initialDirection = props.initialPage.props.direction ?? 'ltr';
-        const i18n = createAppI18n(initialLocale);
+        const i18n = await createAppI18n(initialLocale);
 
         syncDocumentLocale(initialLocale, initialDirection);
 

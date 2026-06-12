@@ -1,6 +1,6 @@
 <script setup>
 import { Head, Link, useForm, usePage, router } from '@inertiajs/vue3';
-import { onMounted, watch } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 import AgentLayout from '../../Layouts/AgentLayout.vue';
 import { useCurrency } from '../../composables/useCurrency.js';
 import { useBillingInterval } from '../../composables/useBillingInterval.js';
@@ -20,15 +20,24 @@ const form = useForm({
     plan: props.billing.available_plans[0]?.slug ?? 'starter',
 });
 
+const checkoutProcessing = ref(false);
+
 const { billingInterval, intervalSuffix, planPrice, billingReadyForInterval } = useBillingInterval();
 
 const purchase = () => {
     if (props.billing.razorpay_enabled) {
+        checkoutProcessing.value = true;
+
         router.post('/settings/billing/checkout', {
             plan: form.plan,
             interval: billingInterval.value,
             redirect: '/subscription-required',
-        }, { preserveScroll: true });
+        }, {
+            preserveScroll: true,
+            onFinish: () => {
+                checkoutProcessing.value = false;
+            },
+        });
 
         return;
     }
@@ -48,6 +57,7 @@ const openCheckoutFromFlash = (session) => {
     if (session?.subscription_id) {
         openRazorpayCheckout(session, {
             redirectOnSuccess: '/dashboard',
+            redirectOnCancel: '/subscription-required?checkout=cancelled',
         });
     }
 };
@@ -111,8 +121,8 @@ const { formatPrice } = useCurrency(() => props.billing.currency);
                     </div>
                 </label>
 
-                <button type="button" class="w-full rounded-xl bg-blue-600 px-4 py-3 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-70" :disabled="form.processing" @click="purchase">
-                    {{ form.processing ? 'Opening checkout…' : (billing.razorpay_enabled ? 'Continue to checkout' : 'Activate plan') }}
+                <button type="button" class="w-full rounded-xl bg-blue-600 px-4 py-3 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-70" :disabled="form.processing || checkoutProcessing" @click="purchase">
+                    {{ (form.processing || checkoutProcessing) ? 'Opening checkout…' : (billing.razorpay_enabled ? 'Continue to checkout' : 'Activate plan') }}
                 </button>
 
                 <p class="text-center text-xs text-slate-500 dark:text-slate-400">

@@ -25,6 +25,14 @@ class RazorpaySubscriptionCheckoutTest extends TestCase
         ]));
     }
 
+    public function test_rejects_created_subscriptions_without_expiry(): void
+    {
+        $this->assertFalse(RazorpaySubscriptionCheckout::canAuthenticateViaStandardCheckout([
+            'status' => 'created',
+            'id' => 'sub_test',
+        ]));
+    }
+
     public function test_marks_stale_created_subscriptions_for_reset(): void
     {
         $this->assertTrue(RazorpaySubscriptionCheckout::shouldResetIncompleteSubscription([

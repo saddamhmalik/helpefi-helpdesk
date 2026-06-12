@@ -1,15 +1,17 @@
 import { router, usePage } from '@inertiajs/vue3';
 import { watch } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { syncDocumentLocale } from '../plugins/i18n.js';
+import { ensureLocaleMessages, syncDocumentLocale } from '../plugins/i18n.js';
 
 export function useAppLocale() {
     const page = usePage();
     const { locale } = useI18n();
 
-    const applyLocale = () => {
+    const applyLocale = async () => {
         const nextLocale = page.props.locale ?? 'en';
         const direction = page.props.direction ?? 'ltr';
+
+        await ensureLocaleMessages(nextLocale);
 
         if (locale.value !== nextLocale) {
             locale.value = nextLocale;
