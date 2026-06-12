@@ -61,7 +61,7 @@ class AdminTenantController extends Controller
                 ])
                 ->values()
                 ->all(),
-            'stripe_enabled' => (bool) config('stripe.configured'),
+            'razorpay_enabled' => (bool) config('razorpay.configured'),
         ]);
     }
 

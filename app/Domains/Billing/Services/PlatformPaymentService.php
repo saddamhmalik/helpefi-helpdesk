@@ -31,64 +31,64 @@ class PlatformPaymentService
         return $this->payments->stats();
     }
 
-    public function recordFromStripeInvoice(object $invoice): void
+    public function recordFromRazorpayPayment(array $payment, ?array $subscription = null): void
     {
-        $invoiceId = $invoice->id ?? null;
+        $paymentId = $payment['id'] ?? null;
 
-        if (! $invoiceId) {
+        if (! $paymentId) {
             return;
         }
 
-        $tenantId = $this->resolveTenantId($invoice);
-        $plan = $this->resolvePlan($tenantId, $invoice);
-        $paidAt = isset($invoice->status_transitions->paid_at)
-            ? Carbon::createFromTimestamp($invoice->status_transitions->paid_at)
-            : (isset($invoice->created) ? Carbon::createFromTimestamp($invoice->created) : now());
+        $tenantId = $this->resolveTenantId($payment, $subscription);
+        $plan = $this->resolvePlan($tenantId, $payment, $subscription);
+        $paidAt = isset($payment['created_at'])
+            ? Carbon::createFromTimestamp($payment['created_at'])
+            : now();
 
-        $this->payments->upsertByInvoiceId($invoiceId, [
+        $this->payments->upsertByPaymentId($paymentId, [
             'tenant_id' => $tenantId,
-            'stripe_customer_id' => is_string($invoice->customer ?? null) ? $invoice->customer : null,
-            'stripe_subscription_id' => is_string($invoice->subscription ?? null) ? $invoice->subscription : null,
-            'stripe_payment_intent_id' => is_string($invoice->payment_intent ?? null) ? $invoice->payment_intent : null,
-            'amount' => (int) ($invoice->amount_paid ?? 0),
-            'currency' => strtoupper((string) ($invoice->currency ?? 'USD')),
+            'razorpay_customer_id' => $payment['customer_id'] ?? null,
+            'razorpay_subscription_id' => $subscription['id'] ?? ($payment['subscription_id'] ?? null),
+            'razorpay_order_id' => $payment['order_id'] ?? null,
+            'amount' => (int) ($payment['amount'] ?? 0),
+            'currency' => strtoupper((string) ($payment['currency'] ?? config('billing.currency', 'INR'))),
             'status' => PlatformPayment::STATUS_PAID,
             'plan' => $plan,
-            'customer_email' => $invoice->customer_email ?? null,
-            'customer_name' => $invoice->customer_name ?? null,
-            'description' => $this->invoiceDescription($invoice),
-            'invoice_number' => $invoice->number ?? null,
-            'invoice_url' => $invoice->hosted_invoice_url ?? null,
-            'invoice_pdf' => $invoice->invoice_pdf ?? null,
+            'customer_email' => $payment['email'] ?? null,
+            'customer_name' => $payment['notes']['customer_name'] ?? null,
+            'description' => $payment['description'] ?? $this->paymentDescription($payment, $subscription),
+            'invoice_number' => $payment['invoice_id'] ?? null,
+            'invoice_url' => null,
+            'invoice_pdf' => null,
             'paid_at' => $paidAt,
         ]);
     }
 
-    public function recordFailedStripeInvoice(object $invoice): void
+    public function recordFailedRazorpayPayment(array $payment, ?array $subscription = null): void
     {
-        $invoiceId = $invoice->id ?? null;
+        $paymentId = $payment['id'] ?? null;
 
-        if (! $invoiceId) {
+        if (! $paymentId) {
             return;
         }
 
-        $tenantId = $this->resolveTenantId($invoice);
+        $tenantId = $this->resolveTenantId($payment, $subscription);
 
-        $this->payments->upsertByInvoiceId($invoiceId, [
+        $this->payments->upsertByPaymentId($paymentId, [
             'tenant_id' => $tenantId,
-            'stripe_customer_id' => is_string($invoice->customer ?? null) ? $invoice->customer : null,
-            'stripe_subscription_id' => is_string($invoice->subscription ?? null) ? $invoice->subscription : null,
-            'stripe_payment_intent_id' => is_string($invoice->payment_intent ?? null) ? $invoice->payment_intent : null,
-            'amount' => (int) ($invoice->amount_due ?? 0),
-            'currency' => strtoupper((string) ($invoice->currency ?? 'USD')),
+            'razorpay_customer_id' => $payment['customer_id'] ?? null,
+            'razorpay_subscription_id' => $subscription['id'] ?? ($payment['subscription_id'] ?? null),
+            'razorpay_order_id' => $payment['order_id'] ?? null,
+            'amount' => (int) ($payment['amount'] ?? 0),
+            'currency' => strtoupper((string) ($payment['currency'] ?? config('billing.currency', 'INR'))),
             'status' => PlatformPayment::STATUS_FAILED,
-            'plan' => $this->resolvePlan($tenantId, $invoice),
-            'customer_email' => $invoice->customer_email ?? null,
-            'customer_name' => $invoice->customer_name ?? null,
-            'description' => $this->invoiceDescription($invoice),
-            'invoice_number' => $invoice->number ?? null,
-            'invoice_url' => $invoice->hosted_invoice_url ?? null,
-            'invoice_pdf' => $invoice->invoice_pdf ?? null,
+            'plan' => $this->resolvePlan($tenantId, $payment, $subscription),
+            'customer_email' => $payment['email'] ?? null,
+            'customer_name' => $payment['notes']['customer_name'] ?? null,
+            'description' => $payment['description'] ?? $this->paymentDescription($payment, $subscription),
+            'invoice_number' => $payment['invoice_id'] ?? null,
+            'invoice_url' => null,
+            'invoice_pdf' => null,
             'paid_at' => null,
         ]);
     }
@@ -113,7 +113,7 @@ class PlatformPaymentService
             'invoice_number' => $payment->invoice_number,
             'invoice_url' => $payment->invoice_url,
             'invoice_pdf' => $payment->invoice_pdf,
-            'stripe_invoice_id' => $payment->stripe_invoice_id,
+            'razorpay_payment_id' => $payment->razorpay_payment_id,
             'paid_at' => $payment->paid_at?->toIso8601String(),
             'created_at' => $payment->created_at?->toIso8601String(),
             'tenant' => $tenant ? [
@@ -126,23 +126,30 @@ class PlatformPaymentService
         ];
     }
 
-    private function resolveTenantId(object $invoice): ?string
+    private function resolveTenantId(array $payment, ?array $subscription): ?string
     {
-        $customerId = is_string($invoice->customer ?? null) ? $invoice->customer : null;
+        $notes = $subscription['notes'] ?? $payment['notes'] ?? [];
+        $tenantId = $notes['tenant_id'] ?? null;
+
+        if ($tenantId) {
+            return $tenantId;
+        }
+
+        $customerId = $payment['customer_id'] ?? null;
 
         if ($customerId) {
-            $tenantId = Tenant::query()->where('stripe_id', $customerId)->value('id');
+            $tenantId = Tenant::query()->where('razorpay_customer_id', $customerId)->value('id');
 
             if ($tenantId) {
                 return $tenantId;
             }
         }
 
-        $subscriptionId = is_string($invoice->subscription ?? null) ? $invoice->subscription : null;
+        $subscriptionId = $subscription['id'] ?? ($payment['subscription_id'] ?? null);
 
         if ($subscriptionId) {
             $tenantId = Subscription::query()
-                ->where('stripe_subscription_id', $subscriptionId)
+                ->where('razorpay_subscription_id', $subscriptionId)
                 ->value('tenant_id');
 
             if ($tenantId) {
@@ -153,7 +160,7 @@ class PlatformPaymentService
         return null;
     }
 
-    private function resolvePlan(?string $tenantId, object $invoice): ?string
+    private function resolvePlan(?string $tenantId, array $payment, ?array $subscription): ?string
     {
         if ($tenantId) {
             $plan = Subscription::query()->where('tenant_id', $tenantId)->value('plan');
@@ -163,30 +170,26 @@ class PlatformPaymentService
             }
         }
 
-        $lines = $invoice->lines->data ?? [];
+        $notes = $subscription['notes'] ?? $payment['notes'] ?? [];
+        $plan = $notes['plan'] ?? null;
 
-        foreach ($lines as $line) {
-            $plan = $line->metadata->plan ?? $line->price->metadata->plan ?? null;
-
-            if ($plan) {
-                return $plan;
-            }
+        if ($plan) {
+            return $plan;
         }
 
         return null;
     }
 
-    private function invoiceDescription(object $invoice): ?string
+    private function paymentDescription(array $payment, ?array $subscription): ?string
     {
-        if (! empty($invoice->description)) {
-            return (string) $invoice->description;
+        if (! empty($payment['description'])) {
+            return (string) $payment['description'];
         }
 
-        $lines = $invoice->lines->data ?? [];
-        $firstLine = $lines[0] ?? null;
+        $notes = $subscription['notes'] ?? [];
 
-        if ($firstLine && ! empty($firstLine->description)) {
-            return (string) $firstLine->description;
+        if (! empty($notes['plan'])) {
+            return ucfirst((string) $notes['plan']).' subscription';
         }
 
         return null;

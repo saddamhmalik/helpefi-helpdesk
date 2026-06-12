@@ -130,7 +130,7 @@ class PlatformTenantService
             'url' => $domainService->primaryUrl($tenant),
             'is_blocked' => (bool) $tenant->is_blocked,
             'created_at' => $tenant->created_at?->toIso8601String(),
-            'stripe_customer' => (bool) $tenant->stripe_id,
+            'razorpay_customer' => (bool) $tenant->razorpay_customer_id,
             'subscription' => $subscription ? [
                 'plan' => $planSlug,
                 'plan_name' => $plan['name'] ?? ($planSlug ? ucfirst($planSlug) : null),
@@ -145,7 +145,7 @@ class PlatformTenantService
                 'in_grace_period' => $subscription->isInGracePeriod(),
                 'grace_days_remaining' => $subscription->graceDaysRemaining(),
                 'cancellation_pending' => $subscription->cancelled_at !== null && $subscription->isActive(),
-                'has_stripe' => (bool) $subscription->stripe_subscription_id,
+                'has_razorpay' => (bool) $subscription->razorpay_subscription_id,
             ] : null,
         ];
     }

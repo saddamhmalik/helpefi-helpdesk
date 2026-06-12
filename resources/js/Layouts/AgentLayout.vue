@@ -23,6 +23,16 @@ const expanded = ref(false);
 const isOpen = computed(() => expanded.value);
 const pageKey = computed(() => page.url.split('?')[0]);
 
+const isFullHeightPage = computed(() => {
+    const path = pageKey.value;
+
+    if (path === '/workspace' || path.startsWith('/workspace/')) {
+        return true;
+    }
+
+    return /^\/tickets\/\d+/.test(path);
+});
+
 const isActive = (href) => {
     const path = page.url.split('?')[0];
 
@@ -170,9 +180,16 @@ const iconWrapClass = (href) => isActive(href)
                 </div>
                 <PlatformNoticeModal />
                 <SetupWarningNotifier />
-                <div class="flex min-h-0 flex-1 flex-col overflow-y-auto overflow-x-hidden px-4 pb-4 pt-3 sm:px-6 sm:pb-6 sm:pt-4">
+                <div
+                    class="flex min-h-0 flex-1 flex-col overflow-x-hidden"
+                    :class="isFullHeightPage ? 'h-full overflow-hidden' : 'overflow-y-auto px-4 pb-4 pt-3 sm:px-6 sm:pb-6 sm:pt-4'"
+                >
                     <Transition name="page" mode="out-in">
-                        <div :key="pageKey">
+                        <div
+                            :key="pageKey"
+                            class="flex min-h-0 flex-1 flex-col"
+                            :class="isFullHeightPage ? 'h-full' : ''"
+                        >
                             <slot />
                         </div>
                     </Transition>

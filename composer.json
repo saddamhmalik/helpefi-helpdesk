@@ -17,13 +17,14 @@
         "omniphx/forrest": "^2.20",
         "onelogin/php-saml": "^4.2",
         "openai-php/client": "^0.18",
+        "razorpay/razorpay": "^2.9",
         "shopify/shopify-api": "^5.10",
         "socialiteproviders/manager": "^4.8",
         "socialiteproviders/microsoft-azure": "^5.2",
         "spatie/laravel-permission": "^8.0",
         "twilio/sdk": "^8.3",
         "stancl/tenancy": "^3.10",
-        "stripe/stripe-php": "^16.0"
+        "razorpay/razorpay": "^2.9"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",

@@ -27,9 +27,9 @@ const mapPlan = (plan) => {
         name: plan.name,
         price: plan.price_monthly ?? plan.price,
         price_yearly: plan.price_yearly ?? (plan.price_monthly ?? plan.price) * 10,
-        stripe_product_id: plan.stripe_product_id ?? '',
-        stripe_price_id: plan.stripe_price_id_monthly ?? plan.stripe_price_id ?? '',
-        stripe_price_id_yearly: plan.stripe_price_id_yearly ?? '',
+        razorpay_plan_id: plan.razorpay_plan_id ?? '',
+        razorpay_plan_id: plan.razorpay_plan_id_monthly ?? plan.razorpay_plan_id ?? '',
+        razorpay_plan_id_yearly: plan.razorpay_plan_id_yearly ?? '',
         limits,
         unlimited,
         features: [...(plan.features ?? [])],
@@ -42,7 +42,7 @@ const mapAddon = (addon) => ({
     description: addon.description ?? '',
     price_monthly: addon.price_monthly ?? 0,
     enabled: addon.enabled ?? true,
-    stripe_price_id_monthly: addon.stripe_price_id_monthly ?? '',
+    razorpay_plan_id_monthly: addon.razorpay_plan_id_monthly ?? '',
 });
 
 const purging = ref(false);
@@ -96,8 +96,8 @@ const submit = () => {
             name: plan.name,
             price: plan.price,
             price_yearly: plan.price_yearly,
-            stripe_price_id: plan.stripe_price_id || null,
-            stripe_price_id_yearly: plan.stripe_price_id_yearly || null,
+            razorpay_plan_id: plan.razorpay_plan_id || null,
+            razorpay_plan_id_yearly: plan.razorpay_plan_id_yearly || null,
             limits: Object.fromEntries(
                 props.planCatalog.limits.map(({ key }) => [
                     key,
@@ -112,7 +112,7 @@ const submit = () => {
             description: addon.description || null,
             price_monthly: addon.price_monthly,
             enabled: addon.enabled,
-            stripe_price_id_monthly: addon.stripe_price_id_monthly || null,
+            razorpay_plan_id_monthly: addon.razorpay_plan_id_monthly || null,
         })),
     })).put('/admin/settings');
 };
@@ -124,9 +124,9 @@ const submit = () => {
         <div class="mx-auto max-w-4xl px-4 py-8 sm:px-6">
             <PageHeader
                 :title="$t('central.platform_settings')"
-                :description="settings.stripe_enabled
-                    ? 'Configure trial, currency, plan pricing, limits, and feature access. Plan names and prices sync to Stripe automatically when you save.'
-                    : 'Configure trial, currency, plan pricing, Stripe prices, limits, and feature access.'"
+                :description="settings.razorpay_enabled
+                    ? 'Configure trial, currency, plan pricing, limits, and feature access. Plan names and prices sync to Razorpay automatically when you save.'
+                    : 'Configure trial, currency, plan pricing, Razorpay prices, limits, and feature access.'"
             />
 
             <form class="space-y-6" @submit.prevent="submit">
@@ -212,25 +212,25 @@ const submit = () => {
                                 <input v-model="plan.name" type="text" required class="w-full rounded-xl border border-slate-200 dark:border-slate-800 px-3.5 py-2.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20" />
                                 <p v-if="form.errors[`plans.${index}.name`]" class="mt-1 text-xs text-red-600">{{ form.errors[`plans.${index}.name`] }}</p>
                             </div>
-                            <div v-if="settings.stripe_enabled" class="sm:col-span-2 rounded-xl border border-emerald-200 dark:border-emerald-900/60 bg-emerald-50 dark:bg-emerald-950/40 px-4 py-3">
+                            <div v-if="settings.razorpay_enabled" class="sm:col-span-2 rounded-xl border border-emerald-200 dark:border-emerald-900/60 bg-emerald-50 dark:bg-emerald-950/40 px-4 py-3">
                                 <p class="text-sm font-medium text-emerald-900">{{ $t('central.stripe_sync_enabled') }}</p>
                                 <p class="mt-1 text-xs text-emerald-800 dark:text-emerald-200">{{ $t('central.saving_updates_the_stripe_product_and_creates_new_monthly_or_yearly_pr') }}</p>
-                                <div v-if="plan.stripe_price_id || plan.stripe_price_id_yearly" class="mt-3 space-y-1 font-mono text-xs text-emerald-900">
-                                    <p v-if="plan.stripe_product_id">Product: {{ plan.stripe_product_id }}</p>
-                                    <p v-if="plan.stripe_price_id">Monthly price: {{ plan.stripe_price_id }}</p>
-                                    <p v-if="plan.stripe_price_id_yearly">Yearly price: {{ plan.stripe_price_id_yearly }}</p>
+                                <div v-if="plan.razorpay_plan_id || plan.razorpay_plan_id_yearly" class="mt-3 space-y-1 font-mono text-xs text-emerald-900">
+                                    <p v-if="plan.razorpay_plan_id">Product: {{ plan.razorpay_plan_id }}</p>
+                                    <p v-if="plan.razorpay_plan_id">Monthly price: {{ plan.razorpay_plan_id }}</p>
+                                    <p v-if="plan.razorpay_plan_id_yearly">Yearly price: {{ plan.razorpay_plan_id_yearly }}</p>
                                 </div>
                                 <p v-else class="mt-2 text-xs text-emerald-800 dark:text-emerald-200">{{ $t('central.stripe_ids_will_appear_here_after_the_first_save') }}</p>
                             </div>
                             <template v-else>
                                 <div>
                                     <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('central.stripe_monthly_price_id') }}</label>
-                                    <input v-model="plan.stripe_price_id" type="text" :placeholder="$t('central.price')" class="w-full rounded-xl border border-slate-200 dark:border-slate-800 px-3.5 py-2.5 font-mono text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20" />
+                                    <input v-model="plan.razorpay_plan_id" type="text" :placeholder="$t('central.price')" class="w-full rounded-xl border border-slate-200 dark:border-slate-800 px-3.5 py-2.5 font-mono text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20" />
                                     <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">{{ $t('central.recurring_monthly_price_from_your_stripe_dashboard') }}</p>
                                 </div>
                                 <div>
                                     <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('central.stripe_yearly_price_id') }}</label>
-                                    <input v-model="plan.stripe_price_id_yearly" type="text" :placeholder="$t('central.price')" class="w-full rounded-xl border border-slate-200 dark:border-slate-800 px-3.5 py-2.5 font-mono text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20" />
+                                    <input v-model="plan.razorpay_plan_id_yearly" type="text" :placeholder="$t('central.price')" class="w-full rounded-xl border border-slate-200 dark:border-slate-800 px-3.5 py-2.5 font-mono text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20" />
                                     <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">{{ $t('central.recurring_yearly_price_from_your_stripe_dashboard') }}</p>
                                 </div>
                             </template>
@@ -310,7 +310,7 @@ const submit = () => {
                 <section class="space-y-4">
                     <div>
                         <h2 class="font-semibold text-slate-900 dark:text-slate-100">Paid add-ons</h2>
-                        <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">Monthly add-ons tenants purchase on top of their base plan. Prices sync to Stripe when enabled.</p>
+                        <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">Monthly add-ons tenants purchase on top of their base plan. Prices sync to Razorpay when enabled.</p>
                     </div>
 
                     <div
@@ -341,12 +341,12 @@ const submit = () => {
                                     <input v-model.number="addon.price_monthly" type="number" min="0" max="99999" required class="min-w-0 flex-1 border-0 bg-transparent px-3 py-2.5 text-sm" />
                                 </div>
                             </div>
-                            <div v-if="!settings.stripe_enabled" class="sm:col-span-2">
-                                <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Stripe monthly price ID</label>
-                                <input v-model="addon.stripe_price_id_monthly" type="text" class="w-full rounded-xl border border-slate-200 dark:border-slate-800 px-3.5 py-2.5 font-mono text-sm" />
+                            <div v-if="!settings.razorpay_enabled" class="sm:col-span-2">
+                                <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Razorpay monthly price ID</label>
+                                <input v-model="addon.razorpay_plan_id_monthly" type="text" class="w-full rounded-xl border border-slate-200 dark:border-slate-800 px-3.5 py-2.5 font-mono text-sm" />
                             </div>
-                            <div v-else-if="addon.stripe_price_id_monthly" class="sm:col-span-2 font-mono text-xs text-emerald-800 dark:text-emerald-200">
-                                Monthly price: {{ addon.stripe_price_id_monthly }}
+                            <div v-else-if="addon.razorpay_plan_id_monthly" class="sm:col-span-2 font-mono text-xs text-emerald-800 dark:text-emerald-200">
+                                Monthly price: {{ addon.razorpay_plan_id_monthly }}
                             </div>
                             <div class="sm:col-span-2">
                                 <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Description</label>

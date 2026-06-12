@@ -3,6 +3,9 @@ import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import AgentLayout from '../../Layouts/AgentLayout.vue';
 import AppConfirmDialog from '../../Components/AppConfirmDialog.vue';
+import AppIconAction from '../../Components/AppIconAction.vue';
+import AppDeleteAction from '../../Components/AppDeleteAction.vue';
+import AppRowActions from '../../Components/AppRowActions.vue';
 import AppTabs from '../../Components/AppTabs.vue';
 import PageHeader from '../../Components/PageHeader.vue';
 import ListPanel from '../../Components/ListPanel.vue';
@@ -112,14 +115,14 @@ const removePortalAccess = (contact) => {
         </ListPanel>
 
         <DataTable>
-            <thead class="bg-slate-50">
+            <thead class="agent-panel-muted">
                 <tr>
                     <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{{ $t('contacts.customer') }}</th>
                     <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{{ $t('contacts.access') }}</th>
                     <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{{ $t('contacts.organization') }}</th>
                     <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{{ $t('contacts.tags') }}</th>
                     <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{{ $t('contacts.tickets') }}</th>
-                    <th v-if="isAdmin()" class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{{ $t('contacts.actions') }}</th>
+                    <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{{ $t('contacts.actions') }}</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
@@ -145,18 +148,24 @@ const removePortalAccess = (contact) => {
                         <span v-if="!contact.tags?.length" class="text-sm text-slate-400 dark:text-slate-500">—</span>
                     </td>
                     <td class="px-4 py-3 text-sm text-slate-600 dark:text-slate-400">{{ contact.tickets_count }}</td>
-                    <td v-if="isAdmin()" class="px-4 py-3">
-                        <button
-                            v-if="contact.portal_user"
-                            type="button"
-                            class="text-sm text-red-600 hover:text-red-700 dark:text-red-300"
-                            @click="removePortalAccess(contact)"
-                        >{{ $t('contacts.revoke_portal') }}</button>
-                        <span v-else class="text-xs text-slate-400 dark:text-slate-500">—</span>
+                    <td class="px-4 py-3">
+                        <AppRowActions>
+                            <AppIconAction
+                                icon="view"
+                                variant="primary"
+                                :label="$t('contacts.view_customer')"
+                                :href="`/contacts/${contact.id}`"
+                            />
+                            <AppDeleteAction
+                                v-if="isAdmin() && contact.portal_user"
+                                :label="$t('contacts.revoke_portal')"
+                                @click="removePortalAccess(contact)"
+                            />
+                        </AppRowActions>
                     </td>
                 </tr>
                 <tr v-if="!contacts.data.length">
-                    <td :colspan="isAdmin() ? 6 : 5" class="px-4 py-12 text-center text-sm text-slate-500 dark:text-slate-400">
+                    <td colspan="6" class="px-4 py-12 text-center text-sm text-slate-500 dark:text-slate-400">
                         No customers match your search.
                     </td>
                 </tr>

@@ -2,6 +2,9 @@
 import { Head, Link, router } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import AgentLayout from '../../Layouts/AgentLayout.vue';
+import AppIconAction from '../../Components/AppIconAction.vue';
+import AppRowActions from '../../Components/AppRowActions.vue';
+import DataTable from '../../Components/DataTable.vue';
 import ServiceDeskNav from '../../Components/ServiceDeskNav.vue';
 import PageHeader from '../../Components/PageHeader.vue';
 import { useI18n } from 'vue-i18n';
@@ -37,11 +40,11 @@ const shiftMonth = (delta) => {
 };
 
 const riskBadgeClass = (risk) => {
-    if (risk === 'critical') return 'bg-red-100 text-red-800 dark:text-red-200';
-    if (risk === 'high') return 'bg-orange-100 text-orange-800';
-    if (risk === 'low') return 'bg-emerald-100 text-emerald-800 dark:text-emerald-200';
+    if (risk === 'critical') return 'bg-red-100 text-red-800 dark:bg-red-950/50 dark:text-red-200';
+    if (risk === 'high') return 'bg-orange-100 text-orange-800 dark:bg-orange-950/50 dark:text-orange-200';
+    if (risk === 'low') return 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-200';
 
-    return 'bg-amber-100 text-amber-800';
+    return 'bg-amber-100 text-amber-800 dark:bg-amber-950/50 dark:text-amber-200';
 };
 
 const formatRange = (entry) => {
@@ -71,44 +74,53 @@ const formatRange = (entry) => {
         <ServiceDeskNav />
 
         <div class="mb-4 flex items-center justify-between gap-3">
-            <button type="button" class="rounded-lg bg-white dark:bg-slate-900 px-3 py-1.5 text-sm font-medium text-slate-700 dark:text-slate-300 ring-1 ring-slate-200 dark:ring-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800" @click="shiftMonth(-1)">{{ $t('service_desk.previous') }}</button>
-            <h2 class="text-sm font-semibold text-slate-900 dark:text-slate-100">{{ monthLabel }}</h2>
-            <button type="button" class="rounded-lg bg-white dark:bg-slate-900 px-3 py-1.5 text-sm font-medium text-slate-700 dark:text-slate-300 ring-1 ring-slate-200 dark:ring-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800" @click="shiftMonth(1)">{{ $t('service_desk.next') }}</button>
+            <button type="button" class="rounded-lg agent-panel px-3 py-1.5 text-sm font-medium agent-text ring-1 agent-border transition agent-hover-surface" @click="shiftMonth(-1)">{{ $t('service_desk.previous') }}</button>
+            <h2 class="text-sm font-semibold agent-text">{{ monthLabel }}</h2>
+            <button type="button" class="rounded-lg agent-panel px-3 py-1.5 text-sm font-medium agent-text ring-1 agent-border transition agent-hover-surface" @click="shiftMonth(1)">{{ $t('service_desk.next') }}</button>
         </div>
 
-        <div class="overflow-hidden rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm">
-            <table class="min-w-full divide-y divide-slate-100 dark:divide-slate-800">
-                <thead class="bg-slate-50">
-                    <tr>
-                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{{ $t('service_desk.change') }}</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{{ $t('service_desk.schedule') }}</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{{ $t('service_desk.risk') }}</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{{ $t('service_desk.assignee') }}</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{{ $t('service_desk.status') }}</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
-                    <tr v-for="entry in entries" :key="entry.id" class="hover:bg-slate-50 dark:hover:bg-slate-800">
-                        <td class="px-4 py-3">
-                            <Link :href="`/tickets/${entry.ticket_id}`" class="font-medium text-blue-600 hover:text-blue-700 dark:hover:text-blue-300 dark:text-blue-300">
-                                {{ entry.number }}
-                            </Link>
-                            <p class="mt-0.5 max-w-md truncate text-sm text-slate-700 dark:text-slate-300">{{ entry.subject }}</p>
-                        </td>
-                        <td class="px-4 py-3 text-sm text-slate-600 dark:text-slate-400">{{ formatRange(entry) }}</td>
-                        <td class="px-4 py-3">
-                            <span class="rounded-full px-2 py-0.5 text-xs font-medium capitalize" :class="riskBadgeClass(entry.risk)">
-                                {{ entry.risk }}
-                            </span>
-                        </td>
-                        <td class="px-4 py-3 text-sm text-slate-600 dark:text-slate-400">{{ entry.assignee || '—' }}</td>
-                        <td class="px-4 py-3 text-sm text-slate-600 dark:text-slate-400">{{ entry.status || '—' }}</td>
-                    </tr>
-                    <tr v-if="!entries?.length">
-                        <td colspan="5" class="px-4 py-12 text-center text-sm text-slate-500 dark:text-slate-400">No scheduled changes in this period.</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
+        <DataTable>
+            <thead class="agent-panel-muted">
+                <tr>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{{ $t('service_desk.change') }}</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{{ $t('service_desk.schedule') }}</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{{ $t('service_desk.risk') }}</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{{ $t('service_desk.assignee') }}</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{{ $t('service_desk.status') }}</th>
+                    <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{{ $t('service_desk.actions') }}</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+                <tr v-for="entry in entries" :key="entry.id" class="hover:bg-slate-50 dark:hover:bg-slate-800">
+                    <td class="px-4 py-3">
+                        <Link :href="`/tickets/${entry.ticket_id}`" class="font-medium text-blue-600 hover:text-blue-700 dark:hover:text-blue-300 dark:text-blue-300">
+                            {{ entry.number }}
+                        </Link>
+                        <p class="mt-0.5 max-w-md truncate text-sm text-slate-700 dark:text-slate-300">{{ entry.subject }}</p>
+                    </td>
+                    <td class="px-4 py-3 text-sm text-slate-600 dark:text-slate-400">{{ formatRange(entry) }}</td>
+                    <td class="px-4 py-3">
+                        <span class="rounded-full px-2 py-0.5 text-xs font-medium capitalize" :class="riskBadgeClass(entry.risk)">
+                            {{ entry.risk }}
+                        </span>
+                    </td>
+                    <td class="px-4 py-3 text-sm text-slate-600 dark:text-slate-400">{{ entry.assignee || '—' }}</td>
+                    <td class="px-4 py-3 text-sm text-slate-600 dark:text-slate-400">{{ entry.status || '—' }}</td>
+                    <td class="px-4 py-3">
+                        <AppRowActions>
+                            <AppIconAction
+                                icon="view"
+                                variant="primary"
+                                :label="$t('service_desk.view_ticket')"
+                                :href="`/tickets/${entry.ticket_id}`"
+                            />
+                        </AppRowActions>
+                    </td>
+                </tr>
+                <tr v-if="!entries?.length">
+                    <td colspan="6" class="px-4 py-12 text-center text-sm text-slate-500 dark:text-slate-400">{{ $t('service_desk.no_scheduled_changes') }}</td>
+                </tr>
+            </tbody>
+        </DataTable>
     </AgentLayout>
 </template>

@@ -18,8 +18,8 @@ class PlatformSubscriptionRepository
             $query->where(function ($builder) use ($term) {
                 $builder
                     ->where('plan', 'like', $term)
-                    ->orWhere('stripe_subscription_id', 'like', $term)
-                    ->orWhere('stripe_price_id', 'like', $term)
+                    ->orWhere('razorpay_subscription_id', 'like', $term)
+                    ->orWhere('razorpay_plan_id', 'like', $term)
                     ->orWhereHas('tenant', function ($tenantQuery) use ($term) {
                         $tenantQuery
                             ->where('name', 'like', $term)

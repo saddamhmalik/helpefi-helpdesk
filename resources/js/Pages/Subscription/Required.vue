@@ -19,10 +19,10 @@ const form = useForm({
     plan: props.billing.available_plans[0]?.slug ?? 'starter',
 });
 
-const { billingInterval, intervalSuffix, planPrice, stripeReadyForInterval } = useBillingInterval();
+const { billingInterval, intervalSuffix, planPrice, billingReadyForInterval } = useBillingInterval();
 
 const purchase = () => {
-    if (props.billing.stripe_enabled) {
+    if (props.billing.razorpay_enabled) {
         window.location.href = `/settings/billing/checkout?plan=${encodeURIComponent(form.plan)}&interval=${encodeURIComponent(billingInterval.value)}`;
         return;
     }
@@ -84,18 +84,18 @@ const { formatPrice } = useCurrency(() => props.billing.currency);
                         <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
                             {{ plan.limits.agents }} agents · {{ plan.limits.tickets_monthly }} tickets/mo
                         </p>
-                        <p v-if="billing.stripe_enabled && !stripeReadyForInterval(plan)" class="mt-2 text-xs text-amber-700 dark:text-amber-300">
-                            Stripe price not configured for this plan ({{ billingInterval }})
+                        <p v-if="billing.razorpay_enabled && !billingReadyForInterval(plan)" class="mt-2 text-xs text-amber-700 dark:text-amber-300">
+                            Razorpay price not configured for this plan ({{ billingInterval }})
                         </p>
                     </div>
                 </label>
 
                 <button type="button" class="w-full rounded-xl bg-blue-600 px-4 py-3 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-70" :disabled="form.processing" @click="purchase">
-                    {{ form.processing ? 'Redirecting…' : (billing.stripe_enabled ? 'Continue to checkout' : 'Activate plan') }}
+                    {{ form.processing ? 'Redirecting…' : (billing.razorpay_enabled ? 'Continue to checkout' : 'Activate plan') }}
                 </button>
 
                 <p class="text-center text-xs text-slate-500 dark:text-slate-400">
-                    {{ billing.stripe_enabled ? 'You will be redirected to Stripe to complete payment.' : 'Simulated checkout for local development — Stripe is not configured.' }}
+                    {{ billing.razorpay_enabled ? 'You will be redirected to Razorpay to complete payment.' : 'Simulated checkout for local development — Razorpay is not configured.' }}
                 </p>
             </div>
 

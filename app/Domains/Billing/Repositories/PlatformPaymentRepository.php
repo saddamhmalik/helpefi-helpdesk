@@ -8,10 +8,10 @@ use Illuminate\Support\Carbon;
 
 class PlatformPaymentRepository
 {
-    public function upsertByInvoiceId(string $invoiceId, array $data): PlatformPayment
+    public function upsertByPaymentId(string $paymentId, array $data): PlatformPayment
     {
         return PlatformPayment::query()->updateOrCreate(
-            ['stripe_invoice_id' => $invoiceId],
+            ['razorpay_payment_id' => $paymentId],
             $data,
         );
     }
@@ -29,7 +29,7 @@ class PlatformPaymentRepository
                     ->where('customer_email', 'like', "%{$search}%")
                     ->orWhere('customer_name', 'like', "%{$search}%")
                     ->orWhere('invoice_number', 'like', "%{$search}%")
-                    ->orWhere('stripe_invoice_id', 'like', "%{$search}%")
+                    ->orWhere('razorpay_payment_id', 'like', "%{$search}%")
                     ->orWhereHas('tenant', function ($tenantQuery) use ($search) {
                         $tenantQuery
                             ->where('name', 'like', "%{$search}%")

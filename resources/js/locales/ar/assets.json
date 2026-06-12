@@ -100,6 +100,7 @@
         "new_type": "نوع جديد",
         "slug": "Slug",
         "actions": "الإجراءات",
+        "view_asset": "عرض الأصل",
         "edit": "تعديل",
         "cancel": "إلغاء",
         "examples_printer_router_docking_station_vpn_license": "أمثلة: طابعة، موجّه، محطة إرساء، ترخيص VPN.",

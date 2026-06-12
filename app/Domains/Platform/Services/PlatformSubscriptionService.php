@@ -56,9 +56,9 @@ class PlatformSubscriptionService
             'grace_days_remaining' => $subscription->graceDaysRemaining(),
             'cancellation_pending' => $subscription->cancelled_at !== null && $subscription->isActive(),
             'cancellation_grace_days' => $this->lifecycle->graceDays(),
-            'stripe_subscription_id' => $subscription->stripe_subscription_id,
-            'stripe_price_id' => $subscription->stripe_price_id,
-            'has_stripe' => (bool) $subscription->stripe_subscription_id,
+            'razorpay_subscription_id' => $subscription->razorpay_subscription_id,
+            'razorpay_plan_id' => $subscription->razorpay_plan_id,
+            'has_razorpay' => (bool) $subscription->razorpay_subscription_id,
             'updated_at' => $subscription->updated_at?->toIso8601String(),
             'tenant' => $tenant ? [
                 'id' => $tenant->id,
@@ -69,7 +69,7 @@ class PlatformSubscriptionService
                 'domain' => $domain,
                 'url' => $tenant ? $domainService->primaryUrl($tenant) : null,
                 'is_blocked' => (bool) $tenant->is_blocked,
-                'stripe_customer' => (bool) $tenant->stripe_id,
+                'razorpay_customer' => (bool) $tenant->razorpay_customer_id,
             ] : null,
         ];
     }

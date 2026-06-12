@@ -24,7 +24,7 @@ class Tenant extends BaseTenant implements TenantWithDatabase
             'slug',
             'is_blocked',
             'custom_domain_redirect',
-            'stripe_id',
+            'razorpay_customer_id',
             'pm_type',
             'pm_last_four',
             'created_at',

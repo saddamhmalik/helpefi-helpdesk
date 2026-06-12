@@ -505,7 +505,7 @@ onUnmounted(() => {
 <template>
     <Head :title="$t('workspace.workspace')" />
     <AgentLayout>
-        <div class="flex h-0 min-h-0 flex-1 basis-0 bg-slate-100 dark:bg-slate-900">
+        <div class="flex min-h-0 flex-1 bg-slate-100 dark:bg-slate-900">
             <aside class="flex w-[min(100%,20rem)] shrink-0 flex-col overflow-hidden border-r agent-border agent-panel lg:w-80">
                 <div class="shrink-0 border-b agent-border-subtle agent-panel-muted px-3 py-2.5">
                     <div class="flex items-center justify-between gap-2">

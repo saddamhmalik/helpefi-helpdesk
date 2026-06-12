@@ -73,6 +73,7 @@ class SubscriptionLifecycleServiceTest extends TestCase
         $service = new SubscriptionLifecycleService(
             new SubscriptionRepository,
             Mockery::mock(PlanRepository::class),
+            Mockery::mock(\App\Domains\Tenancy\Services\CentralSettingsService::class),
         );
 
         $this->assertSame(1, $service->enforceExpiredGrace());

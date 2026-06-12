@@ -14,8 +14,8 @@ const props = defineProps({
     stats: Object,
     currency: Object,
     filters: Object,
-    stripe_enabled: Boolean,
-    stripe_webhooks_configured: { type: Boolean, default: false },
+    razorpay_enabled: Boolean,
+    razorpay_webhooks_configured: { type: Boolean, default: false },
 });
 
 const { formatDateTime } = useDateTime();
@@ -99,12 +99,12 @@ const hasFilters = computed(() => Boolean(props.filters.q) || (props.filters.sta
                 <PlatformStatCard :label="$t('central.all_records')" :value="stats.payment_count" />
             </div>
 
-            <div v-if="!stripe_enabled" class="mb-4 rounded-xl border border-amber-200 dark:border-amber-900/60 bg-amber-50 dark:bg-amber-950/40 px-4 py-3 text-sm text-amber-900">
-                Stripe is not configured. Add <code class="rounded bg-amber-100 px-1">STRIPE_ENABLED=true</code>, your test API keys, and billing vars to <code class="rounded bg-amber-100 px-1">.env.docker</code> (or run <code class="rounded bg-amber-100 px-1">./docker/init-env.sh</code> to copy them from <code class="rounded bg-amber-100 px-1">.env</code>), then restart Docker.
+            <div v-if="!razorpay_enabled" class="mb-4 rounded-xl border border-amber-200 dark:border-amber-900/60 bg-amber-50 dark:bg-amber-950/40 px-4 py-3 text-sm text-amber-900">
+                Razorpay is not configured. Add <code class="rounded bg-amber-100 px-1">RAZORPAY_ENABLED=true</code>, your test API keys, and billing vars to <code class="rounded bg-amber-100 px-1">.env.docker</code> (or run <code class="rounded bg-amber-100 px-1">./docker/init-env.sh</code> to copy them from <code class="rounded bg-amber-100 px-1">.env</code>), then restart Docker.
             </div>
 
-            <div v-else-if="!stripe_webhooks_configured" class="mb-4 rounded-xl border border-amber-200 dark:border-amber-900/60 bg-amber-50 dark:bg-amber-950/40 px-4 py-3 text-sm text-amber-900">
-                Stripe API keys are configured, but webhooks are not. Run <code class="rounded bg-amber-100 px-1">./docker/stripe-listen.sh</code>, copy the <code class="rounded bg-amber-100 px-1">whsec_...</code> secret into <code class="rounded bg-amber-100 px-1">STRIPE_WEBHOOK_SECRET</code> in <code class="rounded bg-amber-100 px-1">.env.docker</code>, and restart Docker so invoice payments appear here.
+            <div v-else-if="!razorpay_webhooks_configured" class="mb-4 rounded-xl border border-amber-200 dark:border-amber-900/60 bg-amber-50 dark:bg-amber-950/40 px-4 py-3 text-sm text-amber-900">
+                Razorpay API keys are configured, but webhooks are not. Add your webhook secret to <code class="rounded bg-amber-100 px-1">RAZORPAY_WEBHOOK_SECRET</code>, point Razorpay webhooks to <code class="rounded bg-amber-100 px-1">/razorpay/webhook</code>, and restart the app so subscription payments appear here.
             </div>
 
             <div class="mb-4 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
@@ -184,7 +184,7 @@ const hasFilters = computed(() => Boolean(props.filters.q) || (props.filters.sta
                                     </span>
                                 </td>
                                 <td class="px-4 py-3">
-                                    <p class="font-mono text-xs text-slate-600 dark:text-slate-400">{{ payment.invoice_number || payment.stripe_invoice_id }}</p>
+                                    <p class="font-mono text-xs text-slate-600 dark:text-slate-400">{{ payment.invoice_number || payment.razorpay_payment_id }}</p>
                                     <p v-if="payment.description" class="mt-1 max-w-xs truncate text-xs text-slate-500 dark:text-slate-400" :title="payment.description">
                                         {{ payment.description }}
                                     </p>
@@ -211,7 +211,7 @@ const hasFilters = computed(() => Boolean(props.filters.q) || (props.filters.sta
                             <tr v-if="!payments.data.length">
                                 <td colspan="7" class="px-4 py-12 text-center text-slate-500 dark:text-slate-400">
                                     <template v-if="hasFilters">No payments match your filters.</template>
-                                    <template v-else>No payments recorded yet. Payments appear here when Stripe sends invoice webhooks.</template>
+                                    <template v-else>No payments recorded yet. Payments appear here when Razorpay sends invoice webhooks.</template>
                                 </td>
                             </tr>
                         </tbody>

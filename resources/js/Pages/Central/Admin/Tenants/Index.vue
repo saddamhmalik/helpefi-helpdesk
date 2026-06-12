@@ -16,7 +16,7 @@ const props = defineProps({
     stats: Object,
     filters: Object,
     plans: { type: Array, default: () => [] },
-    stripe_enabled: Boolean,
+    razorpay_enabled: Boolean,
 });
 
 const { formatDateTime, formatDate } = useDateTime();
@@ -291,7 +291,7 @@ const hasFilters = computed(() => Boolean(props.filters.q) || (props.filters.sta
                                     <p v-if="tenant.subscription?.plan_price && !tenant.subscription?.on_trial" class="text-xs text-slate-500 dark:text-slate-400">
                                         ${{ tenant.subscription.plan_price }}/mo
                                     </p>
-                                    <p v-if="stripe_enabled && tenant.subscription?.has_stripe" class="mt-1 text-[10px] font-semibold uppercase tracking-wide text-violet-600">
+                                    <p v-if="razorpay_enabled && tenant.subscription?.has_razorpay" class="mt-1 text-[10px] font-semibold uppercase tracking-wide text-violet-600">
                                         {{ $t('central.stripe_billing') }}
                                     </p>
                                     <p v-if="tenant.subscription?.renews_at && !tenant.subscription?.on_trial" class="mt-1 text-xs text-slate-400 dark:text-slate-500">

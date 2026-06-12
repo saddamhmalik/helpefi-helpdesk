@@ -19,7 +19,7 @@ class BillingService
         private PlanRepository $plans,
         private UsageRepository $usage,
         private CentralSettingsService $centralSettings,
-        private StripeBillingService $stripe,
+        private RazorpayBillingService $razorpay,
     ) {
     }
 
@@ -61,15 +61,15 @@ class BillingService
                     'price_yearly' => $item['price_yearly'] ?? PlanCatalogDefinition::defaultYearlyPrice((int) ($item['price_monthly'] ?? $item['price'] ?? 0)),
                     'limits' => $this->formattedLimits($item['limits']),
                     'features' => $item['features'],
-                    'stripe_ready' => ! empty(PlanCatalogDefinition::stripePriceIdForInterval($item, 'month'))
-                        || ! empty(PlanCatalogDefinition::stripePriceIdForInterval($item, 'year')),
-                    'stripe_ready_monthly' => ! empty(PlanCatalogDefinition::stripePriceIdForInterval($item, 'month')),
-                    'stripe_ready_yearly' => ! empty(PlanCatalogDefinition::stripePriceIdForInterval($item, 'year')),
+                    'billing_ready' => ! empty(PlanCatalogDefinition::razorpayPlanIdForInterval($item, 'month'))
+                        || ! empty(PlanCatalogDefinition::razorpayPlanIdForInterval($item, 'year')),
+                    'billing_ready_monthly' => ! empty(PlanCatalogDefinition::razorpayPlanIdForInterval($item, 'month')),
+                    'billing_ready_yearly' => ! empty(PlanCatalogDefinition::razorpayPlanIdForInterval($item, 'year')),
                 ])
                 ->values()
                 ->all(),
-            'stripe_enabled' => $this->stripe->isEnabled(),
-            'has_stripe_subscription' => (bool) $subscription->stripe_subscription_id,
+            'razorpay_enabled' => $this->razorpay->isEnabled(),
+            'has_razorpay_subscription' => (bool) $subscription->razorpay_subscription_id,
             'trial_offer' => $this->trialOffer(),
         ];
     }
@@ -153,12 +153,12 @@ class BillingService
             fn (string $key) => $key !== $addonKey,
         ));
 
-        $stripeItems = $subscription->stripe_addon_items ?? [];
-        unset($stripeItems[$addonKey]);
+        $razorpayAddonItems = $subscription->razorpay_addon_items ?? [];
+        unset($razorpayAddonItems[$addonKey]);
 
         return $this->subscriptions->update($subscription, [
             'active_addons' => $active,
-            'stripe_addon_items' => $stripeItems,
+            'razorpay_addon_items' => $razorpayAddonItems,
         ]);
     }
 
@@ -172,8 +172,8 @@ class BillingService
             return $this->activateAddon($addonKey);
         }
 
-        if ($this->stripe->isEnabled()) {
-            return $this->stripe->purchaseAddon($addonKey, $customerEmail);
+        if ($this->razorpay->isEnabled()) {
+            return $this->razorpay->purchaseAddon($addonKey, $customerEmail);
         }
 
         return $this->activateAddon($addonKey);
@@ -181,8 +181,8 @@ class BillingService
 
     public function cancelAddon(string $addonKey): Subscription
     {
-        if ($this->stripe->isEnabled()) {
-            return $this->stripe->cancelAddon($addonKey);
+        if ($this->razorpay->isEnabled()) {
+            return $this->razorpay->cancelAddon($addonKey);
         }
 
         return $this->deactivateAddon($addonKey);
@@ -230,9 +230,9 @@ class BillingService
         ]);
     }
 
-    public function usesStripeCheckout(): bool
+    public function usesRazorpayCheckout(): bool
     {
-        return $this->stripe->isEnabled();
+        return $this->razorpay->isEnabled();
     }
 
     public function initiatePlanChange(
@@ -244,16 +244,16 @@ class BillingService
     ): string|Subscription {
         $this->plans->find($slug);
 
-        if ($this->stripe->isEnabled()) {
-            return $this->stripe->checkoutUrl($slug, $customerEmail, $successUrl, $cancelUrl, $interval);
+        if ($this->razorpay->isEnabled()) {
+            return $this->razorpay->checkoutUrl($slug, $customerEmail, $successUrl, $cancelUrl, $interval);
         }
 
         return $this->changePlan($slug, $interval);
     }
 
-    public function billingPortalUrl(string $customerEmail, string $returnUrl): string
+    public function cancelSubscription(): Subscription
     {
-        return $this->stripe->portalUrl($customerEmail, $returnUrl);
+        return $this->razorpay->cancelSubscription();
     }
 
     public function changePlan(string $slug, string $interval = 'month'): Subscription
@@ -374,8 +374,8 @@ class BillingService
                 return true;
             }
 
-            if ($this->stripe->isEnabled()) {
-                return isset(($subscription->stripe_addon_items ?? [])[$addonKey]);
+            if ($this->razorpay->isEnabled()) {
+                return isset(($subscription->razorpay_addon_items ?? [])[$addonKey]);
             }
 
             return $subscription->isActive();
@@ -397,8 +397,8 @@ class BillingService
                 'active' => in_array($key, $subscription->active_addons ?? [], true),
                 'trial_access' => $subscription->isOnTrial()
                     && in_array($key, $subscription->active_addons ?? [], true),
-                'paid' => isset(($subscription->stripe_addon_items ?? [])[$key]),
-                'stripe_ready' => ! empty(AddonCatalogDefinition::stripePriceId($addon)),
+                'paid' => isset(($subscription->razorpay_addon_items ?? [])[$key]),
+                'billing_ready' => ! empty(AddonCatalogDefinition::razorpayPlanId($addon)),
             ])
             ->values()
             ->all();

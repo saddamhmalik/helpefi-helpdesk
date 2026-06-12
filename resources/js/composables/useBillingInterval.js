@@ -26,12 +26,12 @@ export function useBillingInterval() {
         return Math.max(0, Math.round((1 - yearly / annualAtMonthly) * 100));
     };
 
-    const stripeReadyForInterval = (plan) => {
+    const billingReadyForInterval = (plan) => {
         if (billingInterval.value === 'year') {
-            return plan.stripe_ready_yearly ?? false;
+            return plan.billing_ready_yearly ?? false;
         }
 
-        return plan.stripe_ready_monthly ?? plan.stripe_ready ?? false;
+        return plan.billing_ready_monthly ?? plan.billing_ready ?? false;
     };
 
     return {
@@ -39,6 +39,6 @@ export function useBillingInterval() {
         intervalSuffix,
         planPrice,
         yearlySavingsPercent,
-        stripeReadyForInterval,
+        billingReadyForInterval,
     };
 }

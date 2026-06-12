@@ -35,7 +35,7 @@ const form = useForm({
     plan: props.billing.plan?.slug ?? props.billing.available_plans[0]?.slug ?? 'starter',
 });
 
-const { billingInterval, intervalSuffix, planPrice, stripeReadyForInterval } = useBillingInterval();
+const { billingInterval, intervalSuffix, planPrice, billingReadyForInterval } = useBillingInterval();
 
 const checkoutSuccess = computed(() => {
     const params = new URLSearchParams(window.location.search);
@@ -53,16 +53,16 @@ const selectedPlan = computed(() => (
     props.billing.available_plans.find((plan) => plan.slug === form.plan)
 ));
 
-const stripePlansReady = computed(() => (
-    props.billing.available_plans.some((plan) => plan.stripe_ready_monthly || plan.stripe_ready_yearly || plan.stripe_ready)
+const billingPlansReady = computed(() => (
+    props.billing.available_plans.some((plan) => plan.billing_ready_monthly || plan.billing_ready_yearly || plan.billing_ready)
 ));
 
-const selectedPlanStripeReady = computed(() => {
+const selectedPlanBillingReady = computed(() => {
     if (!selectedPlan.value) {
         return false;
     }
 
-    return stripeReadyForInterval(selectedPlan.value);
+    return billingReadyForInterval(selectedPlan.value);
 });
 
 const currentPlanSuffix = computed(() => {
@@ -74,9 +74,9 @@ const currentPlanSuffix = computed(() => {
 });
 
 const savePlan = () => {
-    if (props.billing.stripe_enabled) {
-        if (!selectedPlanStripeReady.value) {
-            form.setError('plan', 'This plan is not configured for Stripe billing at the selected billing interval yet. Ask your platform admin to add Stripe price IDs.');
+    if (props.billing.razorpay_enabled) {
+        if (!selectedPlanBillingReady.value) {
+            form.setError('plan', 'This plan is not configured for Razorpay billing at the selected billing interval yet. Ask your platform admin to add Razorpay price IDs.');
             return;
         }
 
@@ -90,8 +90,8 @@ const savePlan = () => {
     })).put('/settings/billing/plan', { preserveScroll: true });
 };
 
-const openPortal = () => {
-    window.location.href = '/settings/billing/portal';
+const cancelSubscription = () => {
+    router.post('/settings/billing/cancel', {}, { preserveScroll: true });
 };
 
 const usagePercent = (key) => {
@@ -142,18 +142,30 @@ const addonPurchaseDisabled = (addon) => {
         return false;
     }
 
-    return props.billing.stripe_enabled && !addon.stripe_ready;
+    return props.billing.razorpay_enabled && !addon.billing_ready;
 };
 
 const addonStatusLabel = (addon) => {
     if (addon.trial_access) {
-        return 'Trial access';
+        return t('settings_billing.trial_access');
     }
 
-    return 'Active';
+    return t('settings_billing.addon_active');
 };
 
 const { formatPrice } = useCurrency(() => props.billing.currency);
+
+const trialRemainingLabel = computed(() => {
+    const days = props.billing.trial_days_remaining;
+
+    if (days == null) {
+        return t('settings_billing.free_trial');
+    }
+
+    return t(days === 1 ? 'settings_billing.trial_remaining_one' : 'settings_billing.trial_remaining_other', { days });
+});
+
+const formatLimit = (limit) => (limit === 'unlimited' ? t('settings_billing.unlimited') : limit);
 </script>
 
 <template>
@@ -169,20 +181,22 @@ const { formatPrice } = useCurrency(() => props.billing.currency);
         />
 
         <div v-if="checkoutSuccess" class="mb-4 rounded-xl border border-emerald-200 dark:border-emerald-900/60 bg-emerald-50 dark:bg-emerald-950/40 px-4 py-3 text-sm text-emerald-800 dark:text-emerald-200">
-            Payment received. Your plan will update shortly once Stripe confirms the subscription.
+            Payment received. Your plan will update shortly once Razorpay confirms the subscription.
         </div>
         <div v-if="checkoutCancelled" class="mb-4 rounded-xl border border-amber-200 dark:border-amber-900/60 bg-amber-50 dark:bg-amber-950/40 px-4 py-3 text-sm text-amber-800">
             Checkout was cancelled. No changes were made to your subscription.
         </div>
-        <div v-if="billing.stripe_enabled && !stripePlansReady" class="mb-4 rounded-xl border border-red-200 dark:border-red-900/60 bg-red-50 dark:bg-red-950/40 px-4 py-3 text-sm text-red-800 dark:text-red-200">
-            Stripe is connected but no plans have price IDs configured yet. Add Stripe price IDs in platform admin → Settings.
+        <div v-if="billing.razorpay_enabled && !billingPlansReady" class="mb-4 rounded-xl border border-red-200 dark:border-red-900/60 bg-red-50 dark:bg-red-950/40 px-4 py-3 text-sm text-red-800 dark:text-red-200">
+            Razorpay is connected but no plans have price IDs configured yet. Add Razorpay price IDs in platform admin → Settings.
         </div>
 
         <div v-show="activeSection === 'usage'" class="agent-card">
                     <h2 class="text-lg font-medium agent-text">{{ $t('settings_billing.current_plan') }}</h2>
-                    <div v-if="billing.on_trial" class="mt-3 rounded-lg border border-blue-200 dark:border-blue-900/60 bg-blue-50 dark:bg-blue-950/40 px-3 py-2 text-sm text-blue-900">
-                        Free trial · {{ billing.trial_days_remaining }} day{{ billing.trial_days_remaining === 1 ? '' : 's' }} remaining
-                        <span v-if="billing.trial_ends_at" class="text-blue-700 dark:text-blue-300"> (ends {{ formatDate(billing.trial_ends_at) }})</span>
+                    <div v-if="billing.on_trial" class="mt-3 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-sm text-blue-900 dark:border-blue-900/60 dark:bg-blue-950/40 dark:text-blue-100">
+                        {{ trialRemainingLabel }}
+                        <span v-if="billing.trial_ends_at" class="text-blue-700 dark:text-blue-300">
+                            {{ $t('settings_billing.trial_ends_on', { date: formatDate(billing.trial_ends_at) }) }}
+                        </span>
                     </div>
                     <div class="mt-4 flex items-baseline gap-2">
                         <span class="text-3xl font-semibold agent-text">{{ billing.plan.name }}</span>
@@ -190,33 +204,36 @@ const { formatPrice } = useCurrency(() => props.billing.currency);
                         <span v-else-if="billing.plan.slug" class="text-sm agent-text-subtle">{{ formatPrice(billing.plan.price, currentPlanSuffix) }}</span>
                     </div>
                     <p class="mt-2 text-sm agent-text-muted">
-                        Status:
-                        <span class="font-medium capitalize">{{ billing.status.replace('_', ' ') }}</span>
+                        {{ $t('settings_billing.status_label') }}
+                        <span class="font-medium capitalize agent-text">{{ billing.status.replace('_', ' ') }}</span>
                     </p>
                     <p v-if="billing.renews_at" class="mt-1 text-sm agent-text-subtle">
-                        Renews {{ formatDate(billing.renews_at) }}
+                        {{ $t('settings_billing.renews_on', { date: formatDate(billing.renews_at) }) }}
                     </p>
 
-                    <div class="mt-6 space-y-4">
+                    <div class="mt-6 space-y-4 rounded-xl border agent-border agent-panel-muted p-4">
+                        <h3 class="text-sm font-medium agent-text">{{ $t('settings_billing.usage_heading') }}</h3>
                         <div>
                             <div class="mb-1 flex justify-between text-sm">
-                                <span class="text-slate-700 dark:text-slate-300">{{ $t('settings_billing.team_members') }}</span>
+                                <span class="agent-text-muted">{{ $t('settings_billing.team_members') }}</span>
                                 <span class="agent-text-subtle">
                                     {{ billing.usage.agents }}
-                                    <template v-if="billing.usage.pending_invites"> (+{{ billing.usage.pending_invites }} pending)</template>
-                                    / {{ billing.limits.agents }}
+                                    <template v-if="billing.usage.pending_invites">
+                                        {{ $t('settings_billing.pending_invites', { count: billing.usage.pending_invites }) }}
+                                    </template>
+                                    / {{ formatLimit(billing.limits.agents) }}
                                 </span>
                             </div>
-                            <div class="h-2 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-900">
+                            <div class="h-2 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
                                 <div class="h-full rounded-full bg-blue-600 transition-all" :style="{ width: usagePercent('agents') + '%' }" />
                             </div>
                         </div>
                         <div>
                             <div class="mb-1 flex justify-between text-sm">
-                                <span class="text-slate-700 dark:text-slate-300">{{ $t('settings_billing.tickets_this_month') }}</span>
-                                <span class="agent-text-subtle">{{ billing.usage.tickets_monthly }} / {{ billing.limits.tickets_monthly }}</span>
+                                <span class="agent-text-muted">{{ $t('settings_billing.tickets_this_month') }}</span>
+                                <span class="agent-text-subtle">{{ billing.usage.tickets_monthly }} / {{ formatLimit(billing.limits.tickets_monthly) }}</span>
                             </div>
-                            <div class="h-2 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-900">
+                            <div class="h-2 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
                                 <div class="h-full rounded-full bg-emerald-600 transition-all" :style="{ width: usagePercent('tickets_monthly') + '%' }" />
                             </div>
                         </div>
@@ -231,11 +248,11 @@ const { formatPrice } = useCurrency(() => props.billing.currency);
                         <template v-if="billing.on_trial">
                             You are on the free trial. Paid plans become available when the trial ends.
                         </template>
-                        <template v-else-if="billing.stripe_enabled">
-                            {{ billing.trial_expired ? 'Your trial has ended. Complete checkout to restore full access.' : 'Plan changes are processed through Stripe checkout.' }}
+                        <template v-else-if="billing.razorpay_enabled">
+                            {{ billing.trial_expired ? 'Your trial has ended. Complete checkout to restore full access.' : 'Plan changes are processed through Razorpay checkout.' }}
                         </template>
                         <template v-else>
-                            {{ billing.trial_expired ? 'Your trial has ended. Select a plan to restore full access.' : 'Simulated plan switch for local development (Stripe not configured).' }}
+                            {{ billing.trial_expired ? 'Your trial has ended. Select a plan to restore full access.' : 'Simulated plan switch for local development (Razorpay not configured).' }}
                         </template>
                     </p>
 
@@ -329,8 +346,8 @@ const { formatPrice } = useCurrency(() => props.billing.currency);
                                     <p v-if="billing.on_trial" class="mt-2 text-xs agent-text-subtle">
                                         {{ $t('settings_billing.available_after_your_trial_ends') }}
                                     </p>
-                                    <p v-if="billing.stripe_enabled && !stripeReadyForInterval(plan)" class="mt-2 text-xs text-amber-700 dark:text-amber-300">
-                                        Stripe price not configured for this plan ({{ billingInterval }})
+                                    <p v-if="billing.razorpay_enabled && !billingReadyForInterval(plan)" class="mt-2 text-xs text-amber-700 dark:text-amber-300">
+                                        Razorpay price not configured for this plan ({{ billingInterval }})
                                     </p>
                                     <p v-if="plan.features.length" class="mt-2 text-xs agent-text-muted">
                                         Includes: {{ plan.features.join(', ') }}
@@ -342,60 +359,64 @@ const { formatPrice } = useCurrency(() => props.billing.currency);
                                 v-if="!billing.on_trial"
                                 type="submit"
                                 class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
-                                :disabled="form.processing || (billing.stripe_enabled && !selectedPlanStripeReady)"
+                                :disabled="form.processing || (billing.razorpay_enabled && !selectedPlanBillingReady)"
                             >
-                                {{ billing.stripe_enabled ? (billing.trial_expired ? 'Continue to checkout' : 'Change plan via Stripe') : (billing.trial_expired ? 'Activate plan' : 'Update plan') }}
+                                {{ billing.razorpay_enabled ? (billing.trial_expired ? 'Continue to checkout' : 'Change plan via Razorpay') : (billing.trial_expired ? 'Activate plan' : 'Update plan') }}
                             </button>
                         </form>
                     </div>
 
                     <button
-                        v-if="billing.stripe_enabled && billing.has_stripe_subscription"
+                        v-if="billing.razorpay_enabled && billing.has_razorpay_subscription"
                         type="button"
                         class="mt-4 text-sm font-medium text-blue-600 hover:text-blue-700 dark:hover:text-blue-300 dark:text-blue-300"
-                        @click="openPortal"
-                    >{{ $t('settings_billing.manage_payment_method_invoices') }}</button>
+                        @click="cancelSubscription"
+                    >Cancel subscription at period end</button>
                 </div>
 
         <div v-show="activeSection === 'addons'" class="agent-card">
-            <h2 class="text-lg font-medium agent-text">Paid add-ons</h2>
+            <h2 class="text-lg font-medium agent-text">{{ $t('settings_billing.paid_addons') }}</h2>
             <p class="mt-1 text-sm agent-text-subtle">
-                Purchase optional modules on top of your base plan.
-                <span v-if="billing.on_trial" class="block mt-1 text-blue-700 dark:text-blue-300">
-                    You can try add-ons during your free trial. After the trial ends, you will need an active paid plan and a paid add-on subscription to keep using them.
+                {{ $t('settings_billing.paid_addons_description') }}
+                <span v-if="billing.on_trial" class="mt-1 block text-blue-700 dark:text-blue-300">
+                    {{ $t('settings_billing.paid_addons_trial_description') }}
                 </span>
             </p>
 
-            <div v-if="!billing.available_addons?.length" class="mt-4 text-sm agent-text-subtle">No add-ons are available right now.</div>
+            <div v-if="!billing.available_addons?.length" class="mt-4 text-sm agent-text-subtle">{{ $t('settings_billing.no_addons_available') }}</div>
 
             <div v-else class="mt-4 space-y-4">
                 <div
                     v-for="addon in billing.available_addons"
                     :key="addon.key"
                     class="rounded-xl border p-4"
-                    :class="addon.active ? 'border-emerald-200 dark:border-emerald-900/60 bg-emerald-50 dark:bg-emerald-950/40/40' : 'agent-border'"
+                    :class="addon.active
+                        ? 'border-emerald-200 bg-emerald-50 dark:border-emerald-900/60 dark:bg-emerald-950/40'
+                        : 'agent-border agent-panel'"
                 >
                     <div class="flex flex-wrap items-start justify-between gap-4">
                         <div>
                             <p class="font-medium agent-text">{{ addon.name }}</p>
                             <p class="mt-1 text-sm agent-text-muted">{{ addon.description }}</p>
-                            <p class="mt-2 text-sm font-semibold text-slate-800 dark:text-slate-200">{{ formatPrice(addon.price_monthly) }}/mo</p>
+                            <p class="mt-2 text-sm font-semibold agent-text">{{ formatPrice(addon.price_monthly) }}/mo</p>
                         </div>
                         <div class="flex items-center gap-2">
                             <span
                                 v-if="addon.active"
                                 class="rounded-full px-2.5 py-1 text-xs font-semibold"
-                                :class="addon.trial_access ? 'bg-blue-100 text-blue-800' : 'bg-emerald-100 text-emerald-800 dark:text-emerald-200'"
+                                :class="addon.trial_access
+                                    ? 'bg-blue-100 text-blue-800 dark:bg-blue-950/50 dark:text-blue-200'
+                                    : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-200'"
                             >
                                 {{ addonStatusLabel(addon) }}
                             </span>
                             <button
                                 v-if="addon.active"
                                 type="button"
-                                class="rounded-lg border agent-border px-3 py-1.5 text-sm text-slate-700 dark:text-slate-300 agent-hover-surface"
+                                class="agent-btn-secondary px-3 py-1.5"
                                 @click="cancelAddon(addon.key)"
                             >
-                                Cancel add-on
+                                {{ $t('settings_billing.cancel_addon') }}
                             </button>
                             <button
                                 v-else
@@ -404,17 +425,17 @@ const { formatPrice } = useCurrency(() => props.billing.currency);
                                 :disabled="addonPurchaseDisabled(addon)"
                                 @click="purchaseAddon(addon.key)"
                             >
-                                {{ billing.on_trial ? 'Enable for trial' : 'Add to subscription' }}
+                                {{ billing.on_trial ? $t('settings_billing.enable_for_trial') : $t('settings_billing.add_to_subscription') }}
                             </button>
                         </div>
                     </div>
                     <p v-if="addon.active && billing.on_trial" class="mt-3 text-xs text-blue-700 dark:text-blue-300">
-                        Included during your free trial. After your trial ends, this add-on costs {{ formatPrice(addon.price_monthly) }}/mo on top of your paid plan.
+                        {{ $t('settings_billing.addon_trial_included_note', { price: formatPrice(addon.price_monthly) }) }}
                     </p>
                     <p v-else-if="billing.on_trial && !addon.active" class="mt-3 text-xs agent-text-subtle">
-                        Try it free during your trial. After your trial ends, you will need a paid plan plus {{ formatPrice(addon.price_monthly) }}/mo for this add-on.
+                        {{ $t('settings_billing.addon_trial_try_note', { price: formatPrice(addon.price_monthly) }) }}
                     </p>
-                    <p v-else-if="billing.stripe_enabled && !addon.stripe_ready" class="mt-3 text-xs text-amber-700 dark:text-amber-300">Stripe price not configured for this add-on yet.</p>
+                    <p v-else-if="billing.razorpay_enabled && !addon.billing_ready" class="mt-3 text-xs text-amber-700 dark:text-amber-300">{{ $t('settings_billing.addon_billing_not_ready') }}</p>
                 </div>
             </div>
         </div>
