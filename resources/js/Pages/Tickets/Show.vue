@@ -139,7 +139,7 @@ const sidebarProps = computed(() => ({
 <template>
     <Head :title="ticket.number" />
     <AgentLayout>
-        <div class="flex h-0 min-h-0 flex-1 flex-col">
+        <div class="flex min-h-0 flex-1 flex-col">
         <div
             v-if="ticket.merged_into"
             class="mb-3 shrink-0 rounded-lg border border-amber-200 dark:border-amber-900/60 bg-amber-50 dark:bg-amber-950/40 px-3 py-2 text-sm text-amber-900"
@@ -148,7 +148,7 @@ const sidebarProps = computed(() => ({
             <Link :href="`/tickets/${ticket.merged_into.id}`" class="font-medium underline">{{ ticket.merged_into.number }}</Link>
         </div>
 
-        <div class="flex h-0 min-h-0 flex-1 basis-0">
+        <div class="flex min-h-0 flex-1">
             <div class="flex min-h-0 min-w-0 flex-1">
                 <section class="flex min-h-0 min-w-0 flex-1 basis-0 flex-col overflow-hidden agent-panel">
                     <div class="flex shrink-0 items-center gap-2 border-b agent-border agent-panel px-3 py-2">

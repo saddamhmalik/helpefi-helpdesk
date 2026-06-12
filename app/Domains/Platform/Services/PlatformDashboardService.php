@@ -25,7 +25,7 @@ class PlatformDashboardService
     public function snapshot(PlatformUser $user): array
     {
         $data = [
-            'stripe_enabled' => (bool) config('stripe.configured'),
+            'razorpay_enabled' => (bool) config('razorpay.configured'),
         ];
 
         if ($this->authorization->allows($user, 'tenants.view')) {

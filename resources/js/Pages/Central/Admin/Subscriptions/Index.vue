@@ -15,7 +15,7 @@ const props = defineProps({
     stats: Object,
     currency: Object,
     filters: Object,
-    stripe_enabled: Boolean,
+    razorpay_enabled: Boolean,
 });
 
 const { formatDateTime, formatDate } = useDateTime();
@@ -236,11 +236,11 @@ const hasFilters = computed(() => Boolean(props.filters.q) || (props.filters.sta
                                     <span v-else>—</span>
                                 </td>
                                 <td class="px-5 py-4">
-                                    <p v-if="item.has_stripe" class="font-mono text-xs text-violet-700 dark:text-violet-300">{{ item.stripe_subscription_id || 'Linked' }}</p>
-                                    <p v-else-if="item.tenant?.stripe_customer" class="text-xs text-slate-500 dark:text-slate-400">{{ $t('central.customer_only') }}</p>
+                                    <p v-if="item.has_razorpay" class="font-mono text-xs text-violet-700 dark:text-violet-300">{{ item.razorpay_subscription_id || 'Linked' }}</p>
+                                    <p v-else-if="item.tenant?.razorpay_customer" class="text-xs text-slate-500 dark:text-slate-400">{{ $t('central.customer_only') }}</p>
                                     <span v-else class="text-slate-400 dark:text-slate-500">—</span>
                                     <Link
-                                        v-if="stripe_enabled"
+                                        v-if="razorpay_enabled"
                                         href="/admin/payments"
                                         class="mt-1 block text-xs font-medium text-blue-600 hover:text-blue-700 dark:hover:text-blue-300 dark:text-blue-300"
                                     >

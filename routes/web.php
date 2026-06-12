@@ -1,6 +1,6 @@
 <?php
 
-use App\Domains\Billing\Controllers\StripeWebhookController;
+use App\Domains\Billing\Controllers\RazorpayWebhookController;
 use App\Domains\Platform\Controllers\Central\AdminNoticeController;
 use App\Domains\Platform\Controllers\Central\AdminObservabilityController;
 use App\Domains\Platform\Controllers\Central\AdminAuditLogController;
@@ -26,7 +26,7 @@ use App\Domains\Tenancy\Controllers\Central\SitemapController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
-Route::post('/stripe/webhook', StripeWebhookController::class)->name('stripe.webhook');
+Route::post('/razorpay/webhook', RazorpayWebhookController::class)->name('razorpay.webhook');
 
 Route::get('/platform-notices/{notice}/image', PlatformNoticeImageController::class)
     ->middleware('signed')

@@ -26,11 +26,11 @@ class Subscription extends Model
         'renews_at',
         'cancelled_at',
         'access_ends_at',
-        'stripe_subscription_id',
-        'stripe_price_id',
+        'razorpay_subscription_id',
+        'razorpay_plan_id',
         'billing_interval',
         'active_addons',
-        'stripe_addon_items',
+        'razorpay_addon_items',
     ];
 
     protected function casts(): array
@@ -41,7 +41,7 @@ class Subscription extends Model
             'cancelled_at' => 'datetime',
             'access_ends_at' => 'datetime',
             'active_addons' => 'array',
-            'stripe_addon_items' => 'array',
+            'razorpay_addon_items' => 'array',
         ];
     }
 

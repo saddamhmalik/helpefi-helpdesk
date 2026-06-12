@@ -49,8 +49,8 @@ class AdminSettingsController extends Controller
             'plans.*.name' => ['required', 'string', 'max:100'],
             'plans.*.price' => ['required', 'integer', 'min:0', 'max:99999'],
             'plans.*.price_yearly' => ['required', 'integer', 'min:0', 'max:999999'],
-            'plans.*.stripe_price_id' => ['nullable', 'string', 'max:255'],
-            'plans.*.stripe_price_id_yearly' => ['nullable', 'string', 'max:255'],
+            'plans.*.razorpay_plan_id' => ['nullable', 'string', 'max:255'],
+            'plans.*.razorpay_plan_id_yearly' => ['nullable', 'string', 'max:255'],
             'plans.*.features' => ['array'],
             'plans.*.features.*' => ['string', 'in:'.$features],
             'addons' => ['nullable', 'array'],
@@ -59,7 +59,7 @@ class AdminSettingsController extends Controller
             'addons.*.description' => ['nullable', 'string', 'max:500'],
             'addons.*.price_monthly' => ['required', 'integer', 'min:0', 'max:99999'],
             'addons.*.enabled' => ['required', 'boolean'],
-            'addons.*.stripe_price_id_monthly' => ['nullable', 'string', 'max:255'],
+            'addons.*.razorpay_plan_id_monthly' => ['nullable', 'string', 'max:255'],
         ];
 
         foreach (PlanCatalogDefinition::limitDefinitions() as $key => $definition) {
@@ -75,8 +75,8 @@ class AdminSettingsController extends Controller
 
         $this->settings->update($data);
 
-        $message = config('stripe.enabled')
-            ? 'Platform settings updated and synced with Stripe.'
+        $message = config('razorpay.enabled')
+            ? 'Platform settings updated and synced with Razorpay.'
             : 'Platform settings updated.';
 
         return back()->with('success', $message);

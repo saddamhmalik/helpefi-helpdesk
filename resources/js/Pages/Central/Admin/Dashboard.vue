@@ -149,9 +149,9 @@ const statusTone = (workspace) => {
                     <div class="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-sm">
                         <h2 class="text-sm font-semibold text-slate-900 dark:text-slate-100">{{ $t('central.billing') }}</h2>
                         <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">
-                            Stripe is
-                            <span class="font-medium" :class="dashboard.stripe_enabled ? 'text-emerald-700 dark:text-emerald-300' : 'text-amber-700 dark:text-amber-300'">
-                                {{ dashboard.stripe_enabled ? 'connected' : 'not configured' }}
+                            Razorpay is
+                            <span class="font-medium" :class="dashboard.razorpay_enabled ? 'text-emerald-700 dark:text-emerald-300' : 'text-amber-700 dark:text-amber-300'">
+                                {{ dashboard.razorpay_enabled ? 'connected' : 'not configured' }}
                             </span>
                             for tenant checkout.
                         </p>

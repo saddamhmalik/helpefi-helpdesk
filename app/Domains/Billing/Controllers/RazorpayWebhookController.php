@@ -2,31 +2,31 @@
 
 namespace App\Domains\Billing\Controllers;
 
-use App\Domains\Billing\Services\StripeBillingService;
+use App\Domains\Billing\Services\RazorpayBillingService;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Log;
 
-class StripeWebhookController extends Controller
+class RazorpayWebhookController extends Controller
 {
-    public function __construct(private StripeBillingService $stripe)
+    public function __construct(private RazorpayBillingService $razorpay)
     {
     }
 
     public function __invoke(Request $request): Response
     {
-        if (! $this->stripe->isEnabled()) {
-            return response('Stripe billing is disabled.', 503);
+        if (! $this->razorpay->isEnabled()) {
+            return response('Razorpay billing is disabled.', 503);
         }
 
         try {
-            $this->stripe->handleWebhook(
+            $this->razorpay->handleWebhook(
                 $request->getContent(),
-                $request->header('Stripe-Signature'),
+                $request->header('X-Razorpay-Signature'),
             );
         } catch (\Throwable $exception) {
-            Log::warning('Stripe webhook failed', [
+            Log::warning('Razorpay webhook failed', [
                 'message' => $exception->getMessage(),
             ]);
 

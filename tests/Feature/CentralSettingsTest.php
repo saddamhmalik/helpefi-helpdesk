@@ -2,7 +2,8 @@
 
 namespace Tests\Feature;
 
-use App\Domains\Billing\Services\StripePlanSyncService;
+use App\Domains\Billing\Services\RazorpayAddonSyncService;
+use App\Domains\Billing\Services\RazorpayPlanSyncService;
 use App\Models\Tenant;
 use App\Models\User;
 use Database\Seeders\PlatformUserSeeder;
@@ -19,8 +20,8 @@ class CentralSettingsTest extends TestCase
         parent::setUp();
 
         config([
-            'stripe.enabled' => false,
-            'stripe.secret' => null,
+            'razorpay.enabled' => false,
+            'razorpay.secret' => null,
         ]);
 
         $this->seed(PlatformUserSeeder::class);
@@ -34,25 +35,29 @@ class CentralSettingsTest extends TestCase
         ]);
     }
 
-    public function test_admin_settings_update_syncs_plans_with_stripe_when_enabled(): void
+    public function test_admin_settings_update_syncs_plans_with_razorpay_when_enabled(): void
     {
         config([
-            'stripe.enabled' => true,
-            'stripe.secret' => 'sk_test_example',
+            'razorpay.enabled' => true,
+            'razorpay.secret' => 'secret_test_example',
         ]);
 
-        $this->mock(StripePlanSyncService::class, function ($mock): void {
+        $this->mock(RazorpayPlanSyncService::class, function ($mock): void {
             $mock->shouldReceive('isEnabled')->andReturn(true);
             $mock->shouldReceive('syncCatalog')
                 ->once()
                 ->andReturnUsing(fn (array $catalog) => collect($catalog)
                     ->map(fn (array $plan, string $slug) => array_merge($plan, [
-                        'stripe_product_id' => "prod_{$slug}",
-                        'stripe_price_id' => "price_monthly_{$slug}",
-                        'stripe_price_id_monthly' => "price_monthly_{$slug}",
-                        'stripe_price_id_yearly' => "price_yearly_{$slug}",
+                        'razorpay_plan_id' => "plan_monthly_{$slug}",
+                        'razorpay_plan_id_monthly' => "plan_monthly_{$slug}",
+                        'razorpay_plan_id_yearly' => "plan_yearly_{$slug}",
                     ]))
                     ->all());
+        });
+
+        $this->mock(RazorpayAddonSyncService::class, function ($mock): void {
+            $mock->shouldReceive('isEnabled')->andReturn(true);
+            $mock->shouldReceive('syncCatalog')->andReturnUsing(fn (array $catalog) => $catalog);
         });
 
         $this->adminLogin();
@@ -61,7 +66,7 @@ class CentralSettingsTest extends TestCase
             'trial_days' => 14,
             'tenant_purge_grace_days' => 15,
             'tenant_purge_enabled' => true,
-            'currency' => 'USD',
+            'currency' => 'INR',
             'plans' => [
                 [
                     'slug' => 'starter',
@@ -92,9 +97,9 @@ class CentralSettingsTest extends TestCase
 
         $starter = app(\App\Domains\Billing\Repositories\PlanRepository::class)->find('starter');
 
-        $this->assertSame('prod_starter', $starter['stripe_product_id']);
-        $this->assertSame('price_monthly_starter', $starter['stripe_price_id']);
-        $this->assertSame('price_yearly_starter', $starter['stripe_price_id_yearly']);
+        $this->assertSame('plan_monthly_starter', $starter['razorpay_plan_id']);
+        $this->assertSame('plan_monthly_starter', $starter['razorpay_plan_id_monthly']);
+        $this->assertSame('plan_yearly_starter', $starter['razorpay_plan_id_yearly']);
     }
 
     public function test_admin_can_update_trial_days_pricing_and_currency(): void

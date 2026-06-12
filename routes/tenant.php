@@ -169,7 +169,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/settings/billing', [BillingController::class, 'index'])->name('settings.billing');
         Route::get('/settings/billing/checkout', [BillingController::class, 'checkout'])->name('settings.billing.checkout');
         Route::put('/settings/billing/plan', [BillingController::class, 'updatePlan'])->name('settings.billing.plan');
-        Route::get('/settings/billing/portal', [BillingController::class, 'portal'])->name('settings.billing.portal');
+        Route::post('/settings/billing/cancel', [BillingController::class, 'cancel'])->name('settings.billing.cancel');
         Route::post('/settings/billing/addons/{addon}', [BillingController::class, 'purchaseAddon'])->name('settings.billing.addons.purchase');
         Route::delete('/settings/billing/addons/{addon}', [BillingController::class, 'cancelAddon'])->name('settings.billing.addons.cancel');
     });

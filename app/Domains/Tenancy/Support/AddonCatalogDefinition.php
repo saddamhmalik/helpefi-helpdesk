@@ -52,12 +52,9 @@ class AddonCatalogDefinition
             'description' => (string) ($addon['description'] ?? $defaults['description'] ?? ''),
             'price_monthly' => max(0, (int) ($addon['price_monthly'] ?? $defaults['price_monthly'] ?? 0)),
             'enabled' => (bool) ($addon['enabled'] ?? true),
-            'stripe_product_id' => isset($addon['stripe_product_id']) && $addon['stripe_product_id'] !== ''
-                ? (string) $addon['stripe_product_id']
+            'razorpay_plan_id_monthly' => isset($addon['razorpay_plan_id_monthly']) && $addon['razorpay_plan_id_monthly'] !== ''
+                ? (string) $addon['razorpay_plan_id_monthly']
                 : null,
-            'stripe_price_id_monthly' => isset($addon['stripe_price_id_monthly']) && $addon['stripe_price_id_monthly'] !== ''
-                ? (string) $addon['stripe_price_id_monthly']
-                : (isset($addon['stripe_price_id']) && $addon['stripe_price_id'] !== '' ? (string) $addon['stripe_price_id'] : null),
         ];
     }
 
@@ -80,11 +77,11 @@ class AddonCatalogDefinition
         return $catalog;
     }
 
-    public static function stripePriceId(array $addon): ?string
+    public static function razorpayPlanId(array $addon): ?string
     {
-        $priceId = $addon['stripe_price_id_monthly'] ?? $addon['stripe_price_id'] ?? null;
+        $planId = $addon['razorpay_plan_id_monthly'] ?? null;
 
-        return $priceId !== null && $priceId !== '' ? (string) $priceId : null;
+        return $planId !== null && $planId !== '' ? (string) $planId : null;
     }
 
     public static function forAdminUi(): array

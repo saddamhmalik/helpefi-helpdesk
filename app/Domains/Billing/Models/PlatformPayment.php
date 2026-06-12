@@ -18,10 +18,10 @@ class PlatformPayment extends Model
 
     protected $fillable = [
         'tenant_id',
-        'stripe_invoice_id',
-        'stripe_customer_id',
-        'stripe_subscription_id',
-        'stripe_payment_intent_id',
+        'razorpay_payment_id',
+        'razorpay_customer_id',
+        'razorpay_subscription_id',
+        'razorpay_order_id',
         'amount',
         'currency',
         'status',

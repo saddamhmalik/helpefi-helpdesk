@@ -33,9 +33,9 @@ class BillingController extends Controller
             'interval' => ['nullable', 'in:month,year'],
         ]);
 
-        if ($this->billingService->usesStripeCheckout()) {
+        if ($this->billingService->usesRazorpayCheckout()) {
             throw ValidationException::withMessages([
-                'plan' => 'Use the checkout button to change plans with Stripe.',
+                'plan' => 'Use the checkout button to change plans with Razorpay.',
             ]);
         }
 
@@ -68,14 +68,11 @@ class BillingController extends Controller
         return redirect()->away($url);
     }
 
-    public function portal(Request $request): RedirectResponse
+    public function cancel(Request $request): RedirectResponse
     {
-        $url = $this->billingService->billingPortalUrl(
-            (string) $request->user()->email,
-            $request->getSchemeAndHttpHost().'/settings/billing',
-        );
+        $this->billingService->cancelSubscription();
 
-        return redirect()->away($url);
+        return back()->with('success', 'Subscription will cancel at the end of the current billing period.');
     }
 
     public function purchaseAddon(Request $request, string $addon): RedirectResponse

@@ -2,8 +2,8 @@
 
 namespace App\Domains\Tenancy\Services;
 
-use App\Domains\Billing\Services\StripeAddonSyncService;
-use App\Domains\Billing\Services\StripePlanSyncService;
+use App\Domains\Billing\Services\RazorpayAddonSyncService;
+use App\Domains\Billing\Services\RazorpayPlanSyncService;
 use App\Domains\Tenancy\Repositories\CentralSettingRepository;
 use App\Domains\Tenancy\Support\AddonCatalogDefinition;
 use App\Domains\Tenancy\Support\CurrencyCatalog;
@@ -13,8 +13,8 @@ class CentralSettingsService
 {
     public function __construct(
         private CentralSettingRepository $settings,
-        private StripePlanSyncService $stripePlanSync,
-        private StripeAddonSyncService $stripeAddonSync,
+        private RazorpayPlanSyncService $razorpayPlanSync,
+        private RazorpayAddonSyncService $razorpayAddonSync,
     ) {
     }
 
@@ -35,7 +35,7 @@ class CentralSettingsService
 
     public function currency(): string
     {
-        return CurrencyCatalog::normalize($this->settings->current()->currency ?? config('billing.currency', 'USD'));
+        return CurrencyCatalog::normalize($this->settings->current()->currency ?? config('billing.currency', 'INR'));
     }
 
     public function currencyMeta(): array
@@ -71,8 +71,7 @@ class CentralSettingsService
                 'description' => $addon['description'],
                 'price_monthly' => $addon['price_monthly'],
                 'enabled' => $addon['enabled'],
-                'stripe_product_id' => $addon['stripe_product_id'] ?? null,
-                'stripe_price_id_monthly' => $addon['stripe_price_id_monthly'] ?? null,
+                'razorpay_plan_id_monthly' => $addon['razorpay_plan_id_monthly'] ?? null,
             ])
             ->values()
             ->all();
@@ -98,10 +97,9 @@ class CentralSettingsService
                 'price' => $plan['price_monthly'],
                 'price_monthly' => $plan['price_monthly'],
                 'price_yearly' => $plan['price_yearly'],
-                'stripe_product_id' => $plan['stripe_product_id'] ?? null,
-                'stripe_price_id' => $plan['stripe_price_id_monthly'] ?? null,
-                'stripe_price_id_monthly' => $plan['stripe_price_id_monthly'] ?? null,
-                'stripe_price_id_yearly' => $plan['stripe_price_id_yearly'] ?? null,
+                'razorpay_plan_id' => $plan['razorpay_plan_id_monthly'] ?? null,
+                'razorpay_plan_id_monthly' => $plan['razorpay_plan_id_monthly'] ?? null,
+                'razorpay_plan_id_yearly' => $plan['razorpay_plan_id_yearly'] ?? null,
                 'limits' => $plan['limits'],
                 'features' => $plan['features'],
             ])
@@ -116,7 +114,7 @@ class CentralSettingsService
             'tenant_purge_grace_days' => $this->tenantPurgeGraceDays(),
             'tenant_purge_enabled' => $this->tenantPurgeEnabled(),
             'currency' => $this->currency(),
-            'stripe_enabled' => $this->stripePlanSync->isEnabled(),
+            'razorpay_enabled' => $this->razorpayPlanSync->isEnabled(),
             'plans' => $this->plansForDisplay(),
             'addons' => $this->addonsForDisplay(),
         ];
@@ -137,7 +135,7 @@ class CentralSettingsService
             ? CurrencyCatalog::normalize($data['currency'])
             : $this->currency();
 
-        $catalog = $this->stripePlanSync->syncCatalog($catalog, $currency);
+        $catalog = $this->razorpayPlanSync->syncCatalog($catalog, $currency);
 
         $addonCatalog = [];
 
@@ -153,7 +151,7 @@ class CentralSettingsService
             }
         }
 
-        $addonCatalog = $this->stripeAddonSync->syncCatalog($addonCatalog, $currency);
+        $addonCatalog = $this->razorpayAddonSync->syncCatalog($addonCatalog, $currency);
 
         $payload = [
             'trial_days' => max(1, min((int) $data['trial_days'], 365)),

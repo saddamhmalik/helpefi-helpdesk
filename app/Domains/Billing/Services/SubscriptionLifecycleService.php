@@ -24,76 +24,76 @@ class SubscriptionLifecycleService
         return max(1, (int) config('billing.cancellation_grace_days', 3));
     }
 
-    public function applyStripeSubscription(Subscription $subscription, object $stripeSubscription): Subscription
+    public function applyRazorpaySubscription(Subscription $subscription, object $razorpaySubscription): Subscription
     {
-        $status = (string) ($stripeSubscription->status ?? '');
-        $cancelAtPeriodEnd = (bool) ($stripeSubscription->cancel_at_period_end ?? false);
-        $periodEnd = isset($stripeSubscription->current_period_end)
-            ? Carbon::createFromTimestamp($stripeSubscription->current_period_end)
+        $status = (string) ($razorpaySubscription->status ?? '');
+        $cancelAtCycleEnd = (bool) ($razorpaySubscription->cancel_at_cycle_end ?? false);
+        $periodEnd = isset($razorpaySubscription->current_end)
+            ? Carbon::createFromTimestamp($razorpaySubscription->current_end)
             : null;
-        $priceId = $stripeSubscription->items->data[0]->price->id ?? $subscription->stripe_price_id;
-        $interval = $stripeSubscription->items->data[0]->price->recurring->interval
-            ?? $stripeSubscription->metadata->billing_interval
+        $planId = $razorpaySubscription->plan_id ?? $subscription->razorpay_plan_id;
+        $notes = (array) ($razorpaySubscription->notes ?? []);
+        $interval = $notes['billing_interval']
             ?? $subscription->billing_interval
             ?? 'month';
-        $plan = $stripeSubscription->metadata->plan
-            ?? $this->resolvePlanFromPriceId($priceId)
+        $plan = $notes['plan']
+            ?? $this->resolvePlanFromPlanId($planId)
             ?? $subscription->plan;
 
-        [$activeAddons, $stripeAddonItems] = $this->resolveAddonsFromStripeItems($stripeSubscription);
+        [$activeAddons, $razorpayAddonItems] = $this->resolveAddonsFromRazorpaySubscription($razorpaySubscription);
 
-        if (in_array($status, ['active', 'trialing'], true) && ! $cancelAtPeriodEnd) {
+        if (in_array($status, ['active', 'authenticated'], true) && ! $cancelAtCycleEnd) {
             return $this->restorePaidAccess($subscription, [
                 'plan' => $plan,
                 'billing_interval' => $interval,
                 'status' => Subscription::STATUS_ACTIVE,
                 'trial_ends_at' => null,
                 'renews_at' => $periodEnd,
-                'stripe_subscription_id' => $stripeSubscription->id,
-                'stripe_price_id' => $priceId,
+                'razorpay_subscription_id' => $razorpaySubscription->id,
+                'razorpay_plan_id' => $planId,
                 'cancelled_at' => null,
                 'access_ends_at' => null,
                 'active_addons' => $activeAddons,
-                'stripe_addon_items' => $stripeAddonItems,
+                'razorpay_addon_items' => $razorpayAddonItems,
             ]);
         }
 
-        if (in_array($status, ['active', 'trialing'], true) && $cancelAtPeriodEnd) {
+        if (in_array($status, ['active', 'authenticated'], true) && $cancelAtCycleEnd) {
             return $this->subscriptions->update($subscription, [
                 'plan' => $plan,
                 'billing_interval' => $interval,
                 'status' => Subscription::STATUS_ACTIVE,
                 'trial_ends_at' => null,
                 'renews_at' => $periodEnd,
-                'stripe_subscription_id' => $stripeSubscription->id,
-                'stripe_price_id' => $priceId,
-                'cancelled_at' => isset($stripeSubscription->canceled_at)
-                    ? Carbon::createFromTimestamp($stripeSubscription->canceled_at)
+                'razorpay_subscription_id' => $razorpaySubscription->id,
+                'razorpay_plan_id' => $planId,
+                'cancelled_at' => isset($razorpaySubscription->ended_at)
+                    ? Carbon::createFromTimestamp($razorpaySubscription->ended_at)
                     : now(),
                 'access_ends_at' => $this->graceEndsAt($periodEnd),
             ]);
         }
 
-        if (in_array($status, ['past_due', 'unpaid'], true)) {
+        if (in_array($status, ['pending', 'halted'], true)) {
             return $this->subscriptions->update($subscription, [
                 'plan' => $plan,
                 'billing_interval' => $interval,
                 'status' => Subscription::STATUS_PAST_DUE,
                 'trial_ends_at' => null,
                 'renews_at' => $periodEnd,
-                'stripe_subscription_id' => $stripeSubscription->id,
-                'stripe_price_id' => $priceId,
+                'razorpay_subscription_id' => $razorpaySubscription->id,
+                'razorpay_plan_id' => $planId,
             ]);
         }
 
         return $this->markCancelled($subscription, [
             'plan' => $plan,
             'billing_interval' => $interval,
-            'stripe_subscription_id' => $stripeSubscription->id,
-            'stripe_price_id' => $priceId,
+            'razorpay_subscription_id' => $razorpaySubscription->id,
+            'razorpay_plan_id' => $planId,
             'renews_at' => null,
-            'cancelled_at' => isset($stripeSubscription->canceled_at)
-                ? Carbon::createFromTimestamp($stripeSubscription->canceled_at)
+            'cancelled_at' => isset($razorpaySubscription->ended_at)
+                ? Carbon::createFromTimestamp($razorpaySubscription->ended_at)
                 : now(),
         ], $periodEnd);
     }
@@ -151,15 +151,15 @@ class SubscriptionLifecycleService
         return $graceStart->copy()->addDays($this->graceDays());
     }
 
-    private function resolvePlanFromPriceId(?string $priceId): ?string
+    private function resolvePlanFromPlanId(?string $planId): ?string
     {
-        if (! $priceId) {
+        if (! $planId) {
             return null;
         }
 
         foreach ($this->plans->all() as $slug => $plan) {
-            foreach (['stripe_price_id_monthly', 'stripe_price_id_yearly', 'stripe_price_id'] as $key) {
-                if (($plan[$key] ?? null) === $priceId) {
+            foreach (['razorpay_plan_id_monthly', 'razorpay_plan_id_yearly', 'razorpay_plan_id'] as $key) {
+                if (($plan[$key] ?? null) === $planId) {
                     return $slug;
                 }
             }
@@ -168,33 +168,33 @@ class SubscriptionLifecycleService
         return null;
     }
 
-    private function resolveAddonsFromStripeItems(object $stripeSubscription): array
+    private function resolveAddonsFromRazorpaySubscription(object $razorpaySubscription): array
     {
         $activeAddons = [];
-        $stripeAddonItems = [];
+        $razorpayAddonItems = [];
         $addonCatalog = $this->centralSettings->addonCatalog();
-        $priceToAddon = [];
+        $planToAddon = [];
 
         foreach ($addonCatalog as $key => $addon) {
-            $priceId = AddonCatalogDefinition::stripePriceId($addon);
+            $planId = AddonCatalogDefinition::razorpayPlanId($addon);
 
-            if ($priceId) {
-                $priceToAddon[$priceId] = $key;
+            if ($planId) {
+                $planToAddon[$planId] = $key;
             }
         }
 
-        foreach ($stripeSubscription->items->data ?? [] as $item) {
-            $priceId = $item->price->id ?? null;
-            $addonKey = $priceToAddon[$priceId] ?? ($item->metadata->addon ?? null);
+        foreach ($razorpaySubscription->addons ?? [] as $item) {
+            $item = is_array($item) ? (object) $item : $item;
+            $addonKey = $planToAddon[$item->item->id ?? ''] ?? ($item->notes->addon_key ?? null);
 
             if (! is_string($addonKey) || $addonKey === '') {
                 continue;
             }
 
             $activeAddons[] = $addonKey;
-            $stripeAddonItems[$addonKey] = $item->id;
+            $razorpayAddonItems[$addonKey] = (string) ($item->id ?? '');
         }
 
-        return [array_values(array_unique($activeAddons)), $stripeAddonItems];
+        return [array_values(array_unique($activeAddons)), $razorpayAddonItems];
     }
 }

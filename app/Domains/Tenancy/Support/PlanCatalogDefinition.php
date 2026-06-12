@@ -48,15 +48,15 @@ class PlanCatalogDefinition
         return (int) ($plan['price_monthly'] ?? $plan['price'] ?? 0);
     }
 
-    public static function stripePriceIdForInterval(array $plan, string $interval = 'month'): ?string
+    public static function razorpayPlanIdForInterval(array $plan, string $interval = 'month'): ?string
     {
         if ($interval === 'year') {
-            $yearly = $plan['stripe_price_id_yearly'] ?? null;
+            $yearly = $plan['razorpay_plan_id_yearly'] ?? null;
 
             return $yearly !== null && $yearly !== '' ? (string) $yearly : null;
         }
 
-        $monthly = $plan['stripe_price_id_monthly'] ?? $plan['stripe_price_id'] ?? null;
+        $monthly = $plan['razorpay_plan_id_monthly'] ?? $plan['razorpay_plan_id'] ?? null;
 
         return $monthly !== null && $monthly !== '' ? (string) $monthly : null;
     }
@@ -90,8 +90,8 @@ class PlanCatalogDefinition
         $priceYearly = array_key_exists('price_yearly', $plan) && $plan['price_yearly'] !== ''
             ? max(0, (int) $plan['price_yearly'])
             : self::defaultYearlyPrice($priceMonthly);
-        $stripePriceIdMonthly = self::resolveStripePriceIdMonthly($slug, $plan);
-        $stripePriceIdYearly = self::resolveStripePriceIdYearly($slug, $plan);
+        $razorpayPlanIdMonthly = self::resolveRazorpayPlanIdMonthly($slug, $plan);
+        $razorpayPlanIdYearly = self::resolveRazorpayPlanIdYearly($slug, $plan);
 
         return [
             'slug' => $slug,
@@ -99,10 +99,9 @@ class PlanCatalogDefinition
             'price' => $priceMonthly,
             'price_monthly' => $priceMonthly,
             'price_yearly' => $priceYearly,
-            'stripe_product_id' => self::resolveStripeProductId($plan),
-            'stripe_price_id' => $stripePriceIdMonthly,
-            'stripe_price_id_monthly' => $stripePriceIdMonthly,
-            'stripe_price_id_yearly' => $stripePriceIdYearly,
+            'razorpay_plan_id' => $razorpayPlanIdMonthly,
+            'razorpay_plan_id_monthly' => $razorpayPlanIdMonthly,
+            'razorpay_plan_id_yearly' => $razorpayPlanIdYearly,
             'limits' => $limits,
             'features' => $features,
         ];
@@ -188,37 +187,28 @@ class PlanCatalogDefinition
         return max(1, (int) $value);
     }
 
-    private static function resolveStripeProductId(array $plan): ?string
+    private static function resolveRazorpayPlanIdMonthly(string $slug, array $plan): ?string
     {
-        if (isset($plan['stripe_product_id']) && $plan['stripe_product_id'] !== '') {
-            return (string) $plan['stripe_product_id'];
+        if (isset($plan['razorpay_plan_id_monthly']) && $plan['razorpay_plan_id_monthly'] !== '') {
+            return (string) $plan['razorpay_plan_id_monthly'];
         }
 
-        return null;
-    }
-
-    private static function resolveStripePriceIdMonthly(string $slug, array $plan): ?string
-    {
-        if (isset($plan['stripe_price_id_monthly']) && $plan['stripe_price_id_monthly'] !== '') {
-            return (string) $plan['stripe_price_id_monthly'];
+        if (isset($plan['razorpay_plan_id']) && $plan['razorpay_plan_id'] !== '') {
+            return (string) $plan['razorpay_plan_id'];
         }
 
-        if (isset($plan['stripe_price_id']) && $plan['stripe_price_id'] !== '') {
-            return (string) $plan['stripe_price_id'];
-        }
-
-        $fromEnv = config('billing.stripe_plans.'.$slug);
+        $fromEnv = config('billing.razorpay_plans.'.$slug);
 
         return $fromEnv ? (string) $fromEnv : null;
     }
 
-    private static function resolveStripePriceIdYearly(string $slug, array $plan): ?string
+    private static function resolveRazorpayPlanIdYearly(string $slug, array $plan): ?string
     {
-        if (isset($plan['stripe_price_id_yearly']) && $plan['stripe_price_id_yearly'] !== '') {
-            return (string) $plan['stripe_price_id_yearly'];
+        if (isset($plan['razorpay_plan_id_yearly']) && $plan['razorpay_plan_id_yearly'] !== '') {
+            return (string) $plan['razorpay_plan_id_yearly'];
         }
 
-        $fromEnv = config('billing.stripe_plans_yearly.'.$slug);
+        $fromEnv = config('billing.razorpay_plans_yearly.'.$slug);
 
         return $fromEnv ? (string) $fromEnv : null;
     }

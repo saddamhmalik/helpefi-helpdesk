@@ -38,7 +38,7 @@ class PlatformPaymentTest extends TestCase
             ->assertInertia(fn ($page) => $page->component('Central/Admin/Payments/Index'));
     }
 
-    public function test_stripe_invoice_paid_is_recorded_with_tenant_details(): void
+    public function test_razorpay_payment_is_recorded_with_tenant_details(): void
     {
         $tenant = app(TenantProvisioningService::class)->provision(
             organizationName: 'Paying Co',
@@ -48,34 +48,39 @@ class PlatformPaymentTest extends TestCase
             adminPassword: 'password123',
         );
 
-        $tenant->update(['stripe_id' => 'cus_test_123']);
+        $tenant->update(['razorpay_customer_id' => 'cust_test_123']);
 
         Subscription::query()->where('tenant_id', $tenant->id)->update([
             'plan' => 'enterprise',
             'status' => Subscription::STATUS_ACTIVE,
-            'stripe_subscription_id' => 'sub_test_123',
+            'razorpay_subscription_id' => 'sub_test_123',
         ]);
 
-        $invoice = (object) [
-            'id' => 'in_test_123',
-            'customer' => 'cus_test_123',
-            'subscription' => 'sub_test_123',
-            'payment_intent' => 'pi_test_123',
-            'amount_paid' => 19900,
+        $payment = [
+            'id' => 'pay_test_123',
+            'customer_id' => 'cust_test_123',
+            'subscription_id' => 'sub_test_123',
+            'order_id' => 'order_test_123',
+            'amount' => 19900,
             'currency' => 'inr',
-            'customer_email' => 'pay@test.com',
-            'customer_name' => 'Pay Admin',
-            'number' => 'INV-1001',
-            'hosted_invoice_url' => 'https://stripe.test/invoice',
-            'invoice_pdf' => 'https://stripe.test/invoice.pdf',
-            'status_transitions' => (object) ['paid_at' => now()->timestamp],
-            'lines' => (object) ['data' => [(object) ['description' => 'Enterprise plan']]],
+            'email' => 'pay@test.com',
+            'description' => 'Enterprise plan',
+            'created_at' => now()->timestamp,
+            'notes' => ['plan' => 'enterprise'],
         ];
 
-        app(PlatformPaymentService::class)->recordFromStripeInvoice($invoice);
+        $subscription = [
+            'id' => 'sub_test_123',
+            'notes' => [
+                'tenant_id' => $tenant->id,
+                'plan' => 'enterprise',
+            ],
+        ];
+
+        app(PlatformPaymentService::class)->recordFromRazorpayPayment($payment, $subscription);
 
         $this->assertDatabaseHas('platform_payments', [
-            'stripe_invoice_id' => 'in_test_123',
+            'razorpay_payment_id' => 'pay_test_123',
             'tenant_id' => $tenant->id,
             'plan' => 'enterprise',
             'amount' => 19900,

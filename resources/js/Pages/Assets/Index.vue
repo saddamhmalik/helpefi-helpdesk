@@ -7,6 +7,9 @@ import PageHeader from '../../Components/PageHeader.vue';
 import ListPanel from '../../Components/ListPanel.vue';
 import FilterField from '../../Components/FilterField.vue';
 import DataTable from '../../Components/DataTable.vue';
+import AppIconAction from '../../Components/AppIconAction.vue';
+import AppEditAction from '../../Components/AppEditAction.vue';
+import AppRowActions from '../../Components/AppRowActions.vue';
 import PaginationLinks from '../../Components/PaginationLinks.vue';
 import { useI18n } from 'vue-i18n';
 
@@ -78,11 +81,11 @@ const warrantyClass = (asset) => {
     soon.setDate(soon.getDate() + 30);
 
     if (expires < now) {
-        return 'text-red-600';
+        return 'text-red-600 dark:text-red-400';
     }
 
     if (expires <= soon) {
-        return 'text-amber-600';
+        return 'text-amber-600 dark:text-amber-400';
     }
 
     return 'text-slate-600 dark:text-slate-400';
@@ -124,7 +127,7 @@ const statCards = computed(() => [
             <div
                 v-for="card in statCards"
                 :key="card.label"
-                class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-sm"
+                class="rounded-xl border agent-border agent-panel p-4 shadow-sm"
             >
                 <p class="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">{{ card.label }}</p>
                 <p
@@ -181,11 +184,11 @@ const statCards = computed(() => [
                 <div class="mt-4 flex flex-wrap items-center gap-4">
                     <label class="inline-flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
                         <input name="unassigned" type="checkbox" class="rounded border-slate-300 dark:border-slate-700" :checked="filters.unassigned">
-                        Unassigned only
+                        {{ $t('assets.unassigned_only') }}
                     </label>
                     <label class="inline-flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
                         <input name="warranty_expiring" type="checkbox" class="rounded border-slate-300 dark:border-slate-700" :checked="filters.warranty_expiring">
-                        Warranty expiring in 30 days
+                        {{ $t('assets.warranty_expiring_in_30_days') }}
                     </label>
                     <button type="submit" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">{{ $t('assets.apply_filters') }}</button>
                 </div>
@@ -193,7 +196,7 @@ const statCards = computed(() => [
         </ListPanel>
 
         <DataTable>
-            <thead class="bg-slate-50">
+            <thead class="agent-panel-muted">
                 <tr>
                     <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{{ $t('assets.tag') }}</th>
                     <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{{ $t('assets.name') }}</th>
@@ -203,6 +206,7 @@ const statCards = computed(() => [
                     <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{{ $t('assets.ip') }}</th>
                     <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{{ $t('assets.warranty') }}</th>
                     <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{{ $t('assets.location') }}</th>
+                    <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{{ $t('assets.actions') }}</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
@@ -219,9 +223,23 @@ const statCards = computed(() => [
                         {{ asset.warranty_expires_at?.slice(0, 10) || '—' }}
                     </td>
                     <td class="px-4 py-3 text-sm text-slate-600 dark:text-slate-400">{{ asset.location || '—' }}</td>
+                    <td class="px-4 py-3">
+                        <AppRowActions>
+                            <AppIconAction
+                                icon="view"
+                                variant="primary"
+                                :label="$t('assets.view_asset')"
+                                :href="`/assets/${asset.id}`"
+                            />
+                            <AppEditAction
+                                :label="$t('assets.edit')"
+                                :href="`/assets/${asset.id}`"
+                            />
+                        </AppRowActions>
+                    </td>
                 </tr>
                 <tr v-if="!assets.data?.length">
-                    <td colspan="8" class="px-4 py-12 text-center text-sm text-slate-500 dark:text-slate-400">No assets found.</td>
+                    <td colspan="9" class="px-4 py-12 text-center text-sm text-slate-500 dark:text-slate-400">{{ $t('assets.no_assets_found') }}</td>
                 </tr>
             </tbody>
             <template #footer>

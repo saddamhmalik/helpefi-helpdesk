@@ -34,8 +34,8 @@ class AdminPaymentController extends Controller
                 'q' => $search,
                 'status' => $status,
             ],
-            'stripe_enabled' => (bool) config('stripe.configured'),
-            'stripe_webhooks_configured' => (bool) config('stripe.webhooks_configured'),
+            'razorpay_enabled' => (bool) config('razorpay.configured'),
+            'razorpay_webhooks_configured' => (bool) config('razorpay.webhooks_configured'),
         ]);
     }
 }

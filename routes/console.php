@@ -8,10 +8,6 @@ Schedule::command('tenants:run security:purge-retention')->daily();
 Schedule::command('tenants:run reports:dispatch-scheduled')->hourly();
 Schedule::command('tenants:run automation:process-scheduled')->everyMinute();
 Schedule::command('tenants:run tickets:unsnooze')->everyMinute();
-Schedule::command('billing:backfill-stripe')
-    ->hourly()
-    ->withoutOverlapping()
-    ->when(fn () => (bool) config('stripe.enabled') && config('stripe.secret'));
 Schedule::command('billing:enforce-grace')->hourly()->withoutOverlapping();
 Schedule::command('tenants:purge-expired')->daily()->withoutOverlapping();
 Schedule::command('platform:run-backups')

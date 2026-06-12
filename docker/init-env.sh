@@ -26,15 +26,18 @@ fi
 LOCAL_ENV="$ROOT/.env"
 
 if [ -f "$LOCAL_ENV" ]; then
-    STRIPE_VARS=(
-        STRIPE_ENABLED
-        STRIPE_KEY
-        STRIPE_SECRET
-        STRIPE_WEBHOOK_SECRET
-        STRIPE_CURRENCY
-        STRIPE_PRICE_STARTER
-        STRIPE_PRICE_PROFESSIONAL
-        STRIPE_PRICE_ENTERPRISE
+    RAZORPAY_VARS=(
+        RAZORPAY_ENABLED
+        RAZORPAY_KEY
+        RAZORPAY_SECRET
+        RAZORPAY_WEBHOOK_SECRET
+        RAZORPAY_CURRENCY
+        RAZORPAY_PLAN_STARTER
+        RAZORPAY_PLAN_PROFESSIONAL
+        RAZORPAY_PLAN_ENTERPRISE
+        RAZORPAY_PLAN_STARTER_YEARLY
+        RAZORPAY_PLAN_PROFESSIONAL_YEARLY
+        RAZORPAY_PLAN_ENTERPRISE_YEARLY
         BILLING_DEFAULT_PLAN
         BILLING_TRIAL_DAYS
         BILLING_CURRENCY
@@ -46,7 +49,7 @@ if [ -f "$LOCAL_ENV" ]; then
         TELESCOPE_PATH
     )
 
-    for var in "${STRIPE_VARS[@]}" "${TELESCOPE_VARS[@]}"; do
+    for var in "${RAZORPAY_VARS[@]}" "${TELESCOPE_VARS[@]}"; do
         value="$(grep -E "^${var}=" "$LOCAL_ENV" | tail -n 1 | cut -d= -f2- || true)"
 
         if [ -z "$value" ]; then
@@ -64,7 +67,7 @@ if [ -f "$LOCAL_ENV" ]; then
         fi
     done
 
-    if grep -q '^STRIPE_SECRET=.' "$ENV_FILE" || grep -q '^TELESCOPE_ENABLED=true' "$ENV_FILE"; then
-        echo "Synced Stripe and Telescope settings from .env into .env.docker"
+    if grep -q '^RAZORPAY_SECRET=.' "$ENV_FILE" || grep -q '^TELESCOPE_ENABLED=true' "$ENV_FILE"; then
+        echo "Synced Razorpay and Telescope settings from .env into .env.docker"
     fi
 fi
