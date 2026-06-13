@@ -17,7 +17,7 @@ class RazorpayWebhookController extends Controller
     public function __invoke(Request $request): Response
     {
         if (! $this->razorpay->isEnabled()) {
-            return response('Razorpay billing is disabled.', 503);
+            return response('Razorpay billing is disabled.', 200);
         }
 
         try {

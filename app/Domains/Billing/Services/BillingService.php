@@ -239,8 +239,9 @@ class BillingService
         string $slug,
         string $customerEmail,
         string $customerName,
-        string $successUrl,
+        string $successRedirect,
         string $interval = 'month',
+        string $cancelRedirect = '/settings/billing?checkout=cancelled&section=plans',
     ): array|string|Subscription {
         $this->plans->find($slug);
 
@@ -249,8 +250,9 @@ class BillingService
                 $slug,
                 $customerEmail,
                 $customerName,
-                $successUrl,
+                $successRedirect,
                 $interval,
+                $cancelRedirect,
             );
         }
 
@@ -267,7 +269,18 @@ class BillingService
 
     public function cancelSubscription(): Subscription
     {
-        return $this->razorpay->cancelSubscription();
+        if ($this->razorpay->isEnabled()) {
+            return $this->razorpay->cancelSubscription();
+        }
+
+        $subscription = $this->subscriptions->current();
+
+        return app(SubscriptionLifecycleService::class)->markCancelled($subscription, [
+            'razorpay_subscription_id' => null,
+            'razorpay_plan_id' => null,
+            'renews_at' => null,
+            'cancelled_at' => now(),
+        ], $subscription->renews_at);
     }
 
     public function changePlan(string $slug, string $interval = 'month'): Subscription
