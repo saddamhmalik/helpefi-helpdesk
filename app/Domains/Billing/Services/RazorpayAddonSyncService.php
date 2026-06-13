@@ -4,11 +4,13 @@ namespace App\Domains\Billing\Services;
 
 use App\Domains\Billing\Repositories\RazorpayCatalogRepository;
 use App\Domains\Tenancy\Support\AddonCatalogDefinition;
-use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\Log;
 use Razorpay\Api\Errors\Error;
 
 class RazorpayAddonSyncService
 {
+    private array $skipped = [];
+
     public function __construct(private RazorpayCatalogRepository $razorpayCatalog)
     {
     }
@@ -18,8 +20,15 @@ class RazorpayAddonSyncService
         return $this->razorpayCatalog->isEnabled();
     }
 
+    public function skipped(): array
+    {
+        return array_values(array_unique($this->skipped));
+    }
+
     public function syncCatalog(array $catalog, string $currency): array
     {
+        $this->skipped = [];
+
         if (! $this->isEnabled()) {
             return $catalog;
         }
@@ -33,13 +42,7 @@ class RazorpayAddonSyncService
                 continue;
             }
 
-            try {
-                $synced[$key] = $this->syncAddon($key, $addon, $currency);
-            } catch (Error $exception) {
-                throw ValidationException::withMessages([
-                    'addons' => "Razorpay sync failed for the {$key} add-on: {$exception->getMessage()}",
-                ]);
-            }
+            $synced[$key] = $this->syncAddon($key, $addon, $currency);
         }
 
         return $synced;
@@ -54,25 +57,39 @@ class RazorpayAddonSyncService
             return $addon;
         }
 
-        if (is_string($existingPlanId) && $existingPlanId !== '') {
-            $existingPlan = $this->razorpayCatalog->retrievePlan($existingPlanId);
+        try {
+            if (is_string($existingPlanId) && $existingPlanId !== '') {
+                $existingPlan = $this->razorpayCatalog->retrievePlan($existingPlanId);
 
-            if ($this->razorpayCatalog->planMatches($existingPlan, $amountMinor, $currency, 'month')) {
-                return array_merge($addon, [
-                    'razorpay_plan_id_monthly' => $existingPlanId,
-                ]);
+                if ($this->razorpayCatalog->planMatches($existingPlan, $amountMinor, $currency, 'month')) {
+                    return array_merge($addon, [
+                        'razorpay_plan_id_monthly' => $existingPlanId,
+                    ]);
+                }
             }
+
+            $created = $this->razorpayCatalog->createAddonPlan(
+                (string) ($addon['name'] ?? ucfirst($key)),
+                $amountMinor,
+                $currency,
+                $key,
+            );
+
+            return array_merge($addon, [
+                'razorpay_plan_id_monthly' => (string) ($created['id'] ?? '') ?: null,
+            ]);
+        } catch (Error $exception) {
+            Log::warning('Razorpay add-on sync skipped for unsupported currency or API error', [
+                'addon' => $key,
+                'currency' => $currency,
+                'message' => $exception->getMessage(),
+            ]);
+
+            $this->skipped[] = sprintf('%s add-on (%s)', $key, strtoupper($currency));
+
+            return array_merge($addon, [
+                'razorpay_plan_id_monthly' => $existingPlanId,
+            ]);
         }
-
-        $created = $this->razorpayCatalog->createAddonPlan(
-            (string) ($addon['name'] ?? ucfirst($key)),
-            $amountMinor,
-            $currency,
-            $key,
-        );
-
-        return array_merge($addon, [
-            'razorpay_plan_id_monthly' => (string) ($created['id'] ?? ''),
-        ]);
     }
 }

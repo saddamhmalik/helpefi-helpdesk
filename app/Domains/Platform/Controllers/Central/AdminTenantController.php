@@ -4,6 +4,7 @@ namespace App\Domains\Platform\Controllers\Central;
 
 use App\Domains\Billing\Repositories\PlanRepository;
 use App\Domains\Platform\Services\PlatformTenantService;
+use App\Domains\Tenancy\Services\CentralSettingsService;
 use App\Domains\Tenancy\Services\TenantProvisioningService;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
@@ -17,8 +18,8 @@ class AdminTenantController extends Controller
         private PlatformTenantService $tenants,
         private PlanRepository $plans,
         private TenantProvisioningService $provisioning,
-    ) {
-    }
+        private CentralSettingsService $settings,
+    ) {}
 
     public function index(Request $request): Response
     {
@@ -58,9 +59,12 @@ class AdminTenantController extends Controller
                     'slug' => $slug,
                     'name' => $plan['name'],
                     'price' => $plan['price'],
+                    'price_monthly' => $plan['price_monthly'] ?? $plan['price'],
+                    'price_yearly' => $plan['price_yearly'] ?? null,
                 ])
                 ->values()
                 ->all(),
+            'currency' => $this->settings->currencyMeta(),
             'razorpay_enabled' => (bool) config('razorpay.configured'),
         ]);
     }
@@ -71,7 +75,10 @@ class AdminTenantController extends Controller
 
         $data = $request->validate([
             'is_blocked' => ['sometimes', 'boolean'],
-            'plan' => ['sometimes', 'nullable', 'string', 'in:'.$slugs],
+            'plan' => ['sometimes', 'nullable', 'required_with:billing_interval,renews_at,note', 'string', 'in:'.$slugs],
+            'billing_interval' => ['sometimes', 'string', 'in:month,year'],
+            'renews_at' => ['sometimes', 'nullable', 'date', 'after:today'],
+            'note' => ['sometimes', 'nullable', 'string', 'max:500'],
             'start_trial' => ['sometimes', 'boolean'],
         ]);
 

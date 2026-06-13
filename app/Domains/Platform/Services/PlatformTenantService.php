@@ -4,11 +4,13 @@ namespace App\Domains\Platform\Services;
 
 use App\Domains\Billing\Models\Subscription;
 use App\Domains\Billing\Repositories\PlanRepository;
-use App\Domains\Tenancy\Services\TenantDomainService;
 use App\Domains\Platform\Repositories\PlatformTenantRepository;
 use App\Domains\Platform\Support\PlatformAuditRecorder;
+use App\Domains\Tenancy\Services\TenantDomainService;
 use App\Models\Tenant;
+use Carbon\CarbonInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Carbon;
 
 class PlatformTenantService
 {
@@ -17,8 +19,7 @@ class PlatformTenantService
         private PlanRepository $plans,
         private PlatformTenantAdminResolver $admins,
         private PlatformAuditRecorder $audit,
-    ) {
-    }
+    ) {}
 
     public function list(int $perPage = 20, ?string $search = null, ?string $status = null): LengthAwarePaginator
     {
@@ -42,6 +43,8 @@ class PlatformTenantService
         $tenant = $this->tenants->find($tenantId);
         $beforeBlocked = (bool) $tenant->is_blocked;
         $beforePlan = $tenant->subscription?->plan;
+        $beforeInterval = $tenant->subscription?->billing_interval;
+        $beforeRenewsAt = $tenant->subscription?->renews_at;
 
         if (array_key_exists('is_blocked', $data)) {
             $tenant = $this->tenants->update($tenant, [
@@ -60,21 +63,37 @@ class PlatformTenantService
         if (array_key_exists('plan', $data) && $data['plan'] !== null && $data['plan'] !== '') {
             $this->plans->find($data['plan']);
 
+            $interval = ($data['billing_interval'] ?? null) === 'year' ? 'year' : 'month';
+            $planChanged = $beforePlan !== $data['plan'] || $beforeInterval !== $interval;
+            $renewsAt = $this->resolveRenewalDate($data['renews_at'] ?? null, $interval, $planChanged, $beforeRenewsAt);
+
             $subscriptionPayload = [
                 'plan' => $data['plan'],
                 'status' => Subscription::STATUS_ACTIVE,
+                'billing_interval' => $interval,
                 'trial_ends_at' => null,
-                'renews_at' => now()->addMonth(),
+                'cancelled_at' => null,
+                'access_ends_at' => null,
+                'renews_at' => $renewsAt,
             ];
 
             $this->tenants->updateSubscription($tenant, $subscriptionPayload);
             $tenant = $this->tenants->find($tenantId);
 
-            if ($beforePlan !== $data['plan']) {
+            $renewalChanged = $beforeRenewsAt === null || ! $beforeRenewsAt->equalTo($renewsAt);
+            $noteProvided = isset($data['note']) && $data['note'] !== '';
+
+            if ($planChanged || $renewalChanged || $noteProvided) {
                 $this->audit->record(
                     'platform.tenant.plan_changed',
                     $tenant,
-                    ['from' => $beforePlan, 'to' => $data['plan']],
+                    array_filter([
+                        'from' => $beforePlan,
+                        'to' => $data['plan'],
+                        'interval' => $interval,
+                        'renews_at' => $renewsAt->toIso8601String(),
+                        'note' => $data['note'] ?? null,
+                    ], static fn ($value) => $value !== null),
                     tenantId: $tenant->id,
                 );
             }
@@ -106,6 +125,19 @@ class PlatformTenantService
         $tenant->delete();
     }
 
+    private function resolveRenewalDate(?string $renewsAt, string $interval, bool $planChanged, ?CarbonInterface $existing): CarbonInterface
+    {
+        if ($renewsAt !== null && $renewsAt !== '') {
+            return Carbon::parse($renewsAt);
+        }
+
+        if (! $planChanged && $existing !== null) {
+            return $existing;
+        }
+
+        return $interval === 'year' ? now()->addYear() : now()->addMonth();
+    }
+
     private function present(Tenant $tenant): array
     {
         $subscription = $tenant->subscription;
@@ -135,6 +167,7 @@ class PlatformTenantService
                 'plan' => $planSlug,
                 'plan_name' => $plan['name'] ?? ($planSlug ? ucfirst($planSlug) : null),
                 'plan_price' => $plan['price'] ?? null,
+                'billing_interval' => $subscription->billing_interval ?? 'month',
                 'status' => $subscription->status,
                 'on_trial' => $subscription->isOnTrial(),
                 'trial_expired' => $subscription->isTrialExpired(),

@@ -15,10 +15,13 @@
             default => 'home',
         };
 
+        $centralSettings = app(\App\Domains\Tenancy\Services\CentralSettingsService::class);
+
         $centralSeo = app(\App\Domains\Tenancy\Services\CentralSeoService::class)->meta(
             $centralPage,
             config('app.name', 'helpefi'),
-            app(\App\Domains\Tenancy\Services\CentralSettingsService::class)->trialDays(),
+            $centralSettings->trialDays(),
+            $centralSettings->currency(),
         );
     }
 @endphp

@@ -31,4 +31,12 @@ class SubscriptionRepository
 
         return $subscription->fresh();
     }
+
+    public function countByPlan(string $slug): int
+    {
+        return Subscription::query()
+            ->where('plan', $slug)
+            ->whereIn('status', [Subscription::STATUS_ACTIVE, Subscription::STATUS_PAST_DUE])
+            ->count();
+    }
 }

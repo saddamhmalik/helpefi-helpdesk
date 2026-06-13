@@ -101,6 +101,7 @@ class HandleInertiaRequests extends Middleware
                 : null,
             'flash' => fn () => [
                 'success' => $request->session()->pull('success'),
+                'warning' => $request->session()->pull('warning'),
                 'error' => $request->session()->pull('error'),
                 'created_inbox_id' => $request->session()->pull('created_inbox_id'),
                 'invite_url' => $request->session()->pull('invite_url'),

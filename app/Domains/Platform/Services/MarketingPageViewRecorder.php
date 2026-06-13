@@ -20,7 +20,8 @@ class MarketingPageViewRecorder
                 'is_bot' => $this->isBot((string) $request->userAgent()),
                 'visited_at' => now(),
             ]);
-        } catch (\Throwable) {
+        } catch (\Throwable $e) {
+            report($e);
         }
     }
 
@@ -35,7 +36,7 @@ class MarketingPageViewRecorder
 
     private function visitorHash(Request $request): string
     {
-        $salt = (string) config('app.key').now()->toDateString();
+        $salt = (string) config('app.key');
 
         return hash('sha256', $request->ip().'|'.((string) $request->userAgent()).'|'.$salt);
     }

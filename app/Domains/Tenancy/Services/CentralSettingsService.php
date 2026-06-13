@@ -2,6 +2,7 @@
 
 namespace App\Domains\Tenancy\Services;
 
+use App\Domains\Billing\Repositories\SubscriptionRepository;
 use App\Domains\Billing\Services\RazorpayAddonSyncService;
 use App\Domains\Billing\Services\RazorpayPlanSyncService;
 use App\Domains\Tenancy\Repositories\CentralSettingRepository;
@@ -9,6 +10,7 @@ use App\Domains\Tenancy\Support\AddonCatalogDefinition;
 use App\Domains\Tenancy\Support\CurrencyCatalog;
 use App\Domains\Tenancy\Support\PlanCatalogDefinition;
 use App\Domains\Tenancy\Support\SocialLinkDefinition;
+use Illuminate\Validation\ValidationException;
 
 class CentralSettingsService
 {
@@ -16,6 +18,7 @@ class CentralSettingsService
         private CentralSettingRepository $settings,
         private RazorpayPlanSyncService $razorpayPlanSync,
         private RazorpayAddonSyncService $razorpayAddonSync,
+        private SubscriptionRepository $subscriptions,
     ) {
     }
 
@@ -42,6 +45,27 @@ class CentralSettingsService
     public function currencyMeta(): array
     {
         return CurrencyCatalog::meta($this->currency());
+    }
+
+    public function indiaCurrency(): string
+    {
+        return CurrencyCatalog::normalize(config('billing.india_currency', 'INR'));
+    }
+
+    public function indiaCurrencyMeta(): array
+    {
+        return CurrencyCatalog::meta($this->indiaCurrency());
+    }
+
+    public function indiaPricingFlag(): bool
+    {
+        return (bool) ($this->settings->current()->india_pricing ?? false);
+    }
+
+    public function indiaPricingEnabled(): bool
+    {
+        return $this->indiaPricingFlag()
+            && $this->indiaCurrency() !== $this->currency();
     }
 
     public function planCatalog(): array
@@ -131,9 +155,13 @@ class CentralSettingsService
                 'price' => $plan['price_monthly'],
                 'price_monthly' => $plan['price_monthly'],
                 'price_yearly' => $plan['price_yearly'],
+                'price_monthly_india' => $plan['price_monthly_india'] ?? 0,
+                'price_yearly_india' => $plan['price_yearly_india'] ?? 0,
                 'razorpay_plan_id' => $plan['razorpay_plan_id_monthly'] ?? null,
                 'razorpay_plan_id_monthly' => $plan['razorpay_plan_id_monthly'] ?? null,
                 'razorpay_plan_id_yearly' => $plan['razorpay_plan_id_yearly'] ?? null,
+                'razorpay_plan_id_monthly_india' => $plan['razorpay_plan_id_monthly_india'] ?? null,
+                'razorpay_plan_id_yearly_india' => $plan['razorpay_plan_id_yearly_india'] ?? null,
                 'limits' => $plan['limits'],
                 'features' => $plan['features'],
             ])
@@ -148,6 +176,9 @@ class CentralSettingsService
             'tenant_purge_grace_days' => $this->tenantPurgeGraceDays(),
             'tenant_purge_enabled' => $this->tenantPurgeEnabled(),
             'currency' => $this->currencyMeta(),
+            'india_pricing' => $this->indiaPricingFlag(),
+            'india_pricing_effective' => $this->indiaPricingEnabled(),
+            'india_currency' => $this->indiaCurrencyMeta(),
             'social_links' => $this->socialLinksForAdmin(),
             'razorpay_enabled' => $this->razorpayPlanSync->isEnabled(),
             'plans' => $this->plansForDisplay(),
@@ -157,10 +188,86 @@ class CentralSettingsService
 
     public function update(array $data): array
     {
+        $current = $this->settings->current();
+        $payload = [];
+
+        if (array_key_exists('trial_days', $data)) {
+            $payload['trial_days'] = max(1, min((int) $data['trial_days'], 365));
+        }
+
+        if (array_key_exists('tenant_purge_grace_days', $data)) {
+            $payload['tenant_purge_grace_days'] = max(1, min((int) $data['tenant_purge_grace_days'], 365));
+        }
+
+        if (array_key_exists('tenant_purge_enabled', $data)) {
+            $payload['tenant_purge_enabled'] = (bool) $data['tenant_purge_enabled'];
+        }
+
+        if (array_key_exists('social_links', $data)) {
+            $payload['social_links'] = $this->sanitizeSocialLinks($data['social_links']);
+        }
+
+        $currency = isset($data['currency']) ? CurrencyCatalog::normalize($data['currency']) : $this->currency();
+        $currencyChanged = isset($data['currency']) && $currency !== $this->currency();
+
+        $indiaEnabled = array_key_exists('india_pricing', $data)
+            ? (bool) $data['india_pricing']
+            : (bool) ($current->india_pricing ?? false);
+        $indiaChanged = array_key_exists('india_pricing', $data)
+            && $indiaEnabled !== (bool) ($current->india_pricing ?? false);
+
+        $indiaCurrency = $indiaEnabled && $this->indiaCurrency() !== $currency
+            ? $this->indiaCurrency()
+            : null;
+
+        if (isset($data['currency'])) {
+            $payload['currency'] = $currency;
+        }
+
+        if (array_key_exists('india_pricing', $data)) {
+            $payload['india_pricing'] = $indiaEnabled;
+        }
+
+        if (isset($data['plans']) || $currencyChanged || $indiaChanged) {
+            $payload['plan_catalog'] = $this->razorpayPlanSync->syncCatalog(
+                $this->resolvePlanCatalog($data['plans'] ?? null),
+                $currency,
+                $indiaCurrency,
+            );
+        }
+
+        if (isset($data['addons']) || $currencyChanged) {
+            $payload['addon_catalog'] = $this->razorpayAddonSync->syncCatalog(
+                $this->resolveAddonCatalog($data['addons'] ?? null),
+                $currency,
+            );
+        }
+
+        if ($payload !== []) {
+            $this->settings->update($current, $payload);
+        }
+
+        return $this->snapshot();
+    }
+
+    public function razorpaySyncWarnings(): array
+    {
+        return array_merge(
+            $this->razorpayPlanSync->skipped(),
+            $this->razorpayAddonSync->skipped(),
+        );
+    }
+
+    private function resolvePlanCatalog(?array $plans): array
+    {
+        if ($plans === null) {
+            return $this->planCatalog();
+        }
+
         $currentCatalog = $this->planCatalog();
         $catalog = [];
 
-        foreach ($data['plans'] as $plan) {
+        foreach ($plans as $plan) {
             $slug = $plan['slug'];
             $existing = $currentCatalog[$slug] ?? [];
             $incoming = $this->normalizeIncomingPlan($plan, $existing);
@@ -168,15 +275,36 @@ class CentralSettingsService
             $catalog[$slug] = PlanCatalogDefinition::normalizePlan($slug, array_merge($existing, $incoming));
         }
 
-        $currency = isset($data['currency'])
-            ? CurrencyCatalog::normalize($data['currency'])
-            : $this->currency();
+        $this->guardRemovedPlans(array_keys($currentCatalog), array_keys($catalog));
 
-        $catalog = $this->razorpayPlanSync->syncCatalog($catalog, $currency);
+        return $catalog;
+    }
 
-        $addonCatalog = [];
+    private function guardRemovedPlans(array $previousSlugs, array $nextSlugs): void
+    {
+        $defaultSlugs = PlanCatalogDefinition::slugs();
+        $removed = array_diff($previousSlugs, $nextSlugs);
 
-        foreach ($data['addons'] ?? [] as $addon) {
+        foreach ($removed as $slug) {
+            if (in_array($slug, $defaultSlugs, true)) {
+                continue;
+            }
+
+            $subscribers = $this->subscriptions->countByPlan($slug);
+
+            if ($subscribers > 0) {
+                throw ValidationException::withMessages([
+                    'plans' => "Cannot remove \"{$slug}\": {$subscribers} workspace(s) are subscribed to it.",
+                ]);
+            }
+        }
+    }
+
+    private function resolveAddonCatalog(?array $addons): array
+    {
+        $catalog = [];
+
+        foreach ($addons ?? [] as $addon) {
             $key = $addon['key'];
             $existing = $this->addonCatalog()[$key] ?? [];
             $incoming = $addon;
@@ -185,36 +313,16 @@ class CentralSettingsService
                 unset($incoming['razorpay_plan_id_monthly']);
             }
 
-            $addonCatalog[$key] = AddonCatalogDefinition::normalizeAddon($key, array_merge($existing, $incoming));
+            $catalog[$key] = AddonCatalogDefinition::normalizeAddon($key, array_merge($existing, $incoming));
         }
 
         foreach ($this->addonCatalog() as $key => $existing) {
-            if (! isset($addonCatalog[$key])) {
-                $addonCatalog[$key] = $existing;
+            if (! isset($catalog[$key])) {
+                $catalog[$key] = $existing;
             }
         }
 
-        $addonCatalog = $this->razorpayAddonSync->syncCatalog($addonCatalog, $currency);
-
-        $payload = [
-            'trial_days' => max(1, min((int) $data['trial_days'], 365)),
-            'tenant_purge_grace_days' => max(1, min((int) ($data['tenant_purge_grace_days'] ?? $this->tenantPurgeGraceDays()), 365)),
-            'tenant_purge_enabled' => (bool) ($data['tenant_purge_enabled'] ?? $this->tenantPurgeEnabled()),
-            'plan_catalog' => $catalog,
-            'addon_catalog' => $addonCatalog,
-        ];
-
-        if (isset($data['currency'])) {
-            $payload['currency'] = $currency;
-        }
-
-        if (array_key_exists('social_links', $data)) {
-            $payload['social_links'] = $this->sanitizeSocialLinks($data['social_links']);
-        }
-
-        $this->settings->update($this->settings->current(), $payload);
-
-        return $this->snapshot();
+        return $catalog;
     }
 
     private function storedSocialLinks(): array
@@ -241,11 +349,17 @@ class CentralSettingsService
             $incoming['price_monthly'] = $incoming['price'];
         }
 
+        if (array_key_exists('price_india', $incoming)) {
+            $incoming['price_monthly_india'] = $incoming['price_india'];
+        }
+
         if ($this->razorpayPlanSync->isEnabled()) {
             unset(
                 $incoming['razorpay_plan_id'],
                 $incoming['razorpay_plan_id_monthly'],
                 $incoming['razorpay_plan_id_yearly'],
+                $incoming['razorpay_plan_id_monthly_india'],
+                $incoming['razorpay_plan_id_yearly_india'],
             );
         }
 

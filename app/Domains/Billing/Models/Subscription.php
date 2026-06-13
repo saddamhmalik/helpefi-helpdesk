@@ -29,6 +29,7 @@ class Subscription extends Model
         'razorpay_subscription_id',
         'razorpay_plan_id',
         'billing_interval',
+        'currency',
         'active_addons',
         'razorpay_addon_items',
     ];

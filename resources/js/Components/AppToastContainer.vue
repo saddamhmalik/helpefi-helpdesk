@@ -14,6 +14,11 @@ const styles = {
         icon: 'text-red-600 dark:text-red-400',
         path: 'M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z',
     },
+    warning: {
+        wrap: 'border-amber-200 bg-amber-50 text-amber-950 shadow-amber-900/10 dark:border-amber-700 dark:bg-amber-950 dark:text-amber-50 dark:shadow-black/40',
+        icon: 'text-amber-600 dark:text-amber-400',
+        path: 'M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z',
+    },
     info: {
         wrap: 'border-blue-200 bg-blue-50 text-blue-950 shadow-blue-900/10 dark:border-blue-700 dark:bg-blue-950 dark:text-blue-50 dark:shadow-black/40',
         icon: 'text-blue-600 dark:text-blue-400',

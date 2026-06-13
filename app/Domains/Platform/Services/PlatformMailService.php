@@ -17,16 +17,28 @@ class PlatformMailService
     public function __construct(
         private PlatformEmailTemplateService $templates,
         private CentralSettingsService $settings,
-    ) {
-    }
+    ) {}
 
     public function sendRegistrationConfirmation(Tenant $tenant, string $adminName, string $adminEmail): void
     {
         $this->send(
-            \App\Domains\Platform\Models\PlatformEmailTemplate::SLUG_REGISTRATION,
+            PlatformEmailTemplate::SLUG_REGISTRATION,
             $adminEmail,
             $this->variables($tenant, $adminName, $adminEmail),
         );
+    }
+
+    public function sendRegistrationVerification(string $organizationName, string $adminName, string $adminEmail, string $verificationUrl): void
+    {
+        $this->send(PlatformEmailTemplate::SLUG_REGISTRATION_VERIFICATION, $adminEmail, [
+            'brand' => config('app.name', 'helpefi'),
+            'admin_name' => $adminName,
+            'admin_email' => $adminEmail,
+            'organization_name' => $organizationName,
+            'verification_url' => $verificationUrl,
+            'trial_days' => (string) $this->settings->trialDays(),
+            'central_domain' => config('tenancy.central_app_domain'),
+        ]);
     }
 
     public function sendWorkspaceWelcome(Tenant $tenant, string $adminName, string $adminEmail, string $welcomeUrl): void
@@ -35,7 +47,7 @@ class PlatformMailService
         $variables['welcome_url'] = $welcomeUrl;
 
         $this->send(
-            \App\Domains\Platform\Models\PlatformEmailTemplate::SLUG_WORKSPACE_WELCOME,
+            PlatformEmailTemplate::SLUG_WORKSPACE_WELCOME,
             $adminEmail,
             $variables,
         );
@@ -83,17 +95,18 @@ class PlatformMailService
 
     private function ensureSystemTemplates(): void
     {
-        $hasRegistration = PlatformEmailTemplate::query()
-            ->where('slug', PlatformEmailTemplate::SLUG_REGISTRATION)
-            ->where('is_active', true)
-            ->exists();
+        $required = [
+            PlatformEmailTemplate::SLUG_REGISTRATION,
+            PlatformEmailTemplate::SLUG_REGISTRATION_VERIFICATION,
+            PlatformEmailTemplate::SLUG_WORKSPACE_WELCOME,
+        ];
 
-        $hasWelcome = PlatformEmailTemplate::query()
-            ->where('slug', PlatformEmailTemplate::SLUG_WORKSPACE_WELCOME)
-            ->where('is_active', true)
-            ->exists();
+        $existingSlugs = PlatformEmailTemplate::query()
+            ->whereIn('slug', $required)
+            ->pluck('slug')
+            ->all();
 
-        if ($hasRegistration && $hasWelcome) {
+        if (! array_diff($required, $existingSlugs)) {
             return;
         }
 

@@ -13,14 +13,29 @@ class MarketingAnalyticsRepository
         $last7 = now()->subDays(7);
         $last30 = now()->subDays(30);
 
+        $counts = $this->views()
+            ->selectRaw('COUNT(*) AS total_views')
+            ->selectRaw('SUM(CASE WHEN visited_at >= ? THEN 1 ELSE 0 END) AS views_today', [$today])
+            ->selectRaw('SUM(CASE WHEN visited_at >= ? THEN 1 ELSE 0 END) AS views_7_days', [$last7])
+            ->selectRaw('SUM(CASE WHEN visited_at >= ? THEN 1 ELSE 0 END) AS views_30_days', [$last30])
+            ->first();
+
         return [
-            'total_views' => $this->views()->count(),
-            'views_today' => $this->views()->where('visited_at', '>=', $today)->count(),
-            'views_7_days' => $this->views()->where('visited_at', '>=', $last7)->count(),
-            'views_30_days' => $this->views()->where('visited_at', '>=', $last30)->count(),
-            'unique_visitors_today' => $this->views()->where('visited_at', '>=', $today)->distinct()->count('visitor_hash'),
-            'unique_visitors_30_days' => $this->views()->where('visited_at', '>=', $last30)->distinct()->count('visitor_hash'),
+            'total_views' => (int) ($counts->total_views ?? 0),
+            'views_today' => (int) ($counts->views_today ?? 0),
+            'views_7_days' => (int) ($counts->views_7_days ?? 0),
+            'views_30_days' => (int) ($counts->views_30_days ?? 0),
+            'unique_visitors_today' => $this->uniqueVisitors($today),
+            'unique_visitors_30_days' => $this->uniqueVisitors($last30),
         ];
+    }
+
+    private function uniqueVisitors(\DateTimeInterface $since): int
+    {
+        return $this->views()
+            ->where('visited_at', '>=', $since)
+            ->distinct()
+            ->count('visitor_hash');
     }
 
     private function views(): Builder

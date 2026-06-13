@@ -5,7 +5,13 @@ export function useBillingInterval() {
 
     const intervalSuffix = computed(() => (billingInterval.value === 'year' ? '/yr' : '/mo'));
 
-    const planPrice = (plan) => {
+    const planPrice = (plan, india = false) => {
+        if (india) {
+            return billingInterval.value === 'year'
+                ? (plan.price_yearly_india ?? 0)
+                : (plan.price_monthly_india ?? 0);
+        }
+
         if (billingInterval.value === 'year') {
             return plan.price_yearly ?? (plan.price_monthly ?? plan.price) * 10;
         }
@@ -13,9 +19,13 @@ export function useBillingInterval() {
         return plan.price_monthly ?? plan.price;
     };
 
-    const yearlySavingsPercent = (plan) => {
-        const monthly = plan.price_monthly ?? plan.price ?? 0;
-        const yearly = plan.price_yearly ?? monthly * 10;
+    const yearlySavingsPercent = (plan, india = false) => {
+        const monthly = india
+            ? (plan.price_monthly_india ?? 0)
+            : (plan.price_monthly ?? plan.price ?? 0);
+        const yearly = india
+            ? (plan.price_yearly_india ?? monthly * 10)
+            : (plan.price_yearly ?? monthly * 10);
 
         if (monthly <= 0) {
             return 0;

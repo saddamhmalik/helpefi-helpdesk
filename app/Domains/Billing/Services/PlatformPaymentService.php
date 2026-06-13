@@ -16,8 +16,7 @@ class PlatformPaymentService
     public function __construct(
         private PlatformPaymentRepository $payments,
         private PlanRepository $plans,
-    ) {
-    }
+    ) {}
 
     public function list(int $perPage = 20, ?string $search = null, ?string $status = null): LengthAwarePaginator
     {
@@ -33,8 +32,10 @@ class PlatformPaymentService
 
     public function historyForTenant(string $tenantId): array
     {
+        $catalog = $this->plans->all();
+
         return $this->payments->forTenant($tenantId)
-            ->map(fn (PlatformPayment $payment) => $this->presentForTenant($payment))
+            ->map(fn (PlatformPayment $payment) => $this->presentForTenant($payment, $catalog))
             ->all();
     }
 
@@ -100,9 +101,9 @@ class PlatformPaymentService
         ]);
     }
 
-    private function presentForTenant(PlatformPayment $payment): array
+    private function presentForTenant(PlatformPayment $payment, array $catalog): array
     {
-        $plan = $payment->plan ? ($this->plans->all()[$payment->plan] ?? null) : null;
+        $plan = $payment->plan ? ($catalog[$payment->plan] ?? null) : null;
 
         return [
             'id' => $payment->id,

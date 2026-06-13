@@ -1,22 +1,22 @@
 <?php
 
+use App\Domains\Ai\Controllers\Central\MarketingAiDemoController;
 use App\Domains\Billing\Controllers\RazorpayWebhookController;
-use App\Domains\Platform\Controllers\Central\AdminNoticeController;
-use App\Domains\Platform\Controllers\Central\AdminObservabilityController;
 use App\Domains\Platform\Controllers\Central\AdminAuditLogController;
 use App\Domains\Platform\Controllers\Central\AdminBackupController;
 use App\Domains\Platform\Controllers\Central\AdminDashboardController;
-use App\Domains\Platform\Controllers\Central\AdminPaymentController;
-use App\Domains\Platform\Controllers\Central\AdminSubscriptionController;
-use App\Domains\Platform\Controllers\Central\AdminFeedbackController;
 use App\Domains\Platform\Controllers\Central\AdminEmailTemplateController;
+use App\Domains\Platform\Controllers\Central\AdminFeedbackController;
 use App\Domains\Platform\Controllers\Central\AdminLoginController;
+use App\Domains\Platform\Controllers\Central\AdminNoticeController;
+use App\Domains\Platform\Controllers\Central\AdminObservabilityController;
+use App\Domains\Platform\Controllers\Central\AdminPaymentController;
 use App\Domains\Platform\Controllers\Central\AdminProfileController;
 use App\Domains\Platform\Controllers\Central\AdminRoleController;
+use App\Domains\Platform\Controllers\Central\AdminSubscriptionController;
 use App\Domains\Platform\Controllers\Central\AdminTenantController;
 use App\Domains\Platform\Controllers\Central\AdminUserController;
 use App\Domains\Platform\Controllers\Central\PlatformNoticeImageController;
-use App\Domains\Ai\Controllers\Central\MarketingAiDemoController;
 use App\Domains\Tenancy\Controllers\Central\AdminSettingsController;
 use App\Domains\Tenancy\Controllers\Central\HomeController;
 use App\Domains\Tenancy\Controllers\Central\LoginController;
@@ -61,6 +61,8 @@ Route::middleware('guest')->group(function () {
     Route::post('/login', [LoginController::class, 'redirect'])->name('central.login.redirect');
     Route::get('/register', [RegisterController::class, 'create'])->name('central.register');
     Route::post('/register', [RegisterController::class, 'store'])->name('central.register.store');
+    Route::post('/register/resend', [RegisterController::class, 'resend'])->name('central.register.resend');
+    Route::get('/register/verify/{token}', [RegisterController::class, 'verify'])->name('central.register.verify');
 });
 
 Route::prefix('admin')->name('central.admin.')->group(function () {
@@ -99,7 +101,11 @@ Route::prefix('admin')->name('central.admin.')->group(function () {
         });
 
         Route::middleware('platform.permission:settings.view')->group(function () {
-            Route::get('/settings', [AdminSettingsController::class, 'edit'])->name('settings');
+            Route::get('/settings', [AdminSettingsController::class, 'general'])->name('settings');
+            Route::get('/settings/billing', [AdminSettingsController::class, 'billing'])->name('settings.billing');
+            Route::get('/settings/plans', [AdminSettingsController::class, 'plans'])->name('settings.plans');
+            Route::get('/settings/addons', [AdminSettingsController::class, 'addons'])->name('settings.addons');
+            Route::get('/settings/branding', [AdminSettingsController::class, 'branding'])->name('settings.branding');
         });
 
         Route::middleware('platform.permission:settings.manage')->group(function () {

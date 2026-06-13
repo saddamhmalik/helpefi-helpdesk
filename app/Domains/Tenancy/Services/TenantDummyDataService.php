@@ -34,6 +34,10 @@ class TenantDummyDataService
         'organization_ids',
         'contact_ids',
         'ticket_ids',
+        'service_category_ids',
+        'asset_ids',
+        'bootstrap_contact_ids',
+        'bootstrap_organization_ids',
     ];
 
     private const SAMPLE_ASSET_TAGS = ['AST-00001', 'AST-00002', 'AST-00003'];
@@ -390,15 +394,40 @@ class TenantDummyDataService
             $manifest['ticket_ids'][] = $ticket->id;
         }
 
+        $this->captureBaselineSampleIds($manifest);
+
         return $manifest;
+    }
+
+    private function captureBaselineSampleIds(array &$manifest): void
+    {
+        $manifest['service_category_ids'] = ServiceCategory::query()
+            ->whereIn('slug', self::SAMPLE_SERVICE_CATEGORY_SLUGS)
+            ->pluck('id')
+            ->all();
+
+        $manifest['asset_ids'] = Asset::query()
+            ->whereIn('asset_tag', self::SAMPLE_ASSET_TAGS)
+            ->pluck('id')
+            ->all();
+
+        $manifest['bootstrap_contact_ids'] = Contact::query()
+            ->whereIn('email', self::SAMPLE_CONTACT_EMAILS)
+            ->pluck('id')
+            ->all();
+
+        $manifest['bootstrap_organization_ids'] = Organization::query()
+            ->whereIn('name', self::SAMPLE_ORGANIZATION_NAMES)
+            ->pluck('id')
+            ->all();
     }
 
     private function purge(array $manifest): void
     {
         $this->purgeManifest($manifest);
-        $this->purgeServiceCatalog();
-        $this->purgeAssets();
-        $this->purgeBootstrapContacts();
+        $this->purgeServiceCatalog($manifest);
+        $this->purgeAssets($manifest);
+        $this->purgeBootstrapContacts($manifest);
         $this->purgeKnowledgeBase();
     }
 
@@ -423,13 +452,11 @@ class TenantDummyDataService
         Tag::query()->whereIn('id', $manifest['tag_ids'] ?? [])->delete();
     }
 
-    private function purgeServiceCatalog(): void
+    private function purgeServiceCatalog(array $manifest): void
     {
-        $categoryIds = ServiceCategory::query()
-            ->whereIn('slug', self::SAMPLE_SERVICE_CATEGORY_SLUGS)
-            ->pluck('id');
+        $categoryIds = $manifest['service_category_ids'] ?? [];
 
-        if ($categoryIds->isEmpty()) {
+        if ($categoryIds === []) {
             return;
         }
 
@@ -437,20 +464,24 @@ class TenantDummyDataService
         ServiceCategory::query()->whereIn('id', $categoryIds)->delete();
     }
 
-    private function purgeAssets(): void
+    private function purgeAssets(array $manifest): void
     {
-        Asset::query()->whereIn('asset_tag', self::SAMPLE_ASSET_TAGS)->delete();
+        $assetIds = $manifest['asset_ids'] ?? [];
+
+        if ($assetIds === []) {
+            return;
+        }
+
+        Asset::query()->whereIn('id', $assetIds)->delete();
     }
 
-    private function purgeBootstrapContacts(): void
+    private function purgeBootstrapContacts(array $manifest): void
     {
-        Contact::query()->whereIn('email', self::SAMPLE_CONTACT_EMAILS)->delete();
+        Contact::query()->whereIn('id', $manifest['bootstrap_contact_ids'] ?? [])->delete();
 
-        $organizationIds = Organization::query()
-            ->whereIn('name', self::SAMPLE_ORGANIZATION_NAMES)
-            ->pluck('id');
+        $organizationIds = $manifest['bootstrap_organization_ids'] ?? [];
 
-        if ($organizationIds->isEmpty()) {
+        if ($organizationIds === []) {
             return;
         }
 

@@ -1,5 +1,5 @@
 <script setup>
-import { Link, useForm } from '@inertiajs/vue3';
+import { Link, router, useForm, usePage } from '@inertiajs/vue3';
 import { computed, ref, watch } from 'vue';
 import CentralLayout from '../../Layouts/CentralLayout.vue';
 import CentralSeoHead from '../../Components/CentralSeoHead.vue';
@@ -10,9 +10,25 @@ const props = defineProps({
     trialDays: { type: Number, default: 14 },
     centralDomain: { type: String, default: '' },
     seo: { type: Object, default: () => ({}) },
+    verificationSent: { type: Boolean, default: false },
+    verificationEmail: { type: String, default: '' },
 });
 
 const { t } = useI18n();
+const page = usePage();
+
+const flashError = computed(() => page.props.flash?.error ?? '');
+const resending = ref(false);
+
+const resend = () => {
+    resending.value = true;
+    router.post('/register/resend', { email: props.verificationEmail }, {
+        preserveScroll: true,
+        onFinish: () => {
+            resending.value = false;
+        },
+    });
+};
 
 const centralDomain = computed(() => props.centralDomain || window.location.hostname);
 
@@ -38,17 +54,8 @@ const form = useForm({
 });
 
 const slugTouched = ref(false);
-const provisioningStep = ref(0);
 
 const platformName = computed(() => t('app.name'));
-
-const provisioningSteps = computed(() => [
-    'Creating your workspace database',
-    'Configuring channels and email',
-    'Setting up SLA policies',
-    'Preparing your admin account',
-    `Launching ${platformName.value}`,
-]);
 
 const passwordStrength = computed(() => {
     const value = form.password;
@@ -78,26 +85,9 @@ const slugify = (value) => value
     .replace(/^-+|-+$/g, '')
     .slice(0, 63);
 
-let stepTimer = null;
-
 watch(() => form.organization_name, (name) => {
     if (! slugTouched.value) {
         form.slug = slugify(name);
-    }
-});
-
-watch(() => form.processing, (processing) => {
-    if (processing) {
-        provisioningStep.value = 0;
-        stepTimer = setInterval(() => {
-            provisioningStep.value = (provisioningStep.value + 1) % provisioningSteps.value.length;
-        }, 1400);
-        return;
-    }
-
-    if (stepTimer) {
-        clearInterval(stepTimer);
-        stepTimer = null;
     }
 });
 
@@ -107,12 +97,7 @@ const onSlugInput = () => {
 
 const submit = () => {
     form.post('/register', {
-        onError: () => {
-            if (stepTimer) {
-                clearInterval(stepTimer);
-                stepTimer = null;
-            }
-        },
+        preserveScroll: true,
     });
 };
 
@@ -159,7 +144,11 @@ const inputClass = 'w-full rounded-xl border border-slate-200 dark:border-slate-
                             <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">{{ trialDays }} days free · No credit card · No plan selection needed</p>
                         </div>
 
-                        <form class="space-y-6" @submit.prevent="submit">
+                        <div v-if="flashError" class="mb-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/60 dark:bg-red-950/40 dark:text-red-300">
+                            {{ flashError }}
+                        </div>
+
+                        <form v-if="!verificationSent" class="space-y-6" @submit.prevent="submit">
                             <section class="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-sm sm:p-6">
                                 <div class="mb-5 flex items-center gap-3">
                                     <span class="flex h-8 w-8 items-center justify-center rounded-full bg-blue-600 text-sm font-bold text-white">1</span>
@@ -221,7 +210,7 @@ const inputClass = 'w-full rounded-xl border border-slate-200 dark:border-slate-
                             </section>
 
                             <button type="submit" class="w-full rounded-xl bg-blue-600 px-4 py-3.5 text-sm font-semibold text-white shadow-lg shadow-blue-600/20 transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-70" :disabled="form.processing">
-                                {{ form.processing ? 'Creating workspace…' : `Start ${trialDays}-day free trial` }}
+                                {{ form.processing ? 'Sending verification link…' : `Start ${trialDays}-day free trial` }}
                             </button>
 
                             <p class="text-center text-xs text-slate-500 dark:text-slate-400">
@@ -229,37 +218,31 @@ const inputClass = 'w-full rounded-xl border border-slate-200 dark:border-slate-
                                 <Link href="/login" class="font-medium text-blue-600 hover:text-blue-700 dark:hover:text-blue-300 dark:text-blue-300">{{ $t('central.sign_in') }}</Link>
                             </p>
                         </form>
+
+                        <div v-else class="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 text-center shadow-sm sm:p-8">
+                            <div class="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-300">
+                                <svg class="h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6" d="M3 8l9 6 9-6M5 6h14a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2z" /></svg>
+                            </div>
+                            <h2 class="text-xl font-semibold text-slate-900 dark:text-slate-100">Check your inbox</h2>
+                            <p class="mt-3 text-sm text-slate-600 dark:text-slate-400">
+                                We've sent a verification link to
+                                <span class="font-medium text-slate-900 dark:text-slate-100">{{ verificationEmail }}</span>.
+                                Click it to confirm your email — your workspace is created only after you verify.
+                            </p>
+                            <p class="mt-2 text-xs text-slate-500 dark:text-slate-500">The link expires in 24 hours. Don't forget to check your spam folder.</p>
+
+                            <button type="button" class="mt-6 w-full rounded-xl bg-blue-600 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-600/20 transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-70" :disabled="resending" @click="resend">
+                                {{ resending ? 'Resending…' : 'Resend verification email' }}
+                            </button>
+
+                            <p class="mt-4 text-center text-xs text-slate-500 dark:text-slate-400">
+                                Entered the wrong email?
+                                <Link href="/register" class="font-medium text-blue-600 hover:text-blue-700 dark:text-blue-300">Start over</Link>
+                            </p>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-
-        <Teleport to="body">
-            <Transition name="provision-fade">
-                <div v-if="form.processing" class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/80 px-4 backdrop-blur-sm">
-                    <div class="provision-card w-full max-w-md rounded-2xl border border-white/10 bg-slate-900 p-8 text-center shadow-2xl">
-                        <div class="provision-ring mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-blue-50 dark:bg-blue-950/40">
-                            <div class="provision-spinner h-10 w-10 rounded-full border-[3px] border-blue-200 dark:border-blue-900/60 border-t-blue-600" />
-                        </div>
-                        <h2 class="text-lg font-semibold text-slate-900 dark:text-slate-100">{{ $t('central.building_your_workspace') }}</h2>
-                        <p class="provision-step mt-3 text-sm text-slate-600 dark:text-slate-400">{{ provisioningSteps[provisioningStep] }}</p>
-                        <p class="mt-6 text-xs text-slate-400 dark:text-slate-500">Redirecting to {{ form.slug ? `${form.slug}.${workspaceDomainSuffix}` : 'your workspace' }}…</p>
-                    </div>
-                </div>
-            </Transition>
-        </Teleport>
     </CentralLayout>
 </template>
-
-<style scoped>
-.provision-fade-enter-active, .provision-fade-leave-active { transition: opacity 0.35s ease; }
-.provision-fade-enter-from, .provision-fade-leave-to { opacity: 0; }
-.provision-card { animation: provision-pop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1); }
-.provision-spinner { animation: provision-spin 0.85s linear infinite; }
-.provision-ring { animation: provision-pulse 2s ease-in-out infinite; }
-.provision-step { animation: provision-step 0.5s ease; }
-@keyframes provision-pop { from { opacity: 0; transform: scale(0.92) translateY(12px); } to { opacity: 1; transform: scale(1) translateY(0); } }
-@keyframes provision-spin { to { transform: rotate(360deg); } }
-@keyframes provision-pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.15); } 50% { box-shadow: 0 0 0 12px rgba(37, 99, 235, 0); } }
-@keyframes provision-step { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
-</style>

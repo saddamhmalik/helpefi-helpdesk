@@ -163,7 +163,7 @@ useBodyScrollLock(mobileOpen);
                                 rel="noopener noreferrer"
                                 :aria-label="social.label"
                                 :title="social.label"
-                                class="flex h-9 w-9 items-center justify-center rounded-lg bg-white/5 text-slate-400 ring-1 ring-white/10 transition hover:bg-white/10 hover:text-white"
+                                class="flex h-11 w-11 items-center justify-center rounded-lg bg-white/5 text-slate-400 ring-1 ring-white/10 transition hover:bg-white/10 hover:text-white"
                             >
                                 <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path :d="iconPath(social.key)" /></svg>
                             </a>

@@ -39,8 +39,14 @@ class PlanCatalogDefinition
         return $monthly > 0 ? $monthly * 10 : 0;
     }
 
-    public static function priceForInterval(array $plan, string $interval = 'month'): int
+    public static function priceForInterval(array $plan, string $interval = 'month', bool $india = false): int
     {
+        if ($india) {
+            return $interval === 'year'
+                ? (int) ($plan['price_yearly_india'] ?? 0)
+                : (int) ($plan['price_monthly_india'] ?? 0);
+        }
+
         if ($interval === 'year') {
             return (int) ($plan['price_yearly'] ?? self::defaultYearlyPrice((int) ($plan['price_monthly'] ?? $plan['price'] ?? 0)));
         }
@@ -48,8 +54,15 @@ class PlanCatalogDefinition
         return (int) ($plan['price_monthly'] ?? $plan['price'] ?? 0);
     }
 
-    public static function razorpayPlanIdForInterval(array $plan, string $interval = 'month'): ?string
+    public static function razorpayPlanIdForInterval(array $plan, string $interval = 'month', bool $india = false): ?string
     {
+        if ($india) {
+            $key = $interval === 'year' ? 'razorpay_plan_id_yearly_india' : 'razorpay_plan_id_monthly_india';
+            $value = $plan[$key] ?? null;
+
+            return $value !== null && $value !== '' ? (string) $value : null;
+        }
+
         if ($interval === 'year') {
             $yearly = $plan['razorpay_plan_id_yearly'] ?? null;
 
@@ -90,6 +103,8 @@ class PlanCatalogDefinition
         $priceYearly = array_key_exists('price_yearly', $plan) && $plan['price_yearly'] !== ''
             ? max(0, (int) $plan['price_yearly'])
             : self::defaultYearlyPrice($priceMonthly);
+        $priceMonthlyIndia = max(0, (int) ($plan['price_monthly_india'] ?? $plan['price_india'] ?? 0));
+        $priceYearlyIndia = max(0, (int) ($plan['price_yearly_india'] ?? 0));
         $razorpayPlanIdMonthly = self::resolveRazorpayPlanIdMonthly($slug, $plan);
         $razorpayPlanIdYearly = self::resolveRazorpayPlanIdYearly($slug, $plan);
 
@@ -99,12 +114,21 @@ class PlanCatalogDefinition
             'price' => $priceMonthly,
             'price_monthly' => $priceMonthly,
             'price_yearly' => $priceYearly,
+            'price_monthly_india' => $priceMonthlyIndia,
+            'price_yearly_india' => $priceYearlyIndia,
             'razorpay_plan_id' => $razorpayPlanIdMonthly,
             'razorpay_plan_id_monthly' => $razorpayPlanIdMonthly,
             'razorpay_plan_id_yearly' => $razorpayPlanIdYearly,
+            'razorpay_plan_id_monthly_india' => self::stringOrNull($plan['razorpay_plan_id_monthly_india'] ?? null),
+            'razorpay_plan_id_yearly_india' => self::stringOrNull($plan['razorpay_plan_id_yearly_india'] ?? null),
             'limits' => $limits,
             'features' => $features,
         ];
+    }
+
+    private static function stringOrNull(mixed $value): ?string
+    {
+        return $value !== null && $value !== '' ? (string) $value : null;
     }
 
     public static function mergeCatalog(?array $stored): array
@@ -130,6 +154,14 @@ class PlanCatalogDefinition
             }
 
             $catalog[$slug] = self::normalizePlan($slug, $merged);
+        }
+
+        foreach ($stored as $slug => $plan) {
+            if (isset($catalog[$slug]) || ! is_array($plan)) {
+                continue;
+            }
+
+            $catalog[$slug] = self::normalizePlan($slug, $plan);
         }
 
         return $catalog;

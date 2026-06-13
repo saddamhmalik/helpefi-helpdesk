@@ -44,6 +44,7 @@ class CentralSettingsTest extends TestCase
 
         $this->mock(RazorpayPlanSyncService::class, function ($mock): void {
             $mock->shouldReceive('isEnabled')->andReturn(true);
+            $mock->shouldReceive('skipped')->andReturn([]);
             $mock->shouldReceive('syncCatalog')
                 ->once()
                 ->andReturnUsing(fn (array $catalog) => collect($catalog)
@@ -57,6 +58,7 @@ class CentralSettingsTest extends TestCase
 
         $this->mock(RazorpayAddonSyncService::class, function ($mock): void {
             $mock->shouldReceive('isEnabled')->andReturn(true);
+            $mock->shouldReceive('skipped')->andReturn([]);
             $mock->shouldReceive('syncCatalog')->andReturnUsing(fn (array $catalog) => $catalog);
         });
 
@@ -138,6 +140,7 @@ class CentralSettingsTest extends TestCase
 
         $this->mock(RazorpayPlanSyncService::class, function ($mock): void {
             $mock->shouldReceive('isEnabled')->andReturn(true);
+            $mock->shouldReceive('skipped')->andReturn([]);
             $mock->shouldReceive('syncCatalog')
                 ->once()
                 ->withArgs(function (array $catalog): bool {
@@ -154,6 +157,7 @@ class CentralSettingsTest extends TestCase
 
         $this->mock(RazorpayAddonSyncService::class, function ($mock): void {
             $mock->shouldReceive('isEnabled')->andReturn(true);
+            $mock->shouldReceive('skipped')->andReturn([]);
             $mock->shouldReceive('syncCatalog')->andReturnUsing(fn (array $catalog) => $catalog);
         });
 
