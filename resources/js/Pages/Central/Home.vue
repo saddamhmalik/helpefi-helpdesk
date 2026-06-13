@@ -19,6 +19,7 @@ const props = defineProps({
     seo: { type: Object, default: () => ({}) },
     centralDomain: { type: String, default: '' },
     aiDemoEnabled: { type: Boolean, default: true },
+    socialLinks: { type: Array, default: () => [] },
 });
 
 const platformName = computed(() => t('app.name'));
@@ -65,25 +66,41 @@ const aiCapabilities = [
         body: 'Side-panel assistant on every ticket — summarize threads, draft replies, suggest KB articles, and recommend next steps with full context.',
         icon: 'M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z',
         accent: 'from-violet-500/20 to-purple-500/10',
+        iconWrap: 'bg-violet-500/15 text-violet-200 ring-violet-400/25',
     },
     {
         title: 'Reply drafts & summaries',
         body: 'One-click AI reply drafts and thread summaries in the composer. Agents review before sending — faster responses without losing the human touch.',
         icon: 'M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z',
         accent: 'from-indigo-500/20 to-blue-500/10',
+        iconWrap: 'bg-indigo-500/15 text-indigo-200 ring-indigo-400/25',
     },
     {
         title: 'Customer deflection',
         body: 'AI answers on your portal and live chat widget before customers submit tickets. Semantic search finds the right article even when wording differs.',
         icon: 'M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z',
         accent: 'from-fuchsia-500/20 to-pink-500/10',
+        iconWrap: 'bg-fuchsia-500/15 text-fuchsia-200 ring-fuchsia-400/25',
     },
     {
         title: 'AI triage',
         body: 'New tickets analyzed on creation for suggested priority, tags, and routing hints. Agents accept or override — smarter queues from day one.',
         icon: 'M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z',
         accent: 'from-cyan-500/20 to-sky-500/10',
+        iconWrap: 'bg-cyan-500/15 text-cyan-200 ring-cyan-400/25',
     },
+];
+
+const aiStats = [
+    { value: 'Up to 40%', label: 'Tickets deflected before they reach an agent' },
+    { value: '3× faster', label: 'First-response drafting with Copilot' },
+    { value: 'Day one', label: 'Auto-triage on every new ticket' },
+];
+
+const aiHighlights = [
+    'Included on every plan — no AI add-on fees',
+    'Grounded in your knowledge base, not generic answers',
+    'Agents stay in control — review before anything sends',
 ];
 
 const featureCategories = [
@@ -325,7 +342,7 @@ const painPoints = [
     },
     {
         pain: 'Agents switching between 4+ tools to resolve a ticket',
-        gain: 'Full context in a single workspace',
+        gain: 'Full context in a single helpdesk',
         icon: 'M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z',
         oldTools: ['CRM', 'Chat', 'KB', 'ITSM'],
     },
@@ -505,8 +522,8 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
 </script>
 
 <template>
-    <CentralSeoHead page="home" :brand="platformName" :trial-days="trialDays" :seo="seo" />
-    <CentralLayout :brand="platformName" :trial-days="trialDays">
+    <CentralSeoHead page="home" :brand="platformName" :trial-days="trialDays" />
+    <CentralLayout :brand="platformName" :trial-days="trialDays" :social-links="socialLinks">
         <section class="relative overflow-hidden bg-slate-950 text-white">
             <div class="pointer-events-none absolute inset-0">
                 <div class="absolute -left-40 top-0 h-[36rem] w-[36rem] rounded-full bg-blue-600/30 blur-3xl" />
@@ -546,7 +563,7 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
 
                         <p class="mt-5 text-base leading-relaxed text-slate-300 sm:mt-6 sm:text-lg lg:text-xl">
                             <span class="font-semibold text-violet-200">Built-in AI</span> drafts replies, deflects tickets, and triages your queue —
-                            plus inbox, chat, knowledge base, SLAs, and ITSM in one workspace your team will actually love.
+                            plus inbox, chat, knowledge base, SLAs, and ITSM in one helpdesk your team will actually love.
                         </p>
 
                         <div class="mt-6 overflow-hidden rounded-2xl border border-violet-500/25 bg-gradient-to-br from-violet-950/50 via-slate-900/80 to-indigo-950/50 p-4 ring-1 ring-violet-400/10 sm:mt-7 sm:p-5">
@@ -821,7 +838,7 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
                 <div class="mx-auto max-w-3xl text-center">
                     <p class="text-sm font-semibold uppercase tracking-wider text-blue-600">Why teams switch</p>
                     <h2 class="mt-3 text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100 sm:text-4xl lg:text-5xl">
-                        From tool chaos to one calm workspace
+                        From tool chaos to one calm helpdesk
                     </h2>
                     <p class="mt-4 text-lg text-slate-600 dark:text-slate-400">
                         Most teams pay for 3–5 separate products and still lose context. {{ platformName }} replaces the stack — not adds to it.
@@ -878,11 +895,11 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
                             <div class="pointer-events-none absolute -right-10 -top-10 h-48 w-48 rounded-full bg-white/10 blur-2xl" />
                             <div class="pointer-events-none absolute -bottom-8 -left-8 h-40 w-40 rounded-full bg-violet-400/20 blur-2xl" />
                             <div class="relative">
-                                <span class="inline-flex items-center gap-2 rounded-full bg-white dark:bg-slate-900/15 px-3 py-1 text-xs font-bold uppercase tracking-wide text-white ring-1 ring-white/25">
+                                <span class="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-xs font-bold uppercase tracking-wide text-white ring-1 ring-white/25">
                                     <span class="h-1.5 w-1.5 rounded-full bg-emerald-400" />
                                     With {{ platformName }}
                                 </span>
-                                <p class="mt-4 text-lg font-semibold">One workspace. Full picture.</p>
+                                <p class="mt-4 text-lg font-semibold">One helpdesk. Full picture.</p>
                                 <p class="mt-2 text-sm leading-relaxed text-blue-100">
                                     Every channel, ticket, and IT workflow lives together — with AI and SLAs built in.
                                 </p>
@@ -890,7 +907,7 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
                                 <div class="mt-8 overflow-hidden rounded-2xl border border-white/20 bg-white/10 p-4 backdrop-blur-sm">
                                     <div class="flex items-center gap-2 border-b border-white/10 pb-3">
                                         <span class="h-2 w-2 rounded-full bg-emerald-400" />
-                                        <span class="text-[10px] font-medium text-white/70">{{ platformName }} workspace</span>
+                                        <span class="text-[10px] font-medium text-white/70">{{ platformName }} helpdesk</span>
                                     </div>
                                     <div class="mt-3 grid grid-cols-3 gap-2">
                                         <div class="rounded-lg bg-white/10 px-2 py-2 text-center">
@@ -914,7 +931,7 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
                                         :key="item.gain"
                                         class="flex items-start gap-3 rounded-xl border border-white/15 bg-white/10 px-4 py-3 backdrop-blur-sm"
                                     >
-                                        <span class="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white dark:bg-slate-900/15">
+                                        <span class="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white/15 text-white ring-1 ring-white/20">
                                             <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" :d="item.icon" /></svg>
                                         </span>
                                         <div class="min-w-0">
@@ -989,18 +1006,29 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
                             <article
                                 v-for="capability in aiCapabilities"
                                 :key="capability.title"
-                                class="group relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 p-5 backdrop-blur transition hover:border-violet-400/30 hover:bg-white/10"
+                                class="group relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 p-5 backdrop-blur transition duration-300 hover:-translate-y-0.5 hover:border-violet-400/40 hover:bg-white/10 hover:shadow-xl hover:shadow-violet-950/40"
                             >
-                                <div class="pointer-events-none absolute inset-0 bg-gradient-to-br opacity-60" :class="capability.accent" />
+                                <div class="pointer-events-none absolute inset-0 bg-gradient-to-br opacity-60 transition group-hover:opacity-100" :class="capability.accent" />
                                 <div class="relative">
-                                    <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-violet-600/30 text-violet-200 ring-1 ring-violet-400/20">
+                                    <div class="flex h-10 w-10 items-center justify-center rounded-xl ring-1 transition group-hover:scale-105" :class="capability.iconWrap">
                                         <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" :d="capability.icon" /></svg>
                                     </div>
                                     <h3 class="mt-4 text-base font-semibold text-white">{{ capability.title }}</h3>
-                                    <p class="mt-2 text-sm leading-relaxed text-slate-400 dark:text-slate-500">{{ capability.body }}</p>
+                                    <p class="mt-2 text-sm leading-relaxed text-slate-400">{{ capability.body }}</p>
                                 </div>
                             </article>
                         </div>
+
+                        <ul class="mt-8 space-y-2.5">
+                            <li
+                                v-for="highlight in aiHighlights"
+                                :key="highlight"
+                                class="flex items-start gap-2.5 text-sm text-slate-300"
+                            >
+                                <svg class="mt-0.5 h-4 w-4 shrink-0 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" /></svg>
+                                {{ highlight }}
+                            </li>
+                        </ul>
 
                         <div class="mt-10 flex flex-wrap items-center gap-4">
                             <Link
@@ -1010,12 +1038,28 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
                                 Start free trial
                                 <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
                             </Link>
-                            <p class="text-sm text-slate-500 dark:text-slate-400">Enterprise · AI included · No credit card</p>
+                            <p class="text-sm text-slate-400">Enterprise · AI included · No credit card</p>
                         </div>
                     </div>
 
                     <div class="lg:sticky lg:top-24 lg:self-start">
                         <CentralAiDemoWidget :enabled="aiDemoEnabled" />
+
+                        <dl class="mt-5 grid grid-cols-3 gap-3">
+                            <div
+                                v-for="stat in aiStats"
+                                :key="stat.label"
+                                class="rounded-2xl border border-white/10 bg-white/5 p-4 text-center backdrop-blur transition hover:border-violet-400/30 hover:bg-white/10"
+                            >
+                                <dt class="bg-gradient-to-r from-violet-300 to-indigo-300 bg-clip-text text-lg font-extrabold tracking-tight text-transparent">{{ stat.value }}</dt>
+                                <dd class="mt-1.5 text-[11px] leading-snug text-slate-400">{{ stat.label }}</dd>
+                            </div>
+                        </dl>
+
+                        <p class="mt-4 flex items-center justify-center gap-2 text-xs text-slate-500">
+                            <svg class="h-3.5 w-3.5 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+                            Your data stays private — never used to train external models
+                        </p>
                     </div>
                 </div>
             </div>
@@ -1133,7 +1177,7 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
             </div>
         </section>
 
-        <section id="features" class="border-y border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 py-16 sm:py-24">
+        <section id="features" class="overflow-x-clip border-y border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 py-16 sm:py-24">
             <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                 <div class="max-w-3xl">
                     <p class="text-sm font-semibold uppercase tracking-wider text-blue-600">{{ $t('central.deep_dive') }}</p>
@@ -1144,8 +1188,8 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
                 </div>
 
                 <div class="mt-14 grid gap-8 lg:grid-cols-12 lg:gap-10">
-                    <nav class="lg:col-span-4 xl:col-span-3" aria-label="Feature categories">
-                        <div class="flex gap-2 overflow-x-auto pb-2 lg:flex-col lg:overflow-visible lg:pb-0">
+                    <nav class="min-w-0 lg:col-span-4 xl:col-span-3" aria-label="Feature categories">
+                        <div class="-mx-4 flex gap-2 overflow-x-auto px-4 pb-2 [scrollbar-width:none] [-webkit-overflow-scrolling:touch] lg:mx-0 lg:flex-col lg:overflow-visible lg:px-0 lg:pb-0">
                             <button
                                 v-for="cat in featureCategories"
                                 :key="cat.id"
@@ -1177,12 +1221,12 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
                         </div>
                     </nav>
 
-                    <div class="lg:col-span-8 xl:col-span-9">
+                    <div class="min-w-0 lg:col-span-8 xl:col-span-9">
                         <div class="overflow-hidden rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm">
-                            <div class="relative overflow-hidden bg-gradient-to-br px-8 py-10 text-white sm:px-10" :class="activeTheme.gradient">
+                            <div class="relative overflow-hidden bg-gradient-to-br px-6 py-8 text-white sm:px-10 sm:py-10" :class="activeTheme.gradient">
                                 <div class="pointer-events-none absolute -right-8 -top-8 h-40 w-40 rounded-full bg-white/10 blur-2xl" />
                                 <div class="relative">
-                                    <span v-if="featureCategory === 'itsm'" class="mb-3 inline-flex rounded-full bg-white dark:bg-slate-900/15 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-white/90 ring-1 ring-white/20">
+                                    <span v-if="featureCategory === 'itsm'" class="mb-3 inline-flex rounded-full bg-white/15 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-white/90 ring-1 ring-white/20">
                                         Enterprise add-on
                                     </span>
                                     <h3 class="text-2xl font-bold tracking-tight sm:text-3xl">{{ activeCategory.title }}</h3>
@@ -1205,7 +1249,7 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" :d="item.icon" />
                                             </svg>
                                         </span>
-                                        <p class="pt-1.5 text-sm font-medium leading-snug text-slate-800 dark:text-slate-200">{{ item.text }}</p>
+                                        <p class="min-w-0 pt-1.5 text-sm font-medium leading-snug text-slate-800 dark:text-slate-200">{{ item.text }}</p>
                                     </article>
                                 </div>
 
@@ -1317,7 +1361,7 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
                 <div class="text-center">
                     <p class="text-sm font-semibold uppercase tracking-wider text-blue-400">{{ $t('central.why_teams_switch') }}</p>
                     <h2 class="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">{{ platformName }} vs. pieced-together tools</h2>
-                    <p class="mx-auto mt-4 max-w-2xl text-base text-slate-400 dark:text-slate-500">One workspace for support and IT — without stacking separate inbox, KB, and ITSM products.</p>
+                    <p class="mx-auto mt-4 max-w-2xl text-base text-slate-400 dark:text-slate-500">One helpdesk for support and IT — without stacking separate inbox, KB, and ITSM products.</p>
                 </div>
                 <div class="mt-12 space-y-3 lg:hidden">
                     <article
@@ -1421,7 +1465,7 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
                         Simple pricing. Serious value.
                     </h2>
                     <p class="mx-auto mt-4 max-w-2xl text-lg text-slate-400 dark:text-slate-500">
-                        Start with a {{ trialDays }}-day free trial on any plan. Most teams save thousands by replacing multiple tools with one workspace.
+                        Start with a {{ trialDays }}-day free trial on any plan. Most teams save thousands by replacing multiple tools with one helpdesk.
                     </p>
                     <div class="mt-8 inline-flex rounded-xl border border-white/10 bg-white/5 p-1 backdrop-blur">
                         <button
@@ -1512,7 +1556,7 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
                         <span class="bg-gradient-to-r from-blue-400 to-violet-400 bg-clip-text text-transparent">Give them answers today.</span>
                     </h2>
                     <p class="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-slate-300">
-                        Join teams who replaced scattered inboxes and separate ITSM tools with one modern workspace. Setup takes minutes — not weeks.
+                        Join teams who replaced scattered inboxes and separate ITSM tools with one modern helpdesk. Setup takes minutes — not weeks.
                     </p>
                     <div class="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
                         <Link

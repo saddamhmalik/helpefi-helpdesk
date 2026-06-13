@@ -4,6 +4,7 @@ namespace App\Domains\Billing\Repositories;
 
 use App\Domains\Billing\Models\PlatformPayment;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Carbon;
 
 class PlatformPaymentRepository
@@ -14,6 +15,16 @@ class PlatformPaymentRepository
             ['razorpay_payment_id' => $paymentId],
             $data,
         );
+    }
+
+    public function forTenant(string $tenantId, int $limit = 50): Collection
+    {
+        return PlatformPayment::query()
+            ->where('tenant_id', $tenantId)
+            ->orderByDesc('paid_at')
+            ->orderByDesc('id')
+            ->limit($limit)
+            ->get();
     }
 
     public function paginate(int $perPage, ?string $search = null, ?string $status = null): LengthAwarePaginator

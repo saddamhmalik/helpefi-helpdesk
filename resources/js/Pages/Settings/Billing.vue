@@ -12,6 +12,7 @@ import { useDateTime } from '../../composables/useDateTime.js';
 
 const props = defineProps({
     billing: Object,
+    payments: { type: Array, default: () => [] },
 });
 
 const page = usePage();
@@ -21,7 +22,7 @@ const { formatDateTime, formatDate } = useDateTime();
 
 const { t } = useI18n();
 
-const billingSections = computed(() => ['usage', 'plans', 'addons', 'features']);
+const billingSections = computed(() => ['usage', 'plans', 'addons', 'payments', 'features']);
 
 const { activeSection } = useSettingsSection({
     defaultSection: 'usage',
@@ -32,8 +33,30 @@ const sectionTabs = computed(() => [
     { id: 'usage', label: t('settings.usage_billing') },
     { id: 'plans', label: t('settings.change_plan') },
     { id: 'addons', label: t('settings.addons') },
+    { id: 'payments', label: t('settings.payment_history', 'Payment history') },
     { id: 'features', label: t('settings.plan_features') },
 ]);
+
+const formatMoney = (amount, currencyCode) => {
+    const value = (amount ?? 0) / 100;
+
+    try {
+        return new Intl.NumberFormat(undefined, {
+            style: 'currency',
+            currency: currencyCode ?? props.billing?.currency?.code ?? 'INR',
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 2,
+        }).format(value);
+    } catch {
+        return `${currencyCode ?? ''} ${value}`.trim();
+    }
+};
+
+const paymentStatusClass = (status) => ({
+    paid: 'bg-emerald-50 text-emerald-700 ring-emerald-200 dark:bg-emerald-950/50 dark:text-emerald-300 dark:ring-emerald-900/60',
+    failed: 'bg-red-50 text-red-700 ring-red-200 dark:bg-red-950/50 dark:text-red-300 dark:ring-red-900/60',
+    refunded: 'bg-amber-50 text-amber-700 ring-amber-200 dark:bg-amber-950/50 dark:text-amber-300 dark:ring-amber-900/60',
+}[status] ?? 'bg-slate-50 text-slate-600 ring-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:ring-slate-700');
 
 const form = useForm({
     plan: props.billing.plan?.slug ?? props.billing.available_plans[0]?.slug ?? 'starter',
@@ -476,6 +499,51 @@ const formatLimit = (limit) => (limit === 'unlimited' ? t('settings_billing.unli
                     <p v-else-if="billing.razorpay_enabled && !addon.billing_ready" class="mt-3 text-xs text-amber-700 dark:text-amber-300">{{ $t('settings_billing.addon_billing_not_ready') }}</p>
                 </div>
             </div>
+        </div>
+
+        <div v-show="activeSection === 'payments'" class="agent-card">
+            <h2 class="text-lg font-medium agent-text">{{ $t('settings.payment_history', 'Payment history') }}</h2>
+            <p class="mt-1 text-sm agent-text-subtle">{{ $t('settings_billing.payment_history_description', 'Charges and receipts for this workspace.') }}</p>
+
+            <div v-if="payments.length" class="mt-4 overflow-x-auto">
+                <table class="min-w-full text-sm">
+                    <thead>
+                        <tr class="border-b agent-border text-left agent-text-subtle">
+                            <th class="px-4 py-3 font-semibold">{{ $t('central.date', 'Date') }}</th>
+                            <th class="px-4 py-3 font-semibold">{{ $t('central.amount', 'Amount') }}</th>
+                            <th class="px-4 py-3 font-semibold">{{ $t('settings.change_plan') }}</th>
+                            <th class="px-4 py-3 font-semibold">{{ $t('central.status', 'Status') }}</th>
+                            <th class="px-4 py-3 font-semibold">{{ $t('central.invoice', 'Invoice') }}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="payment in payments" :key="payment.id" class="border-b agent-border last:border-0">
+                            <td class="whitespace-nowrap px-4 py-3 agent-text">{{ formatDate(payment.paid_at ?? payment.created_at) }}</td>
+                            <td class="whitespace-nowrap px-4 py-3 font-medium agent-text">{{ formatMoney(payment.amount, payment.currency) }}</td>
+                            <td class="whitespace-nowrap px-4 py-3 agent-text">{{ payment.plan_name ?? '—' }}</td>
+                            <td class="whitespace-nowrap px-4 py-3">
+                                <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium capitalize ring-1 ring-inset" :class="paymentStatusClass(payment.status)">{{ payment.status }}</span>
+                            </td>
+                            <td class="whitespace-nowrap px-4 py-3">
+                                <a
+                                    v-if="payment.invoice_pdf || payment.invoice_url"
+                                    :href="payment.invoice_pdf ?? payment.invoice_url"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    class="font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
+                                >
+                                    {{ payment.invoice_number ?? $t('central.view', 'View') }}
+                                </a>
+                                <span v-else class="agent-text-subtle">{{ payment.invoice_number ?? '—' }}</span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <p v-else class="mt-4 rounded-lg border agent-border agent-panel-muted px-4 py-6 text-center text-sm agent-text-subtle">
+                {{ $t('settings_billing.no_payments_yet', 'No payments yet. Charges will appear here after your first successful payment.') }}
+            </p>
         </div>
 
         <div v-show="activeSection === 'features'" class="agent-card">

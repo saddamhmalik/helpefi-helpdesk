@@ -19,6 +19,7 @@ class PlatformDashboardService
         private PlatformPaymentService $payments,
         private CentralSettingsService $settings,
         private PlatformExecutiveMetricsService $executiveMetrics,
+        private MarketingAnalyticsService $marketingAnalytics,
     ) {
     }
 
@@ -34,6 +35,10 @@ class PlatformDashboardService
                 ->map(fn (Tenant $tenant) => $this->tenantService->presentForList($tenant))
                 ->all();
             $data['executive_metrics'] = $this->executiveMetrics->snapshot();
+        }
+
+        if ($this->authorization->allows($user, 'analytics.view')) {
+            $data['marketing_analytics'] = $this->marketingAnalytics->snapshot();
         }
 
         if ($this->authorization->allows($user, 'users.view')) {

@@ -738,7 +738,9 @@ class RazorpayBillingService
         }
 
         if ($status === 'created' && RazorpaySubscriptionCheckout::canAuthenticateViaStandardCheckout($entity)) {
-            if (($entity['plan_id'] ?? null) !== $planId || ! $this->matchesSelectedPlan($subscription, $planSlug, $interval)) {
+            $pendingInterval = (string) ($entity['notes']['billing_interval'] ?? 'month');
+
+            if (($entity['plan_id'] ?? null) !== $planId || $pendingInterval !== $interval) {
                 $this->cancelRazorpaySubscriptionImmediately($subscription->razorpay_subscription_id);
                 $this->clearRazorpaySubscriptionReference($subscription);
 
@@ -804,8 +806,6 @@ class RazorpayBillingService
         $this->subscriptions->update($subscription, [
             'razorpay_subscription_id' => (string) ($razorpaySubscription['id'] ?? ''),
             'razorpay_plan_id' => $planId,
-            'plan' => $planSlug,
-            'billing_interval' => $interval,
         ]);
     }
 

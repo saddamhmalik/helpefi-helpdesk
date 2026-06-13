@@ -9,6 +9,7 @@ return [
             'subscriptions.view' => 'View workspace subscriptions',
         ],
         'Platform' => [
+            'analytics.view' => 'View marketing website analytics',
             'settings.view' => 'View platform settings',
             'settings.manage' => 'Manage platform settings',
             'emails.view' => 'View email templates',

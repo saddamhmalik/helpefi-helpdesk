@@ -63,7 +63,7 @@ const ask = async (text) => {
 </script>
 
 <template>
-    <div class="overflow-hidden rounded-2xl border border-violet-200 dark:border-violet-900/60/80 bg-white dark:bg-slate-900 shadow-2xl shadow-violet-900/10 ring-1 ring-violet-100">
+    <div class="overflow-hidden rounded-2xl border border-violet-200 dark:border-violet-900/60 bg-white dark:bg-slate-900 shadow-2xl shadow-violet-900/10 ring-1 ring-violet-100 dark:ring-violet-900/40">
         <div class="flex flex-col gap-2 border-b border-violet-100 bg-gradient-to-r from-violet-600 to-indigo-600 px-4 py-3 text-white sm:flex-row sm:items-center sm:justify-between sm:px-5 sm:py-4">
             <div class="min-w-0">
                 <p class="text-sm font-semibold">Try AI deflection</p>
@@ -71,7 +71,7 @@ const ask = async (text) => {
             </div>
             <span
                 v-if="source"
-                class="rounded-full bg-white dark:bg-slate-900/15 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-violet-100 ring-1 ring-white/20"
+                class="rounded-full bg-white/15 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-violet-100 ring-1 ring-white/20"
             >
                 {{ source }}
             </span>

@@ -2,6 +2,7 @@
 
 namespace App\Domains\Tenancy\Services;
 
+use App\Domains\Assets\Models\Asset;
 use App\Domains\Channels\Repositories\ChannelRepository;
 use App\Domains\Contacts\Models\Contact;
 use App\Domains\Contacts\Models\Organization;
@@ -10,6 +11,8 @@ use App\Domains\Contacts\Models\Tag;
 use App\Domains\Knowledge\Models\KnowledgeArticle;
 use App\Domains\Knowledge\Models\KnowledgeCategory;
 use App\Domains\Knowledge\Models\KnowledgeCollection;
+use App\Domains\ServiceCatalog\Models\ServiceCatalogItem;
+use App\Domains\ServiceCatalog\Models\ServiceCategory;
 use App\Domains\Settings\Repositories\HelpdeskSettingRepository;
 use App\Domains\Sla\Services\SlaService;
 use App\Domains\Tickets\Models\Ticket;
@@ -32,6 +35,14 @@ class TenantDummyDataService
         'contact_ids',
         'ticket_ids',
     ];
+
+    private const SAMPLE_ASSET_TAGS = ['AST-00001', 'AST-00002', 'AST-00003'];
+
+    private const SAMPLE_SERVICE_CATEGORY_SLUGS = ['it-support', 'hr-services'];
+
+    private const SAMPLE_ORGANIZATION_NAMES = ['Acme Inc'];
+
+    private const SAMPLE_CONTACT_EMAILS = ['customer@example.com'];
 
     public function __construct(
         private HelpdeskSettingRepository $settings,
@@ -384,23 +395,68 @@ class TenantDummyDataService
 
     private function purge(array $manifest): void
     {
-        if ($manifest !== []) {
-            Ticket::query()->whereIn('id', $manifest['ticket_ids'] ?? [])->delete();
+        $this->purgeManifest($manifest);
+        $this->purgeServiceCatalog();
+        $this->purgeAssets();
+        $this->purgeBootstrapContacts();
+        $this->purgeKnowledgeBase();
+    }
 
-            Contact::query()->whereIn('id', $manifest['contact_ids'] ?? [])->delete();
-
-            foreach ($manifest['organization_ids'] ?? [] as $organizationId) {
-                OrganizationDomain::query()->where('organization_id', $organizationId)->delete();
-            }
-
-            Organization::query()->whereIn('id', $manifest['organization_ids'] ?? [])->delete();
-
-            Team::query()->whereIn('id', $manifest['team_ids'] ?? [])->delete();
-            Department::query()->whereIn('id', $manifest['department_ids'] ?? [])->delete();
-            Tag::query()->whereIn('id', $manifest['tag_ids'] ?? [])->delete();
+    private function purgeManifest(array $manifest): void
+    {
+        if ($manifest === []) {
+            return;
         }
 
-        $this->purgeKnowledgeBase();
+        Ticket::query()->whereIn('id', $manifest['ticket_ids'] ?? [])->delete();
+
+        Contact::query()->whereIn('id', $manifest['contact_ids'] ?? [])->delete();
+
+        foreach ($manifest['organization_ids'] ?? [] as $organizationId) {
+            OrganizationDomain::query()->where('organization_id', $organizationId)->delete();
+        }
+
+        Organization::query()->whereIn('id', $manifest['organization_ids'] ?? [])->delete();
+
+        Team::query()->whereIn('id', $manifest['team_ids'] ?? [])->delete();
+        Department::query()->whereIn('id', $manifest['department_ids'] ?? [])->delete();
+        Tag::query()->whereIn('id', $manifest['tag_ids'] ?? [])->delete();
+    }
+
+    private function purgeServiceCatalog(): void
+    {
+        $categoryIds = ServiceCategory::query()
+            ->whereIn('slug', self::SAMPLE_SERVICE_CATEGORY_SLUGS)
+            ->pluck('id');
+
+        if ($categoryIds->isEmpty()) {
+            return;
+        }
+
+        ServiceCatalogItem::query()->whereIn('service_category_id', $categoryIds)->delete();
+        ServiceCategory::query()->whereIn('id', $categoryIds)->delete();
+    }
+
+    private function purgeAssets(): void
+    {
+        Asset::query()->whereIn('asset_tag', self::SAMPLE_ASSET_TAGS)->delete();
+    }
+
+    private function purgeBootstrapContacts(): void
+    {
+        Contact::query()->whereIn('email', self::SAMPLE_CONTACT_EMAILS)->delete();
+
+        $organizationIds = Organization::query()
+            ->whereIn('name', self::SAMPLE_ORGANIZATION_NAMES)
+            ->pluck('id');
+
+        if ($organizationIds->isEmpty()) {
+            return;
+        }
+
+        Contact::query()->whereIn('organization_id', $organizationIds)->delete();
+        OrganizationDomain::query()->whereIn('organization_id', $organizationIds)->delete();
+        Organization::query()->whereIn('id', $organizationIds)->delete();
     }
 
     private function purgeKnowledgeBase(): void

@@ -4,6 +4,7 @@ namespace App\Domains\Billing\Controllers;
 
 use App\Domains\Billing\Repositories\PlanRepository;
 use App\Domains\Billing\Services\BillingService;
+use App\Domains\Billing\Services\PlatformPaymentService;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -16,6 +17,7 @@ class BillingController extends Controller
     public function __construct(
         private BillingService $billingService,
         private PlanRepository $planRepository,
+        private PlatformPaymentService $payments,
     ) {
     }
 
@@ -23,6 +25,7 @@ class BillingController extends Controller
     {
         return Inertia::render('Settings/Billing', [
             'billing' => $this->billingService->snapshot(),
+            'payments' => $this->payments->historyForTenant((string) tenant('id')),
         ]);
     }
 

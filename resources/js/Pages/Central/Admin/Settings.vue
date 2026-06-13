@@ -53,11 +53,14 @@ const mapAddon = (addon) => ({
 
 const purging = ref(false);
 
+const socialPlatforms = props.settings.social_links ?? [];
+
 const form = useForm({
     trial_days: props.settings.trial_days,
     tenant_purge_grace_days: props.settings.tenant_purge_grace_days ?? 15,
     tenant_purge_enabled: props.settings.tenant_purge_enabled ?? true,
     currency: initialCurrencyCode(),
+    social_links: Object.fromEntries(socialPlatforms.map((social) => [social.key, social.url ?? ''])),
     plans: props.settings.plans.map(mapPlan),
     addons: (props.settings.addons ?? []).map(mapAddon),
 });
@@ -194,6 +197,25 @@ const submit = () => {
                         </select>
                         <p v-if="form.errors.currency" class="mt-1.5 text-xs text-red-600">{{ form.errors.currency }}</p>
                         <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">Plan and add-on prices below use this currency for billing and tenant display.</p>
+                    </div>
+                </section>
+
+                <section class="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm">
+                    <h2 class="font-semibold text-slate-900 dark:text-slate-100">{{ $t('central.social_links') }}</h2>
+                    <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">{{ $t('central.social_links_hint') }}</p>
+
+                    <div class="mt-5 grid gap-4 sm:grid-cols-2">
+                        <div v-for="social in socialPlatforms" :key="social.key">
+                            <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ social.label }}</label>
+                            <input
+                                v-model.trim="form.social_links[social.key]"
+                                type="url"
+                                inputmode="url"
+                                :placeholder="social.placeholder"
+                                class="w-full rounded-xl border border-slate-200 dark:border-slate-800 px-3.5 py-2.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                            />
+                            <p v-if="form.errors[`social_links.${social.key}`]" class="mt-1.5 text-xs text-red-600">{{ form.errors[`social_links.${social.key}`] }}</p>
+                        </div>
                     </div>
                 </section>
 

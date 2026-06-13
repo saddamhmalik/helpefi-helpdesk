@@ -44,6 +44,8 @@ class AdminSettingsController extends Controller
             'tenant_purge_grace_days' => ['required', 'integer', 'min:1', 'max:365'],
             'tenant_purge_enabled' => ['required', 'boolean'],
             'currency' => ['required', 'string', 'size:3', 'in:'.implode(',', CurrencyCatalog::codes())],
+            'social_links' => ['nullable', 'array'],
+            'social_links.*' => ['nullable', 'url', 'max:255'],
             'plans' => ['required', 'array', 'min:1'],
             'plans.*.slug' => ['required', 'string', 'in:'.$slugs],
             'plans.*.name' => ['required', 'string', 'max:100'],

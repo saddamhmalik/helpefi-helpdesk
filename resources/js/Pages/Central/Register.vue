@@ -120,7 +120,7 @@ const inputClass = 'w-full rounded-xl border border-slate-200 dark:border-slate-
 </script>
 
 <template>
-    <CentralSeoHead page="register" :brand="platformName" :trial-days="trialDays" :seo="seo" />
+    <CentralSeoHead page="register" :brand="platformName" :trial-days="trialDays" />
     <CentralLayout :brand="platformName" :trial-days="trialDays" :show-footer="false">
         <div class="min-h-[calc(100dvh-3.5rem)] bg-slate-50 dark:bg-slate-950 sm:min-h-[calc(100vh-4rem)]">
             <div class="mx-auto grid max-w-6xl lg:min-h-[calc(100vh-4rem)] lg:grid-cols-2">
