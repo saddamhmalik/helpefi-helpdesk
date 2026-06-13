@@ -72,6 +72,7 @@ class AdminSettingsController extends Controller
             'plans' => ['sometimes', 'array', 'min:1', 'max:12'],
             'plans.*.slug' => ['required', 'string', 'max:40', 'regex:/^[a-z][a-z0-9_]*$/', 'distinct'],
             'plans.*.name' => ['required', 'string', 'max:100'],
+            'plans.*.custom_pricing' => ['sometimes', 'boolean'],
             'plans.*.price' => ['required', 'integer', 'min:0', 'max:99999'],
             'plans.*.price_yearly' => ['required', 'integer', 'min:0', 'max:999999'],
             'plans.*.price_india' => ['nullable', 'integer', 'min:0', 'max:99999'],

@@ -51,6 +51,7 @@ const mapPlan = (plan) => {
         is_default: props.defaultSlugs.includes(plan.slug),
         slug: plan.slug,
         name: plan.name,
+        custom_pricing: plan.custom_pricing ?? false,
         price: plan.price_monthly ?? plan.price,
         price_yearly: plan.price_yearly ?? (plan.price_monthly ?? plan.price) * 10,
         price_india: plan.price_monthly_india ?? 0,
@@ -74,6 +75,7 @@ const addPlan = () => {
         is_default: false,
         slug: '',
         name: '',
+        custom_pricing: false,
         price: 0,
         price_yearly: 0,
         price_india: 0,
@@ -122,11 +124,25 @@ const toggleFeature = (plan, featureKey) => {
 
 const hasFeature = (plan, featureKey) => plan.features.includes(featureKey);
 
+const errorList = computed(() => Object.entries(form.errors).map(([key, message]) => {
+    const match = key.match(/^plans\.(\d+)\./);
+
+    if (!match) {
+        return message;
+    }
+
+    const plan = form.plans[Number(match[1])];
+    const label = plan?.name || plan?.slug || `#${Number(match[1]) + 1}`;
+
+    return `${label}: ${message}`;
+}));
+
 const submit = () => {
     form.transform((data) => ({
         plans: data.plans.map((plan) => ({
             slug: plan.slug,
             name: plan.name,
+            custom_pricing: plan.custom_pricing,
             price: plan.price,
             price_monthly: plan.price,
             price_yearly: plan.price_yearly,
@@ -144,7 +160,10 @@ const submit = () => {
             ),
             features: plan.features,
         })),
-    })).put('/admin/settings', { preserveScroll: true });
+    })).put('/admin/settings', {
+        preserveScroll: true,
+        onError: () => window.scrollTo({ top: 0, behavior: 'smooth' }),
+    });
 };
 </script>
 
@@ -158,6 +177,13 @@ const submit = () => {
             />
 
             <SettingsTabs />
+
+            <div v-if="errorList.length" class="mt-4 rounded-2xl border border-red-200 dark:border-red-900/60 bg-red-50 dark:bg-red-950/40 p-4">
+                <p class="text-sm font-semibold text-red-800 dark:text-red-300">{{ $t('central.fix_errors_to_save') }}</p>
+                <ul class="mt-2 list-disc space-y-1 pl-5 text-sm text-red-700 dark:text-red-300">
+                    <li v-for="(message, idx) in errorList" :key="idx">{{ message }}</li>
+                </ul>
+            </div>
 
             <form class="space-y-4" @submit.prevent="submit">
                 <div
@@ -197,6 +223,17 @@ const submit = () => {
                             <input v-model="plan.name" type="text" required class="w-full rounded-xl border border-slate-200 dark:border-slate-800 px-3.5 py-2.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20" @blur="onNameBlur(plan)" />
                             <p v-if="form.errors[`plans.${index}.name`]" class="mt-1 text-xs text-red-600">{{ form.errors[`plans.${index}.name`] }}</p>
                         </div>
+                        <label class="sm:col-span-2 flex cursor-pointer items-start gap-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 px-4 py-3.5">
+                            <input v-model="plan.custom_pricing" type="checkbox" class="mt-0.5 h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500" />
+                            <span>
+                                <span class="block text-sm font-medium text-slate-900 dark:text-slate-100">{{ $t('central.custom_pricing') }}</span>
+                                <span class="mt-0.5 block text-xs text-slate-600 dark:text-slate-400">{{ $t('central.custom_pricing_hint') }}</span>
+                            </span>
+                        </label>
+                        <div v-if="plan.custom_pricing" class="sm:col-span-2 rounded-xl border border-dashed border-slate-300 dark:border-slate-700 px-4 py-3 text-sm text-slate-600 dark:text-slate-400">
+                            {{ $t('central.custom_pricing_note') }}
+                        </div>
+                        <template v-else>
                         <div v-if="settings.razorpay_enabled" class="sm:col-span-2 rounded-xl border border-emerald-200 dark:border-emerald-900/60 bg-emerald-50 dark:bg-emerald-950/40 px-4 py-3">
                             <p class="text-sm font-medium text-emerald-900">{{ $t('central.stripe_sync_enabled') }}</p>
                             <p class="mt-1 text-xs text-emerald-800 dark:text-emerald-200">{{ $t('central.saving_updates_the_stripe_product_and_creates_new_monthly_or_yearly_pr') }}</p>
@@ -269,6 +306,7 @@ const submit = () => {
                                     <input v-model="plan.razorpay_plan_id_yearly_india" type="text" class="w-full rounded-xl border border-slate-200 dark:border-slate-800 px-3.5 py-2.5 font-mono text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20" />
                                 </div>
                             </template>
+                        </template>
                         </template>
                     </div>
 

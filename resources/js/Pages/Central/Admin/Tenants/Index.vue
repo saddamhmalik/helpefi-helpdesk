@@ -33,6 +33,7 @@ const manageTenant = ref(null);
 const selectedPlan = ref('starter');
 const selectedInterval = ref('month');
 const customRenewal = ref('');
+const customPrice = ref('');
 const planNote = ref('');
 const savingPlan = ref(false);
 const startingTrial = ref(false);
@@ -125,6 +126,7 @@ const openManage = (tenant) => {
     selectedPlan.value = tenant.subscription?.plan ?? props.plans[0]?.slug ?? 'starter';
     selectedInterval.value = tenant.subscription?.billing_interval ?? 'month';
     customRenewal.value = '';
+    customPrice.value = tenant.subscription?.custom_amount ?? '';
     planNote.value = '';
 };
 
@@ -144,6 +146,10 @@ const selectedPlanPrice = computed(() => {
         : plan.price_monthly ?? plan.price;
 });
 
+const hasCustomPrice = computed(() => customPrice.value !== '' && customPrice.value !== null);
+
+const effectivePrice = computed(() => (hasCustomPrice.value ? Number(customPrice.value) : selectedPlanPrice.value));
+
 const planChanged = computed(() => {
     const subscription = manageTenant.value?.subscription;
 
@@ -154,6 +160,7 @@ const planChanged = computed(() => {
     return selectedPlan.value !== subscription.plan
         || selectedInterval.value !== (subscription.billing_interval ?? 'month')
         || customRenewal.value !== ''
+        || String(customPrice.value) !== String(subscription.custom_amount ?? '')
         || planNote.value.trim() !== '';
 });
 
@@ -209,6 +216,7 @@ const savePlan = () => {
         plan: selectedPlan.value,
         billing_interval: selectedInterval.value,
         renews_at: customRenewal.value || null,
+        custom_price: customPrice.value === '' ? null : Number(customPrice.value),
         note: planNote.value.trim() || null,
     }, {
         preserveScroll: true,
@@ -327,8 +335,9 @@ const hasFilters = computed(() => Boolean(props.filters.q) || (props.filters.sta
                                 </td>
                                 <td class="px-5 py-4">
                                     <p class="font-medium text-slate-900 dark:text-slate-100">{{ planLabel(tenant) }}</p>
-                                    <p v-if="tenant.subscription?.plan_price && !tenant.subscription?.on_trial" class="text-xs text-slate-500 dark:text-slate-400">
-                                        ${{ tenant.subscription.plan_price }}/mo
+                                    <p v-if="(tenant.subscription?.custom_amount != null || tenant.subscription?.plan_price != null) && !tenant.subscription?.on_trial" class="text-xs text-slate-500 dark:text-slate-400">
+                                        {{ currency.symbol }}{{ tenant.subscription.custom_amount ?? tenant.subscription.plan_price }}/{{ tenant.subscription?.billing_interval === 'year' ? $t('central.year_short') : $t('central.month_short') }}
+                                        <span v-if="tenant.subscription?.custom_amount != null" class="ml-1 font-medium text-blue-600 dark:text-blue-400">({{ $t('central.custom_pricing_price') }})</span>
                                     </p>
                                     <p v-if="razorpay_enabled && tenant.subscription?.has_razorpay" class="mt-1 text-[10px] font-semibold uppercase tracking-wide text-violet-600">
                                         {{ $t('central.stripe_billing') }}
@@ -457,13 +466,26 @@ const hasFilters = computed(() => Boolean(props.filters.q) || (props.filters.sta
                         </div>
                     </div>
 
+                    <div>
+                        <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('central.negotiated_price') }}</label>
+                        <div class="flex overflow-hidden rounded-xl border border-slate-200 dark:border-slate-800 focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/20">
+                            <span class="flex items-center bg-slate-50 dark:bg-slate-950 px-3 text-sm text-slate-500 dark:text-slate-400">{{ currency.symbol }}</span>
+                            <input v-model.number="customPrice" type="number" min="0" max="9999999" :placeholder="selectedPlanPrice !== null ? String(selectedPlanPrice) : ''" class="min-w-0 flex-1 border-0 bg-transparent px-3 py-2.5 text-sm focus:outline-none" />
+                        </div>
+                        <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                            {{ selectedPlanDetails?.custom_pricing ? $t('central.negotiated_price_contact_hint') : $t('central.negotiated_price_hint') }}
+                        </p>
+                    </div>
+
                     <div
-                        v-if="selectedPlanPrice !== null"
+                        v-if="effectivePrice !== null"
                         class="flex items-baseline justify-between rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 px-4 py-3"
                     >
-                        <span class="text-sm text-slate-600 dark:text-slate-400">{{ $t('central.new_price') }}</span>
+                        <span class="text-sm text-slate-600 dark:text-slate-400">
+                            {{ $t('central.new_price') }}<span v-if="hasCustomPrice" class="ml-1 text-xs font-medium text-blue-600 dark:text-blue-400">({{ $t('central.custom_pricing_price') }})</span>
+                        </span>
                         <span class="text-base font-semibold text-slate-900 dark:text-slate-100">
-                            {{ currency.symbol }}{{ selectedPlanPrice }}<span class="text-sm font-normal text-slate-500 dark:text-slate-400">/{{ selectedInterval === 'year' ? $t('central.year_short') : $t('central.month_short') }}</span>
+                            {{ currency.symbol }}{{ effectivePrice }}<span class="text-sm font-normal text-slate-500 dark:text-slate-400">/{{ selectedInterval === 'year' ? $t('central.year_short') : $t('central.month_short') }}</span>
                         </span>
                     </div>
 

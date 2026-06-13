@@ -21,6 +21,7 @@ const props = defineProps({
     indiaEnabled: { type: Boolean, default: false },
     seo: { type: Object, default: () => ({}) },
     centralDomain: { type: String, default: '' },
+    contactEmail: { type: String, default: '' },
     aiDemoEnabled: { type: Boolean, default: true },
     socialLinks: { type: Array, default: () => [] },
 });
@@ -32,6 +33,12 @@ const workspaceDomainExample = computed(() => {
 
     return `your-company.${domain}`;
 });
+
+const contactHref = computed(() => (props.contactEmail ? `mailto:${props.contactEmail}` : '/register'));
+
+const pricedPlans = computed(() => props.plans.filter((plan) => !plan.custom_pricing));
+
+const customPlans = computed(() => props.plans.filter((plan) => plan.custom_pricing));
 
 const selectedCurrencyCode = ref(props.currency?.code ?? props.baseCurrency.code);
 
@@ -1528,7 +1535,7 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
                 </div>
                 <div class="mt-14 flex flex-wrap justify-center gap-8">
                     <article
-                        v-for="plan in plans"
+                        v-for="plan in pricedPlans"
                         :key="plan.slug"
                         class="relative flex w-full flex-col rounded-3xl border p-6 sm:w-80 sm:p-8 transition"
                         :class="plan.slug === 'professional'
@@ -1562,6 +1569,38 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
                         </Link>
                         <p class="mt-3 text-center text-xs text-slate-500 dark:text-slate-400">{{ $t('central.no_credit_card_required') }}</p>
                     </article>
+                </div>
+
+                <div
+                    v-for="plan in customPlans"
+                    :key="plan.slug"
+                    class="mx-auto mt-8 max-w-5xl overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-white/10 to-white/5 p-6 backdrop-blur sm:p-8"
+                >
+                    <div class="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+                        <div class="lg:max-w-2xl">
+                            <div class="flex flex-wrap items-center gap-3">
+                                <h3 class="text-2xl font-bold text-white">{{ plan.name }}</h3>
+                                <span class="rounded-full border border-white/20 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-slate-200">{{ $t('central.custom_pricing_price') }}</span>
+                            </div>
+                            <p v-if="planTaglines[plan.slug]" class="mt-2 text-sm text-slate-400 dark:text-slate-500">{{ planTaglines[plan.slug] }}</p>
+                            <ul class="mt-5 grid gap-x-6 gap-y-2 sm:grid-cols-2">
+                                <li v-for="item in planHighlights(plan)" :key="item" class="flex items-start gap-2.5 text-sm text-slate-300">
+                                    <svg class="mt-0.5 h-4 w-4 shrink-0 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+                                    {{ item }}
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="shrink-0 text-center lg:text-right">
+                            <a
+                                :href="contactHref"
+                                class="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-white px-8 py-3.5 text-sm font-bold text-slate-900 shadow-xl transition hover:bg-slate-100 sm:w-auto"
+                            >
+                                {{ $t('central.contact_us') }}
+                                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
+                            </a>
+                            <p class="mt-3 text-xs text-slate-400 dark:text-slate-500">{{ $t('central.custom_pricing_cta_hint') }}</p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>

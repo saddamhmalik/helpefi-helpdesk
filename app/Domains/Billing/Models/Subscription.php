@@ -30,6 +30,7 @@ class Subscription extends Model
         'razorpay_plan_id',
         'billing_interval',
         'currency',
+        'custom_amount',
         'active_addons',
         'razorpay_addon_items',
     ];
@@ -37,6 +38,7 @@ class Subscription extends Model
     protected function casts(): array
     {
         return [
+            'custom_amount' => 'integer',
             'trial_ends_at' => 'datetime',
             'renews_at' => 'datetime',
             'cancelled_at' => 'datetime',

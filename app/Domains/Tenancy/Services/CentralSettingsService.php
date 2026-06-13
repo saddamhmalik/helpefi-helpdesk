@@ -152,6 +152,7 @@ class CentralSettingsService
             ->map(fn (array $plan, string $slug) => [
                 'slug' => $slug,
                 'name' => $plan['name'],
+                'custom_pricing' => $plan['custom_pricing'] ?? false,
                 'price' => $plan['price_monthly'],
                 'price_monthly' => $plan['price_monthly'],
                 'price_yearly' => $plan['price_yearly'],

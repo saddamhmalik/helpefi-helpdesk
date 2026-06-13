@@ -116,6 +116,11 @@ const openCheckoutFromFlash = (session) => {
 };
 
 const savePlan = () => {
+    if (selectedPlan.value?.custom_pricing) {
+        form.setError('plan', 'This plan has custom pricing. Please contact us to get started.');
+        return;
+    }
+
     if (props.billing.razorpay_enabled) {
         if (!selectedPlanBillingReady.value) {
             form.setError('plan', 'This plan is not configured for Razorpay billing at the selected billing interval yet. Ask your platform admin to add Razorpay price IDs.');
@@ -263,7 +268,10 @@ const formatLimit = (limit) => (limit === 'unlimited' ? t('settings_billing.unli
                     <div class="mt-4 flex items-baseline gap-2">
                         <span class="text-3xl font-semibold agent-text">{{ billing.plan.name }}</span>
                         <span v-if="billing.on_trial" class="text-sm agent-text-subtle">{{ $t('settings_billing.full_access_during_trial') }}</span>
-                        <span v-else-if="billing.plan.slug" class="text-sm agent-text-subtle">{{ formatPrice(billing.plan.price, currentPlanSuffix) }}</span>
+                        <span v-else-if="billing.plan.slug" class="text-sm agent-text-subtle">
+                            <template v-if="billing.plan.is_custom_price && billing.plan.price == null">{{ $t('settings_billing.custom_pricing') }}</template>
+                            <template v-else>{{ formatPrice(billing.plan.price, currentPlanSuffix) }}</template>
+                        </span>
                     </div>
                     <p class="mt-2 text-sm agent-text-muted">
                         {{ $t('settings_billing.status_label') }}
@@ -395,12 +403,12 @@ const formatLimit = (limit) => (limit === 'unlimited' ? t('settings_billing.unli
                                     type="radio"
                                     :value="plan.slug"
                                     class="mt-1"
-                                    :disabled="billing.on_trial"
+                                    :disabled="billing.on_trial || plan.custom_pricing"
                                 />
                                 <div class="flex-1">
                                     <div class="flex items-baseline justify-between gap-3">
                                         <span class="font-medium agent-text">{{ plan.name }}</span>
-                                        <span class="text-sm agent-text-subtle">{{ formatPrice(planPrice(plan), intervalSuffix) }}</span>
+                                        <span class="text-sm agent-text-subtle">{{ plan.custom_pricing ? $t('settings_billing.custom_pricing') : formatPrice(planPrice(plan), intervalSuffix) }}</span>
                                     </div>
                                     <p class="mt-1 text-xs agent-text-subtle">
                                         {{ plan.limits.agents }} agents · {{ plan.limits.tickets_monthly }} tickets/mo
@@ -408,7 +416,10 @@ const formatLimit = (limit) => (limit === 'unlimited' ? t('settings_billing.unli
                                     <p v-if="billing.on_trial" class="mt-2 text-xs agent-text-subtle">
                                         {{ $t('settings_billing.available_after_your_trial_ends') }}
                                     </p>
-                                    <p v-if="billing.razorpay_enabled && !billingReadyForInterval(plan)" class="mt-2 text-xs text-amber-700 dark:text-amber-300">
+                                    <p v-if="plan.custom_pricing" class="mt-2 text-xs text-blue-700 dark:text-blue-300">
+                                        {{ $t('settings_billing.custom_pricing_contact') }}
+                                    </p>
+                                    <p v-else-if="billing.razorpay_enabled && !billingReadyForInterval(plan)" class="mt-2 text-xs text-amber-700 dark:text-amber-300">
                                         Razorpay price not configured for this plan ({{ billingInterval }})
                                     </p>
                                     <p v-if="plan.features.length" class="mt-2 text-xs agent-text-muted">

@@ -111,6 +111,7 @@ class PlanCatalogDefinition
         return [
             'slug' => $slug,
             'name' => (string) ($plan['name'] ?? ucfirst($slug)),
+            'custom_pricing' => (bool) ($plan['custom_pricing'] ?? false),
             'price' => $priceMonthly,
             'price_monthly' => $priceMonthly,
             'price_yearly' => $priceYearly,

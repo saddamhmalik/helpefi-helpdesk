@@ -65,6 +65,7 @@ class BillingService
                 ->map(fn (array $item, string $slug) => [
                     'slug' => $slug,
                     'name' => $item['name'],
+                    'custom_pricing' => $item['custom_pricing'] ?? false,
                     'price' => PlanCatalogDefinition::priceForInterval($item, 'month', $india),
                     'price_monthly' => PlanCatalogDefinition::priceForInterval($item, 'month', $india),
                     'price_yearly' => PlanCatalogDefinition::priceForInterval($item, 'year', $india),
@@ -253,7 +254,7 @@ class BillingService
         string $cancelRedirect = '/settings/billing?checkout=cancelled&section=plans',
         ?string $currency = null,
     ): array|string|Subscription {
-        $this->plans->find($slug);
+        $this->assertSelfServiceable($slug);
 
         if ($this->razorpay->isEnabled()) {
             return $this->razorpay->prepareCheckoutSession(
@@ -296,7 +297,7 @@ class BillingService
 
     public function changePlan(string $slug, string $interval = 'month'): Subscription
     {
-        $this->plans->find($slug);
+        $this->assertSelfServiceable($slug);
         $subscription = $this->subscriptions->current();
 
         if ($subscription->isOnTrial()) {
@@ -318,6 +319,19 @@ class BillingService
             'trial_ends_at' => null,
             'renews_at' => $interval === 'year' ? now()->addYear() : now()->addMonth(),
         ]);
+    }
+
+    private function assertSelfServiceable(string $slug): array
+    {
+        $plan = $this->plans->find($slug);
+
+        if (! empty($plan['custom_pricing'])) {
+            throw ValidationException::withMessages([
+                'plan' => 'This plan has custom pricing. Please contact us to get started.',
+            ]);
+        }
+
+        return $plan;
     }
 
     private function currentPlan(?Subscription $subscription = null): array
@@ -343,14 +357,18 @@ class BillingService
 
         if ($subscription->plan) {
             $interval = $subscription->billing_interval ?? 'month';
+            $hasCustomAmount = $subscription->custom_amount !== null;
+            $planIsCustom = ! empty($plan['custom_pricing']);
+            $catalogPrice = PlanCatalogDefinition::priceForInterval($plan, $interval, $india);
 
             return [
                 'slug' => $subscription->plan,
                 'name' => $plan['name'],
-                'price' => PlanCatalogDefinition::priceForInterval($plan, $interval, $india),
+                'price' => $hasCustomAmount ? $subscription->custom_amount : ($planIsCustom ? null : $catalogPrice),
                 'price_monthly' => PlanCatalogDefinition::priceForInterval($plan, 'month', $india),
                 'price_yearly' => PlanCatalogDefinition::priceForInterval($plan, 'year', $india),
                 'billing_interval' => $interval,
+                'is_custom_price' => $hasCustomAmount || $planIsCustom,
             ];
         }
 
