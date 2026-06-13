@@ -63,6 +63,21 @@ class PlatformPendingRegistrationTest extends TestCase
                 ->where('stats.active', 1));
     }
 
+    public function test_platform_admin_can_filter_pending_registrations_by_search(): void
+    {
+        $this->createPending('acme-01', 'acme@test.com');
+        $this->createPending('other-slug', 'other@test.com');
+
+        $this->adminLogin();
+
+        $this->get('http://'.config('tenancy.central_app_domain').'/admin/pending-registrations?q=0')
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('Central/Admin/PendingRegistrations/Index')
+                ->has('registrations.data', 1)
+                ->where('registrations.data.0.slug', 'acme-01'));
+    }
+
     public function test_platform_admin_can_remove_pending_registration(): void
     {
         $pending = $this->createPending('pending-remove', 'remove@test.com');

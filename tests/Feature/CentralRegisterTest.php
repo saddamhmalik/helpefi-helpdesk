@@ -13,6 +13,15 @@ class CentralRegisterTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_register_page_loads(): void
+    {
+        $this->get('http://'.config('tenancy.central_app_domain').'/register')
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('Central/Register')
+                ->where('verificationSent', false));
+    }
+
     public function test_register_creates_pending_registration_without_tenant(): void
     {
         $this->post('http://'.config('tenancy.central_app_domain').'/register', [

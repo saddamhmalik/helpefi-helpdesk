@@ -24,7 +24,7 @@ class RegisterController extends Controller
     {
         return Inertia::render('Central/Register', [
             ...CentralMarketingPresenter::shared(),
-            'verificationSent' => session()->boolean('verification_sent'),
+            'verificationSent' => filter_var(session('verification_sent', false), FILTER_VALIDATE_BOOLEAN),
             'verificationEmail' => (string) session('verification_email', ''),
         ]);
     }
