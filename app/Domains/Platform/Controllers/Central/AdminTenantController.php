@@ -58,6 +58,7 @@ class AdminTenantController extends Controller
                 ->map(fn (array $plan, string $slug) => [
                     'slug' => $slug,
                     'name' => $plan['name'],
+                    'custom_pricing' => $plan['custom_pricing'] ?? false,
                     'price' => $plan['price'],
                     'price_monthly' => $plan['price_monthly'] ?? $plan['price'],
                     'price_yearly' => $plan['price_yearly'] ?? null,
@@ -75,9 +76,10 @@ class AdminTenantController extends Controller
 
         $data = $request->validate([
             'is_blocked' => ['sometimes', 'boolean'],
-            'plan' => ['sometimes', 'nullable', 'required_with:billing_interval,renews_at,note', 'string', 'in:'.$slugs],
+            'plan' => ['sometimes', 'nullable', 'required_with:billing_interval,renews_at,note,custom_price', 'string', 'in:'.$slugs],
             'billing_interval' => ['sometimes', 'string', 'in:month,year'],
             'renews_at' => ['sometimes', 'nullable', 'date', 'after:today'],
+            'custom_price' => ['sometimes', 'nullable', 'integer', 'min:0', 'max:9999999'],
             'note' => ['sometimes', 'nullable', 'string', 'max:500'],
             'start_trial' => ['sometimes', 'boolean'],
         ]);

@@ -6,6 +6,7 @@ use App\Domains\Billing\Models\Subscription;
 use App\Domains\Billing\Repositories\PlanRepository;
 use App\Domains\Platform\Repositories\PlatformTenantRepository;
 use App\Domains\Platform\Support\PlatformAuditRecorder;
+use App\Domains\Tenancy\Services\CentralSettingsService;
 use App\Domains\Tenancy\Services\TenantDomainService;
 use App\Models\Tenant;
 use Carbon\CarbonInterface;
@@ -19,6 +20,7 @@ class PlatformTenantService
         private PlanRepository $plans,
         private PlatformTenantAdminResolver $admins,
         private PlatformAuditRecorder $audit,
+        private CentralSettingsService $centralSettings,
     ) {}
 
     public function list(int $perPage = 20, ?string $search = null, ?string $status = null): LengthAwarePaginator
@@ -45,6 +47,7 @@ class PlatformTenantService
         $beforePlan = $tenant->subscription?->plan;
         $beforeInterval = $tenant->subscription?->billing_interval;
         $beforeRenewsAt = $tenant->subscription?->renews_at;
+        $beforeCustomAmount = $tenant->subscription?->custom_amount;
 
         if (array_key_exists('is_blocked', $data)) {
             $tenant = $this->tenants->update($tenant, [
@@ -66,6 +69,7 @@ class PlatformTenantService
             $interval = ($data['billing_interval'] ?? null) === 'year' ? 'year' : 'month';
             $planChanged = $beforePlan !== $data['plan'] || $beforeInterval !== $interval;
             $renewsAt = $this->resolveRenewalDate($data['renews_at'] ?? null, $interval, $planChanged, $beforeRenewsAt);
+            $customAmount = $this->resolveCustomAmount($data['custom_price'] ?? null);
 
             $subscriptionPayload = [
                 'plan' => $data['plan'],
@@ -75,6 +79,8 @@ class PlatformTenantService
                 'cancelled_at' => null,
                 'access_ends_at' => null,
                 'renews_at' => $renewsAt,
+                'custom_amount' => $customAmount,
+                'currency' => $customAmount !== null ? $this->centralSettings->currency() : null,
             ];
 
             $this->tenants->updateSubscription($tenant, $subscriptionPayload);
@@ -82,8 +88,9 @@ class PlatformTenantService
 
             $renewalChanged = $beforeRenewsAt === null || ! $beforeRenewsAt->equalTo($renewsAt);
             $noteProvided = isset($data['note']) && $data['note'] !== '';
+            $customAmountChanged = $customAmount !== $beforeCustomAmount;
 
-            if ($planChanged || $renewalChanged || $noteProvided) {
+            if ($planChanged || $renewalChanged || $noteProvided || $customAmountChanged) {
                 $this->audit->record(
                     'platform.tenant.plan_changed',
                     $tenant,
@@ -92,6 +99,7 @@ class PlatformTenantService
                         'to' => $data['plan'],
                         'interval' => $interval,
                         'renews_at' => $renewsAt->toIso8601String(),
+                        'custom_amount' => $customAmount,
                         'note' => $data['note'] ?? null,
                     ], static fn ($value) => $value !== null),
                     tenantId: $tenant->id,
@@ -123,6 +131,15 @@ class PlatformTenantService
         );
 
         $tenant->delete();
+    }
+
+    private function resolveCustomAmount(mixed $value): ?int
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+
+        return max(0, (int) $value) ?: null;
     }
 
     private function resolveRenewalDate(?string $renewsAt, string $interval, bool $planChanged, ?CarbonInterface $existing): CarbonInterface
@@ -167,6 +184,7 @@ class PlatformTenantService
                 'plan' => $planSlug,
                 'plan_name' => $plan['name'] ?? ($planSlug ? ucfirst($planSlug) : null),
                 'plan_price' => $plan['price'] ?? null,
+                'custom_amount' => $subscription->custom_amount,
                 'billing_interval' => $subscription->billing_interval ?? 'month',
                 'status' => $subscription->status,
                 'on_trial' => $subscription->isOnTrial(),

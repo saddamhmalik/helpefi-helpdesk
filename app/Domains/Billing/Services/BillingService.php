@@ -65,6 +65,7 @@ class BillingService
                 ->map(fn (array $item, string $slug) => [
                     'slug' => $slug,
                     'name' => $item['name'],
+                    'custom_pricing' => $item['custom_pricing'] ?? false,
                     'price' => PlanCatalogDefinition::priceForInterval($item, 'month', $india),
                     'price_monthly' => PlanCatalogDefinition::priceForInterval($item, 'month', $india),
                     'price_yearly' => PlanCatalogDefinition::priceForInterval($item, 'year', $india),
@@ -343,14 +344,17 @@ class BillingService
 
         if ($subscription->plan) {
             $interval = $subscription->billing_interval ?? 'month';
+            $hasCustomAmount = $subscription->custom_amount !== null;
+            $catalogPrice = PlanCatalogDefinition::priceForInterval($plan, $interval, $india);
 
             return [
                 'slug' => $subscription->plan,
                 'name' => $plan['name'],
-                'price' => PlanCatalogDefinition::priceForInterval($plan, $interval, $india),
+                'price' => $hasCustomAmount ? $subscription->custom_amount : $catalogPrice,
                 'price_monthly' => PlanCatalogDefinition::priceForInterval($plan, 'month', $india),
                 'price_yearly' => PlanCatalogDefinition::priceForInterval($plan, 'year', $india),
                 'billing_interval' => $interval,
+                'is_custom_price' => $hasCustomAmount,
             ];
         }
 

@@ -17,6 +17,7 @@ class CentralMarketingPresenter
             'brand' => config('app.name', 'helpefi'),
             'trialDays' => $settings->trialDays(),
             'centralDomain' => config('tenancy.central_app_domain'),
+            'contactEmail' => config('mail.from.address'),
             'currency' => app(RegionCurrencyResolver::class)->resolveMeta(request()),
             'baseCurrency' => $settings->currencyMeta(),
             'indiaCurrency' => $settings->indiaCurrencyMeta(),

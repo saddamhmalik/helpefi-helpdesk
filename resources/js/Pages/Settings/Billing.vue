@@ -395,12 +395,12 @@ const formatLimit = (limit) => (limit === 'unlimited' ? t('settings_billing.unli
                                     type="radio"
                                     :value="plan.slug"
                                     class="mt-1"
-                                    :disabled="billing.on_trial"
+                                    :disabled="billing.on_trial || plan.custom_pricing"
                                 />
                                 <div class="flex-1">
                                     <div class="flex items-baseline justify-between gap-3">
                                         <span class="font-medium agent-text">{{ plan.name }}</span>
-                                        <span class="text-sm agent-text-subtle">{{ formatPrice(planPrice(plan), intervalSuffix) }}</span>
+                                        <span class="text-sm agent-text-subtle">{{ plan.custom_pricing ? $t('settings_billing.custom_pricing') : formatPrice(planPrice(plan), intervalSuffix) }}</span>
                                     </div>
                                     <p class="mt-1 text-xs agent-text-subtle">
                                         {{ plan.limits.agents }} agents · {{ plan.limits.tickets_monthly }} tickets/mo
@@ -408,7 +408,10 @@ const formatLimit = (limit) => (limit === 'unlimited' ? t('settings_billing.unli
                                     <p v-if="billing.on_trial" class="mt-2 text-xs agent-text-subtle">
                                         {{ $t('settings_billing.available_after_your_trial_ends') }}
                                     </p>
-                                    <p v-if="billing.razorpay_enabled && !billingReadyForInterval(plan)" class="mt-2 text-xs text-amber-700 dark:text-amber-300">
+                                    <p v-if="plan.custom_pricing" class="mt-2 text-xs text-blue-700 dark:text-blue-300">
+                                        {{ $t('settings_billing.custom_pricing_contact') }}
+                                    </p>
+                                    <p v-else-if="billing.razorpay_enabled && !billingReadyForInterval(plan)" class="mt-2 text-xs text-amber-700 dark:text-amber-300">
                                         Razorpay price not configured for this plan ({{ billingInterval }})
                                     </p>
                                     <p v-if="plan.features.length" class="mt-2 text-xs agent-text-muted">

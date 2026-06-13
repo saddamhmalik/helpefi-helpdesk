@@ -108,6 +108,8 @@
         "manage_payment_method_invoices": "Manage payment method & invoices",
         "every_new_workspace_starts_here_before_choosing_a_paid_plan": "Every new workspace starts here before choosing a paid plan.",
         "available_after_your_trial_ends": "Available after your trial ends",
+        "custom_pricing": "Custom",
+        "custom_pricing_contact": "Custom pricing — contact us to enable this plan.",
         "full_access_during_trial": "Full access during trial",
         "trial_remaining_one": "Free trial · {days} day remaining",
         "trial_remaining_other": "Free trial · {days} days remaining",
