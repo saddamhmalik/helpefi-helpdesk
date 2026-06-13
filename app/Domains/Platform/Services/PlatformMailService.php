@@ -95,23 +95,18 @@ class PlatformMailService
 
     private function ensureSystemTemplates(): void
     {
-        $activeSlugs = PlatformEmailTemplate::query()
-            ->whereIn('slug', [
-                PlatformEmailTemplate::SLUG_REGISTRATION,
-                PlatformEmailTemplate::SLUG_REGISTRATION_VERIFICATION,
-                PlatformEmailTemplate::SLUG_WORKSPACE_WELCOME,
-            ])
-            ->where('is_active', true)
-            ->pluck('slug')
-            ->all();
-
         $required = [
             PlatformEmailTemplate::SLUG_REGISTRATION,
             PlatformEmailTemplate::SLUG_REGISTRATION_VERIFICATION,
             PlatformEmailTemplate::SLUG_WORKSPACE_WELCOME,
         ];
 
-        if (! array_diff($required, $activeSlugs)) {
+        $existingSlugs = PlatformEmailTemplate::query()
+            ->whereIn('slug', $required)
+            ->pluck('slug')
+            ->all();
+
+        if (! array_diff($required, $existingSlugs)) {
             return;
         }
 

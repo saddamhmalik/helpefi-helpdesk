@@ -107,6 +107,16 @@ class AdminSettingsController extends Controller
 
         $this->settings->update($data);
 
+        $skipped = $this->settings->razorpaySyncWarnings();
+
+        if ($skipped !== []) {
+            return back()->with(
+                'warning',
+                'Settings saved, but Razorpay rejected '.implode(', ', $skipped)
+                    .'. Those tiers are not purchasable until the currency is supported on your Razorpay account.',
+            );
+        }
+
         $message = config('razorpay.enabled')
             ? 'Platform settings updated and synced with Razorpay.'
             : 'Platform settings updated.';

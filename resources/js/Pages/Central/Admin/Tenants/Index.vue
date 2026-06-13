@@ -16,6 +16,7 @@ const props = defineProps({
     stats: Object,
     filters: Object,
     plans: { type: Array, default: () => [] },
+    currency: { type: Object, default: () => ({ symbol: '$', code: 'USD' }) },
     razorpay_enabled: Boolean,
 });
 
@@ -462,7 +463,7 @@ const hasFilters = computed(() => Boolean(props.filters.q) || (props.filters.sta
                     >
                         <span class="text-sm text-slate-600 dark:text-slate-400">{{ $t('central.new_price') }}</span>
                         <span class="text-base font-semibold text-slate-900 dark:text-slate-100">
-                            ${{ selectedPlanPrice }}<span class="text-sm font-normal text-slate-500 dark:text-slate-400">/{{ selectedInterval === 'year' ? $t('central.year_short') : $t('central.month_short') }}</span>
+                            {{ currency.symbol }}{{ selectedPlanPrice }}<span class="text-sm font-normal text-slate-500 dark:text-slate-400">/{{ selectedInterval === 'year' ? $t('central.year_short') : $t('central.month_short') }}</span>
                         </span>
                     </div>
 

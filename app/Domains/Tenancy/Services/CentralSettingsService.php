@@ -57,9 +57,14 @@ class CentralSettingsService
         return CurrencyCatalog::meta($this->indiaCurrency());
     }
 
+    public function indiaPricingFlag(): bool
+    {
+        return (bool) ($this->settings->current()->india_pricing ?? false);
+    }
+
     public function indiaPricingEnabled(): bool
     {
-        return (bool) ($this->settings->current()->india_pricing ?? false)
+        return $this->indiaPricingFlag()
             && $this->indiaCurrency() !== $this->currency();
     }
 
@@ -171,7 +176,8 @@ class CentralSettingsService
             'tenant_purge_grace_days' => $this->tenantPurgeGraceDays(),
             'tenant_purge_enabled' => $this->tenantPurgeEnabled(),
             'currency' => $this->currencyMeta(),
-            'india_pricing' => $this->indiaPricingEnabled(),
+            'india_pricing' => $this->indiaPricingFlag(),
+            'india_pricing_effective' => $this->indiaPricingEnabled(),
             'india_currency' => $this->indiaCurrencyMeta(),
             'social_links' => $this->socialLinksForAdmin(),
             'razorpay_enabled' => $this->razorpayPlanSync->isEnabled(),
@@ -242,6 +248,14 @@ class CentralSettingsService
         }
 
         return $this->snapshot();
+    }
+
+    public function razorpaySyncWarnings(): array
+    {
+        return array_merge(
+            $this->razorpayPlanSync->skipped(),
+            $this->razorpayAddonSync->skipped(),
+        );
     }
 
     private function resolvePlanCatalog(?array $plans): array

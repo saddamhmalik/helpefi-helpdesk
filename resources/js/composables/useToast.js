@@ -14,7 +14,7 @@ function push(type, message, duration = null) {
     }
 
     const id = nextId++;
-    const timeout = duration ?? (type === 'error' ? 8000 : 5000);
+    const timeout = duration ?? (type === 'error' || type === 'warning' ? 8000 : 5000);
 
     state.items.push({ id, type, message: text });
 
@@ -38,6 +38,7 @@ export function useToast() {
         items: state.items,
         success: (message, duration) => push('success', message, duration),
         error: (message, duration) => push('error', message, duration),
+        warning: (message, duration) => push('warning', message, duration),
         info: (message, duration) => push('info', message, duration),
         dismiss,
     };

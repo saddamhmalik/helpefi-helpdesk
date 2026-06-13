@@ -44,6 +44,7 @@ class PlatformTenantService
         $beforeBlocked = (bool) $tenant->is_blocked;
         $beforePlan = $tenant->subscription?->plan;
         $beforeInterval = $tenant->subscription?->billing_interval;
+        $beforeRenewsAt = $tenant->subscription?->renews_at;
 
         if (array_key_exists('is_blocked', $data)) {
             $tenant = $this->tenants->update($tenant, [
@@ -63,7 +64,8 @@ class PlatformTenantService
             $this->plans->find($data['plan']);
 
             $interval = ($data['billing_interval'] ?? null) === 'year' ? 'year' : 'month';
-            $renewsAt = $this->resolveRenewalDate($data['renews_at'] ?? null, $interval);
+            $planChanged = $beforePlan !== $data['plan'] || $beforeInterval !== $interval;
+            $renewsAt = $this->resolveRenewalDate($data['renews_at'] ?? null, $interval, $planChanged, $beforeRenewsAt);
 
             $subscriptionPayload = [
                 'plan' => $data['plan'],
@@ -78,7 +80,10 @@ class PlatformTenantService
             $this->tenants->updateSubscription($tenant, $subscriptionPayload);
             $tenant = $this->tenants->find($tenantId);
 
-            if ($beforePlan !== $data['plan'] || $beforeInterval !== $interval) {
+            $renewalChanged = $beforeRenewsAt === null || ! $beforeRenewsAt->equalTo($renewsAt);
+            $noteProvided = isset($data['note']) && $data['note'] !== '';
+
+            if ($planChanged || $renewalChanged || $noteProvided) {
                 $this->audit->record(
                     'platform.tenant.plan_changed',
                     $tenant,
@@ -120,10 +125,14 @@ class PlatformTenantService
         $tenant->delete();
     }
 
-    private function resolveRenewalDate(?string $renewsAt, string $interval): CarbonInterface
+    private function resolveRenewalDate(?string $renewsAt, string $interval, bool $planChanged, ?CarbonInterface $existing): CarbonInterface
     {
         if ($renewsAt !== null && $renewsAt !== '') {
             return Carbon::parse($renewsAt);
+        }
+
+        if (! $planChanged && $existing !== null) {
+            return $existing;
         }
 
         return $interval === 'year' ? now()->addYear() : now()->addMonth();

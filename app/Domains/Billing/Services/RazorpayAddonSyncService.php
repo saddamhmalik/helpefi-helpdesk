@@ -9,6 +9,8 @@ use Razorpay\Api\Errors\Error;
 
 class RazorpayAddonSyncService
 {
+    private array $skipped = [];
+
     public function __construct(private RazorpayCatalogRepository $razorpayCatalog)
     {
     }
@@ -18,8 +20,15 @@ class RazorpayAddonSyncService
         return $this->razorpayCatalog->isEnabled();
     }
 
+    public function skipped(): array
+    {
+        return array_values(array_unique($this->skipped));
+    }
+
     public function syncCatalog(array $catalog, string $currency): array
     {
+        $this->skipped = [];
+
         if (! $this->isEnabled()) {
             return $catalog;
         }
@@ -76,8 +85,10 @@ class RazorpayAddonSyncService
                 'message' => $exception->getMessage(),
             ]);
 
+            $this->skipped[] = sprintf('%s add-on (%s)', $key, strtoupper($currency));
+
             return array_merge($addon, [
-                'razorpay_plan_id_monthly' => null,
+                'razorpay_plan_id_monthly' => $existingPlanId,
             ]);
         }
     }

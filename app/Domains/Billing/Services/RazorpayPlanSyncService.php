@@ -13,6 +13,8 @@ use Razorpay\Api\Errors\Error;
 
 class RazorpayPlanSyncService
 {
+    private array $skipped = [];
+
     public function __construct(private RazorpayCatalogRepository $razorpayCatalog)
     {
     }
@@ -22,8 +24,15 @@ class RazorpayPlanSyncService
         return $this->razorpayCatalog->isEnabled();
     }
 
+    public function skipped(): array
+    {
+        return array_values(array_unique($this->skipped));
+    }
+
     public function syncCatalog(array $catalog, string $currency, ?string $indiaCurrency = null): array
     {
+        $this->skipped = [];
+
         if (! $this->isEnabled()) {
             return $catalog;
         }
@@ -130,7 +139,9 @@ class RazorpayPlanSyncService
                 'message' => $exception->getMessage(),
             ]);
 
-            return null;
+            $this->skipped[] = sprintf('%s plan (%s %sly)', $slug, strtoupper($currency), $interval);
+
+            return is_string($existingPlanId) && $existingPlanId !== '' ? $existingPlanId : null;
         }
     }
 }
