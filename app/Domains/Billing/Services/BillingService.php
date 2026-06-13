@@ -6,8 +6,10 @@ use App\Domains\Billing\Models\Subscription;
 use App\Domains\Billing\Repositories\PlanRepository;
 use App\Domains\Billing\Repositories\SubscriptionRepository;
 use App\Domains\Billing\Repositories\UsageRepository;
+use App\Domains\Billing\Support\RegionCurrencyResolver;
 use App\Domains\Tenancy\Services\CentralSettingsService;
 use App\Domains\Tenancy\Support\AddonCatalogDefinition;
+use App\Domains\Tenancy\Support\CurrencyCatalog;
 use App\Domains\Tenancy\Support\PlanCatalogDefinition;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Validation\ValidationException;
@@ -20,6 +22,7 @@ class BillingService
         private UsageRepository $usage,
         private CentralSettingsService $centralSettings,
         private RazorpayBillingService $razorpay,
+        private RegionCurrencyResolver $regionCurrency,
     ) {
     }
 
@@ -30,9 +33,15 @@ class BillingService
         $usage = $this->usageStats();
         $features = $this->effectiveFeatures($subscription, $plan);
 
+        $displayCurrency = $subscription->currency ?: $this->regionCurrency->resolve(request());
+        $india = $this->regionCurrency->isIndiaCurrency($displayCurrency);
+
         return [
-            'plan' => $this->displayPlan($subscription, $plan),
-            'currency' => $this->centralSettings->currencyMeta(),
+            'plan' => $this->displayPlan($subscription, $plan, $india),
+            'currency' => CurrencyCatalog::meta($displayCurrency),
+            'base_currency' => $this->centralSettings->currencyMeta(),
+            'currency_locked' => $subscription->isActive() && $subscription->currency !== null,
+            'india_pricing' => $this->centralSettings->indiaPricingEnabled(),
             'status' => $subscription->status,
             'on_trial' => $subscription->isOnTrial(),
             'trial_expired' => $subscription->isTrialExpired(),
@@ -56,15 +65,15 @@ class BillingService
                 ->map(fn (array $item, string $slug) => [
                     'slug' => $slug,
                     'name' => $item['name'],
-                    'price' => $item['price_monthly'] ?? $item['price'],
-                    'price_monthly' => $item['price_monthly'] ?? $item['price'],
-                    'price_yearly' => $item['price_yearly'] ?? PlanCatalogDefinition::defaultYearlyPrice((int) ($item['price_monthly'] ?? $item['price'] ?? 0)),
+                    'price' => PlanCatalogDefinition::priceForInterval($item, 'month', $india),
+                    'price_monthly' => PlanCatalogDefinition::priceForInterval($item, 'month', $india),
+                    'price_yearly' => PlanCatalogDefinition::priceForInterval($item, 'year', $india),
                     'limits' => $this->formattedLimits($item['limits']),
                     'features' => $item['features'],
-                    'billing_ready' => ! empty(PlanCatalogDefinition::razorpayPlanIdForInterval($item, 'month'))
-                        || ! empty(PlanCatalogDefinition::razorpayPlanIdForInterval($item, 'year')),
-                    'billing_ready_monthly' => ! empty(PlanCatalogDefinition::razorpayPlanIdForInterval($item, 'month')),
-                    'billing_ready_yearly' => ! empty(PlanCatalogDefinition::razorpayPlanIdForInterval($item, 'year')),
+                    'billing_ready' => ! empty(PlanCatalogDefinition::razorpayPlanIdForInterval($item, 'month', $india))
+                        || ! empty(PlanCatalogDefinition::razorpayPlanIdForInterval($item, 'year', $india)),
+                    'billing_ready_monthly' => ! empty(PlanCatalogDefinition::razorpayPlanIdForInterval($item, 'month', $india)),
+                    'billing_ready_yearly' => ! empty(PlanCatalogDefinition::razorpayPlanIdForInterval($item, 'year', $india)),
                 ])
                 ->values()
                 ->all(),
@@ -242,6 +251,7 @@ class BillingService
         string $successRedirect,
         string $interval = 'month',
         string $cancelRedirect = '/settings/billing?checkout=cancelled&section=plans',
+        ?string $currency = null,
     ): array|string|Subscription {
         $this->plans->find($slug);
 
@@ -253,6 +263,7 @@ class BillingService
                 $successRedirect,
                 $interval,
                 $cancelRedirect,
+                $currency ?? $this->regionCurrency->resolve(request()),
             );
         }
 
@@ -320,7 +331,7 @@ class BillingService
         return $this->plans->find(config('billing.trial_plan', 'enterprise'));
     }
 
-    private function displayPlan(Subscription $subscription, array $plan): array
+    private function displayPlan(Subscription $subscription, array $plan, bool $india = false): array
     {
         if ($subscription->isOnTrial()) {
             return [
@@ -336,9 +347,9 @@ class BillingService
             return [
                 'slug' => $subscription->plan,
                 'name' => $plan['name'],
-                'price' => PlanCatalogDefinition::priceForInterval($plan, $interval),
-                'price_monthly' => PlanCatalogDefinition::priceForInterval($plan, 'month'),
-                'price_yearly' => PlanCatalogDefinition::priceForInterval($plan, 'year'),
+                'price' => PlanCatalogDefinition::priceForInterval($plan, $interval, $india),
+                'price_monthly' => PlanCatalogDefinition::priceForInterval($plan, 'month', $india),
+                'price_yearly' => PlanCatalogDefinition::priceForInterval($plan, 'year', $india),
                 'billing_interval' => $interval,
             ];
         }

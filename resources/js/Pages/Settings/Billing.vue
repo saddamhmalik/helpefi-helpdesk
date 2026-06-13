@@ -215,6 +215,7 @@ const addonStatusLabel = (addon) => {
 };
 
 const { formatPrice } = useCurrency(() => props.addon?.currency ?? props.billing?.currency);
+const { formatPrice: formatAddonPrice } = useCurrency(() => props.billing?.base_currency ?? props.billing?.currency);
 
 const trialRemainingLabel = computed(() => {
     const days = props.billing.trial_days_remaining;
@@ -459,7 +460,7 @@ const formatLimit = (limit) => (limit === 'unlimited' ? t('settings_billing.unli
                         <div>
                             <p class="font-medium agent-text">{{ addon.name }}</p>
                             <p class="mt-1 text-sm agent-text-muted">{{ addon.description }}</p>
-                            <p class="mt-2 text-sm font-semibold agent-text">{{ formatPrice(addon.price_monthly) }}/mo</p>
+                            <p class="mt-2 text-sm font-semibold agent-text">{{ formatAddonPrice(addon.price_monthly) }}/mo</p>
                         </div>
                         <div class="flex items-center gap-2">
                             <span
@@ -491,10 +492,10 @@ const formatLimit = (limit) => (limit === 'unlimited' ? t('settings_billing.unli
                         </div>
                     </div>
                     <p v-if="addon.active && billing.on_trial" class="mt-3 text-xs text-blue-700 dark:text-blue-300">
-                        {{ $t('settings_billing.addon_trial_included_note', { price: formatPrice(addon.price_monthly) }) }}
+                        {{ $t('settings_billing.addon_trial_included_note', { price: formatAddonPrice(addon.price_monthly) }) }}
                     </p>
                     <p v-else-if="billing.on_trial && !addon.active" class="mt-3 text-xs agent-text-subtle">
-                        {{ $t('settings_billing.addon_trial_try_note', { price: formatPrice(addon.price_monthly) }) }}
+                        {{ $t('settings_billing.addon_trial_try_note', { price: formatAddonPrice(addon.price_monthly) }) }}
                     </p>
                     <p v-else-if="billing.razorpay_enabled && !addon.billing_ready" class="mt-3 text-xs text-amber-700 dark:text-amber-300">{{ $t('settings_billing.addon_billing_not_ready') }}</p>
                 </div>

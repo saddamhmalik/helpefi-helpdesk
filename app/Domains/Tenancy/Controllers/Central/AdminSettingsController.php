@@ -21,40 +21,68 @@ class AdminSettingsController extends Controller
         private TenantPurgeService $tenantPurge,
     ) {}
 
-    public function edit(): Response
+    public function general(): Response
     {
-        return Inertia::render('Central/Admin/Settings', [
-            ...CentralMarketingPresenter::shared(),
-            'settings' => $this->settings->snapshot(),
+        return Inertia::render('Central/Admin/Settings/General', $this->sharedProps());
+    }
+
+    public function billing(): Response
+    {
+        return Inertia::render('Central/Admin/Settings/Billing', [
+            ...$this->sharedProps(),
             'availableCurrencies' => CurrencyCatalog::forSelect(),
+        ]);
+    }
+
+    public function plans(): Response
+    {
+        return Inertia::render('Central/Admin/Settings/Plans', [
+            ...$this->sharedProps(),
             'planCatalog' => PlanCatalogDefinition::forAdminUi(),
+            'defaultSlugs' => PlanCatalogDefinition::slugs(),
+        ]);
+    }
+
+    public function addons(): Response
+    {
+        return Inertia::render('Central/Admin/Settings/Addons', [
+            ...$this->sharedProps(),
             'addonCatalog' => AddonCatalogDefinition::forAdminUi(),
         ]);
     }
 
+    public function branding(): Response
+    {
+        return Inertia::render('Central/Admin/Settings/Branding', $this->sharedProps());
+    }
+
     public function update(Request $request): RedirectResponse
     {
-        $slugs = implode(',', PlanCatalogDefinition::slugs());
         $features = implode(',', PlanCatalogDefinition::featureKeys());
         $addonKeys = implode(',', AddonCatalogDefinition::keys());
 
         $rules = [
-            'trial_days' => ['required', 'integer', 'min:1', 'max:365'],
-            'tenant_purge_grace_days' => ['required', 'integer', 'min:1', 'max:365'],
-            'tenant_purge_enabled' => ['required', 'boolean'],
-            'currency' => ['required', 'string', 'size:3', 'in:'.implode(',', CurrencyCatalog::codes())],
-            'social_links' => ['nullable', 'array'],
+            'trial_days' => ['sometimes', 'integer', 'min:1', 'max:365'],
+            'tenant_purge_grace_days' => ['sometimes', 'integer', 'min:1', 'max:365'],
+            'tenant_purge_enabled' => ['sometimes', 'boolean'],
+            'currency' => ['sometimes', 'string', 'size:3', 'in:'.implode(',', CurrencyCatalog::codes())],
+            'india_pricing' => ['sometimes', 'boolean'],
+            'social_links' => ['sometimes', 'nullable', 'array'],
             'social_links.*' => ['nullable', 'url:http,https', 'max:255'],
-            'plans' => ['required', 'array', 'min:1'],
-            'plans.*.slug' => ['required', 'string', 'in:'.$slugs],
+            'plans' => ['sometimes', 'array', 'min:1', 'max:12'],
+            'plans.*.slug' => ['required', 'string', 'max:40', 'regex:/^[a-z][a-z0-9_]*$/', 'distinct'],
             'plans.*.name' => ['required', 'string', 'max:100'],
             'plans.*.price' => ['required', 'integer', 'min:0', 'max:99999'],
             'plans.*.price_yearly' => ['required', 'integer', 'min:0', 'max:999999'],
+            'plans.*.price_india' => ['nullable', 'integer', 'min:0', 'max:99999'],
+            'plans.*.price_yearly_india' => ['nullable', 'integer', 'min:0', 'max:999999'],
             'plans.*.razorpay_plan_id' => ['nullable', 'string', 'max:255'],
             'plans.*.razorpay_plan_id_yearly' => ['nullable', 'string', 'max:255'],
+            'plans.*.razorpay_plan_id_monthly_india' => ['nullable', 'string', 'max:255'],
+            'plans.*.razorpay_plan_id_yearly_india' => ['nullable', 'string', 'max:255'],
             'plans.*.features' => ['array'],
             'plans.*.features.*' => ['string', 'in:'.$features],
-            'addons' => ['nullable', 'array'],
+            'addons' => ['sometimes', 'nullable', 'array'],
             'addons.*.key' => ['required', 'string', 'in:'.$addonKeys],
             'addons.*.name' => ['required', 'string', 'max:100'],
             'addons.*.description' => ['nullable', 'string', 'max:500'],
@@ -72,7 +100,10 @@ class AdminSettingsController extends Controller
             ];
         }
 
-        $data = $request->validate($rules);
+        $data = $request->validate($rules, [
+            'plans.*.slug.regex' => 'The plan identifier may only contain lowercase letters, numbers, and underscores, and must start with a letter.',
+            'plans.*.slug.distinct' => 'Plan identifiers must be unique.',
+        ]);
 
         $this->settings->update($data);
 
@@ -95,5 +126,13 @@ class AdminSettingsController extends Controller
                 ? "Purged {$count} expired workspace(s) and dropped their databases."
                 : 'No expired workspaces were eligible for purge.',
         );
+    }
+
+    private function sharedProps(): array
+    {
+        return [
+            ...CentralMarketingPresenter::shared(),
+            'settings' => $this->settings->snapshot(),
+        ];
     }
 }

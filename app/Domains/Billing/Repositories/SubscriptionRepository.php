@@ -31,4 +31,9 @@ class SubscriptionRepository
 
         return $subscription->fresh();
     }
+
+    public function countByPlan(string $slug): int
+    {
+        return Subscription::query()->where('plan', $slug)->count();
+    }
 }

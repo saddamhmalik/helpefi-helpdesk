@@ -8,7 +8,7 @@ use App\Domains\Billing\Repositories\RazorpayCatalogRepository;
 use App\Domains\Billing\Repositories\SubscriptionRepository;
 use App\Domains\Tenancy\Support\AddonCatalogDefinition;
 use App\Domains\Tenancy\Support\PlanCatalogDefinition;
-use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\Log;
 use Razorpay\Api\Errors\Error;
 
 class RazorpayPlanSyncService
@@ -22,7 +22,7 @@ class RazorpayPlanSyncService
         return $this->razorpayCatalog->isEnabled();
     }
 
-    public function syncCatalog(array $catalog, string $currency): array
+    public function syncCatalog(array $catalog, string $currency, ?string $indiaCurrency = null): array
     {
         if (! $this->isEnabled()) {
             return $catalog;
@@ -31,19 +31,13 @@ class RazorpayPlanSyncService
         $synced = [];
 
         foreach ($catalog as $slug => $plan) {
-            try {
-                $synced[$slug] = $this->syncPlan($slug, $plan, $currency);
-            } catch (Error $exception) {
-                throw ValidationException::withMessages([
-                    'plans' => "Razorpay sync failed for the {$slug} plan: {$exception->getMessage()}",
-                ]);
-            }
+            $synced[$slug] = $this->syncPlan($slug, $plan, $currency, $indiaCurrency);
         }
 
         return $synced;
     }
 
-    private function syncPlan(string $slug, array $plan, string $currency): array
+    private function syncPlan(string $slug, array $plan, string $currency, ?string $indiaCurrency): array
     {
         $monthlyPlanId = $this->resolvePlanId(
             $slug,
@@ -64,12 +58,35 @@ class RazorpayPlanSyncService
             'razorpay_plan_id_yearly',
         );
 
-        return array_merge($plan, [
+        $plan = array_merge($plan, [
             'razorpay_plan_id' => $monthlyPlanId,
             'razorpay_plan_id_monthly' => $monthlyPlanId,
             'razorpay_plan_id_yearly' => $yearlyPlanId,
             'price' => (int) ($plan['price_monthly'] ?? $plan['price'] ?? 0),
         ]);
+
+        if ($indiaCurrency !== null && strtoupper($indiaCurrency) !== strtoupper($currency)) {
+            $plan = array_merge($plan, [
+                'razorpay_plan_id_monthly_india' => $this->resolvePlanId(
+                    $slug,
+                    $plan,
+                    max(0, (int) ($plan['price_monthly_india'] ?? 0)) * 100,
+                    $indiaCurrency,
+                    'month',
+                    'razorpay_plan_id_monthly_india',
+                ),
+                'razorpay_plan_id_yearly_india' => $this->resolvePlanId(
+                    $slug,
+                    $plan,
+                    max(0, (int) ($plan['price_yearly_india'] ?? 0)) * 100,
+                    $indiaCurrency,
+                    'year',
+                    'razorpay_plan_id_yearly_india',
+                ),
+            ]);
+        }
+
+        return $plan;
     }
 
     private function resolvePlanId(
@@ -87,22 +104,33 @@ class RazorpayPlanSyncService
 
         $existingPlanId = $plan[$primaryKey] ?? ($fallbackKey ? ($plan[$fallbackKey] ?? null) : null);
 
-        if (is_string($existingPlanId) && $existingPlanId !== '') {
-            $existingPlan = $this->razorpayCatalog->retrievePlan($existingPlanId);
+        try {
+            if (is_string($existingPlanId) && $existingPlanId !== '') {
+                $existingPlan = $this->razorpayCatalog->retrievePlan($existingPlanId);
 
-            if ($this->razorpayCatalog->planMatches($existingPlan, $amountMinor, $currency, $interval)) {
-                return $existingPlanId;
+                if ($this->razorpayCatalog->planMatches($existingPlan, $amountMinor, $currency, $interval)) {
+                    return $existingPlanId;
+                }
             }
+
+            $created = $this->razorpayCatalog->createPlan(
+                (string) ($plan['name'] ?? ucfirst($slug)),
+                $amountMinor,
+                $currency,
+                $slug,
+                $interval,
+            );
+
+            return (string) ($created['id'] ?? '') ?: null;
+        } catch (Error $exception) {
+            Log::warning('Razorpay plan sync skipped for unsupported currency or API error', [
+                'slug' => $slug,
+                'currency' => $currency,
+                'interval' => $interval,
+                'message' => $exception->getMessage(),
+            ]);
+
+            return null;
         }
-
-        $created = $this->razorpayCatalog->createPlan(
-            (string) ($plan['name'] ?? ucfirst($slug)),
-            $amountMinor,
-            $currency,
-            $slug,
-            $interval,
-        );
-
-        return (string) ($created['id'] ?? '');
     }
 }

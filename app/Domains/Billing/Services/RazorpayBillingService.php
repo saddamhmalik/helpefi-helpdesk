@@ -41,20 +41,24 @@ class RazorpayBillingService
         string $successRedirect,
         string $interval = 'month',
         string $cancelRedirect = '/settings/billing?checkout=cancelled&section=plans',
+        ?string $currency = null,
     ): array|string|Subscription {
         $this->assertEnabled();
 
         $plan = $this->plans->find($planSlug);
-        $planId = PlanCatalogDefinition::razorpayPlanIdForInterval($plan, $interval);
-
-        if (! $planId) {
-            throw ValidationException::withMessages([
-                'plan' => 'This plan is not configured for Razorpay billing yet.',
-            ]);
-        }
 
         $subscription = $this->subscriptions->current();
         $this->assertCanChangePlan($subscription);
+
+        $currency = $this->resolveCheckoutCurrency($subscription, $currency);
+        $india = $this->isIndiaCurrency($currency);
+        $planId = PlanCatalogDefinition::razorpayPlanIdForInterval($plan, $interval, $india);
+
+        if (! $planId) {
+            throw ValidationException::withMessages([
+                'plan' => 'This plan is not configured for '.$currency.' billing yet.',
+            ]);
+        }
 
         $tenant = Tenant::query()->findOrFail(tenant('id'));
         try {
@@ -81,6 +85,8 @@ class RazorpayBillingService
                 $plan,
                 $customerEmail,
                 $customerName,
+                $currency,
+                $india,
             );
 
             if ($existing !== null) {
@@ -94,6 +100,7 @@ class RazorpayBillingService
                 $planId,
                 $planSlug,
                 $interval,
+                $currency,
             );
         } catch (Error $exception) {
             Log::warning('Razorpay subscription creation failed during checkout', [
@@ -118,7 +125,27 @@ class RazorpayBillingService
             $customerName,
             $successRedirect,
             $cancelRedirect,
+            $currency,
         );
+    }
+
+    private function resolveCheckoutCurrency(Subscription $subscription, ?string $requested): string
+    {
+        if ($subscription->isActive() && $subscription->currency) {
+            return strtoupper($subscription->currency);
+        }
+
+        $requested = $requested ? strtoupper($requested) : $this->centralSettings->currency();
+
+        return $this->isIndiaCurrency($requested)
+            ? $this->centralSettings->indiaCurrency()
+            : $this->centralSettings->currency();
+    }
+
+    private function isIndiaCurrency(string $currency): bool
+    {
+        return $this->centralSettings->indiaPricingEnabled()
+            && strtoupper($currency) === $this->centralSettings->indiaCurrency();
     }
 
     public function verifySubscriptionPayment(
@@ -685,6 +712,8 @@ class RazorpayBillingService
         array $plan,
         string $customerEmail,
         string $customerName,
+        string $currency = '',
+        bool $india = false,
     ): array|string|Subscription|null {
         try {
             $entity = $this->fetchedSubscription($subscription->razorpay_subscription_id)->toArray();
@@ -733,6 +762,8 @@ class RazorpayBillingService
                     $planId,
                     $interval,
                     $entity,
+                    $currency,
+                    $india,
                 );
             }
         }
@@ -802,11 +833,13 @@ class RazorpayBillingService
         string $planSlug,
         string $planId,
         string $interval,
+        string $currency = '',
     ): void {
-        $this->subscriptions->update($subscription, [
+        $this->subscriptions->update($subscription, array_filter([
             'razorpay_subscription_id' => (string) ($razorpaySubscription['id'] ?? ''),
             'razorpay_plan_id' => $planId,
-        ]);
+            'currency' => $currency !== '' ? strtoupper($currency) : null,
+        ], static fn ($value) => $value !== null));
     }
 
     private function matchesSelectedPlan(Subscription $subscription, string $planSlug, string $interval): bool
@@ -821,13 +854,15 @@ class RazorpayBillingService
         string $planId,
         string $interval,
         array $currentEntity,
+        string $currency = '',
+        bool $india = false,
     ): Subscription {
         $subscriptionId = (string) $subscription->razorpay_subscription_id;
         $currentPlan = $this->plans->find($subscription->plan ?? $planSlug);
         $nextPlan = $this->plans->find($planSlug);
         $currentInterval = $subscription->billing_interval ?? 'month';
-        $currentPrice = PlanCatalogDefinition::priceForInterval($currentPlan, $currentInterval);
-        $nextPrice = PlanCatalogDefinition::priceForInterval($nextPlan, $interval);
+        $currentPrice = PlanCatalogDefinition::priceForInterval($currentPlan, $currentInterval, $india);
+        $nextPrice = PlanCatalogDefinition::priceForInterval($nextPlan, $interval, $india);
         $scheduleChangeAt = $nextPrice >= $currentPrice ? 'now' : 'cycle_end';
 
         $payload = [
@@ -878,11 +913,12 @@ class RazorpayBillingService
 
         $updatedEntity = $this->fetchedSubscription($subscriptionId)->toArray();
 
-        $this->subscriptions->update($subscription, [
+        $this->subscriptions->update($subscription, array_filter([
             'plan' => $planSlug,
             'billing_interval' => $interval,
             'razorpay_plan_id' => $planId,
-        ]);
+            'currency' => $currency !== '' ? strtoupper($currency) : null,
+        ], static fn ($value) => $value !== null));
 
         return $this->lifecycle->applyRazorpaySubscription(
             $subscription->fresh(),
@@ -1065,6 +1101,7 @@ class RazorpayBillingService
         string $planId,
         string $planSlug,
         string $interval,
+        string $currency = '',
     ): array {
         return $this->client()->subscription->create([
             'plan_id' => $planId,
@@ -1076,6 +1113,7 @@ class RazorpayBillingService
                 'tenant_id' => $tenant->id,
                 'plan' => $planSlug,
                 'billing_interval' => $interval,
+                'currency' => $currency,
             ],
         ])->toArray();
     }
@@ -1092,6 +1130,7 @@ class RazorpayBillingService
         string $customerName,
         string $successRedirect,
         string $cancelRedirect,
+        string $currency = '',
     ): array {
         $previousSubscriptionId = $subscription->isActive() && $subscription->razorpay_subscription_id
             ? (string) $subscription->razorpay_subscription_id
@@ -1105,10 +1144,11 @@ class RazorpayBillingService
                     'plan' => $planSlug,
                     'plan_id' => $planId,
                     'interval' => $interval,
+                    'currency' => $currency,
                 ],
             ]);
         } else {
-            $this->persistPendingCheckoutSubscription($subscription, $razorpaySubscription, $planSlug, $planId, $interval);
+            $this->persistPendingCheckoutSubscription($subscription, $razorpaySubscription, $planSlug, $planId, $interval, $currency);
         }
 
         return $this->buildPlanCheckoutSession(
@@ -1164,12 +1204,13 @@ class RazorpayBillingService
 
         session()->forget('razorpay_plan_checkout');
 
-        $this->subscriptions->update($subscription, [
+        $this->subscriptions->update($subscription, array_filter([
             'plan' => (string) ($pendingPlanCheckout['plan'] ?? $subscription->plan),
             'billing_interval' => (string) ($pendingPlanCheckout['interval'] ?? $subscription->billing_interval ?? 'month'),
             'razorpay_subscription_id' => $subscriptionId,
             'razorpay_plan_id' => (string) ($pendingPlanCheckout['plan_id'] ?? $entity['plan_id'] ?? ''),
-        ]);
+            'currency' => ($pendingPlanCheckout['currency'] ?? '') !== '' ? strtoupper((string) $pendingPlanCheckout['currency']) : null,
+        ], static fn ($value) => $value !== null && $value !== ''));
 
         return $this->lifecycle->applyRazorpaySubscription(
             $subscription->fresh(),

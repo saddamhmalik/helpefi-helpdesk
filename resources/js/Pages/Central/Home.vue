@@ -16,6 +16,9 @@ const props = defineProps({
     trialDays: { type: Number, default: 14 },
     plans: { type: Array, default: () => [] },
     currency: { type: Object, default: () => ({ code: 'USD', symbol: '$', name: 'US Dollar' }) },
+    baseCurrency: { type: Object, default: () => ({ code: 'USD', symbol: '$', name: 'US Dollar' }) },
+    indiaCurrency: { type: Object, default: () => ({ code: 'INR', symbol: '₹', name: 'Indian Rupee' }) },
+    indiaEnabled: { type: Boolean, default: false },
     seo: { type: Object, default: () => ({}) },
     centralDomain: { type: String, default: '' },
     aiDemoEnabled: { type: Boolean, default: true },
@@ -30,7 +33,24 @@ const workspaceDomainExample = computed(() => {
     return `your-company.${domain}`;
 });
 
-const { formatPrice } = useCurrency(() => props.currency);
+const selectedCurrencyCode = ref(props.currency?.code ?? props.baseCurrency.code);
+
+const activeCurrency = computed(() => (
+    selectedCurrencyCode.value === props.indiaCurrency.code
+        ? props.indiaCurrency
+        : props.baseCurrency
+));
+
+const isIndia = computed(() => (
+    props.indiaEnabled && selectedCurrencyCode.value === props.indiaCurrency.code
+));
+
+const setCurrency = (code) => {
+    selectedCurrencyCode.value = code;
+    document.cookie = `pricing_currency=${code};path=/;max-age=${60 * 60 * 24 * 365};samesite=lax`;
+};
+
+const { formatPrice } = useCurrency(() => activeCurrency.value);
 
 const { billingInterval, intervalSuffix, planPrice, yearlySavingsPercent } = useBillingInterval();
 
@@ -1467,27 +1487,50 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
                     <p class="mx-auto mt-4 max-w-2xl text-lg text-slate-400 dark:text-slate-500">
                         Start with a {{ trialDays }}-day free trial on any plan. Most teams save thousands by replacing multiple tools with one helpdesk.
                     </p>
-                    <div class="mt-8 inline-flex rounded-xl border border-white/10 bg-white/5 p-1 backdrop-blur">
-                        <button
-                            type="button"
-                            class="rounded-lg px-5 py-2.5 text-sm font-semibold transition"
-                            :class="billingInterval === 'month' ? 'bg-white text-slate-900 shadow-lg' : 'text-slate-300 hover:text-white'"
-                            @click="billingInterval = 'month'"
-                        >{{ $t('central.monthly') }}</button>
-                        <button
-                            type="button"
-                            class="rounded-lg px-5 py-2.5 text-sm font-semibold transition"
-                            :class="billingInterval === 'year' ? 'bg-white text-slate-900 shadow-lg' : 'text-slate-300 hover:text-white'"
-                            @click="billingInterval = 'year'"
-                        >{{ $t('central.yearly') }}</button>
+                    <div class="mt-8 flex justify-center">
+                        <div class="inline-flex rounded-xl border border-white/10 bg-white/5 p-1 backdrop-blur">
+                            <button
+                                type="button"
+                                class="rounded-lg px-5 py-2.5 text-sm font-semibold transition"
+                                :class="billingInterval === 'month' ? 'bg-white text-slate-900 shadow-lg' : 'text-slate-300 hover:text-white'"
+                                @click="billingInterval = 'month'"
+                            >{{ $t('central.monthly') }}</button>
+                            <button
+                                type="button"
+                                class="rounded-lg px-5 py-2.5 text-sm font-semibold transition"
+                                :class="billingInterval === 'year' ? 'bg-white text-slate-900 shadow-lg' : 'text-slate-300 hover:text-white'"
+                                @click="billingInterval = 'year'"
+                            >{{ $t('central.yearly') }}</button>
+                        </div>
                     </div>
                     <p v-if="billingInterval === 'year'" class="mt-3 text-sm font-semibold text-emerald-400">{{ $t('central.save_up_to_2_months_with_annual_billing') }}</p>
+                    <div v-if="indiaEnabled" class="mt-4 flex items-center justify-center gap-2 text-sm text-slate-400 dark:text-slate-500">
+                        <svg class="h-4 w-4 text-slate-500" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24">
+                            <circle cx="12" cy="12" r="9" />
+                            <path stroke-linecap="round" d="M3 12h18M12 3c2.5 2.7 2.5 15.3 0 18M12 3c-2.5 2.7-2.5 15.3 0 18" />
+                        </svg>
+                        <span>{{ $t('central.show_prices_in') }}</span>
+                        <div class="inline-flex overflow-hidden rounded-lg border border-white/10">
+                            <button
+                                type="button"
+                                class="px-3 py-1 text-xs font-semibold transition"
+                                :class="selectedCurrencyCode === baseCurrency.code ? 'bg-white text-slate-900' : 'text-slate-300 hover:text-white'"
+                                @click="setCurrency(baseCurrency.code)"
+                            >{{ baseCurrency.symbol }} {{ baseCurrency.code }}</button>
+                            <button
+                                type="button"
+                                class="px-3 py-1 text-xs font-semibold transition"
+                                :class="selectedCurrencyCode === indiaCurrency.code ? 'bg-white text-slate-900' : 'text-slate-300 hover:text-white'"
+                                @click="setCurrency(indiaCurrency.code)"
+                            >{{ indiaCurrency.symbol }} {{ indiaCurrency.code }}</button>
+                        </div>
+                    </div>
                 </div>
-                <div class="mt-14 grid gap-8 lg:grid-cols-3">
+                <div class="mt-14 flex flex-wrap justify-center gap-8">
                     <article
                         v-for="plan in plans"
                         :key="plan.slug"
-                        class="relative flex flex-col rounded-3xl border p-6 sm:p-8 transition"
+                        class="relative flex w-full flex-col rounded-3xl border p-6 sm:w-80 sm:p-8 transition"
                         :class="plan.slug === 'professional'
                             ? 'border-blue-500/50 bg-gradient-to-b from-blue-600/20 to-slate-900/80 shadow-2xl shadow-blue-600/20 ring-2 ring-blue-500/40 lg:scale-105'
                             : 'border-white/10 bg-white/5 backdrop-blur hover:border-white/20'"
@@ -1496,11 +1539,11 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
                         <h3 class="text-xl font-bold text-white">{{ plan.name }}</h3>
                         <p v-if="planTaglines[plan.slug]" class="mt-1 text-sm text-slate-400 dark:text-slate-500">{{ planTaglines[plan.slug] }}</p>
                         <p class="mt-5 flex items-baseline gap-1">
-                            <span class="text-4xl font-extrabold tracking-tight text-white sm:text-5xl">{{ formatPrice(planPrice(plan)) }}</span>
+                            <span class="text-4xl font-extrabold tracking-tight text-white sm:text-5xl">{{ formatPrice(planPrice(plan, isIndia)) }}</span>
                             <span class="text-slate-400 dark:text-slate-500">{{ intervalSuffix }}</span>
                         </p>
-                        <p v-if="billingInterval === 'year' && yearlySavingsPercent(plan) > 0" class="mt-2 text-sm font-semibold text-emerald-400">
-                            Save {{ yearlySavingsPercent(plan) }}% vs monthly
+                        <p v-if="billingInterval === 'year' && yearlySavingsPercent(plan, isIndia) > 0" class="mt-2 text-sm font-semibold text-emerald-400">
+                            Save {{ yearlySavingsPercent(plan, isIndia) }}% vs monthly
                         </p>
                         <ul class="mt-8 flex-1 space-y-3">
                             <li v-for="item in planHighlights(plan)" :key="item" class="flex items-start gap-2.5 text-sm text-slate-300">

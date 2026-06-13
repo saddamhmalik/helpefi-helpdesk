@@ -101,7 +101,11 @@ Route::prefix('admin')->name('central.admin.')->group(function () {
         });
 
         Route::middleware('platform.permission:settings.view')->group(function () {
-            Route::get('/settings', [AdminSettingsController::class, 'edit'])->name('settings');
+            Route::get('/settings', [AdminSettingsController::class, 'general'])->name('settings');
+            Route::get('/settings/billing', [AdminSettingsController::class, 'billing'])->name('settings.billing');
+            Route::get('/settings/plans', [AdminSettingsController::class, 'plans'])->name('settings.plans');
+            Route::get('/settings/addons', [AdminSettingsController::class, 'addons'])->name('settings.addons');
+            Route::get('/settings/branding', [AdminSettingsController::class, 'branding'])->name('settings.branding');
         });
 
         Route::middleware('platform.permission:settings.manage')->group(function () {
