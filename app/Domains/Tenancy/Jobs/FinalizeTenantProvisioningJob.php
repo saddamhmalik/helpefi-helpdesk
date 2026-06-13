@@ -7,7 +7,9 @@ use App\Domains\Tenancy\Services\TenantProvisioningService;
 use App\Domains\Tenancy\Services\TenantRouteRegistryService;
 use App\Models\Tenant;
 use App\Models\User;
+use Database\Seeders\ProductKnowledgeSeeder;
 use Database\Seeders\TenantBootstrapSeeder;
+use Database\Seeders\WorkforceSeeder;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -50,6 +52,16 @@ class FinalizeTenantProvisioningJob implements ShouldQueue
             ],
         );
         $admin->assignRole('admin');
+
+        Artisan::call('db:seed', [
+            '--class' => WorkforceSeeder::class,
+            '--force' => true,
+        ]);
+
+        Artisan::call('db:seed', [
+            '--class' => ProductKnowledgeSeeder::class,
+            '--force' => true,
+        ]);
 
         $tenantRoutes->syncCurrentTenant();
 

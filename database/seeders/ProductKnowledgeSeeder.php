@@ -13,7 +13,7 @@ class ProductKnowledgeSeeder extends Seeder
 {
     public function run(): void
     {
-        $authorId = User::query()->where('email', 'admin@helpdesk.test')->value('id');
+        $authorId = User::query()->role('admin')->orderBy('id')->value('id');
 
         $categories = [
             ['name' => 'Product documentation', 'slug' => 'product-documentation'],
