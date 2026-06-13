@@ -335,9 +335,9 @@ const hasFilters = computed(() => Boolean(props.filters.q) || (props.filters.sta
                                 </td>
                                 <td class="px-5 py-4">
                                     <p class="font-medium text-slate-900 dark:text-slate-100">{{ planLabel(tenant) }}</p>
-                                    <p v-if="(tenant.subscription?.custom_amount || tenant.subscription?.plan_price) && !tenant.subscription?.on_trial" class="text-xs text-slate-500 dark:text-slate-400">
+                                    <p v-if="(tenant.subscription?.custom_amount != null || tenant.subscription?.plan_price != null) && !tenant.subscription?.on_trial" class="text-xs text-slate-500 dark:text-slate-400">
                                         {{ currency.symbol }}{{ tenant.subscription.custom_amount ?? tenant.subscription.plan_price }}/{{ tenant.subscription?.billing_interval === 'year' ? $t('central.year_short') : $t('central.month_short') }}
-                                        <span v-if="tenant.subscription?.custom_amount" class="ml-1 font-medium text-blue-600 dark:text-blue-400">({{ $t('central.custom_pricing_price') }})</span>
+                                        <span v-if="tenant.subscription?.custom_amount != null" class="ml-1 font-medium text-blue-600 dark:text-blue-400">({{ $t('central.custom_pricing_price') }})</span>
                                     </p>
                                     <p v-if="razorpay_enabled && tenant.subscription?.has_razorpay" class="mt-1 text-[10px] font-semibold uppercase tracking-wide text-violet-600">
                                         {{ $t('central.stripe_billing') }}

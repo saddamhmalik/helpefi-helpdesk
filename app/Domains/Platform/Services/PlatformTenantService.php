@@ -8,6 +8,7 @@ use App\Domains\Platform\Repositories\PlatformTenantRepository;
 use App\Domains\Platform\Support\PlatformAuditRecorder;
 use App\Domains\Tenancy\Services\CentralSettingsService;
 use App\Domains\Tenancy\Services\TenantDomainService;
+use App\Domains\Tenancy\Support\PlanCatalogDefinition;
 use App\Models\Tenant;
 use Carbon\CarbonInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -69,7 +70,11 @@ class PlatformTenantService
             $interval = ($data['billing_interval'] ?? null) === 'year' ? 'year' : 'month';
             $planChanged = $beforePlan !== $data['plan'] || $beforeInterval !== $interval;
             $renewsAt = $this->resolveRenewalDate($data['renews_at'] ?? null, $interval, $planChanged, $beforeRenewsAt);
-            $customAmount = $this->resolveCustomAmount($data['custom_price'] ?? null);
+
+            $customPriceProvided = array_key_exists('custom_price', $data);
+            $customAmount = $customPriceProvided
+                ? $this->resolveCustomAmount($data['custom_price'])
+                : $beforeCustomAmount;
 
             $subscriptionPayload = [
                 'plan' => $data['plan'],
@@ -79,16 +84,19 @@ class PlatformTenantService
                 'cancelled_at' => null,
                 'access_ends_at' => null,
                 'renews_at' => $renewsAt,
-                'custom_amount' => $customAmount,
-                'currency' => $customAmount !== null ? $this->centralSettings->currency() : null,
             ];
+
+            if ($customPriceProvided) {
+                $subscriptionPayload['custom_amount'] = $customAmount;
+                $subscriptionPayload['currency'] = $customAmount !== null ? $this->centralSettings->currency() : null;
+            }
 
             $this->tenants->updateSubscription($tenant, $subscriptionPayload);
             $tenant = $this->tenants->find($tenantId);
 
             $renewalChanged = $beforeRenewsAt === null || ! $beforeRenewsAt->equalTo($renewsAt);
             $noteProvided = isset($data['note']) && $data['note'] !== '';
-            $customAmountChanged = $customAmount !== $beforeCustomAmount;
+            $customAmountChanged = $customPriceProvided && $customAmount !== $beforeCustomAmount;
 
             if ($planChanged || $renewalChanged || $noteProvided || $customAmountChanged) {
                 $this->audit->record(
@@ -99,7 +107,7 @@ class PlatformTenantService
                         'to' => $data['plan'],
                         'interval' => $interval,
                         'renews_at' => $renewsAt->toIso8601String(),
-                        'custom_amount' => $customAmount,
+                        'custom_amount' => $customPriceProvided ? $customAmount : null,
                         'note' => $data['note'] ?? null,
                     ], static fn ($value) => $value !== null),
                     tenantId: $tenant->id,
@@ -139,7 +147,7 @@ class PlatformTenantService
             return null;
         }
 
-        return max(0, (int) $value) ?: null;
+        return max(0, (int) $value);
     }
 
     private function resolveRenewalDate(?string $renewsAt, string $interval, bool $planChanged, ?CarbonInterface $existing): CarbonInterface
@@ -165,6 +173,7 @@ class PlatformTenantService
         $admin = $this->admins->resolve($tenant);
         $planSlug = $subscription?->plan;
         $plan = $planSlug ? ($this->plans->all()[$planSlug] ?? null) : null;
+        $interval = $subscription?->billing_interval ?? 'month';
 
         return [
             'id' => $tenant->id,
@@ -183,7 +192,7 @@ class PlatformTenantService
             'subscription' => $subscription ? [
                 'plan' => $planSlug,
                 'plan_name' => $plan['name'] ?? ($planSlug ? ucfirst($planSlug) : null),
-                'plan_price' => $plan['price'] ?? null,
+                'plan_price' => $plan ? PlanCatalogDefinition::priceForInterval($plan, $interval) : null,
                 'custom_amount' => $subscription->custom_amount,
                 'billing_interval' => $subscription->billing_interval ?? 'month',
                 'status' => $subscription->status,

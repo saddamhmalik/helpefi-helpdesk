@@ -49,7 +49,13 @@ class RazorpayPlanSyncService
     private function syncPlan(string $slug, array $plan, string $currency, ?string $indiaCurrency): array
     {
         if (! empty($plan['custom_pricing'])) {
-            return $plan;
+            return array_merge($plan, [
+                'razorpay_plan_id' => null,
+                'razorpay_plan_id_monthly' => null,
+                'razorpay_plan_id_yearly' => null,
+                'razorpay_plan_id_monthly_india' => null,
+                'razorpay_plan_id_yearly_india' => null,
+            ]);
         }
 
         $monthlyPlanId = $this->resolvePlanId(
