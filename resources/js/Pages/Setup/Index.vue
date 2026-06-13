@@ -20,6 +20,8 @@ const { t } = useI18n();
 const loadingSample = ref(false);
 const loadingSkip = ref(false);
 const confirmingRemove = ref(false);
+const confirmingBootstrapRemove = ref(false);
+const removingBootstrap = ref(false);
 
 const showWelcome = ref(props.welcome);
 const { copied: snippetCopied, copy: copySnippet } = useClipboard();
@@ -64,6 +66,23 @@ const removeSampleData = () => {
         preserveScroll: true,
         onFinish: () => {
             confirmingRemove.value = false;
+        },
+    });
+};
+
+const removeBootstrapDemo = () => {
+    if (!confirmingBootstrapRemove.value) {
+        confirmingBootstrapRemove.value = true;
+        return;
+    }
+
+    removingBootstrap.value = true;
+
+    router.delete('/setup/bootstrap-demo', {
+        preserveScroll: true,
+        onFinish: () => {
+            confirmingBootstrapRemove.value = false;
+            removingBootstrap.value = false;
         },
     });
 };
@@ -215,8 +234,71 @@ const copy = async (text) => {
                             :class="confirmingRemove ? 'bg-red-600 hover:bg-red-700' : 'bg-amber-900 hover:bg-amber-950'"
                             @click="removeSampleData"
                         >
-                            {{ confirmingRemove ? 'Yes, remove sample data' : 'Remove sample data' }}
+                            {{ confirmingRemove ? $t('setup_index.yes_remove_sample_data') : $t('setup_index.remove_sample_data') }}
                         </button>
+                    </div>
+                </div>
+            </section>
+
+            <section
+                v-else-if="!guidePaused && !dummyData.needs_choice && (dummyData.can_load_sample || dummyData.has_bootstrap_demo)"
+                class="mb-8 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900"
+            >
+                <div class="border-b border-slate-100 bg-slate-50 px-5 py-4 dark:border-slate-800 dark:bg-slate-950/80">
+                    <p class="text-sm font-semibold text-slate-900 dark:text-slate-100">{{ $t('setup_index.sample_demo_content_title') }}</p>
+                    <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">
+                        {{ $t('setup_index.sample_demo_content_description') }}
+                    </p>
+                </div>
+                <div class="space-y-4 p-5">
+                    <div
+                        v-if="dummyData.can_load_sample"
+                        class="flex flex-col gap-3 rounded-xl border border-blue-200 bg-blue-50/50 p-4 dark:border-blue-900/60 dark:bg-blue-950/20 sm:flex-row sm:items-center sm:justify-between"
+                    >
+                        <div>
+                            <p class="text-sm font-semibold text-slate-900 dark:text-slate-100">{{ $t('setup_index.explore_with_sample_data') }}</p>
+                            <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">
+                                {{ $t('setup_index.adds_demo_tickets_conversations_customers_tags_teams_and_departments_y') }}
+                            </p>
+                        </div>
+                        <button
+                            type="button"
+                            class="inline-flex h-10 shrink-0 items-center justify-center rounded-lg bg-blue-600 px-4 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:opacity-60"
+                            :disabled="loadingSample"
+                            @click="loadSampleData"
+                        >
+                            {{ loadingSample ? $t('setup_index.loading_sample_data') : $t('setup_index.load_sample_data') }}
+                        </button>
+                    </div>
+                    <div
+                        v-if="dummyData.has_bootstrap_demo"
+                        class="flex flex-col gap-3 rounded-xl border border-amber-200 bg-amber-50/50 p-4 dark:border-amber-900/60 dark:bg-amber-950/20 sm:flex-row sm:items-center sm:justify-between"
+                    >
+                        <div>
+                            <p class="text-sm font-semibold text-slate-900 dark:text-slate-100">{{ $t('setup_index.default_demo_content_title') }}</p>
+                            <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">
+                                {{ $t('setup_index.default_demo_content_description') }}
+                            </p>
+                        </div>
+                        <div class="flex shrink-0 items-center gap-2">
+                            <button
+                                v-if="confirmingBootstrapRemove"
+                                type="button"
+                                class="rounded-lg px-3 py-1.5 text-sm font-medium text-amber-900 hover:bg-amber-100 dark:text-amber-200 dark:hover:bg-amber-900/40"
+                                @click="confirmingBootstrapRemove = false"
+                            >
+                                {{ $t('setup_index.cancel') }}
+                            </button>
+                            <button
+                                type="button"
+                                class="inline-flex h-10 items-center justify-center rounded-lg px-4 text-sm font-semibold text-white transition disabled:opacity-60"
+                                :class="confirmingBootstrapRemove ? 'bg-red-600 hover:bg-red-700' : 'bg-amber-900 hover:bg-amber-950'"
+                                :disabled="removingBootstrap"
+                                @click="removeBootstrapDemo"
+                            >
+                                {{ removingBootstrap ? $t('setup_index.removing') : (confirmingBootstrapRemove ? $t('setup_index.yes_remove_demo_content') : $t('setup_index.remove_demo_content')) }}
+                            </button>
+                        </div>
                     </div>
                 </div>
             </section>

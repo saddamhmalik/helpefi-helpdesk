@@ -184,6 +184,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/setup/dummy-data', [\App\Domains\Tenancy\Controllers\TenantDummyDataController::class, 'store'])->name('setup.dummy-data.store');
         Route::post('/setup/dummy-data/skip', [\App\Domains\Tenancy\Controllers\TenantDummyDataController::class, 'skip'])->name('setup.dummy-data.skip');
         Route::delete('/setup/dummy-data', [\App\Domains\Tenancy\Controllers\TenantDummyDataController::class, 'destroy'])->name('setup.dummy-data.destroy');
+        Route::delete('/setup/bootstrap-demo', [\App\Domains\Tenancy\Controllers\TenantDummyDataController::class, 'destroyBootstrap'])->name('setup.bootstrap-demo.destroy');
     });
 
     Route::middleware('agent')->group(function () {

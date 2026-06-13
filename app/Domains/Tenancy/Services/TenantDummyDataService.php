@@ -3,6 +3,7 @@
 namespace App\Domains\Tenancy\Services;
 
 use App\Domains\Assets\Models\Asset;
+use App\Domains\Channels\Models\EmailInbox;
 use App\Domains\Channels\Repositories\ChannelRepository;
 use App\Domains\Contacts\Models\Contact;
 use App\Domains\Contacts\Models\Organization;
@@ -21,6 +22,7 @@ use App\Domains\Tickets\Models\TicketStatus;
 use App\Domains\Tickets\Repositories\TicketRepository;
 use App\Domains\Workforce\Models\Department;
 use App\Domains\Workforce\Models\Team;
+use App\Domains\Tenancy\Support\BootstrapDemoContent;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -48,6 +50,35 @@ class TenantDummyDataService
 
     private const SAMPLE_CONTACT_EMAILS = ['customer@example.com'];
 
+    private const BOOTSTRAP_SERVICE_CATEGORY_SLUGS = ['it-support', 'hr-services'];
+
+    private const BOOTSTRAP_KNOWLEDGE_CATEGORY_SLUGS = [
+        'product-documentation',
+        'agent-training',
+        'customer-help',
+    ];
+
+    private const BOOTSTRAP_KNOWLEDGE_COLLECTION_SLUGS = [
+        'product-guide',
+        'agent-handbook',
+        'customer-self-service',
+    ];
+
+    private const BOOTSTRAP_KNOWLEDGE_ARTICLE_SLUGS = [
+        'helpdesk-platform-overview',
+        'getting-started-for-agents',
+        'tickets-workspace-and-sla',
+        'contacts-and-knowledge-base',
+        'email-channels-and-automation',
+        'ai-service-catalog-and-assets',
+        'reports-notifications-and-csat',
+        'administration-guide',
+        'rest-api-overview',
+        'how-to-submit-a-support-request',
+        'how-to-track-your-ticket',
+        'customer-portal-account',
+    ];
+
     public function __construct(
         private HelpdeskSettingRepository $settings,
         private TicketRepository $tickets,
@@ -63,6 +94,8 @@ class TenantDummyDataService
         return [
             'active' => (bool) $setting->dummy_data_active,
             'needs_choice' => $setting->dummy_data_choice_at === null,
+            'can_load_sample' => ! $setting->dummy_data_active,
+            'has_bootstrap_demo' => $this->hasBootstrapDemo(),
             'summary' => $this->summary($setting->dummy_data_manifest ?? []),
         ];
     }
@@ -100,12 +133,6 @@ class TenantDummyDataService
             ]);
         }
 
-        if ($setting->dummy_data_choice_at !== null && ! $setting->dummy_data_active) {
-            throw ValidationException::withMessages([
-                'dummy_data' => 'You already chose to start with an empty workspace.',
-            ]);
-        }
-
         $manifest = DB::transaction(fn () => $this->seed($admin));
 
         $this->settings->update($setting, [
@@ -131,6 +158,94 @@ class TenantDummyDataService
             'dummy_data_active' => false,
             'dummy_data_manifest' => null,
         ]);
+    }
+
+    public function hasBootstrapDemo(): bool
+    {
+        if (Organization::query()->whereIn('name', self::SAMPLE_ORGANIZATION_NAMES)->exists()) {
+            return true;
+        }
+
+        if (Asset::query()->whereIn('asset_tag', self::SAMPLE_ASSET_TAGS)->exists()) {
+            return true;
+        }
+
+        if (ServiceCategory::query()->whereIn('slug', self::BOOTSTRAP_SERVICE_CATEGORY_SLUGS)->exists()) {
+            return true;
+        }
+
+        if (EmailInbox::query()->whereIn('address', self::bootstrapInboxAddresses())->exists()) {
+            return true;
+        }
+
+        if (KnowledgeCollection::query()->whereIn('slug', self::BOOTSTRAP_KNOWLEDGE_COLLECTION_SLUGS)->exists()) {
+            return true;
+        }
+
+        if (KnowledgeCategory::query()->whereIn('slug', self::BOOTSTRAP_KNOWLEDGE_CATEGORY_SLUGS)->exists()) {
+            return true;
+        }
+
+        return KnowledgeArticle::query()
+            ->whereIn('slug', self::BOOTSTRAP_KNOWLEDGE_ARTICLE_SLUGS)
+            ->exists();
+    }
+
+    public function removeBootstrapDemo(): void
+    {
+        if (! $this->hasBootstrapDemo()) {
+            throw ValidationException::withMessages([
+                'bootstrap_demo' => 'There is no default demo content to remove.',
+            ]);
+        }
+
+        DB::transaction(function () {
+            $this->purgeBootstrapDemoContent();
+        });
+    }
+
+    private function purgeBootstrapDemoContent(): void
+    {
+        $this->purgeServiceCatalog([
+            'service_category_ids' => ServiceCategory::query()
+                ->whereIn('slug', self::BOOTSTRAP_SERVICE_CATEGORY_SLUGS)
+                ->pluck('id')
+                ->all(),
+        ]);
+
+        $this->purgeAssets([
+            'asset_ids' => Asset::query()
+                ->whereIn('asset_tag', self::SAMPLE_ASSET_TAGS)
+                ->pluck('id')
+                ->all(),
+        ]);
+
+        $this->purgeBootstrapContacts([
+            'bootstrap_contact_ids' => Contact::query()
+                ->whereIn('email', self::SAMPLE_CONTACT_EMAILS)
+                ->pluck('id')
+                ->all(),
+            'bootstrap_organization_ids' => Organization::query()
+                ->whereIn('name', self::SAMPLE_ORGANIZATION_NAMES)
+                ->pluck('id')
+                ->all(),
+        ]);
+
+        EmailInbox::query()
+            ->whereIn('address', self::bootstrapInboxAddresses())
+            ->delete();
+
+        KnowledgeArticle::query()
+            ->whereIn('slug', self::BOOTSTRAP_KNOWLEDGE_ARTICLE_SLUGS)
+            ->delete();
+
+        KnowledgeCollection::query()
+            ->whereIn('slug', self::BOOTSTRAP_KNOWLEDGE_COLLECTION_SLUGS)
+            ->delete();
+
+        KnowledgeCategory::query()
+            ->whereIn('slug', self::BOOTSTRAP_KNOWLEDGE_CATEGORY_SLUGS)
+            ->delete();
     }
 
     private function seed(User $admin): array
@@ -506,5 +621,10 @@ class TenantDummyDataService
             'departments' => count($manifest['department_ids'] ?? []),
             'tags' => count($manifest['tag_ids'] ?? []),
         ];
+    }
+
+    private function bootstrapInboxAddresses(): array
+    {
+        return [BootstrapDemoContent::DEMO_INBOX_ADDRESS];
     }
 }
