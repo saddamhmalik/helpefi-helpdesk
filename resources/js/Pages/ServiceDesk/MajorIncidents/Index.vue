@@ -46,11 +46,11 @@ const formatDate = (value) => {
         <div class="mb-6 grid gap-4 sm:grid-cols-2">
             <div class="rounded-xl border border-red-200 dark:border-red-900/60 bg-red-50 dark:bg-red-950/40 p-4 shadow-sm">
                 <p class="text-xs font-semibold uppercase tracking-wide text-red-700 dark:text-red-300">{{ $t('service_desk.active_war_rooms') }}</p>
-                <p class="mt-2 text-3xl font-semibold text-red-900">{{ active_count }}</p>
+                <p class="mt-2 text-3xl font-semibold text-red-900 dark:text-red-200">{{ active_count }}</p>
             </div>
             <div class="rounded-xl border border-amber-200 dark:border-amber-900/60 bg-amber-50 dark:bg-amber-950/40 p-4 shadow-sm">
                 <p class="text-xs font-semibold uppercase tracking-wide text-amber-700 dark:text-amber-300">{{ $t('service_desk.pending_review') }}</p>
-                <p class="mt-2 text-3xl font-semibold text-amber-900">{{ pending_review_count }}</p>
+                <p class="mt-2 text-3xl font-semibold text-amber-900 dark:text-amber-200">{{ pending_review_count }}</p>
             </div>
         </div>
 

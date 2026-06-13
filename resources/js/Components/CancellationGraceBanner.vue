@@ -46,12 +46,12 @@ const message = computed(() => {
 <template>
     <div
         v-if="show"
-        class="mb-2 flex items-center gap-3 rounded-lg border border-amber-300 bg-amber-50 dark:bg-amber-950/40 px-3 py-2 text-sm"
+        class="mb-2 flex items-center gap-3 rounded-lg border border-amber-300 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/40 px-3 py-2 text-sm"
         role="status"
         :title="message"
     >
-        <span class="shrink-0 font-semibold text-amber-950">{{ headline }}</span>
-        <span class="hidden min-w-0 flex-1 truncate text-amber-900 sm:inline">{{ message }}</span>
+        <span class="shrink-0 font-semibold text-amber-950 dark:text-amber-100">{{ headline }}</span>
+        <span class="hidden min-w-0 flex-1 truncate text-amber-900 dark:text-amber-200 sm:inline">{{ message }}</span>
         <Link
             v-if="page.props.auth?.user?.is_admin"
             href="/settings/billing"

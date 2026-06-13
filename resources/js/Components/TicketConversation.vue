@@ -54,7 +54,7 @@ const rowClass = (message) => {
 
 const bubbleClass = (message) => {
     if (message.is_internal) {
-        return 'rounded-2xl border border-amber-200 dark:border-amber-900/60/90 bg-amber-50 dark:bg-amber-950/40 text-amber-950 shadow-sm ring-1 ring-amber-100/80';
+        return 'rounded-2xl border border-amber-200 dark:border-amber-900/60/90 bg-amber-50 dark:bg-amber-950/40 text-amber-950 dark:text-amber-100 shadow-sm ring-1 ring-amber-100/80 dark:ring-amber-900/40';
     }
 
     if (alignment(message) === 'right') {
@@ -212,7 +212,7 @@ const relativeTime = (value) => formatRelativeTime(value);
                             v-if="messageHasBody(message)"
                             :class="[
                                 message.is_internal
-                                    ? 'text-amber-950'
+                                    ? 'text-amber-950 dark:text-amber-100'
                                     : alignment(message) === 'right'
                                         ? 'prose-invert text-white [&_a]:text-blue-100'
                                         : 'text-slate-800 dark:text-slate-200',

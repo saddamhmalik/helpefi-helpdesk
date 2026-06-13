@@ -99,11 +99,11 @@ const hasFilters = computed(() => Boolean(props.filters.q) || (props.filters.sta
                 <PlatformStatCard :label="$t('central.all_records')" :value="stats.payment_count" />
             </div>
 
-            <div v-if="!razorpay_enabled" class="mb-4 rounded-xl border border-amber-200 dark:border-amber-900/60 bg-amber-50 dark:bg-amber-950/40 px-4 py-3 text-sm text-amber-900">
+            <div v-if="!razorpay_enabled" class="mb-4 rounded-xl border border-amber-200 dark:border-amber-900/60 bg-amber-50 dark:bg-amber-950/40 px-4 py-3 text-sm text-amber-900 dark:text-amber-200">
                 Razorpay is not configured. Add <code class="rounded bg-amber-100 px-1">RAZORPAY_ENABLED=true</code>, your test API keys, and billing vars to <code class="rounded bg-amber-100 px-1">.env.docker</code> (or run <code class="rounded bg-amber-100 px-1">./docker/init-env.sh</code> to copy them from <code class="rounded bg-amber-100 px-1">.env</code>), then restart Docker.
             </div>
 
-            <div v-else-if="!razorpay_webhooks_configured" class="mb-4 rounded-xl border border-amber-200 dark:border-amber-900/60 bg-amber-50 dark:bg-amber-950/40 px-4 py-3 text-sm text-amber-900">
+            <div v-else-if="!razorpay_webhooks_configured" class="mb-4 rounded-xl border border-amber-200 dark:border-amber-900/60 bg-amber-50 dark:bg-amber-950/40 px-4 py-3 text-sm text-amber-900 dark:text-amber-200">
                 Razorpay API keys are configured, but webhooks are not. Add your webhook secret to <code class="rounded bg-amber-100 px-1">RAZORPAY_WEBHOOK_SECRET</code>, point Razorpay webhooks to <code class="rounded bg-amber-100 px-1">/razorpay/webhook</code>, and restart the app so subscription payments appear here.
             </div>
 

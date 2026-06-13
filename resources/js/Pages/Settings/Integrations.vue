@@ -225,12 +225,12 @@ const inputClass = 'w-full rounded-lg border agent-border px-3 py-2 text-sm focu
             >{{ $t('settings_integrations.add_webhook') }}</button>
         </template>
 
-        <div v-if="revealedSecret" class="mb-4 rounded-lg border border-amber-200 dark:border-amber-900/60 bg-amber-50 dark:bg-amber-950/40 px-4 py-3 text-sm text-amber-900">
+        <div v-if="revealedSecret" class="mb-4 rounded-lg border border-amber-200 dark:border-amber-900/60 bg-amber-50 dark:bg-amber-950/40 px-4 py-3 text-sm text-amber-900 dark:text-amber-200">
             <p class="font-medium">{{ $t('settings_integrations.webhook_signing_secret_copy_now') }}</p>
             <p class="mt-1 break-all font-mono text-xs">{{ revealedSecret }}</p>
         </div>
 
-        <div v-if="revealedIntegrationSecret" class="mb-4 rounded-lg border border-amber-200 dark:border-amber-900/60 bg-amber-50 dark:bg-amber-950/40 px-4 py-3 text-sm text-amber-900">
+        <div v-if="revealedIntegrationSecret" class="mb-4 rounded-lg border border-amber-200 dark:border-amber-900/60 bg-amber-50 dark:bg-amber-950/40 px-4 py-3 text-sm text-amber-900 dark:text-amber-200">
             <p class="font-medium">{{ $t('settings_integrations.inbound_webhook_secret_copy_now') }}</p>
             <p class="mt-1 break-all font-mono text-xs">{{ revealedIntegrationSecret }}</p>
         </div>

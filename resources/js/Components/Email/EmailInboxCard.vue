@@ -261,7 +261,7 @@ const save = () => {
                     <div class="flex gap-2">
                         <input :value="localInbox.inbound_token" type="text" readonly class="min-w-0 flex-1 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 font-mono text-xs text-slate-700 dark:text-slate-300" />
                         <button type="button" class="shrink-0 rounded-lg border border-slate-300 dark:border-slate-700 px-3 py-2 text-sm" @click="copyToken">{{ tokenCopied ? $t('components.copied') : $t('components.copy') }}</button>
-                        <button type="button" class="shrink-0 rounded-lg border border-amber-200 dark:border-amber-900/60 bg-amber-50 dark:bg-amber-950/40 px-3 py-2 text-sm text-amber-900" @click="regenerateToken">{{ $t('components.regenerate') }}</button>
+                        <button type="button" class="shrink-0 rounded-lg border border-amber-200 dark:border-amber-900/60 bg-amber-50 dark:bg-amber-950/40 px-3 py-2 text-sm text-amber-900 dark:text-amber-200" @click="regenerateToken">{{ $t('components.regenerate') }}</button>
                     </div>
                 </div>
                 <p class="break-all rounded bg-slate-50 dark:bg-slate-950 px-2 py-1.5 font-mono text-[11px] text-slate-700 dark:text-slate-300">{{ webhookForwardingAddress }}</p>
@@ -274,7 +274,7 @@ const save = () => {
                         <option :value="null">{{ $t('components.choose_your_provider_ellipsis') }}</option>
                         <option v-for="provider in providerOptions" :key="provider.key" :value="provider.key">{{ provider.label }}</option>
                     </select>
-                    <p v-if="selectedProviderHelp" class="mt-2 rounded-lg bg-amber-50 dark:bg-amber-950/40 px-3 py-2 text-xs text-amber-900">{{ selectedProviderHelp }}</p>
+                    <p v-if="selectedProviderHelp" class="mt-2 rounded-lg bg-amber-50 dark:bg-amber-950/40 px-3 py-2 text-xs text-amber-900 dark:text-amber-200">{{ selectedProviderHelp }}</p>
                 </div>
                 <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                     <div>

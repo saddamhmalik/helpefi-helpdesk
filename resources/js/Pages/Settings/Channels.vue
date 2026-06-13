@@ -78,7 +78,7 @@ const updateOrigins = (channel, value) => {
                             class="rounded-lg border px-3 py-2 text-sm"
                             :class="chatAvailability.online
                                 ? 'border-emerald-200 dark:border-emerald-900/60 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-200'
-                                : 'border-amber-200 dark:border-amber-900/60 bg-amber-50 dark:bg-amber-950/40 text-amber-900'"
+                                : 'border-amber-200 dark:border-amber-900/60 bg-amber-50 dark:bg-amber-950/40 text-amber-900 dark:text-amber-200'"
                         >
                             <span class="font-medium">{{ chatAvailability.online ? 'Online now' : 'Offline now' }}</span>
                             <span class="text-current/80"> — {{ chatAvailability.reason }}</span>

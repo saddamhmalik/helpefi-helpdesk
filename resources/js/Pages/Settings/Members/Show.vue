@@ -75,20 +75,20 @@ const scoreClass = (score) => {
 
 const statusBadgeClass = (name) => {
     const value = (name || '').toLowerCase();
-    if (value.includes('open')) return 'bg-emerald-100 text-emerald-800 dark:text-emerald-200';
-    if (value.includes('pending')) return 'bg-amber-100 text-amber-800';
-    if (value.includes('closed') || value.includes('resolved')) return 'bg-slate-200 text-slate-700 dark:text-slate-300';
+    if (value.includes('open')) return 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300';
+    if (value.includes('pending')) return 'bg-amber-100 text-amber-800 dark:bg-amber-950/50 dark:text-amber-300';
+    if (value.includes('closed') || value.includes('resolved')) return 'bg-slate-200 text-slate-700 dark:bg-slate-800 dark:text-slate-300';
 
-    return 'bg-slate-100 dark:bg-slate-900 text-slate-700 dark:text-slate-300';
+    return 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300';
 };
 
 const priorityBadgeClass = (name) => {
     const value = (name || '').toLowerCase();
-    if (value.includes('urgent') || value.includes('critical')) return 'bg-red-100 text-red-800 dark:text-red-200';
-    if (value.includes('high')) return 'bg-orange-100 text-orange-800';
-    if (value.includes('low')) return 'bg-slate-100 dark:bg-slate-900 agent-text-muted';
+    if (value.includes('urgent') || value.includes('critical')) return 'bg-red-100 text-red-800 dark:bg-red-950/50 dark:text-red-300';
+    if (value.includes('high')) return 'bg-orange-100 text-orange-800 dark:bg-orange-950/50 dark:text-orange-300';
+    if (value.includes('low')) return 'bg-slate-100 dark:bg-slate-800 agent-text-muted';
 
-    return 'bg-blue-100 text-blue-800';
+    return 'bg-blue-100 text-blue-800 dark:bg-blue-950/50 dark:text-blue-300';
 };
 
 const customFieldLabel = (name) => props.customFieldDefinitions.find((field) => field.name === name)?.label ?? name;

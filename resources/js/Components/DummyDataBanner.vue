@@ -55,13 +55,13 @@ const cancel = () => {
         role="status"
         :title="message"
     >
-        <span class="shrink-0 text-sm font-semibold text-amber-950">{{ $t('components.sample_data_is_active_for_testing') }}</span>
-        <span class="hidden min-w-0 flex-1 truncate text-sm text-amber-800 sm:inline">{{ message }}</span>
+        <span class="shrink-0 text-sm font-semibold text-amber-950 dark:text-amber-100">{{ $t('components.sample_data_is_active_for_testing') }}</span>
+        <span class="hidden min-w-0 flex-1 truncate text-sm text-amber-800 dark:text-amber-200 sm:inline">{{ message }}</span>
         <div class="ml-auto flex shrink-0 items-center gap-1.5">
             <button
                 v-if="confirming"
                 type="button"
-                class="rounded-md px-2 py-1 text-xs font-medium text-amber-900 hover:bg-amber-100"
+                class="rounded-md px-2 py-1 text-xs font-medium text-amber-900 dark:text-amber-200 hover:bg-amber-100 dark:hover:bg-amber-900/40"
                 @click="cancel"
             >
                 {{ $t('components.cancel') }}

@@ -377,7 +377,7 @@ const coordinatorNames = computed(() => {
                         </div>
 
                         <div v-if="isResolved" class="border-t border-slate-100 dark:border-slate-800 bg-amber-50 dark:bg-amber-950/40/50 px-4 py-3">
-                            <p class="text-xs font-medium text-amber-900">{{ $t('service_desk.review_pending') }}</p>
+                            <p class="text-xs font-medium text-amber-900 dark:text-amber-200">{{ $t('service_desk.review_pending') }}</p>
                             <p class="mt-0.5 text-xs text-amber-700 dark:text-amber-300">{{ $t('service_desk.complete_review_in_main_panel') }}</p>
                         </div>
                     </div>

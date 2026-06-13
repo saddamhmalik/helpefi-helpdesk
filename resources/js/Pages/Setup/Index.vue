@@ -175,8 +175,8 @@ const copy = async (text) => {
                 class="mb-8 overflow-hidden rounded-2xl border border-amber-200 dark:border-amber-900/60 bg-white dark:bg-slate-900 shadow-sm"
             >
                 <div class="border-b border-amber-100 bg-amber-50 dark:bg-amber-950/40 px-5 py-4">
-                    <p class="text-sm font-semibold text-amber-950">{{ $t('setup_index.sample_workspace_ready') }}</p>
-                    <p class="mt-1 text-sm text-amber-800">
+                    <p class="text-sm font-semibold text-amber-950 dark:text-amber-100">{{ $t('setup_index.sample_workspace_ready') }}</p>
+                    <p class="mt-1 text-sm text-amber-800 dark:text-amber-200">
                         {{ dummyData.summary?.tickets ?? 0 }} tickets · {{ dummyData.summary?.contacts ?? 0 }} customers ·
                         {{ dummyData.summary?.teams ?? 0 }} teams · {{ dummyData.summary?.departments ?? 0 }} departments
                     </p>
@@ -201,12 +201,12 @@ const copy = async (text) => {
                     </div>
                 </div>
                 <div class="flex flex-col gap-3 border-t border-amber-100 bg-amber-50 dark:bg-amber-950/40/50 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
-                    <p class="text-xs text-amber-900">{{ $t('setup_index.ready_configure_real') }}</p>
+                    <p class="text-xs text-amber-900 dark:text-amber-200">{{ $t('setup_index.ready_configure_real') }}</p>
                     <div class="flex items-center gap-2">
                         <button
                             v-if="confirmingRemove"
                             type="button"
-                            class="rounded-lg px-3 py-1.5 text-sm font-medium text-amber-900 hover:bg-amber-100"
+                            class="rounded-lg px-3 py-1.5 text-sm font-medium text-amber-900 dark:text-amber-200 hover:bg-amber-100 dark:hover:bg-amber-900/40"
                             @click="confirmingRemove = false"
                         >{{ $t('setup_index.cancel') }}</button>
                         <button
