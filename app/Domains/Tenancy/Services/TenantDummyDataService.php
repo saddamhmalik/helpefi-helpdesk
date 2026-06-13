@@ -16,13 +16,13 @@ use App\Domains\ServiceCatalog\Models\ServiceCatalogItem;
 use App\Domains\ServiceCatalog\Models\ServiceCategory;
 use App\Domains\Settings\Repositories\HelpdeskSettingRepository;
 use App\Domains\Sla\Services\SlaService;
+use App\Domains\Tenancy\Support\BootstrapDemoContent;
 use App\Domains\Tickets\Models\Ticket;
 use App\Domains\Tickets\Models\TicketPriority;
 use App\Domains\Tickets\Models\TicketStatus;
 use App\Domains\Tickets\Repositories\TicketRepository;
 use App\Domains\Workforce\Models\Department;
 use App\Domains\Workforce\Models\Team;
-use App\Domains\Tenancy\Support\BootstrapDemoContent;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -42,43 +42,6 @@ class TenantDummyDataService
         'bootstrap_organization_ids',
     ];
 
-    private const SAMPLE_ASSET_TAGS = ['AST-00001', 'AST-00002', 'AST-00003'];
-
-    private const SAMPLE_SERVICE_CATEGORY_SLUGS = ['it-support', 'hr-services'];
-
-    private const SAMPLE_ORGANIZATION_NAMES = ['Acme Inc'];
-
-    private const SAMPLE_CONTACT_EMAILS = ['customer@example.com'];
-
-    private const BOOTSTRAP_SERVICE_CATEGORY_SLUGS = ['it-support', 'hr-services'];
-
-    private const BOOTSTRAP_KNOWLEDGE_CATEGORY_SLUGS = [
-        'product-documentation',
-        'agent-training',
-        'customer-help',
-    ];
-
-    private const BOOTSTRAP_KNOWLEDGE_COLLECTION_SLUGS = [
-        'product-guide',
-        'agent-handbook',
-        'customer-self-service',
-    ];
-
-    private const BOOTSTRAP_KNOWLEDGE_ARTICLE_SLUGS = [
-        'helpdesk-platform-overview',
-        'getting-started-for-agents',
-        'tickets-workspace-and-sla',
-        'contacts-and-knowledge-base',
-        'email-channels-and-automation',
-        'ai-service-catalog-and-assets',
-        'reports-notifications-and-csat',
-        'administration-guide',
-        'rest-api-overview',
-        'how-to-submit-a-support-request',
-        'how-to-track-your-ticket',
-        'customer-portal-account',
-    ];
-
     public function __construct(
         private HelpdeskSettingRepository $settings,
         private TicketRepository $tickets,
@@ -90,12 +53,15 @@ class TenantDummyDataService
     public function publicState(): array
     {
         $setting = $this->settings->current();
+        $active = (bool) $setting->dummy_data_active;
+        $hasBootstrapDemo = $this->hasBootstrapDemo();
 
         return [
-            'active' => (bool) $setting->dummy_data_active,
+            'active' => $active,
             'needs_choice' => $setting->dummy_data_choice_at === null,
-            'can_load_sample' => ! $setting->dummy_data_active,
-            'has_bootstrap_demo' => $this->hasBootstrapDemo(),
+            'can_load_sample' => ! $active && $setting->setup_completed_at === null,
+            'has_bootstrap_demo' => $hasBootstrapDemo,
+            'has_any_demo' => $active || $hasBootstrapDemo,
             'summary' => $this->summary($setting->dummy_data_manifest ?? []),
         ];
     }
@@ -152,7 +118,7 @@ class TenantDummyDataService
             ]);
         }
 
-        DB::transaction(fn () => $this->purge($setting->dummy_data_manifest ?? []));
+        DB::transaction(fn () => $this->purgeSampleData($setting->dummy_data_manifest ?? []));
 
         $this->settings->update($setting, [
             'dummy_data_active' => false,
@@ -162,32 +128,53 @@ class TenantDummyDataService
 
     public function hasBootstrapDemo(): bool
     {
-        if (Organization::query()->whereIn('name', self::SAMPLE_ORGANIZATION_NAMES)->exists()) {
+        if (Organization::query()->whereIn('name', BootstrapDemoContent::DEMO_ORGANIZATION_NAMES)->exists()) {
             return true;
         }
 
-        if (Asset::query()->whereIn('asset_tag', self::SAMPLE_ASSET_TAGS)->exists()) {
+        if (Asset::query()->whereIn('asset_tag', BootstrapDemoContent::DEMO_ASSET_TAGS)->exists()) {
             return true;
         }
 
-        if (ServiceCategory::query()->whereIn('slug', self::BOOTSTRAP_SERVICE_CATEGORY_SLUGS)->exists()) {
+        if (ServiceCategory::query()->whereIn('slug', BootstrapDemoContent::DEMO_SERVICE_CATEGORY_SLUGS)->exists()) {
             return true;
         }
 
-        if (EmailInbox::query()->whereIn('address', self::bootstrapInboxAddresses())->exists()) {
+        if (EmailInbox::query()->where('address', BootstrapDemoContent::DEMO_INBOX_ADDRESS)->exists()) {
             return true;
         }
 
-        if (KnowledgeCollection::query()->whereIn('slug', self::BOOTSTRAP_KNOWLEDGE_COLLECTION_SLUGS)->exists()) {
+        if ($this->hasDemoChannelAddress()) {
             return true;
         }
 
-        if (KnowledgeCategory::query()->whereIn('slug', self::BOOTSTRAP_KNOWLEDGE_CATEGORY_SLUGS)->exists()) {
+        if (KnowledgeCollection::query()->whereIn('slug', BootstrapDemoContent::DEMO_KNOWLEDGE_COLLECTION_SLUGS)->exists()) {
             return true;
         }
 
-        return KnowledgeArticle::query()
-            ->whereIn('slug', self::BOOTSTRAP_KNOWLEDGE_ARTICLE_SLUGS)
+        if (KnowledgeCategory::query()->whereIn('slug', BootstrapDemoContent::DEMO_KNOWLEDGE_CATEGORY_SLUGS)->exists()) {
+            return true;
+        }
+
+        if (KnowledgeArticle::query()->whereIn('slug', BootstrapDemoContent::DEMO_KNOWLEDGE_ARTICLE_SLUGS)->exists()) {
+            return true;
+        }
+
+        if (Contact::query()->whereIn('email', BootstrapDemoContent::DEMO_CONTACT_EMAILS)->exists()) {
+            return true;
+        }
+
+        if (Ticket::query()->whereIn('number', BootstrapDemoContent::DEMO_TICKET_NUMBERS)->exists()) {
+            return true;
+        }
+
+        if (Tag::query()->whereIn('slug', BootstrapDemoContent::DEMO_TAG_SLUGS)->exists()) {
+            return true;
+        }
+
+        return User::query()
+            ->whereIn('email', BootstrapDemoContent::DEMO_USER_EMAILS)
+            ->whereDoesntHave('roles', fn ($query) => $query->where('name', 'admin'))
             ->exists();
     }
 
@@ -204,47 +191,138 @@ class TenantDummyDataService
         });
     }
 
+    private function purgeSampleData(array $manifest): void
+    {
+        $this->purgeSampleManifest($manifest);
+        $this->purgeBootstrapDemoContent();
+    }
+
     private function purgeBootstrapDemoContent(): void
     {
-        $this->purgeServiceCatalog([
-            'service_category_ids' => ServiceCategory::query()
-                ->whereIn('slug', self::BOOTSTRAP_SERVICE_CATEGORY_SLUGS)
-                ->pluck('id')
-                ->all(),
-        ]);
+        $this->purgeDemoTickets();
+        $this->purgeServiceCatalogBySlugs(BootstrapDemoContent::DEMO_SERVICE_CATEGORY_SLUGS);
+        $this->purgeAssetsByTags(BootstrapDemoContent::DEMO_ASSET_TAGS);
+        $this->purgeBootstrapKnowledgeBase();
+        $this->purgeBootstrapContacts();
+        $this->purgeDemoInboxes();
+        $this->purgeDemoChannelSettings();
+        $this->purgeDemoUsers();
+        $this->purgeDemoTags();
+    }
 
-        $this->purgeAssets([
-            'asset_ids' => Asset::query()
-                ->whereIn('asset_tag', self::SAMPLE_ASSET_TAGS)
-                ->pluck('id')
-                ->all(),
-        ]);
-
-        $this->purgeBootstrapContacts([
-            'bootstrap_contact_ids' => Contact::query()
-                ->whereIn('email', self::SAMPLE_CONTACT_EMAILS)
-                ->pluck('id')
-                ->all(),
-            'bootstrap_organization_ids' => Organization::query()
-                ->whereIn('name', self::SAMPLE_ORGANIZATION_NAMES)
-                ->pluck('id')
-                ->all(),
-        ]);
-
-        EmailInbox::query()
-            ->whereIn('address', self::bootstrapInboxAddresses())
+    private function purgeDemoTickets(): void
+    {
+        Ticket::query()
+            ->whereIn('number', BootstrapDemoContent::DEMO_TICKET_NUMBERS)
             ->delete();
 
+        $contactIds = Contact::query()
+            ->whereIn('email', BootstrapDemoContent::DEMO_CONTACT_EMAILS)
+            ->pluck('id')
+            ->all();
+
+        if ($contactIds === []) {
+            return;
+        }
+
+        Ticket::query()->whereIn('contact_id', $contactIds)->delete();
+    }
+
+    private function purgeServiceCatalogBySlugs(array $slugs): void
+    {
+        $categoryIds = ServiceCategory::query()
+            ->whereIn('slug', $slugs)
+            ->pluck('id')
+            ->all();
+
+        if ($categoryIds === []) {
+            return;
+        }
+
+        ServiceCatalogItem::query()->whereIn('service_category_id', $categoryIds)->delete();
+        ServiceCategory::query()->whereIn('id', $categoryIds)->delete();
+    }
+
+    private function purgeAssetsByTags(array $assetTags): void
+    {
+        Asset::query()->whereIn('asset_tag', $assetTags)->delete();
+    }
+
+    private function purgeBootstrapKnowledgeBase(): void
+    {
         KnowledgeArticle::query()
-            ->whereIn('slug', self::BOOTSTRAP_KNOWLEDGE_ARTICLE_SLUGS)
+            ->whereIn('slug', BootstrapDemoContent::DEMO_KNOWLEDGE_ARTICLE_SLUGS)
             ->delete();
 
         KnowledgeCollection::query()
-            ->whereIn('slug', self::BOOTSTRAP_KNOWLEDGE_COLLECTION_SLUGS)
+            ->whereIn('slug', BootstrapDemoContent::DEMO_KNOWLEDGE_COLLECTION_SLUGS)
             ->delete();
 
         KnowledgeCategory::query()
-            ->whereIn('slug', self::BOOTSTRAP_KNOWLEDGE_CATEGORY_SLUGS)
+            ->whereIn('slug', BootstrapDemoContent::DEMO_KNOWLEDGE_CATEGORY_SLUGS)
+            ->delete();
+    }
+
+    private function purgeBootstrapContacts(): void
+    {
+        Contact::query()
+            ->whereIn('email', BootstrapDemoContent::DEMO_CONTACT_EMAILS)
+            ->delete();
+
+        $organizationIds = Organization::query()
+            ->whereIn('name', BootstrapDemoContent::DEMO_ORGANIZATION_NAMES)
+            ->pluck('id')
+            ->all();
+
+        if ($organizationIds !== []) {
+            Contact::query()->whereIn('organization_id', $organizationIds)->delete();
+            OrganizationDomain::query()->whereIn('organization_id', $organizationIds)->delete();
+            Organization::query()->whereIn('id', $organizationIds)->delete();
+        }
+
+        OrganizationDomain::query()
+            ->whereIn('domain', BootstrapDemoContent::DEMO_ORGANIZATION_DOMAINS)
+            ->delete();
+    }
+
+    private function purgeDemoInboxes(): void
+    {
+        EmailInbox::query()
+            ->where('address', BootstrapDemoContent::DEMO_INBOX_ADDRESS)
+            ->delete();
+    }
+
+    private function purgeDemoChannelSettings(): void
+    {
+        $emailChannel = $this->channels->findActiveBySlug('email');
+
+        if ($emailChannel === null) {
+            return;
+        }
+
+        $settings = $emailChannel->settings ?? [];
+
+        if (($settings['address'] ?? null) !== BootstrapDemoContent::DEMO_INBOX_ADDRESS) {
+            return;
+        }
+
+        unset($settings['address']);
+
+        $emailChannel->update(['settings' => $settings]);
+    }
+
+    private function purgeDemoUsers(): void
+    {
+        User::query()
+            ->whereIn('email', BootstrapDemoContent::DEMO_USER_EMAILS)
+            ->whereDoesntHave('roles', fn ($query) => $query->where('name', 'admin'))
+            ->delete();
+    }
+
+    private function purgeDemoTags(): void
+    {
+        Tag::query()
+            ->whereIn('slug', BootstrapDemoContent::DEMO_TAG_SLUGS)
             ->delete();
     }
 
@@ -253,7 +331,7 @@ class TenantDummyDataService
         $manifest = array_fill_keys(self::MANIFEST_KEYS, []);
 
         $support = Department::query()->create([
-            'name' => 'Customer Support',
+            'name' => 'Sample Support',
             'slug' => 'sample-support',
             'description' => 'Sample department for front-line support.',
             'head_user_id' => $admin->id,
@@ -263,7 +341,7 @@ class TenantDummyDataService
         $manifest['department_ids'][] = $support->id;
 
         $billing = Department::query()->create([
-            'name' => 'Billing & Accounts',
+            'name' => 'Sample Billing',
             'slug' => 'sample-billing',
             'description' => 'Sample department for invoices and subscriptions.',
             'head_user_id' => $admin->id,
@@ -517,36 +595,27 @@ class TenantDummyDataService
     private function captureBaselineSampleIds(array &$manifest): void
     {
         $manifest['service_category_ids'] = ServiceCategory::query()
-            ->whereIn('slug', self::SAMPLE_SERVICE_CATEGORY_SLUGS)
+            ->whereIn('slug', BootstrapDemoContent::DEMO_SERVICE_CATEGORY_SLUGS)
             ->pluck('id')
             ->all();
 
         $manifest['asset_ids'] = Asset::query()
-            ->whereIn('asset_tag', self::SAMPLE_ASSET_TAGS)
+            ->whereIn('asset_tag', BootstrapDemoContent::DEMO_ASSET_TAGS)
             ->pluck('id')
             ->all();
 
         $manifest['bootstrap_contact_ids'] = Contact::query()
-            ->whereIn('email', self::SAMPLE_CONTACT_EMAILS)
+            ->whereIn('email', BootstrapDemoContent::DEMO_CONTACT_EMAILS)
             ->pluck('id')
             ->all();
 
         $manifest['bootstrap_organization_ids'] = Organization::query()
-            ->whereIn('name', self::SAMPLE_ORGANIZATION_NAMES)
+            ->whereIn('name', BootstrapDemoContent::DEMO_ORGANIZATION_NAMES)
             ->pluck('id')
             ->all();
     }
 
-    private function purge(array $manifest): void
-    {
-        $this->purgeManifest($manifest);
-        $this->purgeServiceCatalog($manifest);
-        $this->purgeAssets($manifest);
-        $this->purgeBootstrapContacts($manifest);
-        $this->purgeKnowledgeBase();
-    }
-
-    private function purgeManifest(array $manifest): void
+    private function purgeSampleManifest(array $manifest): void
     {
         if ($manifest === []) {
             return;
@@ -567,51 +636,6 @@ class TenantDummyDataService
         Tag::query()->whereIn('id', $manifest['tag_ids'] ?? [])->delete();
     }
 
-    private function purgeServiceCatalog(array $manifest): void
-    {
-        $categoryIds = $manifest['service_category_ids'] ?? [];
-
-        if ($categoryIds === []) {
-            return;
-        }
-
-        ServiceCatalogItem::query()->whereIn('service_category_id', $categoryIds)->delete();
-        ServiceCategory::query()->whereIn('id', $categoryIds)->delete();
-    }
-
-    private function purgeAssets(array $manifest): void
-    {
-        $assetIds = $manifest['asset_ids'] ?? [];
-
-        if ($assetIds === []) {
-            return;
-        }
-
-        Asset::query()->whereIn('id', $assetIds)->delete();
-    }
-
-    private function purgeBootstrapContacts(array $manifest): void
-    {
-        Contact::query()->whereIn('id', $manifest['bootstrap_contact_ids'] ?? [])->delete();
-
-        $organizationIds = $manifest['bootstrap_organization_ids'] ?? [];
-
-        if ($organizationIds === []) {
-            return;
-        }
-
-        Contact::query()->whereIn('organization_id', $organizationIds)->delete();
-        OrganizationDomain::query()->whereIn('organization_id', $organizationIds)->delete();
-        Organization::query()->whereIn('id', $organizationIds)->delete();
-    }
-
-    private function purgeKnowledgeBase(): void
-    {
-        KnowledgeArticle::query()->delete();
-        KnowledgeCollection::query()->delete();
-        KnowledgeCategory::query()->delete();
-    }
-
     private function summary(array $manifest): array
     {
         return [
@@ -623,8 +647,10 @@ class TenantDummyDataService
         ];
     }
 
-    private function bootstrapInboxAddresses(): array
+    private function hasDemoChannelAddress(): bool
     {
-        return [BootstrapDemoContent::DEMO_INBOX_ADDRESS];
+        $emailChannel = $this->channels->findActiveBySlug('email');
+
+        return ($emailChannel?->settings['address'] ?? null) === BootstrapDemoContent::DEMO_INBOX_ADDRESS;
     }
 }

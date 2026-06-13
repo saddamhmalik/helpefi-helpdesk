@@ -2,8 +2,10 @@
 
 namespace Database\Seeders;
 
+use App\Domains\Contacts\Models\Contact;
 use App\Domains\Contacts\Models\Organization;
 use App\Domains\Contacts\Models\Tag;
+use App\Domains\Tenancy\Support\BootstrapDemoContent;
 use Illuminate\Database\Seeder;
 
 class ContactLookupSeeder extends Seeder
@@ -33,5 +35,18 @@ class ContactLookupSeeder extends Seeder
             ['domain' => 'example.com'],
             ['domain' => 'example.com'],
         );
+
+        $contact = Contact::query()->updateOrCreate(
+            ['email' => BootstrapDemoContent::DEMO_CONTACT_EMAILS[0]],
+            [
+                'name' => 'Jane Customer',
+                'phone' => '+1 555 0100',
+                'organization_id' => $org->id,
+            ],
+        );
+
+        if ($vipTag = Tag::query()->where('slug', 'vip')->first()) {
+            $contact->tags()->syncWithoutDetaching([$vipTag->id]);
+        }
     }
 }

@@ -33,6 +33,8 @@ const isFullHeightPage = computed(() => {
     return /^\/tickets\/\d+/.test(path);
 });
 
+const isSetupPage = computed(() => pageKey.value === '/setup');
+
 const isActive = (href) => {
     const path = page.url.split('?')[0];
 
@@ -176,7 +178,7 @@ const iconWrapClass = (href) => isActive(href)
                 <div class="mb-3 shrink-0 space-y-2 empty:mb-0 empty:hidden">
                     <TrialBanner />
                     <CancellationGraceBanner />
-                    <DummyDataBanner />
+                    <DummyDataBanner v-if="!isSetupPage" />
                 </div>
                 <PlatformNoticeModal />
                 <SetupWarningNotifier />

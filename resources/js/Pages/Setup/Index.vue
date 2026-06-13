@@ -21,6 +21,7 @@ const loadingSample = ref(false);
 const loadingSkip = ref(false);
 const confirmingRemove = ref(false);
 const confirmingBootstrapRemove = ref(false);
+const removingSample = ref(false);
 const removingBootstrap = ref(false);
 
 const showWelcome = ref(props.welcome);
@@ -28,6 +29,20 @@ const { copied: snippetCopied, copy: copySnippet } = useClipboard();
 const toast = useToast();
 const progress = computed(() => props.guide?.progress ?? { completed: 0, total: 0 });
 const guidePaused = computed(() => props.dummyData?.active === true);
+const showDemoLoadSample = computed(() => props.dummyData?.can_load_sample === true);
+const showDemoBootstrap = computed(() => props.dummyData?.has_bootstrap_demo === true);
+const showDemoManagement = computed(() => (
+    !guidePaused.value
+    && !props.dummyData?.needs_choice
+    && (showDemoLoadSample.value || showDemoBootstrap.value)
+));
+
+const sampleSummaryLabel = computed(() => t('setup_index.sample_summary', {
+    tickets: props.dummyData?.summary?.tickets ?? 0,
+    contacts: props.dummyData?.summary?.contacts ?? 0,
+    teams: props.dummyData?.summary?.teams ?? 0,
+    departments: props.dummyData?.summary?.departments ?? 0,
+}));
 
 const canFinish = computed(() => (
     !guidePaused.value
@@ -62,10 +77,13 @@ const removeSampleData = () => {
         return;
     }
 
+    removingSample.value = true;
+
     router.delete('/setup/dummy-data', {
         preserveScroll: true,
         onFinish: () => {
             confirmingRemove.value = false;
+            removingSample.value = false;
         },
     });
 };
@@ -110,7 +128,7 @@ const copy = async (text) => {
     const success = await copySnippet(text);
 
     if (! success) {
-        toast.error('Could not copy to clipboard. Select the snippet and copy manually.');
+        toast.error(t('setup_index.could_not_copy'));
     }
 };
 </script>
@@ -149,7 +167,7 @@ const copy = async (text) => {
                 class="mb-8 overflow-hidden rounded-2xl border border-blue-200 dark:border-blue-900/60 bg-white dark:bg-slate-900 shadow-sm"
             >
                 <div class="border-b border-blue-100 bg-blue-50 dark:bg-blue-950/40/80 px-5 py-4">
-                    <p class="text-sm font-semibold text-blue-900">How would you like to start?</p>
+                    <p class="text-sm font-semibold text-blue-900 dark:text-blue-100">{{ $t('setup_index.how_would_you_like_to_start') }}</p>
                     <p class="mt-1 text-sm text-blue-800">
                         {{ $t('setup_index.load_realistic_sample_tickets_and_customers_to_explore_the_product_or_') }}
                     </p>
@@ -166,7 +184,7 @@ const copy = async (text) => {
                             {{ $t('setup_index.adds_demo_tickets_conversations_customers_tags_teams_and_departments_y') }}
                         </p>
                         <p class="mt-3 text-xs font-medium text-blue-700 dark:text-blue-300">
-                            {{ loadingSample ? 'Loading sample data…' : 'Recommended for first-time setup' }}
+                            {{ loadingSample ? $t('setup_index.loading_sample_data') : $t('setup_index.recommended_first_time') }}
                         </p>
                     </button>
                     <button
@@ -179,8 +197,11 @@ const copy = async (text) => {
                         <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">
                             {{ $t('setup_index.skip_sample_content_and_build_your_workspace_from_scratch_with_real_cu') }}
                         </p>
+                        <p class="mt-2 text-xs text-slate-500 dark:text-slate-400">
+                            {{ $t('setup_index.empty_workspace_keeps_default_demo') }}
+                        </p>
                         <p class="mt-3 text-xs font-medium text-slate-500 dark:text-slate-400">
-                            {{ loadingSkip ? 'Continuing…' : 'Empty workspace' }}
+                            {{ loadingSkip ? $t('setup_index.continuing') : $t('setup_index.empty_workspace') }}
                         </p>
                     </button>
                 </div>
@@ -195,15 +216,13 @@ const copy = async (text) => {
             >
                 <div class="border-b border-amber-100 bg-amber-50 dark:bg-amber-950/40 px-5 py-4">
                     <p class="text-sm font-semibold text-amber-950 dark:text-amber-100">{{ $t('setup_index.sample_workspace_ready') }}</p>
-                    <p class="mt-1 text-sm text-amber-800 dark:text-amber-200">
-                        {{ dummyData.summary?.tickets ?? 0 }} tickets · {{ dummyData.summary?.contacts ?? 0 }} customers ·
-                        {{ dummyData.summary?.teams ?? 0 }} teams · {{ dummyData.summary?.departments ?? 0 }} departments
-                    </p>
+                    <p class="mt-1 text-sm text-amber-800 dark:text-amber-200">{{ sampleSummaryLabel }}</p>
                 </div>
                 <div class="space-y-4 p-5">
                     <p class="text-sm text-slate-600 dark:text-slate-400">
                         {{ $t('setup_index.workspace_setup_is_paused_while_you_explore_open_the_inbox_browse_cust') }}
                     </p>
+                    <p class="text-xs text-amber-900/80 dark:text-amber-200/80">{{ $t('setup_index.sample_remove_includes_bootstrap') }}</p>
                     <div class="flex flex-col gap-2 sm:flex-row">
                         <Link
                             href="/workspace"
@@ -230,18 +249,19 @@ const copy = async (text) => {
                         >{{ $t('setup_index.cancel') }}</button>
                         <button
                             type="button"
-                            class="rounded-lg px-3 py-1.5 text-sm font-semibold text-white transition"
+                            class="rounded-lg px-3 py-1.5 text-sm font-semibold text-white transition disabled:opacity-60"
                             :class="confirmingRemove ? 'bg-red-600 hover:bg-red-700' : 'bg-amber-900 hover:bg-amber-950'"
+                            :disabled="removingSample"
                             @click="removeSampleData"
                         >
-                            {{ confirmingRemove ? $t('setup_index.yes_remove_sample_data') : $t('setup_index.remove_sample_data') }}
+                            {{ removingSample ? $t('setup_index.removing') : (confirmingRemove ? $t('setup_index.yes_remove_sample_data') : $t('setup_index.remove_sample_data')) }}
                         </button>
                     </div>
                 </div>
             </section>
 
             <section
-                v-else-if="!guidePaused && !dummyData.needs_choice && (dummyData.can_load_sample || dummyData.has_bootstrap_demo)"
+                v-else-if="showDemoManagement"
                 class="mb-8 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900"
             >
                 <div class="border-b border-slate-100 bg-slate-50 px-5 py-4 dark:border-slate-800 dark:bg-slate-950/80">
@@ -252,7 +272,7 @@ const copy = async (text) => {
                 </div>
                 <div class="space-y-4 p-5">
                     <div
-                        v-if="dummyData.can_load_sample"
+                        v-if="showDemoLoadSample"
                         class="flex flex-col gap-3 rounded-xl border border-blue-200 bg-blue-50/50 p-4 dark:border-blue-900/60 dark:bg-blue-950/20 sm:flex-row sm:items-center sm:justify-between"
                     >
                         <div>
@@ -271,7 +291,7 @@ const copy = async (text) => {
                         </button>
                     </div>
                     <div
-                        v-if="dummyData.has_bootstrap_demo"
+                        v-if="showDemoBootstrap"
                         class="flex flex-col gap-3 rounded-xl border border-amber-200 bg-amber-50/50 p-4 dark:border-amber-900/60 dark:bg-amber-950/20 sm:flex-row sm:items-center sm:justify-between"
                     >
                         <div>
@@ -279,6 +299,7 @@ const copy = async (text) => {
                             <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">
                                 {{ $t('setup_index.default_demo_content_description') }}
                             </p>
+                            <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">{{ $t('setup_index.bootstrap_demo_keeps_admin') }}</p>
                         </div>
                         <div class="flex shrink-0 items-center gap-2">
                             <button
@@ -316,7 +337,7 @@ const copy = async (text) => {
                         :style="{ width: `${progress.total ? (progress.completed / progress.total) * 100 : 0}%` }"
                     />
                 </div>
-                <p class="mt-2 text-xs text-slate-500 dark:text-slate-400">{{ progress.completed }} of {{ progress.total }} required steps complete</p>
+                <p class="mt-2 text-xs text-slate-500 dark:text-slate-400">{{ $t('setup_index.steps_complete', { completed: progress.completed, total: progress.total }) }}</p>
             </div>
 
             <div v-if="!guidePaused" class="space-y-4">
@@ -356,7 +377,7 @@ const copy = async (text) => {
                                         class="mt-2 text-sm font-medium text-blue-600 hover:text-blue-700 dark:hover:text-blue-300 dark:text-blue-300"
                                         @click="copy(step.meta.embed_snippet)"
                                     >
-                                        {{ snippetCopied ? 'Copied!' : 'Copy snippet' }}
+                                        {{ snippetCopied ? $t('setup_index.copied') : $t('setup_index.copy_snippet') }}
                                     </button>
                                 </div>
 
@@ -392,9 +413,10 @@ const copy = async (text) => {
                         <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">{{ $t('setup_index.return_to_your_dashboard_incomplete_items_will_keep_showing_warnings_u') }}</p>
                     </template>
                     <template v-else>
-                        <p class="text-sm font-medium text-slate-900 dark:text-slate-100">Ready to start supporting customers?</p>
+                        <p class="text-sm font-medium text-slate-900 dark:text-slate-100">{{ $t('setup_index.ready_to_start_supporting') }}</p>
                         <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">{{ $t('setup_index.finish_setup_to_open_your_workspace_dashboard_missing_configuration_wi') }}</p>
-                        <p v-if="dummyData.needs_choice" class="mt-2 text-sm text-amber-700 dark:text-amber-300">{{ $t('setup_index.choose_sample_data_or_an_empty_workspace_above_to_continue') }}</p>
+                        <p v-if="dummyData.needs_choice" class="mt-2 text-sm text-amber-700 dark:text-amber-300">{{ $t('setup_index.choose_sample_or_empty') }}</p>
+                        <p v-else-if="showDemoBootstrap && !guidePaused" class="mt-2 text-sm text-amber-700 dark:text-amber-300">{{ $t('setup_index.remove_default_demo_to_finish') }}</p>
                     </template>
                 </div>
                 <div class="flex flex-col-reverse gap-2 border-t border-slate-100 dark:border-slate-800 px-5 py-3 sm:flex-row sm:items-center sm:justify-end">

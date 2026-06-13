@@ -14,7 +14,7 @@ class WorkforceSeeder extends Seeder
 {
     public function run(): void
     {
-        $admin = User::query()->where('email', 'admin@helpdesk.test')->first();
+        $admin = User::query()->role('admin')->orderBy('id')->first();
 
         if (! $admin) {
             return;
