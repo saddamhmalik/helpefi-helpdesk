@@ -6,12 +6,15 @@ import { useI18n } from 'vue-i18n';
 const page = usePage();
 const { t } = useI18n();
 
-const confirming = ref(false);
+const confirmingSample = ref(false);
+const confirmingBootstrap = ref(false);
+const removingBootstrap = ref(false);
 
 const dummyData = computed(() => page.props.dummyData ?? null);
 const isAdmin = computed(() => page.props.auth?.user?.is_admin ?? false);
 
-const showBanner = computed(() => isAdmin.value && dummyData.value?.active === true);
+const showSampleBanner = computed(() => isAdmin.value && dummyData.value?.active === true);
+const showBootstrapBanner = computed(() => isAdmin.value && dummyData.value?.has_bootstrap_demo === true && !dummyData.value?.active);
 
 const summaryLabel = computed(() => {
     const summary = dummyData.value?.summary ?? {};
@@ -27,52 +30,94 @@ const summaryLabel = computed(() => {
     return t('components.dummy_data_default_summary');
 });
 
-const message = computed(() => `${summaryLabel.value}${t('components.dummy_data_remove_hint')}`);
+const sampleMessage = computed(() => `${summaryLabel.value}${t('components.dummy_data_remove_hint')}`);
 
-const remove = () => {
-    if (!confirming.value) {
-        confirming.value = true;
+const removeSample = () => {
+    if (!confirmingSample.value) {
+        confirmingSample.value = true;
         return;
     }
 
     router.delete('/setup/dummy-data', {
         preserveScroll: true,
         onFinish: () => {
-            confirming.value = false;
+            confirmingSample.value = false;
         },
     });
 };
 
-const cancel = () => {
-    confirming.value = false;
+const removeBootstrap = () => {
+    if (!confirmingBootstrap.value) {
+        confirmingBootstrap.value = true;
+        return;
+    }
+
+    removingBootstrap.value = true;
+
+    router.delete('/setup/bootstrap-demo', {
+        preserveScroll: true,
+        onFinish: () => {
+            confirmingBootstrap.value = false;
+            removingBootstrap.value = false;
+        },
+    });
 };
 </script>
 
 <template>
     <div
-        v-if="showBanner"
-        class="mb-2 flex items-center gap-2 rounded-lg border border-amber-200 dark:border-amber-900/60 bg-amber-50 dark:bg-amber-950/40 px-3 py-2"
+        v-if="showSampleBanner"
+        class="mb-2 flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 dark:border-amber-900/60 dark:bg-amber-950/40"
         role="status"
-        :title="message"
+        :title="sampleMessage"
     >
         <span class="shrink-0 text-sm font-semibold text-amber-950 dark:text-amber-100">{{ $t('components.sample_data_is_active_for_testing') }}</span>
-        <span class="hidden min-w-0 flex-1 truncate text-sm text-amber-800 dark:text-amber-200 sm:inline">{{ message }}</span>
+        <span class="hidden min-w-0 flex-1 truncate text-sm text-amber-800 dark:text-amber-200 sm:inline">{{ sampleMessage }}</span>
         <div class="ml-auto flex shrink-0 items-center gap-1.5">
             <button
-                v-if="confirming"
+                v-if="confirmingSample"
                 type="button"
-                class="rounded-md px-2 py-1 text-xs font-medium text-amber-900 dark:text-amber-200 hover:bg-amber-100 dark:hover:bg-amber-900/40"
-                @click="cancel"
+                class="rounded-md px-2 py-1 text-xs font-medium text-amber-900 hover:bg-amber-100 dark:text-amber-200 dark:hover:bg-amber-900/40"
+                @click="confirmingSample = false"
             >
                 {{ $t('components.cancel') }}
             </button>
             <button
                 type="button"
                 class="rounded-md px-2.5 py-1 text-xs font-semibold transition"
-                :class="confirming ? 'bg-red-600 text-white hover:bg-red-700' : 'bg-amber-900 text-white hover:bg-amber-950'"
-                @click="remove"
+                :class="confirmingSample ? 'bg-red-600 text-white hover:bg-red-700' : 'bg-amber-900 text-white hover:bg-amber-950'"
+                @click="removeSample"
             >
-                {{ confirming ? $t('components.yes_remove') : $t('components.remove_sample_data') }}
+                {{ confirmingSample ? $t('components.yes_remove') : $t('components.remove_sample_data') }}
+            </button>
+        </div>
+    </div>
+
+    <div
+        v-if="showBootstrapBanner"
+        class="mb-2 flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 dark:border-slate-700 dark:bg-slate-900"
+        role="status"
+    >
+        <span class="min-w-0 flex-1 text-sm text-slate-700 dark:text-slate-300">
+            Default demo content is present (assets, service catalog, starter KB, demo support inbox).
+        </span>
+        <div class="ml-auto flex shrink-0 items-center gap-1.5">
+            <button
+                v-if="confirmingBootstrap"
+                type="button"
+                class="rounded-md px-2 py-1 text-xs font-medium text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
+                @click="confirmingBootstrap = false"
+            >
+                {{ $t('components.cancel') }}
+            </button>
+            <button
+                type="button"
+                class="rounded-md px-2.5 py-1 text-xs font-semibold transition"
+                :class="confirmingBootstrap ? 'bg-red-600 text-white hover:bg-red-700' : 'bg-slate-800 text-white hover:bg-slate-900 dark:bg-slate-700 dark:hover:bg-slate-600'"
+                :disabled="removingBootstrap"
+                @click="removeBootstrap"
+            >
+                {{ removingBootstrap ? 'Removing…' : (confirmingBootstrap ? $t('components.yes_remove') : 'Remove demo content') }}
             </button>
         </div>
     </div>

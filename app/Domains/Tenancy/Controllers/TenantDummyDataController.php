@@ -37,4 +37,11 @@ class TenantDummyDataController extends Controller
             ->route('setup')
             ->with('success', 'Sample data removed. Continue workspace setup when you are ready.');
     }
+
+    public function destroyBootstrap(): RedirectResponse
+    {
+        $this->dummyData->removeBootstrapDemo();
+
+        return back()->with('success', 'Default demo content removed.');
+    }
 }

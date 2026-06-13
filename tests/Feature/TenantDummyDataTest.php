@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Domains\Channels\Models\EmailInbox;
 use App\Domains\Contacts\Models\Contact;
 use App\Domains\Knowledge\Models\KnowledgeArticle;
 use App\Domains\Knowledge\Models\KnowledgeCategory;
@@ -84,6 +85,52 @@ class TenantDummyDataTest extends TenantTestCase
         $this->assertFalse($service->isActive());
         $this->assertFalse($service->needsChoice());
         $this->assertSame(0, Ticket::query()->count());
+    }
+
+    public function test_admin_can_load_sample_data_after_skipping(): void
+    {
+        $admin = $this->admin();
+        $service = app(TenantDummyDataService::class);
+        $service->skip();
+
+        $this->actingAs($admin)
+            ->tenantPost('/setup/dummy-data')
+            ->assertRedirect($this->tenantUrl('/workspace'));
+
+        $this->assertTrue($service->isActive());
+        $this->assertSame(6, Ticket::query()->count());
+    }
+
+    public function test_admin_can_remove_bootstrap_demo_content(): void
+    {
+        $admin = $this->admin();
+        $service = app(TenantDummyDataService::class);
+
+        $this->assertTrue($service->hasBootstrapDemo());
+
+        $this->actingAs($admin)
+            ->from($this->tenantUrl('/setup'))
+            ->tenantDelete('/setup/bootstrap-demo')
+            ->assertRedirect($this->tenantUrl('/setup'));
+
+        $this->assertFalse($service->hasBootstrapDemo());
+        $this->assertFalse(EmailInbox::query()->where('address', 'support@helpdesk.test')->exists());
+    }
+
+    public function test_setup_page_offers_sample_and_bootstrap_controls_after_skip(): void
+    {
+        $admin = $this->admin();
+        app(TenantDummyDataService::class)->skip();
+
+        $this->actingAs($admin)
+            ->tenantGet('/setup')
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->where('dummyData.needs_choice', false)
+                ->where('dummyData.active', false)
+                ->where('dummyData.can_load_sample', true)
+                ->where('dummyData.has_bootstrap_demo', true)
+            );
     }
 
     public function test_setup_page_shows_dummy_data_choice(): void
