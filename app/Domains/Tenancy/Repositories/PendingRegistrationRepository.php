@@ -67,7 +67,7 @@ class PendingRegistrationRepository
     {
         return PendingRegistration::query()
             ->whereNull('verified_at')
-            ->when($search, function ($query, string $search) {
+            ->when(filled($search), function ($query) use ($search) {
                 $query->where(function ($query) use ($search) {
                     $query->where('organization_name', 'like', "%{$search}%")
                         ->orWhere('slug', 'like', "%{$search}%")

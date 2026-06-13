@@ -1,6 +1,6 @@
 <script setup>
 import { Head, router } from '@inertiajs/vue3';
-import { computed, ref, watch } from 'vue';
+import { computed, onBeforeUnmount, ref, watch } from 'vue';
 import AdminLayout from '../../../../Layouts/AdminLayout.vue';
 import PageHeader from '../../../../Components/PageHeader.vue';
 import PaginationLinks from '../../../../Components/PaginationLinks.vue';
@@ -21,7 +21,7 @@ const canManage = can('tenants.manage');
 const search = ref(props.filters.q ?? '');
 const status = ref(props.filters.status ?? 'all');
 const purging = ref(false);
-const deletingId = ref(null);
+const deletingIds = ref([]);
 
 const statusFilters = [
     { value: 'all', label: 'All' },
@@ -38,9 +38,13 @@ watch(search, () => {
 
 watch(status, applyFilters);
 
+onBeforeUnmount(() => {
+    clearTimeout(searchTimer);
+});
+
 function applyFilters() {
     router.get('/admin/pending-registrations', {
-        q: search.value || undefined,
+        q: search.value !== '' ? search.value : undefined,
         status: status.value === 'all' ? undefined : status.value,
     }, {
         preserveState: true,
@@ -69,12 +73,12 @@ function removeRegistration(registration) {
         return;
     }
 
-    deletingId.value = registration.id;
+    deletingIds.value = [...deletingIds.value, registration.id];
 
     router.delete(`/admin/pending-registrations/${registration.id}`, {
         preserveScroll: true,
         onFinish: () => {
-            deletingId.value = null;
+            deletingIds.value = deletingIds.value.filter((id) => id !== registration.id);
         },
     });
 }
@@ -184,10 +188,10 @@ const hasFilters = computed(() => Boolean(props.filters.q) || (props.filters.sta
                                     <button
                                         type="button"
                                         class="rounded-lg border border-red-200 px-3 py-1.5 text-xs font-medium text-red-700 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-70 dark:border-red-900 dark:text-red-300 dark:hover:bg-red-950/40"
-                                        :disabled="deletingId === registration.id"
+                                        :disabled="deletingIds.includes(registration.id)"
                                         @click="removeRegistration(registration)"
                                     >
-                                        {{ deletingId === registration.id ? 'Removing…' : 'Remove' }}
+                                        {{ deletingIds.includes(registration.id) ? 'Removing…' : 'Remove' }}
                                     </button>
                                 </td>
                             </tr>

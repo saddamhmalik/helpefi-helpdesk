@@ -43,7 +43,7 @@ export function usePlatformAdmin() {
                 match: (url) => url.startsWith('/admin/tenants'),
             });
             workspaceItems.push({
-                label: 'Pending registrations',
+                label: t('layouts.admin.nav_pending_registrations'),
                 href: '/admin/pending-registrations',
                 permission: 'tenants.view',
                 match: (url) => url.startsWith('/admin/pending-registrations'),

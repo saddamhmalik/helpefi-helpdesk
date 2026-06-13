@@ -50,20 +50,16 @@ class PlatformPendingRegistrationService
 
     public function purgeExpired(): int
     {
-        $expired = $this->registrations->stats()['expired'];
+        $removed = $this->registrations->deleteExpiredUnverified();
 
-        if ($expired === 0) {
+        if ($removed === 0) {
             return 0;
         }
 
-        $removed = $this->registrations->deleteExpiredUnverified();
-
-        if ($removed > 0) {
-            $this->audit->record(
-                'platform.registrations.purged_expired',
-                properties: ['count' => $removed],
-            );
-        }
+        $this->audit->record(
+            'platform.registrations.purged_expired',
+            properties: ['count' => $removed],
+        );
 
         return $removed;
     }

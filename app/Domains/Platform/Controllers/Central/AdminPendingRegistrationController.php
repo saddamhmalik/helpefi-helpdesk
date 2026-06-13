@@ -20,9 +20,11 @@ class AdminPendingRegistrationController extends Controller
         $search = trim((string) $request->string('q'));
         $status = (string) $request->string('status', 'all');
 
+        $perPage = min(max((int) $request->integer('per_page', 20), 1), 100);
+
         return Inertia::render('Central/Admin/PendingRegistrations/Index', [
             'registrations' => $this->pendingRegistrations->list(
-                (int) $request->integer('per_page', 20),
+                $perPage,
                 $search !== '' ? $search : null,
                 $status,
             ),
