@@ -57,12 +57,12 @@ const actionLabel = computed(() => {
 <template>
     <div
         v-if="!hasFeature"
-        class="mb-6 rounded-xl border border-amber-200 dark:border-amber-900/60 bg-amber-50 dark:bg-amber-950/40 px-4 py-3 text-sm text-amber-950"
+        class="mb-6 rounded-xl border border-amber-200 dark:border-amber-900/60 bg-amber-50 dark:bg-amber-950/40 px-4 py-3 text-sm text-amber-950 dark:text-amber-200"
     >
         <p>{{ message }}</p>
         <Link
             :href="billingHref"
-            class="mt-2 inline-flex font-medium text-amber-900 underline decoration-amber-400 underline-offset-2 hover:text-amber-950"
+            class="mt-2 inline-flex font-medium text-amber-900 dark:text-amber-200 underline decoration-amber-400 underline-offset-2 hover:text-amber-950 dark:hover:text-amber-100"
         >
             {{ actionLabel }}
         </Link>

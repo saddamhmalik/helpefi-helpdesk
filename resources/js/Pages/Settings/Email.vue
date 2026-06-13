@@ -706,7 +706,7 @@ const onUseInboxSmtpChange = () => {
                             <option :value="null">{{ $t('components.choose_your_provider_ellipsis') }}</option>
                             <option v-for="provider in addInboxProviderOptions()" :key="provider.key" :value="provider.key">{{ provider.label }}</option>
                         </select>
-                        <p v-if="mailboxProviders?.[inboxForm.mailbox_provider]?.help" class="mt-2 rounded-lg bg-amber-50 dark:bg-amber-950/40 px-3 py-2 text-xs text-amber-900">
+                        <p v-if="mailboxProviders?.[inboxForm.mailbox_provider]?.help" class="mt-2 rounded-lg bg-amber-50 dark:bg-amber-950/40 px-3 py-2 text-xs text-amber-900 dark:text-amber-200">
                             {{ mailboxProviders[inboxForm.mailbox_provider].help }}
                         </p>
                     </div>

@@ -182,12 +182,12 @@ watch(showWidget, (visible) => {
                     >
                         <div class="flex items-center justify-between border-b border-amber-100 bg-amber-50 dark:bg-amber-950/40 px-3 py-2.5">
                             <div>
-                                <p class="text-sm font-semibold text-amber-950">{{ t('components.setup_incomplete') }}</p>
-                                <p class="text-[11px] text-amber-800">{{ countLabel }}</p>
+                                <p class="text-sm font-semibold text-amber-950 dark:text-amber-100">{{ t('components.setup_incomplete') }}</p>
+                                <p class="text-[11px] text-amber-800 dark:text-amber-200">{{ countLabel }}</p>
                             </div>
                             <button
                                 type="button"
-                                class="rounded-md p-1 text-amber-800 hover:bg-amber-100/80"
+                                class="rounded-md p-1 text-amber-800 dark:text-amber-200 hover:bg-amber-100/80 dark:hover:bg-amber-900/40"
                                 :aria-label="t('components.close')"
                                 @click="panelOpen = false"
                             >
@@ -224,7 +224,7 @@ watch(showWidget, (visible) => {
 
                 <button
                     type="button"
-                    class="flex items-center gap-2 rounded-full border border-amber-200 dark:border-amber-900/60 bg-amber-50 dark:bg-amber-950/40 px-3 py-2 text-xs font-semibold text-amber-900 shadow-md transition hover:bg-amber-100"
+                    class="flex items-center gap-2 rounded-full border border-amber-200 dark:border-amber-900/60 bg-amber-50 dark:bg-amber-950/40 px-3 py-2 text-xs font-semibold text-amber-900 dark:text-amber-200 shadow-md transition hover:bg-amber-100 dark:hover:bg-amber-900/40"
                     :aria-expanded="panelOpen"
                     @click="panelOpen = !panelOpen"
                 >

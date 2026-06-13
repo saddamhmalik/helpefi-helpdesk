@@ -34,7 +34,7 @@ const reject = () => form.post(`/approvals/email/${props.approval.id}/reject`);
                 </div>
             </div>
 
-            <div v-else class="mt-6 rounded-lg border border-amber-200 dark:border-amber-900/60 bg-amber-50 dark:bg-amber-950/40 px-4 py-3 text-sm text-amber-900">
+            <div v-else class="mt-6 rounded-lg border border-amber-200 dark:border-amber-900/60 bg-amber-50 dark:bg-amber-950/40 px-4 py-3 text-sm text-amber-900 dark:text-amber-200">
                 <p>{{ $t('service_desk.sign_in_as_the_assigned_approver_to_decide_this_request') }}</p>
                 <a v-if="loginUrl" :href="loginUrl" class="mt-2 inline-block font-medium text-blue-600 hover:text-blue-700 dark:hover:text-blue-300 dark:text-blue-300">{{ $t('service_desk.sign_in') }}</a>
             </div>

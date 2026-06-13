@@ -115,7 +115,7 @@ const disableTwoFactor = () => {
 
         <div
             v-if="mfaRequired && !twoFactor.enabled"
-            class="mb-6 rounded-lg border border-amber-200 dark:border-amber-900/60 bg-amber-50 dark:bg-amber-950/40 px-4 py-3 text-sm text-amber-900"
+            class="mb-6 rounded-lg border border-amber-200 dark:border-amber-900/60 bg-amber-50 dark:bg-amber-950/40 px-4 py-3 text-sm text-amber-900 dark:text-amber-200"
         >
             {{ t('profile.mfa_required') }}
         </div>

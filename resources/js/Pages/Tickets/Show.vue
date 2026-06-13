@@ -142,7 +142,7 @@ const sidebarProps = computed(() => ({
         <div class="flex min-h-0 flex-1 flex-col">
         <div
             v-if="ticket.merged_into"
-            class="mb-3 shrink-0 rounded-lg border border-amber-200 dark:border-amber-900/60 bg-amber-50 dark:bg-amber-950/40 px-3 py-2 text-sm text-amber-900"
+            class="mb-3 shrink-0 rounded-lg border border-amber-200 dark:border-amber-900/60 bg-amber-50 dark:bg-amber-950/40 px-3 py-2 text-sm text-amber-900 dark:text-amber-200"
         >
             {{ $t('tickets.merged_into') }}
             <Link :href="`/tickets/${ticket.merged_into.id}`" class="font-medium underline">{{ ticket.merged_into.number }}</Link>

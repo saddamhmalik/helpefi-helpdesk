@@ -372,8 +372,8 @@ const hasFilters = computed(() => Boolean(props.filters.q) || (props.filters.sta
                     v-if="canManage && !manageTenant.subscription"
                     class="rounded-xl border border-amber-200 dark:border-amber-900/60 bg-amber-50 dark:bg-amber-950/40 p-4"
                 >
-                    <p class="text-sm font-medium text-amber-950">{{ $t('central.no_subscription_record') }}</p>
-                    <p class="mt-1 text-sm text-amber-800">
+                    <p class="text-sm font-medium text-amber-950 dark:text-amber-100">{{ $t('central.no_subscription_record') }}</p>
+                    <p class="mt-1 text-sm text-amber-800 dark:text-amber-200">
                         {{ $t('central.this_workspace_was_created_without_a_trial_start_a_free_trial_so_billi') }}
                     </p>
                     <button

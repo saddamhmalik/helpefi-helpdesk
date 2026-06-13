@@ -27,8 +27,8 @@ const message = computed(() => {
 
 const toneClass = computed(() => (
     atLimit.value
-        ? 'border-red-200 dark:border-red-900/60 bg-red-50 dark:bg-red-950/40 text-red-900'
-        : 'border-amber-200 dark:border-amber-900/60 bg-amber-50 dark:bg-amber-950/40 text-amber-950'
+        ? 'border-red-200 dark:border-red-900/60 bg-red-50 dark:bg-red-950/40 text-red-900 dark:text-red-200'
+        : 'border-amber-200 dark:border-amber-900/60 bg-amber-50 dark:bg-amber-950/40 text-amber-950 dark:text-amber-200'
 ));
 </script>
 

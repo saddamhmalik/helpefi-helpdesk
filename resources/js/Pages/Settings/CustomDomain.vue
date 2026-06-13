@@ -133,8 +133,8 @@ const cnameHost = () => {
 
         <div v-if="!customDomain?.can_manage" class="space-y-6">
             <div class="rounded-xl border border-amber-200 dark:border-amber-900/60 bg-amber-50 dark:bg-amber-950/40 p-6">
-                <h2 class="text-base font-semibold text-amber-950">{{ $t('settings_custom_domain.upgrade_to_enterprise_to_connect_a_custom_domain') }}</h2>
-                <p class="mt-2 text-sm text-amber-900/90">
+                <h2 class="text-base font-semibold text-amber-950 dark:text-amber-100">{{ $t('settings_custom_domain.upgrade_to_enterprise_to_connect_a_custom_domain') }}</h2>
+                <p class="mt-2 text-sm text-amber-900/90 dark:text-amber-200/90">
                     You are on the <span class="font-medium">{{ billingPlan }}</span> plan. Enterprise lets you serve the helpdesk from a branded hostname while keeping
                     <span class="font-medium">{{ customDomain?.platform_url }}</span> working as a fallback.
                 </p>

@@ -55,22 +55,22 @@ const toggleExpanded = () => {
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
             </svg>
 
-            <span class="shrink-0 text-sm font-semibold text-amber-950">{{ $t('components.setup_incomplete') }}</span>
-            <span class="shrink-0 rounded bg-amber-200/60 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-900">
+            <span class="shrink-0 text-sm font-semibold text-amber-950 dark:text-amber-100">{{ $t('components.setup_incomplete') }}</span>
+            <span class="shrink-0 rounded bg-amber-200/60 dark:bg-amber-900/50 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-900 dark:text-amber-200">
                 {{ countLabel }}
             </span>
-            <span class="min-w-0 flex-1 truncate text-xs text-amber-800">{{ summary }}</span>
+            <span class="min-w-0 flex-1 truncate text-xs text-amber-800 dark:text-amber-200">{{ summary }}</span>
 
             <div class="flex shrink-0 items-center gap-0.5">
                 <Link
                     href="/setup"
-                    class="rounded px-2 py-1 text-xs font-medium text-amber-900 hover:bg-amber-100/80"
+                    class="rounded px-2 py-1 text-xs font-medium text-amber-900 dark:text-amber-200 hover:bg-amber-100/80 dark:hover:bg-amber-900/40"
                 >
                     {{ $t('components.setup_guide') }}
                 </Link>
                 <button
                     type="button"
-                    class="inline-flex h-7 w-7 items-center justify-center rounded text-amber-800 hover:bg-amber-100/80"
+                    class="inline-flex h-7 w-7 items-center justify-center rounded text-amber-800 dark:text-amber-200 hover:bg-amber-100/80 dark:hover:bg-amber-900/40"
                     :aria-expanded="expanded"
                     @click="toggleExpanded"
                 >
