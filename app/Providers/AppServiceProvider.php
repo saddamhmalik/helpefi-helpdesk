@@ -55,7 +55,9 @@ class AppServiceProvider extends ServiceProvider
         }
 
         try {
-            app(\App\Domains\Channels\Services\OutboundMailService::class)->applyGlobalConfig();
+            if (tenancy()->initialized) {
+                app(\App\Domains\Channels\Services\OutboundMailService::class)->applyGlobalConfig();
+            }
         } catch (\Throwable) {
         }
     }
