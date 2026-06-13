@@ -70,12 +70,16 @@ class ServiceDeskService
         $snapshot = $this->billing->snapshot();
         $addon = collect($snapshot['available_addons'] ?? [])->firstWhere('key', 'service_desk');
 
+        $canPurchase = ($snapshot['on_trial'] ?? false)
+            || (($snapshot['status'] ?? null) === 'active' && ($snapshot['has_razorpay_subscription'] ?? false));
+
         return [
             'plan' => $snapshot['plan']['name'] ?? 'Current plan',
             'features' => $snapshot['features'] ?? [],
             'addon' => $addon,
             'currency' => $snapshot['currency'] ?? null,
             'onTrial' => $snapshot['on_trial'] ?? false,
+            'canPurchase' => $canPurchase,
         ];
     }
 }

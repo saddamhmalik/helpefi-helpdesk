@@ -10,6 +10,7 @@ const props = defineProps({
     features: Array,
     addon: Object,
     onTrial: { type: Boolean, default: false },
+    canPurchase: { type: Boolean, default: false },
 });
 
 const page = usePage();
@@ -61,12 +62,20 @@ const purchaseAddon = () => {
 
             <div class="mt-8 flex flex-wrap gap-3">
                 <button
+                    v-if="canPurchase"
                     type="button"
                     class="inline-flex items-center rounded-lg bg-slate-900 dark:bg-amber-500 px-4 py-2.5 text-sm font-medium text-white dark:text-amber-950 hover:bg-slate-800 dark:hover:bg-amber-400"
                     @click="purchaseAddon"
                 >
                     {{ onTrial ? 'Enable for trial' : 'Add Service Desk' }}{{ addon?.price_monthly && !onTrial ? ` — ${formatPrice(addon.price_monthly)}/mo` : '' }}
                 </button>
+                <Link
+                    v-else
+                    href="/settings/billing?section=plans"
+                    class="inline-flex items-center rounded-lg bg-slate-900 dark:bg-amber-500 px-4 py-2.5 text-sm font-medium text-white dark:text-amber-950 hover:bg-slate-800 dark:hover:bg-amber-400"
+                >
+                    Choose a plan to continue
+                </Link>
                 <Link
                     href="/settings/billing?section=addons"
                     class="inline-flex items-center rounded-lg border border-amber-300 dark:border-amber-800 bg-white dark:bg-slate-900 px-4 py-2.5 text-sm font-medium text-amber-950 dark:text-amber-200 hover:bg-amber-100/60 dark:hover:bg-slate-800"
