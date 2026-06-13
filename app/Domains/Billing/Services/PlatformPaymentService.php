@@ -31,6 +31,13 @@ class PlatformPaymentService
         return $this->payments->stats();
     }
 
+    public function historyForTenant(string $tenantId): array
+    {
+        return $this->payments->forTenant($tenantId)
+            ->map(fn (PlatformPayment $payment) => $this->presentForTenant($payment))
+            ->all();
+    }
+
     public function recordFromRazorpayPayment(array $payment, ?array $subscription = null): void
     {
         $paymentId = $payment['id'] ?? null;
@@ -91,6 +98,27 @@ class PlatformPaymentService
             'invoice_pdf' => null,
             'paid_at' => null,
         ]);
+    }
+
+    private function presentForTenant(PlatformPayment $payment): array
+    {
+        $plan = $payment->plan ? ($this->plans->all()[$payment->plan] ?? null) : null;
+
+        return [
+            'id' => $payment->id,
+            'amount' => $payment->amount,
+            'currency' => $payment->currency,
+            'status' => $payment->status,
+            'plan' => $payment->plan,
+            'plan_name' => $plan['name'] ?? ($payment->plan ? ucfirst($payment->plan) : null),
+            'description' => $payment->description,
+            'invoice_number' => $payment->invoice_number,
+            'invoice_url' => $payment->invoice_url,
+            'invoice_pdf' => $payment->invoice_pdf,
+            'razorpay_payment_id' => $payment->razorpay_payment_id,
+            'paid_at' => $payment->paid_at?->toIso8601String(),
+            'created_at' => $payment->created_at?->toIso8601String(),
+        ];
     }
 
     private function present(PlatformPayment $payment): array

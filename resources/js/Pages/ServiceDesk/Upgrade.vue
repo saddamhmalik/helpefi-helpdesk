@@ -45,6 +45,10 @@ const purchaseAddon = () => {
                 {{ formatPrice(addon.price_monthly) }}/month
             </p>
 
+            <p v-if="!canPurchase && !onTrial" class="mt-4 rounded-lg border border-amber-300 dark:border-amber-800 bg-white/70 dark:bg-slate-900/60 px-4 py-3 text-sm text-amber-900 dark:text-amber-200">
+                Service Desk is an add-on for an active paid plan. Subscribe to a plan first, then add Service Desk from billing.
+            </p>
+
             <ul class="mt-6 space-y-2 text-sm text-amber-950/90 dark:text-amber-200/90">
                 <li class="flex gap-2">
                     <span class="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-amber-600" />

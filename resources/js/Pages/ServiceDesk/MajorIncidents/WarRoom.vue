@@ -176,7 +176,7 @@ const coordinatorNames = computed(() => {
                                 {{ $t('service_desk.declared_by_label') }} {{ majorIncident.declared_by }}
                             </span>
                         </div>
-                        <div class="min-h-[16rem] max-h-[min(32rem,55vh)] flex-1 overflow-y-auto bg-[#e5ddd5]/30 p-3">
+                        <div class="min-h-[16rem] max-h-[min(32rem,55vh)] flex-1 overflow-y-auto bg-[#e5ddd5]/30 p-3 dark:bg-slate-900/40">
                             <TicketConversation :messages="messages" :current-user-id="currentUserId" />
                         </div>
                         <form

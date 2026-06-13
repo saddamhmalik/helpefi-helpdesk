@@ -2,9 +2,24 @@
 @php
     $isMarketingPage = request()->routeIs('central.home', 'central.login', 'central.register');
     $appearance = 'light';
+    $centralSeo = null;
 
     if (! $isMarketingPage && auth()->check()) {
         $appearance = app(\App\Domains\Auth\Services\UserPreferenceService::class)->appearance(auth()->user());
+    }
+
+    if ($isMarketingPage) {
+        $centralPage = match (true) {
+            request()->routeIs('central.register') => 'register',
+            request()->routeIs('central.login') => 'login',
+            default => 'home',
+        };
+
+        $centralSeo = app(\App\Domains\Tenancy\Services\CentralSeoService::class)->meta(
+            $centralPage,
+            config('app.name', 'helpefi'),
+            app(\App\Domains\Tenancy\Services\CentralSettingsService::class)->trialDays(),
+        );
     }
 @endphp
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ in_array(app()->getLocale(), ['ar']) ? 'rtl' : 'ltr' }}">
@@ -16,7 +31,10 @@
         <link rel="icon" href="/favicon.png" type="image/png" sizes="32x32">
         <link rel="icon" href="/favicon-16.png" type="image/png" sizes="16x16">
         <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-        <title inertia>{{ config('app.name', 'helpefi') }}</title>
+        <title inertia>{{ $centralSeo['title'] ?? config('app.name', 'helpefi') }}</title>
+        @if ($centralSeo)
+            @include('partials.central-seo', ['seo' => $centralSeo])
+        @endif
         <script>
             (function () {
                 var isMarketing = @json($isMarketingPage);

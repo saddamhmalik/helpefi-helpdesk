@@ -8,6 +8,7 @@ use App\Domains\Tenancy\Repositories\CentralSettingRepository;
 use App\Domains\Tenancy\Support\AddonCatalogDefinition;
 use App\Domains\Tenancy\Support\CurrencyCatalog;
 use App\Domains\Tenancy\Support\PlanCatalogDefinition;
+use App\Domains\Tenancy\Support\SocialLinkDefinition;
 
 class CentralSettingsService
 {
@@ -91,6 +92,36 @@ class CentralSettingsService
         return $catalog[$key];
     }
 
+    public function socialLinks(): array
+    {
+        $stored = $this->storedSocialLinks();
+
+        return collect(SocialLinkDefinition::platforms())
+            ->map(fn (array $meta, string $key) => [
+                'key' => $key,
+                'label' => $meta['label'],
+                'url' => $stored[$key] ?? '',
+            ])
+            ->filter(fn (array $item) => $item['url'] !== '')
+            ->values()
+            ->all();
+    }
+
+    public function socialLinksForAdmin(): array
+    {
+        $stored = $this->storedSocialLinks();
+
+        return collect(SocialLinkDefinition::platforms())
+            ->map(fn (array $meta, string $key) => [
+                'key' => $key,
+                'label' => $meta['label'],
+                'placeholder' => $meta['placeholder'],
+                'url' => $stored[$key] ?? '',
+            ])
+            ->values()
+            ->all();
+    }
+
     public function plansForDisplay(): array
     {
         return collect($this->planCatalog())
@@ -117,6 +148,7 @@ class CentralSettingsService
             'tenant_purge_grace_days' => $this->tenantPurgeGraceDays(),
             'tenant_purge_enabled' => $this->tenantPurgeEnabled(),
             'currency' => $this->currencyMeta(),
+            'social_links' => $this->socialLinksForAdmin(),
             'razorpay_enabled' => $this->razorpayPlanSync->isEnabled(),
             'plans' => $this->plansForDisplay(),
             'addons' => $this->addonsForDisplay(),
@@ -176,9 +208,29 @@ class CentralSettingsService
             $payload['currency'] = $currency;
         }
 
+        if (array_key_exists('social_links', $data)) {
+            $payload['social_links'] = $this->sanitizeSocialLinks($data['social_links']);
+        }
+
         $this->settings->update($this->settings->current(), $payload);
 
         return $this->snapshot();
+    }
+
+    private function storedSocialLinks(): array
+    {
+        return collect((array) ($this->settings->current()->social_links ?? []))
+            ->map(fn ($url) => is_string($url) ? trim($url) : '')
+            ->all();
+    }
+
+    private function sanitizeSocialLinks(mixed $links): array
+    {
+        return collect(is_array($links) ? $links : [])
+            ->only(SocialLinkDefinition::keys())
+            ->map(fn ($url) => is_string($url) ? trim($url) : '')
+            ->filter(fn ($url) => $url !== '')
+            ->all();
     }
 
     private function normalizeIncomingPlan(array $plan, array $existing): array

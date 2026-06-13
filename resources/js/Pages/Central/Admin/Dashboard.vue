@@ -95,6 +95,19 @@ const statusTone = (workspace) => {
                 </div>
             </section>
 
+            <section v-if="dashboard.marketing_analytics" class="mb-8">
+                <h2 class="mb-3 text-sm font-semibold text-slate-900 dark:text-slate-100">{{ $t('central.marketing_website') }}</h2>
+                <p class="mb-4 text-sm text-slate-500 dark:text-slate-400">{{ $t('central.marketing_website_caption') }}</p>
+                <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                    <PlatformStatCard :label="$t('central.visits_today')" :value="dashboard.marketing_analytics.views_today" tone="blue" />
+                    <PlatformStatCard :label="$t('central.unique_visitors_today')" :value="dashboard.marketing_analytics.unique_visitors_today" tone="emerald" />
+                    <PlatformStatCard :label="$t('central.total_visits')" :value="dashboard.marketing_analytics.total_views" />
+                    <PlatformStatCard :label="$t('central.visits_7_days')" :value="dashboard.marketing_analytics.views_7_days" />
+                    <PlatformStatCard :label="$t('central.visits_30_days')" :value="dashboard.marketing_analytics.views_30_days" />
+                    <PlatformStatCard :label="$t('central.unique_visitors_30_days')" :value="dashboard.marketing_analytics.unique_visitors_30_days" tone="emerald" />
+                </div>
+            </section>
+
             <section v-if="dashboard.workspace_stats" class="mb-8">
                 <h2 class="mb-3 text-sm font-semibold text-slate-900 dark:text-slate-100">{{ $t('central.workspaces') }}</h2>
                 <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">

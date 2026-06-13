@@ -49,6 +49,7 @@ return Application::configure(basePath: dirname(__DIR__))
             \App\Http\Middleware\ForgetTenantWebAuthOnCentral::class,
             \App\Http\Middleware\SetUserLocale::class,
             \App\Http\Middleware\HandleInertiaRequests::class,
+            \App\Http\Middleware\TrackMarketingPageView::class,
         ]);
 
         $middleware->validateCsrfTokens(except: [

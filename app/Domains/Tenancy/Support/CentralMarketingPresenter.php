@@ -15,6 +15,7 @@ class CentralMarketingPresenter
             'trialDays' => app(CentralSettingsService::class)->trialDays(),
             'centralDomain' => config('tenancy.central_app_domain'),
             'currency' => app(CentralSettingsService::class)->currencyMeta(),
+            'socialLinks' => app(CentralSettingsService::class)->socialLinks(),
             'plans' => self::plans(),
             'seo' => app(CentralSeoService::class)->shared(),
             'aiDemoEnabled' => app(CentralMarketingAiService::class)->isEnabled(),

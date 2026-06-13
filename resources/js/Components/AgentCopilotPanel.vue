@@ -131,7 +131,7 @@ watch(open, async (isOpen) => {
                         <button
                             v-if="message.role === 'assistant' && onInsertReply"
                             type="button"
-                            class="mt-2 block text-[11px] font-semibold text-violet-700 dark:text-violet-300 hover:text-violet-900"
+                            class="mt-2 block text-[11px] font-semibold text-violet-700 dark:text-violet-300 hover:text-violet-900 dark:hover:text-violet-100"
                             @click="insertReply(message.content)"
                         >
                             Insert into reply
@@ -151,7 +151,7 @@ watch(open, async (isOpen) => {
                             :href="article.url"
                             target="_blank"
                             rel="noopener noreferrer"
-                            class="block text-xs font-medium text-violet-800 hover:underline"
+                            class="block text-xs font-medium text-violet-800 dark:text-violet-300 hover:underline"
                         >
                             {{ article.title }}
                         </Link>
@@ -165,7 +165,7 @@ watch(open, async (isOpen) => {
                         v-for="prompt in quickPrompts"
                         :key="prompt"
                         type="button"
-                        class="rounded-full border border-violet-100 dark:border-violet-900/50 bg-violet-50 dark:bg-violet-950/40 px-2 py-0.5 text-[10px] font-medium text-violet-700 dark:text-violet-300 transition hover:bg-violet-100"
+                        class="rounded-full border border-violet-100 dark:border-violet-900/50 bg-violet-50 dark:bg-violet-950/40 px-2 py-0.5 text-[10px] font-medium text-violet-700 dark:text-violet-300 transition hover:bg-violet-100 hover:text-violet-900 dark:hover:bg-violet-900/50 dark:hover:text-violet-100"
                         :disabled="loading"
                         @click="usePrompt(prompt)"
                     >

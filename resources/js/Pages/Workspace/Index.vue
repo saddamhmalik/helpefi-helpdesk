@@ -703,7 +703,7 @@ onUnmounted(() => {
                         </div>
                     </div>
 
-                    <div class="relative min-h-0 flex-1 overflow-hidden bg-[#e5ddd5]/30 px-3 py-2">
+                    <div class="relative min-h-0 flex-1 overflow-hidden bg-[#e5ddd5]/30 px-3 py-2 dark:bg-slate-900/40">
                         <TicketConversation
                             :messages="messages"
                             :current-user-id="currentUserId"
