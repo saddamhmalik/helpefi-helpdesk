@@ -50,6 +50,7 @@ class BillingController extends Controller
             'plan' => ['required', 'in:'.implode(',', $this->planRepository->slugs())],
             'interval' => ['nullable', 'in:month,year'],
             'redirect' => ['nullable', 'string', 'max:255'],
+            'success_redirect' => ['nullable', 'string', 'max:255'],
         ]);
 
         $interval = $data['interval'] ?? 'month';
@@ -58,17 +59,24 @@ class BillingController extends Controller
             '/settings/billing?section=plans',
         );
 
-        $successPath = str_contains($returnPath, '?')
+        $defaultSuccessRedirect = str_contains($returnPath, '?')
             ? $returnPath.'&checkout=success'
             : $returnPath.'?checkout=success';
-        $successUrl = $request->getSchemeAndHttpHost().$successPath;
+        $successRedirect = $this->resolveInternalPath(
+            $data['success_redirect'] ?? $defaultSuccessRedirect,
+            $defaultSuccessRedirect,
+        );
+        $cancelRedirect = str_contains($returnPath, '?')
+            ? $returnPath.'&checkout=cancelled'
+            : $returnPath.'?checkout=cancelled';
 
         $result = $this->billingService->initiatePlanChange(
             $data['plan'],
             (string) $request->user()->email,
             (string) $request->user()->name,
-            $successUrl,
+            $successRedirect,
             $interval,
+            $cancelRedirect,
         );
 
         if (is_string($result)) {

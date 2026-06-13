@@ -107,6 +107,7 @@ class HandleInertiaRequests extends Middleware
                 'webhook_secret' => $request->session()->pull('webhook_secret'),
                 'two_factor_setup' => $request->session()->pull('two_factor_setup'),
                 'recovery_codes' => $request->session()->pull('recovery_codes'),
+                'integration_secret' => $request->session()->pull('integration_secret'),
                 'razorpay_checkout' => $request->session()->pull('razorpay_checkout'),
             ],
         ]);

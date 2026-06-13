@@ -5,18 +5,18 @@ const toast = useToast();
 
 const styles = {
     success: {
-        wrap: 'border-emerald-200 dark:border-emerald-900/60 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-900',
-        icon: 'text-emerald-600',
+        wrap: 'border-emerald-200 bg-emerald-50 text-emerald-950 shadow-emerald-900/10 dark:border-emerald-700 dark:bg-emerald-950 dark:text-emerald-50 dark:shadow-black/40',
+        icon: 'text-emerald-600 dark:text-emerald-400',
         path: 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z',
     },
     error: {
-        wrap: 'border-red-200 dark:border-red-900/60 bg-red-50 dark:bg-red-950/40 text-red-900',
-        icon: 'text-red-600',
+        wrap: 'border-red-200 bg-red-50 text-red-950 shadow-red-900/10 dark:border-red-700 dark:bg-red-950 dark:text-red-50 dark:shadow-black/40',
+        icon: 'text-red-600 dark:text-red-400',
         path: 'M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z',
     },
     info: {
-        wrap: 'border-blue-200 dark:border-blue-900/60 bg-blue-50 dark:bg-blue-950/40 text-blue-900',
-        icon: 'text-blue-600',
+        wrap: 'border-blue-200 bg-blue-50 text-blue-950 shadow-blue-900/10 dark:border-blue-700 dark:bg-blue-950 dark:text-blue-50 dark:shadow-black/40',
+        icon: 'text-blue-600 dark:text-blue-400',
         path: 'M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z',
     },
 };
@@ -37,17 +37,17 @@ const styles = {
                 <div
                     v-for="item in toast.items"
                     :key="item.id"
-                    class="pointer-events-auto flex items-start gap-3 rounded-xl border px-4 py-3 shadow-lg"
+                    class="pointer-events-auto flex items-start gap-3 rounded-xl border px-4 py-3 shadow-lg backdrop-blur-sm"
                     :class="styles[item.type]?.wrap ?? styles.info.wrap"
                     role="status"
                 >
                     <svg class="mt-0.5 h-5 w-5 shrink-0" :class="styles[item.type]?.icon ?? styles.info.icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" :d="styles[item.type]?.path ?? styles.info.path" />
                     </svg>
-                    <p class="flex-1 text-sm leading-relaxed">{{ item.message }}</p>
+                    <p class="flex-1 text-sm font-medium leading-relaxed">{{ item.message }}</p>
                     <button
                         type="button"
-                        class="shrink-0 rounded p-0.5 opacity-60 transition hover:opacity-100"
+                        class="shrink-0 rounded p-0.5 text-current opacity-70 transition hover:opacity-100"
                         :aria-label="$t('components.dismiss')"
                         @click="toast.dismiss(item.id)"
                     >

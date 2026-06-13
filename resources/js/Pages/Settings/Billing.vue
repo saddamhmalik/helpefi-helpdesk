@@ -107,9 +107,6 @@ const savePlan = () => {
             redirect: '/settings/billing?section=plans',
         }, {
             preserveScroll: true,
-            onSuccess: (page) => {
-                openCheckoutFromFlash(page.props.flash?.razorpay_checkout);
-            },
             onFinish: () => {
                 checkoutProcessing.value = false;
             },

@@ -32,11 +32,9 @@ const purchase = () => {
             plan: form.plan,
             interval: billingInterval.value,
             redirect: '/subscription-required',
+            success_redirect: '/dashboard?checkout=success',
         }, {
             preserveScroll: true,
-            onSuccess: (page) => {
-                openCheckoutFromFlash(page.props.flash?.razorpay_checkout);
-            },
             onFinish: () => {
                 checkoutProcessing.value = false;
             },
