@@ -234,7 +234,7 @@ const copy = async (text) => {
                             :class="confirmingRemove ? 'bg-red-600 hover:bg-red-700' : 'bg-amber-900 hover:bg-amber-950'"
                             @click="removeSampleData"
                         >
-                            {{ confirmingRemove ? 'Yes, remove sample data' : 'Remove sample data' }}
+                            {{ confirmingRemove ? $t('setup_index.yes_remove_sample_data') : $t('setup_index.remove_sample_data') }}
                         </button>
                     </div>
                 </div>
@@ -245,9 +245,9 @@ const copy = async (text) => {
                 class="mb-8 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900"
             >
                 <div class="border-b border-slate-100 bg-slate-50 px-5 py-4 dark:border-slate-800 dark:bg-slate-950/80">
-                    <p class="text-sm font-semibold text-slate-900 dark:text-slate-100">Sample &amp; demo content</p>
+                    <p class="text-sm font-semibold text-slate-900 dark:text-slate-100">{{ $t('setup_index.sample_demo_content_title') }}</p>
                     <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">
-                        Load optional sample tickets and customers to explore the product, or remove default demo content seeded into new workspaces.
+                        {{ $t('setup_index.sample_demo_content_description') }}
                     </p>
                 </div>
                 <div class="space-y-4 p-5">
@@ -256,9 +256,9 @@ const copy = async (text) => {
                         class="flex flex-col gap-3 rounded-xl border border-blue-200 bg-blue-50/50 p-4 dark:border-blue-900/60 dark:bg-blue-950/20 sm:flex-row sm:items-center sm:justify-between"
                     >
                         <div>
-                            <p class="text-sm font-semibold text-slate-900 dark:text-slate-100">Explore with sample data</p>
+                            <p class="text-sm font-semibold text-slate-900 dark:text-slate-100">{{ $t('setup_index.explore_with_sample_data') }}</p>
                             <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">
-                                Adds demo tickets, customers, teams, and departments. You can remove them anytime.
+                                {{ $t('setup_index.adds_demo_tickets_conversations_customers_tags_teams_and_departments_y') }}
                             </p>
                         </div>
                         <button
@@ -267,7 +267,7 @@ const copy = async (text) => {
                             :disabled="loadingSample"
                             @click="loadSampleData"
                         >
-                            {{ loadingSample ? 'Loading…' : 'Load sample data' }}
+                            {{ loadingSample ? $t('setup_index.loading_sample_data') : $t('setup_index.load_sample_data') }}
                         </button>
                     </div>
                     <div
@@ -275,9 +275,9 @@ const copy = async (text) => {
                         class="flex flex-col gap-3 rounded-xl border border-amber-200 bg-amber-50/50 p-4 dark:border-amber-900/60 dark:bg-amber-950/20 sm:flex-row sm:items-center sm:justify-between"
                     >
                         <div>
-                            <p class="text-sm font-semibold text-slate-900 dark:text-slate-100">Default demo content</p>
+                            <p class="text-sm font-semibold text-slate-900 dark:text-slate-100">{{ $t('setup_index.default_demo_content_title') }}</p>
                             <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">
-                                Includes demo assets, service catalog items, Acme Inc, starter knowledge base articles, and the default support@helpdesk.test inbox.
+                                {{ $t('setup_index.default_demo_content_description') }}
                             </p>
                         </div>
                         <div class="flex shrink-0 items-center gap-2">
@@ -287,7 +287,7 @@ const copy = async (text) => {
                                 class="rounded-lg px-3 py-1.5 text-sm font-medium text-amber-900 hover:bg-amber-100 dark:text-amber-200 dark:hover:bg-amber-900/40"
                                 @click="confirmingBootstrapRemove = false"
                             >
-                                Cancel
+                                {{ $t('setup_index.cancel') }}
                             </button>
                             <button
                                 type="button"
@@ -296,7 +296,7 @@ const copy = async (text) => {
                                 :disabled="removingBootstrap"
                                 @click="removeBootstrapDemo"
                             >
-                                {{ removingBootstrap ? 'Removing…' : (confirmingBootstrapRemove ? 'Yes, remove demo content' : 'Remove demo content') }}
+                                {{ removingBootstrap ? $t('setup_index.removing') : (confirmingBootstrapRemove ? $t('setup_index.yes_remove_demo_content') : $t('setup_index.remove_demo_content')) }}
                             </button>
                         </div>
                     </div>

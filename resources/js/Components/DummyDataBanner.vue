@@ -99,7 +99,7 @@ const removeBootstrap = () => {
         role="status"
     >
         <span class="min-w-0 flex-1 text-sm text-slate-700 dark:text-slate-300">
-            Default demo content is present (assets, service catalog, starter KB, demo support inbox).
+            {{ $t('components.bootstrap_demo_present') }}
         </span>
         <div class="ml-auto flex shrink-0 items-center gap-1.5">
             <button
@@ -117,7 +117,7 @@ const removeBootstrap = () => {
                 :disabled="removingBootstrap"
                 @click="removeBootstrap"
             >
-                {{ removingBootstrap ? 'Removing…' : (confirmingBootstrap ? $t('components.yes_remove') : 'Remove demo content') }}
+                {{ removingBootstrap ? $t('components.removing') : (confirmingBootstrap ? $t('components.yes_remove') : $t('components.bootstrap_demo_remove')) }}
             </button>
         </div>
     </div>

@@ -53,7 +53,15 @@
         "return_to_dashboard": "Return to your dashboard. Incomplete items will keep showing warnings until configured.",
         "finish_setup_description": "Finish setup to open your workspace dashboard. Missing configuration will still show warnings.",
         "choose_sample_or_empty": "Choose sample data or an empty workspace above to continue.",
-        "could_not_copy": "Could not copy to clipboard. Select the snippet and copy manually."
+        "could_not_copy": "Could not copy to clipboard. Select the snippet and copy manually.",
+        "sample_demo_content_title": "Sample & demo content",
+        "sample_demo_content_description": "Load optional sample tickets and customers to explore the product, or remove default demo content seeded into new workspaces.",
+        "default_demo_content_title": "Default demo content",
+        "default_demo_content_description": "Includes demo assets, service catalog items, Acme Inc, starter knowledge base articles, and the default demo support inbox.",
+        "load_sample_data": "Load sample data",
+        "yes_remove_demo_content": "Yes, remove demo content",
+        "remove_demo_content": "Remove demo content",
+        "removing": "Removing…"
     },
     "subscription_required": {
         "choose_a_plan": "Choose a plan",

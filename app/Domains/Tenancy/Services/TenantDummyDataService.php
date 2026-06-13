@@ -22,6 +22,7 @@ use App\Domains\Tickets\Models\TicketStatus;
 use App\Domains\Tickets\Repositories\TicketRepository;
 use App\Domains\Workforce\Models\Department;
 use App\Domains\Workforce\Models\Team;
+use App\Domains\Tenancy\Support\BootstrapDemoContent;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -50,8 +51,6 @@ class TenantDummyDataService
     private const SAMPLE_CONTACT_EMAILS = ['customer@example.com'];
 
     private const BOOTSTRAP_SERVICE_CATEGORY_SLUGS = ['it-support', 'hr-services'];
-
-    private const BOOTSTRAP_INBOX_ADDRESSES = ['support@helpdesk.test'];
 
     private const BOOTSTRAP_KNOWLEDGE_CATEGORY_SLUGS = [
         'product-documentation',
@@ -175,7 +174,15 @@ class TenantDummyDataService
             return true;
         }
 
-        if (EmailInbox::query()->whereIn('address', self::BOOTSTRAP_INBOX_ADDRESSES)->exists()) {
+        if (EmailInbox::query()->whereIn('address', self::bootstrapInboxAddresses())->exists()) {
+            return true;
+        }
+
+        if (KnowledgeCollection::query()->whereIn('slug', self::BOOTSTRAP_KNOWLEDGE_COLLECTION_SLUGS)->exists()) {
+            return true;
+        }
+
+        if (KnowledgeCategory::query()->whereIn('slug', self::BOOTSTRAP_KNOWLEDGE_CATEGORY_SLUGS)->exists()) {
             return true;
         }
 
@@ -225,7 +232,7 @@ class TenantDummyDataService
         ]);
 
         EmailInbox::query()
-            ->whereIn('address', self::BOOTSTRAP_INBOX_ADDRESSES)
+            ->whereIn('address', self::bootstrapInboxAddresses())
             ->delete();
 
         KnowledgeArticle::query()
@@ -614,5 +621,10 @@ class TenantDummyDataService
             'departments' => count($manifest['department_ids'] ?? []),
             'tags' => count($manifest['tag_ids'] ?? []),
         ];
+    }
+
+    private function bootstrapInboxAddresses(): array
+    {
+        return [BootstrapDemoContent::DEMO_INBOX_ADDRESS];
     }
 }

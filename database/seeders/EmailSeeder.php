@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Domains\Channels\Models\EmailInbox;
 use App\Domains\Channels\Models\MailSetting;
+use App\Domains\Tenancy\Support\BootstrapDemoContent;
 use Illuminate\Database\Seeder;
 
 class EmailSeeder extends Seeder
@@ -12,7 +13,7 @@ class EmailSeeder extends Seeder
     {
         if (app()->environment(['local', 'testing'])) {
             EmailInbox::query()->firstOrCreate(
-                ['address' => 'support@helpdesk.test'],
+                ['address' => BootstrapDemoContent::DEMO_INBOX_ADDRESS],
                 [
                     'name' => 'Support',
                     'inbound_token' => config('helpdesk.inbound_email_token') ?: 'dev-inbound-token',

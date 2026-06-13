@@ -11,6 +11,7 @@ use App\Domains\Settings\Repositories\HelpdeskSettingRepository;
 use App\Domains\Tenancy\Services\TenantDummyDataService;
 use App\Domains\Tickets\Models\Ticket;
 use App\Domains\Workforce\Models\Department;
+use App\Domains\Tenancy\Support\BootstrapDemoContent;
 use App\Models\User;
 use Database\Seeders\ChannelSeeder;
 use Database\Seeders\PermissionSeeder;
@@ -114,7 +115,20 @@ class TenantDummyDataTest extends TenantTestCase
             ->assertRedirect($this->tenantUrl('/setup'));
 
         $this->assertFalse($service->hasBootstrapDemo());
-        $this->assertFalse(EmailInbox::query()->where('address', 'support@helpdesk.test')->exists());
+        $this->assertFalse(EmailInbox::query()->where('address', BootstrapDemoContent::DEMO_INBOX_ADDRESS)->exists());
+    }
+
+    public function test_has_bootstrap_demo_detects_orphaned_knowledge_collections(): void
+    {
+        KnowledgeCollection::query()->create([
+            'name' => 'Product guide',
+            'slug' => 'product-guide',
+            'description' => 'Demo collection',
+            'sort_order' => 1,
+            'is_public' => true,
+        ]);
+
+        $this->assertTrue(app(TenantDummyDataService::class)->hasBootstrapDemo());
     }
 
     public function test_setup_page_offers_sample_and_bootstrap_controls_after_skip(): void

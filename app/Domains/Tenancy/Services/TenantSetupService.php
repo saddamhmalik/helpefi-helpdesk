@@ -9,6 +9,7 @@ use App\Domains\Settings\Models\HelpdeskSetting;
 use App\Domains\Settings\Repositories\HelpdeskSettingRepository;
 use App\Domains\Sla\Models\BusinessHours;
 use App\Domains\Sla\Models\SlaPolicy;
+use App\Domains\Tenancy\Support\BootstrapDemoContent;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 
@@ -248,7 +249,7 @@ class TenantSetupService
             return true;
         }
 
-        if ($inbox->address !== 'support@helpdesk.test') {
+        if ($inbox->address !== BootstrapDemoContent::DEMO_INBOX_ADDRESS) {
             return true;
         }
 
