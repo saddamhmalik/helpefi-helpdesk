@@ -1,5 +1,5 @@
 <script setup>
-import { Link, useForm } from '@inertiajs/vue3';
+import { Link, useForm, usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import CentralLayout from '../../Layouts/CentralLayout.vue';
@@ -15,6 +15,7 @@ const props = defineProps({
 });
 
 const { t } = useI18n();
+const page = usePage();
 const platformName = computed(() => t('app.name'));
 
 const form = useForm({
@@ -22,8 +23,17 @@ const form = useForm({
     email: props.prefillEmail ?? '',
 });
 
+const fieldError = (field) => form.errors[field] ?? page.props.errors?.[field] ?? '';
+
+const errorList = computed(() => Object.values(form.errors).length
+    ? Object.entries(form.errors).map(([field, message]) => ({ field, message }))
+    : Object.entries(page.props.errors ?? {}).map(([field, message]) => ({ field, message })));
+
 const submit = () => {
-    form.post('/login');
+    form.post('/login', {
+        preserveScroll: true,
+        onError: () => window.scrollTo({ top: 0, behavior: 'smooth' }),
+    });
 };
 
 const inputClass = 'w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3.5 py-2.5 text-sm text-slate-900 dark:text-slate-100 shadow-sm transition placeholder:text-slate-400 dark:text-slate-500 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20';
@@ -57,6 +67,13 @@ const inputClass = 'w-full rounded-xl border border-slate-200 dark:border-slate-
                         {{ $t('central.well_send_you_to_your_teams_login_page') }}
                     </p>
 
+                    <div v-if="errorList.length" class="mt-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 dark:border-red-900/60 dark:bg-red-950/40">
+                        <p class="text-sm font-semibold text-red-800 dark:text-red-300">Please fix the following:</p>
+                        <ul class="mt-2 list-disc space-y-1 pl-5 text-sm text-red-700 dark:text-red-300">
+                            <li v-for="error in errorList" :key="error.field">{{ error.message }}</li>
+                        </ul>
+                    </div>
+
                     <form class="mt-8 space-y-5" @submit.prevent="submit">
                         <div>
                             <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('central.workspace_url') }}</label>
@@ -72,12 +89,13 @@ const inputClass = 'w-full rounded-xl border border-slate-200 dark:border-slate-
                                 />
                                 <span v-if="centralDomain" class="flex min-w-0 shrink items-center bg-slate-50 dark:bg-slate-950 px-2 text-xs text-slate-500 dark:text-slate-400 sm:px-3 sm:text-sm">.{{ centralDomain }}</span>
                             </div>
-                            <p v-if="form.errors.slug" class="mt-1.5 text-xs text-red-600">{{ form.errors.slug }}</p>
+                            <p v-if="fieldError('slug')" class="mt-1.5 text-xs text-red-600 dark:text-red-400">{{ fieldError('slug') }}</p>
                         </div>
 
                         <div>
                             <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('central.email') }} <span class="font-normal text-slate-400 dark:text-slate-500">{{ $t('central.optional') }}</span></label>
                             <input v-model="form.email" type="email" :class="inputClass" :placeholder="$t('central.you_company_com')" />
+                            <p v-if="fieldError('email')" class="mt-1.5 text-xs text-red-600 dark:text-red-400">{{ fieldError('email') }}</p>
                             <p class="mt-1.5 text-xs text-slate-500 dark:text-slate-400">{{ $t('central.prefills_the_sign-in_form_on_your_workspace') }}</p>
                         </div>
 

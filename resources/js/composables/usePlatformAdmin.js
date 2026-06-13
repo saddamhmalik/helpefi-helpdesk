@@ -42,6 +42,12 @@ export function usePlatformAdmin() {
                 permission: 'tenants.view',
                 match: (url) => url.startsWith('/admin/tenants'),
             });
+            workspaceItems.push({
+                label: 'Pending registrations',
+                href: '/admin/pending-registrations',
+                permission: 'tenants.view',
+                match: (url) => url.startsWith('/admin/pending-registrations'),
+            });
         }
 
         if (can('subscriptions.view')) {

@@ -10,7 +10,7 @@ use App\Domains\Platform\Controllers\Central\AdminFeedbackController;
 use App\Domains\Platform\Controllers\Central\AdminLoginController;
 use App\Domains\Platform\Controllers\Central\AdminNoticeController;
 use App\Domains\Platform\Controllers\Central\AdminObservabilityController;
-use App\Domains\Platform\Controllers\Central\AdminPaymentController;
+use App\Domains\Platform\Controllers\Central\AdminPendingRegistrationController;
 use App\Domains\Platform\Controllers\Central\AdminProfileController;
 use App\Domains\Platform\Controllers\Central\AdminRoleController;
 use App\Domains\Platform\Controllers\Central\AdminSubscriptionController;
@@ -85,11 +85,14 @@ Route::prefix('admin')->name('central.admin.')->group(function () {
 
         Route::middleware('platform.permission:tenants.view')->group(function () {
             Route::get('/tenants', [AdminTenantController::class, 'index'])->name('tenants.index');
+            Route::get('/pending-registrations', [AdminPendingRegistrationController::class, 'index'])->name('pending-registrations.index');
         });
 
         Route::middleware('platform.permission:tenants.manage')->group(function () {
             Route::put('/tenants/{tenant}', [AdminTenantController::class, 'update'])->name('tenants.update');
             Route::delete('/tenants/{tenant}', [AdminTenantController::class, 'destroy'])->name('tenants.destroy');
+            Route::delete('/pending-registrations/{registration}', [AdminPendingRegistrationController::class, 'destroy'])->name('pending-registrations.destroy');
+            Route::post('/pending-registrations/purge-expired', [AdminPendingRegistrationController::class, 'purgeExpired'])->name('pending-registrations.purge-expired');
         });
 
         Route::middleware('platform.permission:payments.view')->group(function () {

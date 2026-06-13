@@ -47,4 +47,15 @@ class CentralLoginTest extends TenantTestCase
             ->assertRedirect('http://'.config('tenancy.central_app_domain').'/login')
             ->assertSessionHasErrors('slug');
     }
+
+    public function test_central_login_rejects_invalid_email(): void
+    {
+        $this->from('http://'.config('tenancy.central_app_domain').'/login')
+            ->post('http://'.config('tenancy.central_app_domain').'/login', [
+                'slug' => 'test',
+                'email' => 'not-an-email',
+            ])
+            ->assertRedirect('http://'.config('tenancy.central_app_domain').'/login')
+            ->assertSessionHasErrors('email');
+    }
 }
