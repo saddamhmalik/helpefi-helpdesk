@@ -10,6 +10,7 @@ Schedule::command('tenants:run automation:process-scheduled')->everyMinute();
 Schedule::command('tenants:run tickets:unsnooze')->everyMinute();
 Schedule::command('billing:enforce-grace')->hourly()->withoutOverlapping();
 Schedule::command('tenants:purge-expired')->daily()->withoutOverlapping();
+Schedule::command('registrations:purge-expired')->everySixHours()->withoutOverlapping();
 Schedule::command('platform:run-backups')
     ->everyMinute()
     ->withoutOverlapping()

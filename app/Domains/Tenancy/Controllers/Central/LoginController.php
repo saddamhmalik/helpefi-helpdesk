@@ -27,6 +27,7 @@ class LoginController extends Controller
     {
         $data = $request->validate([
             'slug' => ['required', 'string', 'max:63', 'regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/'],
+            'email' => ['nullable', 'email', 'max:255'],
         ]);
 
         $tenant = Tenant::query()->where('slug', $data['slug'])->first();

@@ -18,6 +18,15 @@ const { t } = useI18n();
 const page = usePage();
 
 const flashError = computed(() => page.props.flash?.error ?? '');
+
+const fieldError = (field) => form.errors[field] ?? page.props.errors?.[field] ?? '';
+
+const errorList = computed(() => Object.values(form.errors).length
+    ? Object.entries(form.errors).map(([field, message]) => ({ field, message }))
+    : Object.entries(page.props.errors ?? {}).map(([field, message]) => ({ field, message })));
+
+const hasValidationErrors = computed(() => errorList.value.length > 0);
+
 const resending = ref(false);
 
 const resend = () => {
@@ -98,6 +107,7 @@ const onSlugInput = () => {
 const submit = () => {
     form.post('/register', {
         preserveScroll: true,
+        onError: () => window.scrollTo({ top: 0, behavior: 'smooth' }),
     });
 };
 
@@ -148,6 +158,13 @@ const inputClass = 'w-full rounded-xl border border-slate-200 dark:border-slate-
                             {{ flashError }}
                         </div>
 
+                        <div v-if="hasValidationErrors && !verificationSent" class="mb-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 dark:border-red-900/60 dark:bg-red-950/40">
+                            <p class="text-sm font-semibold text-red-800 dark:text-red-300">Please fix the following:</p>
+                            <ul class="mt-2 list-disc space-y-1 pl-5 text-sm text-red-700 dark:text-red-300">
+                                <li v-for="error in errorList" :key="error.field">{{ error.message }}</li>
+                            </ul>
+                        </div>
+
                         <form v-if="!verificationSent" class="space-y-6" @submit.prevent="submit">
                             <section class="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-sm sm:p-6">
                                 <div class="mb-5 flex items-center gap-3">
@@ -161,7 +178,7 @@ const inputClass = 'w-full rounded-xl border border-slate-200 dark:border-slate-
                                     <div>
                                         <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('central.organization_name') }}</label>
                                         <input v-model="form.organization_name" type="text" required :class="inputClass" :placeholder="$t('central.acme_support')" />
-                                        <p v-if="form.errors.organization_name" class="mt-1.5 text-xs text-red-600">{{ form.errors.organization_name }}</p>
+                                        <p v-if="fieldError('organization_name')" class="mt-1.5 text-xs text-red-600 dark:text-red-400">{{ fieldError('organization_name') }}</p>
                                     </div>
                                     <div>
                                         <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('central.workspace_url') }}</label>
@@ -169,7 +186,7 @@ const inputClass = 'w-full rounded-xl border border-slate-200 dark:border-slate-
                                             <input v-model="form.slug" type="text" required pattern="[a-z0-9]+(?:-[a-z0-9]+)*" class="min-w-0 flex-1 border-0 bg-transparent px-3.5 py-2.5 text-sm focus:outline-none" :placeholder="$t('central.acme')" @input="onSlugInput" />
                                             <span class="flex min-w-0 shrink items-center bg-slate-50 dark:bg-slate-950 px-2 text-xs text-slate-500 dark:text-slate-400 sm:px-3 sm:text-sm">.{{ workspaceDomainSuffix }}</span>
                                         </div>
-                                        <p v-if="form.errors.slug" class="mt-1.5 text-xs text-red-600">{{ form.errors.slug }}</p>
+                                        <p v-if="fieldError('slug')" class="mt-1.5 text-xs text-red-600 dark:text-red-400">{{ fieldError('slug') }}</p>
                                     </div>
                                 </div>
                             </section>
@@ -186,15 +203,17 @@ const inputClass = 'w-full rounded-xl border border-slate-200 dark:border-slate-
                                     <div>
                                         <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('central.full_name') }}</label>
                                         <input v-model="form.name" type="text" required :class="inputClass" :placeholder="$t('central.jane_admin')" />
+                                        <p v-if="fieldError('name')" class="mt-1.5 text-xs text-red-600 dark:text-red-400">{{ fieldError('name') }}</p>
                                     </div>
                                     <div>
                                         <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('central.work_email') }}</label>
                                         <input v-model="form.email" type="email" required :class="inputClass" :placeholder="$t('central.you_company_com')" />
-                                        <p v-if="form.errors.email" class="mt-1.5 text-xs text-red-600">{{ form.errors.email }}</p>
+                                        <p v-if="fieldError('email')" class="mt-1.5 text-xs text-red-600 dark:text-red-400">{{ fieldError('email') }}</p>
                                     </div>
                                     <div>
                                         <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('settings.password') }}</label>
                                         <input v-model="form.password" type="password" required minlength="8" :class="inputClass" :placeholder="$t('central.at_least_8_characters')" />
+                                        <p v-if="fieldError('password')" class="mt-1.5 text-xs text-red-600 dark:text-red-400">{{ fieldError('password') }}</p>
                                         <div v-if="form.password" class="mt-2">
                                             <div class="h-1 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-900">
                                                 <div class="h-full rounded-full transition-all duration-300" :class="passwordStrength.color" :style="{ width: passwordStrength.width }" />
@@ -205,6 +224,7 @@ const inputClass = 'w-full rounded-xl border border-slate-200 dark:border-slate-
                                     <div>
                                         <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('profile.confirm_password_disable') }}</label>
                                         <input v-model="form.password_confirmation" type="password" required :class="inputClass" />
+                                        <p v-if="fieldError('password_confirmation')" class="mt-1.5 text-xs text-red-600 dark:text-red-400">{{ fieldError('password_confirmation') }}</p>
                                     </div>
                                 </div>
                             </section>

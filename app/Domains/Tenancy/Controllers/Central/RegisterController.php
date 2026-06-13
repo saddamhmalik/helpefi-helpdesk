@@ -22,10 +22,14 @@ class RegisterController extends Controller
 
     public function create(): Response
     {
-        return Inertia::render('Central/Register', CentralMarketingPresenter::shared());
+        return Inertia::render('Central/Register', [
+            ...CentralMarketingPresenter::shared(),
+            'verificationSent' => session()->boolean('verification_sent'),
+            'verificationEmail' => (string) session('verification_email', ''),
+        ]);
     }
 
-    public function store(Request $request): Response
+    public function store(Request $request): RedirectResponse
     {
         $data = $request->validate([
             'organization_name' => ['required', 'string', 'max:255'],
@@ -37,10 +41,13 @@ class RegisterController extends Controller
 
         $this->verification->register($data);
 
-        return $this->verificationSentResponse($data['email']);
+        return redirect()
+            ->route('central.register')
+            ->with('verification_sent', true)
+            ->with('verification_email', $data['email']);
     }
 
-    public function resend(Request $request): Response
+    public function resend(Request $request): RedirectResponse
     {
         $data = $request->validate([
             'email' => ['required', 'email', 'max:255'],
@@ -48,7 +55,10 @@ class RegisterController extends Controller
 
         $this->verification->resend($data['email']);
 
-        return $this->verificationSentResponse($data['email']);
+        return redirect()
+            ->route('central.register')
+            ->with('verification_sent', true)
+            ->with('verification_email', $data['email']);
     }
 
     public function verify(Request $request, string $token): HttpResponse|RedirectResponse
@@ -60,14 +70,5 @@ class RegisterController extends Controller
         }
 
         return Inertia::location($this->provisioning->welcomeUrl($tenant, $tenant->admin_email));
-    }
-
-    private function verificationSentResponse(string $email): Response
-    {
-        return Inertia::render('Central/Register', [
-            ...CentralMarketingPresenter::shared(),
-            'verificationSent' => true,
-            'verificationEmail' => $email,
-        ]);
     }
 }

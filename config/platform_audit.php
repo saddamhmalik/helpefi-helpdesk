@@ -12,6 +12,8 @@ return [
         'platform.tenant.blocked' => 'Workspace blocked',
         'platform.tenant.unblocked' => 'Workspace unblocked',
         'platform.tenant.plan_changed' => 'Workspace plan changed',
+        'platform.registration.deleted' => 'Pending registration removed',
+        'platform.registrations.purged_expired' => 'Expired pending registrations purged',
         'platform.user.created' => 'Platform user created',
         'platform.user.updated' => 'Platform user updated',
         'platform.user.deleted' => 'Platform user deleted',

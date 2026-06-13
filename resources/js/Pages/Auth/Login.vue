@@ -22,7 +22,16 @@ const form = useForm({
     remember: false,
 });
 
-const submit = () => form.post('/login');
+const fieldError = (field) => form.errors[field] ?? page.props.errors?.[field] ?? '';
+
+const errorList = computed(() => Object.values(form.errors).length
+    ? Object.entries(form.errors).map(([field, message]) => ({ field, message }))
+    : Object.entries(page.props.errors ?? {}).map(([field, message]) => ({ field, message })));
+
+const submit = () => form.post('/login', {
+    preserveScroll: true,
+    onError: () => window.scrollTo({ top: 0, behavior: 'smooth' }),
+});
 </script>
 
 <template>
@@ -59,6 +68,16 @@ const submit = () => form.post('/login');
             {{ flashError }}
         </div>
 
+        <div
+            v-if="errorList.length"
+            class="mt-6 rounded-xl border border-red-200 dark:border-red-900/60 bg-red-50 dark:bg-red-950/40 px-4 py-3 dark:border-red-900 dark:bg-red-950/50"
+        >
+            <p class="text-sm font-semibold text-red-800 dark:text-red-300">Please fix the following:</p>
+            <ul class="mt-2 list-disc space-y-1 pl-5 text-sm text-red-700 dark:text-red-300">
+                <li v-for="error in errorList" :key="error.field">{{ error.message }}</li>
+            </ul>
+        </div>
+
         <a
             v-if="sso?.enabled"
             :href="sso.redirect_url"
@@ -89,7 +108,7 @@ const submit = () => form.post('/login');
                     autofocus
                     required
                 />
-                <p v-if="form.errors.email" class="mt-1.5 text-xs text-red-600">{{ form.errors.email }}</p>
+                <p v-if="fieldError('email')" class="mt-1.5 text-xs text-red-600 dark:text-red-400">{{ fieldError('email') }}</p>
             </div>
 
             <div>
@@ -107,7 +126,7 @@ const submit = () => form.post('/login');
                     autocomplete="current-password"
                     required
                 />
-                <p v-if="form.errors.password" class="mt-1.5 text-xs text-red-600">{{ form.errors.password }}</p>
+                <p v-if="fieldError('password')" class="mt-1.5 text-xs text-red-600 dark:text-red-400">{{ fieldError('password') }}</p>
             </div>
 
             <label class="flex cursor-pointer items-center gap-2.5 text-sm text-slate-600 dark:text-slate-400">
