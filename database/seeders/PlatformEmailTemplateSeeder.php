@@ -16,7 +16,7 @@ class PlatformEmailTemplateSeeder extends Seeder
             [
                 'name' => 'Registration confirmation',
                 'subject' => 'Welcome to {{brand}} — we\'re setting up your workspace',
-                'body_html' => <<<HTML
+                'body_html' => <<<'HTML'
 <p>Hi {{admin_name}},</p>
 <p>Thanks for registering <strong>{{organization_name}}</strong> on {{brand}}. We're provisioning your workspace now.</p>
 <p><strong>Workspace URL:</strong> {{workspace_url}}<br>
@@ -31,11 +31,32 @@ HTML,
         );
 
         PlatformEmailTemplate::query()->updateOrCreate(
+            ['slug' => PlatformEmailTemplate::SLUG_REGISTRATION_VERIFICATION],
+            [
+                'name' => 'Registration verification',
+                'subject' => 'Verify your email to create your {{brand}} workspace',
+                'body_html' => <<<'HTML'
+<p>Hi {{admin_name}},</p>
+<p>Thanks for signing up for <strong>{{organization_name}}</strong> on {{brand}}. Confirm your email address to create your workspace.</p>
+<p style="margin:28px 0;">
+  <a href="{{verification_url}}" style="display:inline-block;background:#2563eb;color:#ffffff;text-decoration:none;padding:12px 24px;border-radius:10px;font-weight:600;">Verify email &amp; create workspace</a>
+</p>
+<p>Or copy this link into your browser:<br>{{verification_url}}</p>
+<p>Your workspace and {{trial_days}}-day free trial are created only after you verify. This link expires in 24 hours.</p>
+<p>If you didn't request this, you can safely ignore this email.</p>
+<p>— The {{brand}} team</p>
+HTML,
+                'is_active' => true,
+                'is_system' => true,
+            ],
+        );
+
+        PlatformEmailTemplate::query()->updateOrCreate(
             ['slug' => PlatformEmailTemplate::SLUG_WORKSPACE_WELCOME],
             [
                 'name' => 'Workspace welcome',
                 'subject' => 'Your {{brand}} workspace is ready',
-                'body_html' => <<<HTML
+                'body_html' => <<<'HTML'
 <p>Hi {{admin_name}},</p>
 <p>Great news — <strong>{{organization_name}}</strong> is ready to use on {{brand}}.</p>
 <p>Click the button below to sign in and complete your guided setup:</p>

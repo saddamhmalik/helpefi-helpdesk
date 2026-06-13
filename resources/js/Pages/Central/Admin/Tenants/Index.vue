@@ -30,6 +30,9 @@ const search = ref(props.filters.q ?? '');
 const status = ref(props.filters.status ?? 'all');
 const manageTenant = ref(null);
 const selectedPlan = ref('starter');
+const selectedInterval = ref('month');
+const customRenewal = ref('');
+const planNote = ref('');
 const savingPlan = ref(false);
 const startingTrial = ref(false);
 const deleteTenant = ref(null);
@@ -119,7 +122,39 @@ const planLabel = (tenant) => {
 const openManage = (tenant) => {
     manageTenant.value = tenant;
     selectedPlan.value = tenant.subscription?.plan ?? props.plans[0]?.slug ?? 'starter';
+    selectedInterval.value = tenant.subscription?.billing_interval ?? 'month';
+    customRenewal.value = '';
+    planNote.value = '';
 };
+
+const selectedPlanDetails = computed(
+    () => props.plans.find((plan) => plan.slug === selectedPlan.value) ?? null,
+);
+
+const selectedPlanPrice = computed(() => {
+    const plan = selectedPlanDetails.value;
+
+    if (!plan) {
+        return null;
+    }
+
+    return selectedInterval.value === 'year'
+        ? plan.price_yearly ?? plan.price_monthly * 10
+        : plan.price_monthly ?? plan.price;
+});
+
+const planChanged = computed(() => {
+    const subscription = manageTenant.value?.subscription;
+
+    if (!subscription) {
+        return true;
+    }
+
+    return selectedPlan.value !== subscription.plan
+        || selectedInterval.value !== (subscription.billing_interval ?? 'month')
+        || customRenewal.value !== ''
+        || planNote.value.trim() !== '';
+});
 
 const closeManage = () => {
     manageTenant.value = null;
@@ -171,6 +206,9 @@ const savePlan = () => {
 
     router.put(`/admin/tenants/${manageTenant.value.id}`, {
         plan: selectedPlan.value,
+        billing_interval: selectedInterval.value,
+        renews_at: customRenewal.value || null,
+        note: planNote.value.trim() || null,
     }, {
         preserveScroll: true,
         onFinish: () => {
@@ -386,20 +424,72 @@ const hasFilters = computed(() => Boolean(props.filters.q) || (props.filters.sta
                     </button>
                 </div>
 
-                <div v-if="canManage && manageTenant.subscription">
-                    <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('central.subscription_plan') }}</label>
-                    <select v-model="selectedPlan" :class="adminInputClass">
-                        <option v-for="plan in plans" :key="plan.slug" :value="plan.slug">
-                            {{ plan.name }} — ${{ plan.price }}/mo
-                        </option>
-                    </select>
+                <div v-if="canManage && manageTenant.subscription" class="space-y-4">
+                    <div>
+                        <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('central.subscription_plan') }}</label>
+                        <select v-model="selectedPlan" :class="adminInputClass">
+                            <option v-for="plan in plans" :key="plan.slug" :value="plan.slug">
+                                {{ plan.name }}
+                            </option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('central.billing_interval') }}</label>
+                        <div class="grid grid-cols-2 gap-2">
+                            <button
+                                type="button"
+                                class="rounded-xl px-3 py-2 text-sm font-medium ring-1 transition"
+                                :class="selectedInterval === 'month' ? 'bg-blue-600 text-white ring-blue-600' : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 ring-slate-200 dark:ring-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800'"
+                                @click="selectedInterval = 'month'"
+                            >
+                                {{ $t('central.monthly') }}
+                            </button>
+                            <button
+                                type="button"
+                                class="rounded-xl px-3 py-2 text-sm font-medium ring-1 transition"
+                                :class="selectedInterval === 'year' ? 'bg-blue-600 text-white ring-blue-600' : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 ring-slate-200 dark:ring-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800'"
+                                @click="selectedInterval = 'year'"
+                            >
+                                {{ $t('central.yearly') }}
+                            </button>
+                        </div>
+                    </div>
+
+                    <div
+                        v-if="selectedPlanPrice !== null"
+                        class="flex items-baseline justify-between rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 px-4 py-3"
+                    >
+                        <span class="text-sm text-slate-600 dark:text-slate-400">{{ $t('central.new_price') }}</span>
+                        <span class="text-base font-semibold text-slate-900 dark:text-slate-100">
+                            ${{ selectedPlanPrice }}<span class="text-sm font-normal text-slate-500 dark:text-slate-400">/{{ selectedInterval === 'year' ? $t('central.year_short') : $t('central.month_short') }}</span>
+                        </span>
+                    </div>
+
+                    <div>
+                        <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('central.custom_renewal_date') }}</label>
+                        <input v-model="customRenewal" type="date" :class="adminInputClass" />
+                        <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">{{ $t('central.custom_renewal_hint') }}</p>
+                    </div>
+
+                    <div>
+                        <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('central.change_reason') }}</label>
+                        <textarea
+                            v-model="planNote"
+                            rows="2"
+                            maxlength="500"
+                            :placeholder="$t('central.change_reason_placeholder')"
+                            :class="adminInputClass"
+                        />
+                    </div>
+
                     <button
                         type="button"
-                        class="mt-3 rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60"
-                        :disabled="savingPlan"
+                        class="w-full rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+                        :disabled="savingPlan || !planChanged"
                         @click="savePlan"
                     >
-                        {{ savingPlan ? 'Saving…' : 'Update plan' }}
+                        {{ savingPlan ? $t('central.saving') : $t('central.update_plan') }}
                     </button>
                 </div>
 

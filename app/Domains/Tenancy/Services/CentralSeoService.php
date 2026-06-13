@@ -25,7 +25,7 @@ class CentralSeoService
         ];
     }
 
-    public function meta(string $page, string $brand, int $trialDays): array
+    public function meta(string $page, string $brand, int $trialDays, string $currency = 'USD'): array
     {
         $strings = $this->seoStrings();
         $replacements = ['brand' => $brand, 'days' => (string) $trialDays];
@@ -43,7 +43,7 @@ class CentralSeoService
             'ogLocale' => $this->ogLocale(),
             'ogLocaleAlternates' => $this->ogLocaleAlternates(),
             'jsonLd' => $page === 'home'
-                ? $this->jsonLd($brand, $description, $trialDays, $strings)
+                ? $this->jsonLd($brand, $description, $trialDays, $strings, $currency)
                 : null,
         ];
     }
@@ -110,7 +110,7 @@ class CentralSeoService
             ->all();
     }
 
-    private function jsonLd(string $brand, string $description, int $trialDays, array $strings): string
+    private function jsonLd(string $brand, string $description, int $trialDays, array $strings, string $currency): string
     {
         $baseUrl = $this->siteUrl();
 
@@ -141,7 +141,7 @@ class CentralSeoService
                     'offers' => [
                         '@type' => 'Offer',
                         'price' => '0',
-                        'priceCurrency' => 'USD',
+                        'priceCurrency' => $currency,
                         'description' => $this->interpolate(
                             $strings['trial_offer'] ?? '',
                             ['days' => (string) $trialDays]
@@ -180,7 +180,13 @@ class CentralSeoService
 
         $decoded = json_decode((string) file_get_contents($path), true);
 
-        return $this->stringCache[$locale] = $decoded['central']['seo'] ?? [];
+        if (! is_array($decoded)) {
+            return $this->stringCache[$locale] = [];
+        }
+
+        $seo = $decoded['central']['seo'] ?? [];
+
+        return $this->stringCache[$locale] = is_array($seo) ? $seo : [];
     }
 
     private function interpolate(string $value, array $replacements): string

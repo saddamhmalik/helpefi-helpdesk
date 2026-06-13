@@ -10,9 +10,7 @@ use Symfony\Component\HttpFoundation\Response;
 
 class TrackMarketingPageView
 {
-    public function __construct(private MarketingPageViewRecorder $recorder)
-    {
-    }
+    public function __construct(private MarketingPageViewRecorder $recorder) {}
 
     public function handle(Request $request, Closure $next): Response
     {
@@ -38,11 +36,11 @@ class TrackMarketingPageView
             return false;
         }
 
-        if ($response->getStatusCode() >= 400) {
+        if (! $response->isSuccessful()) {
             return false;
         }
 
-        if ($request->is('admin', 'admin/*', 'api/*', 'razorpay/*', 'robots.txt', 'sitemap.xml')) {
+        if ($request->is('admin', 'admin/*', 'api/*', 'razorpay/*', 'robots.txt', 'sitemap.xml', 'login', 'register', 'dashboard', 'logout', 'password/*', 'email/*')) {
             return false;
         }
 

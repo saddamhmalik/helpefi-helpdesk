@@ -10,6 +10,8 @@ class PlatformEmailTemplate extends Model
 
     public const SLUG_REGISTRATION = 'registration_confirmation';
 
+    public const SLUG_REGISTRATION_VERIFICATION = 'registration_verification';
+
     public const SLUG_WORKSPACE_WELCOME = 'workspace_welcome';
 
     protected $fillable = [

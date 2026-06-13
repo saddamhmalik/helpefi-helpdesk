@@ -19,8 +19,7 @@ class AdminSettingsController extends Controller
     public function __construct(
         private CentralSettingsService $settings,
         private TenantPurgeService $tenantPurge,
-    ) {
-    }
+    ) {}
 
     public function edit(): Response
     {
@@ -45,7 +44,7 @@ class AdminSettingsController extends Controller
             'tenant_purge_enabled' => ['required', 'boolean'],
             'currency' => ['required', 'string', 'size:3', 'in:'.implode(',', CurrencyCatalog::codes())],
             'social_links' => ['nullable', 'array'],
-            'social_links.*' => ['nullable', 'url', 'max:255'],
+            'social_links.*' => ['nullable', 'url:http,https', 'max:255'],
             'plans' => ['required', 'array', 'min:1'],
             'plans.*.slug' => ['required', 'string', 'in:'.$slugs],
             'plans.*.name' => ['required', 'string', 'max:100'],

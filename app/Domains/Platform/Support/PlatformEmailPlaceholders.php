@@ -14,6 +14,7 @@ class PlatformEmailPlaceholders
             ['key' => 'workspace_slug', 'label' => 'Workspace slug', 'example' => 'acme'],
             ['key' => 'workspace_url', 'label' => 'Workspace URL', 'example' => 'https://acme.helpdesk.test'],
             ['key' => 'welcome_url', 'label' => 'Welcome sign-in link', 'example' => 'https://acme.helpdesk.test/welcome?token=...'],
+            ['key' => 'verification_url', 'label' => 'Email verification link', 'example' => 'https://helpdesk.test/register/verify/...'],
             ['key' => 'trial_days', 'label' => 'Trial length (days)', 'example' => '14'],
             ['key' => 'central_domain', 'label' => 'Central domain', 'example' => 'helpdesk.test'],
         ];

@@ -17,8 +17,7 @@ class AdminTenantController extends Controller
         private PlatformTenantService $tenants,
         private PlanRepository $plans,
         private TenantProvisioningService $provisioning,
-    ) {
-    }
+    ) {}
 
     public function index(Request $request): Response
     {
@@ -58,6 +57,8 @@ class AdminTenantController extends Controller
                     'slug' => $slug,
                     'name' => $plan['name'],
                     'price' => $plan['price'],
+                    'price_monthly' => $plan['price_monthly'] ?? $plan['price'],
+                    'price_yearly' => $plan['price_yearly'] ?? null,
                 ])
                 ->values()
                 ->all(),
@@ -72,6 +73,9 @@ class AdminTenantController extends Controller
         $data = $request->validate([
             'is_blocked' => ['sometimes', 'boolean'],
             'plan' => ['sometimes', 'nullable', 'string', 'in:'.$slugs],
+            'billing_interval' => ['sometimes', 'string', 'in:month,year'],
+            'renews_at' => ['sometimes', 'nullable', 'date', 'after:today'],
+            'note' => ['sometimes', 'nullable', 'string', 'max:500'],
             'start_trial' => ['sometimes', 'boolean'],
         ]);
 
