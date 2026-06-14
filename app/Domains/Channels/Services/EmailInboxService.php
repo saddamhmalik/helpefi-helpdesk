@@ -202,6 +202,10 @@ class EmailInboxService
     {
         $method = $data['inbound_method'] ?? $inbox->inbound_method ?? 'webhook';
 
+        if ($inbox->isOAuthConnected() && $method !== 'oauth') {
+            $method = 'oauth';
+        }
+
         if ($method === 'oauth') {
             return [
                 'inbound_method' => 'oauth',

@@ -50,6 +50,7 @@ class EmailInboxRepository
     {
         return EmailInbox::query()
             ->where('is_active', true)
+            ->where('poll_enabled', true)
             ->whereIn('inbound_method', ['poll', 'oauth'])
             ->where(function ($query) {
                 $query->where(function ($oauth) {

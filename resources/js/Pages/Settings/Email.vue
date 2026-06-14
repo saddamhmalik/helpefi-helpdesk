@@ -10,6 +10,7 @@ import AppToggle from '../../Components/AppToggle.vue';
 import EmailInboxCard from '../../Components/Email/EmailInboxCard.vue';
 import { useConfirmDialog } from '../../composables/useConfirmDialog.js';
 import { useSettingsSection } from '../../composables/useSettingsSection.js';
+import { useClipboard } from '../../composables/useClipboard.js';
 import { useI18n } from 'vue-i18n';
 
 const props = defineProps({
@@ -31,6 +32,8 @@ const highlightedInboxId = ref(null);
 const advancedDefaults = props.emailAdvanced ?? {};
 
 const { t } = useI18n();
+const { copy: copyRedirectUri } = useClipboard();
+const copiedOAuthRedirect = ref(null);
 
 const { activeSection } = useSettingsSection({
     defaultSection: 'incoming',
@@ -122,6 +125,20 @@ const inboxTestForm = useForm({
 });
 
 const inboxSmtpOptions = computed(() => props.outbound.inbox_smtp_options ?? []);
+const oauthProviderList = computed(() => Object.values(props.oauthProviders ?? {}));
+
+const copyOAuthRedirect = async (uri, providerKey) => {
+    const success = await copyRedirectUri(uri);
+
+    if (success) {
+        copiedOAuthRedirect.value = providerKey;
+        window.setTimeout(() => {
+            if (copiedOAuthRedirect.value === providerKey) {
+                copiedOAuthRedirect.value = null;
+            }
+        }, 2000);
+    }
+};
 
 const selectedInboxSmtp = computed(() =>
     inboxSmtpOptions.value.find((option) => option.inbox_id === Number(outboundForm.email_inbox_id)) ?? null,
@@ -447,7 +464,7 @@ const onUseInboxSmtpChange = () => {
                         description="Shows the replying agent's name alongside the support address."
                     />
 
-                    <div class="rounded-xl border border-blue-100 bg-blue-50 dark:bg-blue-950/40/40 p-4">
+                    <div class="rounded-xl border border-blue-200 bg-blue-50 p-4 dark:border-blue-900/60 dark:bg-blue-950/40">
                         <label class="flex items-start gap-3 text-sm text-slate-800 dark:text-slate-200">
                             <input
                                 v-model="outboundForm.use_inbox_smtp"
@@ -462,7 +479,7 @@ const onUseInboxSmtpChange = () => {
                             </span>
                         </label>
 
-                        <div v-if="outboundForm.use_inbox_smtp" class="mt-4 space-y-4 border-t border-blue-100 pt-4">
+                        <div v-if="outboundForm.use_inbox_smtp" class="mt-4 space-y-4 border-t border-blue-200 pt-4 dark:border-blue-900/60">
                             <div>
                                 <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('settings_email.inbound_inbox') }}</label>
                                 <select v-model="outboundForm.email_inbox_id" class="w-full rounded-lg border agent-border px-3 py-2 text-sm">
@@ -477,8 +494,11 @@ const onUseInboxSmtpChange = () => {
                                 <p class="mt-1"><span class="font-medium">{{ $t('settings_email.smtp') }}</span> {{ selectedInboxSmtp.host }}:{{ selectedInboxSmtp.port }} ({{ selectedInboxSmtp.encryption?.toUpperCase() }})</p>
                             </div>
 
-                            <div class="space-y-3 border-t border-blue-100 pt-4">
-                                <p v-if="selectedInboxSmtp && !selectedInboxSmtp.has_inbound_password" class="text-xs text-amber-800">
+                            <div class="space-y-3 border-t border-blue-200 pt-4 dark:border-blue-900/60">
+                                <p v-if="selectedInboxSmtp?.inbound_method === 'oauth'" class="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900 dark:border-amber-900/60 dark:bg-amber-950/40 dark:text-amber-200">
+                                    {{ $t('settings_email.oauth_inbound_smtp_app_password') }}
+                                </p>
+                                <p v-else-if="selectedInboxSmtp && !selectedInboxSmtp.has_inbound_password" class="text-xs text-amber-800 dark:text-amber-200">
                                     {{ $t('components.use_an_app_password_from_your_email_provider_replies_with_ticket_ids_i') }}
                                 </p>
                                 <div class="flex flex-wrap items-end gap-3">
@@ -654,7 +674,7 @@ const onUseInboxSmtpChange = () => {
             :open="showAddInbox"
             :title="$t('settings_email.add_inbox')"
             :description="$t('settings_email.connect_a_support_email_address_to_receive_tickets')"
-            :size="inboxForm.inbound_method === 'poll' ? 'xl' : 'md'"
+            :size="inboxForm.inbound_method === 'webhook' ? 'md' : 'xl'"
             @close="closeAddInbox"
         >
             <form id="add-inbox-form" class="space-y-4" @submit.prevent="addInbox">
@@ -692,10 +712,10 @@ const onUseInboxSmtpChange = () => {
                     </select>
                 </div>
 
-                <div v-if="inboxForm.inbound_method === 'poll'" class="space-y-4 rounded-xl border border-violet-100 bg-violet-50 dark:bg-violet-950/40/30 p-4">
-                    <div class="rounded-lg border border-violet-100 bg-white/80 p-3">
-                        <p class="text-sm font-medium text-violet-900">{{ $t('components.mailbox_connection') }}</p>
-                        <p class="mt-1 text-xs leading-relaxed text-violet-800/90">
+                <div v-if="inboxForm.inbound_method === 'poll'" class="space-y-4 rounded-xl border agent-border agent-panel-muted p-4">
+                    <div class="rounded-lg border agent-border agent-panel p-3">
+                        <p class="text-sm font-medium agent-text">{{ $t('components.mailbox_connection') }}</p>
+                        <p class="mt-1 text-xs leading-relaxed agent-text-muted">
                             {{ $t('components.use_an_app_password_from_your_email_provider_replies_with_ticket_ids_i') }}
                         </p>
                     </div>
@@ -750,9 +770,26 @@ const onUseInboxSmtpChange = () => {
                     </div>
                 </div>
 
-                <p v-else-if="inboxForm.inbound_method === 'oauth'" class="rounded-lg border border-indigo-100 bg-indigo-50 dark:bg-indigo-950/40/40 px-4 py-3 text-sm text-indigo-900">
-                    {{ $t('components.connect_google_microsoft_or_zoho_to_sync_mail_without_storing_password') }}
-                </p>
+                <div v-else-if="inboxForm.inbound_method === 'oauth'" class="space-y-4 rounded-xl border agent-border agent-panel-muted p-4">
+                    <p class="text-sm agent-text">{{ $t('components.connect_google_microsoft_or_zoho_to_sync_mail_without_storing_password') }}</p>
+                    <p class="text-xs agent-text-muted">{{ $t('settings_email.create_inbox_then_connect_oauth') }}</p>
+                    <div class="space-y-3">
+                        <div v-for="provider in oauthProviderList" :key="provider.key" class="rounded-lg border agent-border agent-panel p-4">
+                            <p class="text-sm font-medium agent-text">{{ provider.label }}</p>
+                            <p v-if="!provider.configured" class="mt-1 text-xs text-amber-700 dark:text-amber-300">{{ $t('components.not_configured_on_server') }}</p>
+                            <p v-if="provider.help" class="mt-1 text-xs agent-text-subtle">{{ provider.help }}</p>
+                            <div v-if="provider.redirect_uri" class="mt-3 border-t agent-border-subtle pt-3">
+                                <label class="mb-1 block text-xs font-medium agent-text-muted">{{ $t('components.authorized_redirect_uri') }}</label>
+                                <div class="flex gap-2">
+                                    <input :value="provider.redirect_uri" type="text" readonly class="min-w-0 flex-1 rounded-lg border agent-border agent-panel px-3 py-2 font-mono text-[11px] agent-text-muted" />
+                                    <button type="button" class="shrink-0 rounded-lg border agent-border px-3 py-2 text-sm agent-hover-surface" @click="copyOAuthRedirect(provider.redirect_uri, provider.key)">
+                                        {{ copiedOAuthRedirect === provider.key ? $t('components.copied') : $t('components.copy') }}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </form>
 
             <template #footer>

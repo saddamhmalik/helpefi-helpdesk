@@ -35,6 +35,10 @@ class ImapMailboxReader implements MailboxReaderInterface
         return $this->fetchSocket($inbox);
     }
 
+    public function markMessageProcessed(EmailInbox $inbox, InboundMailMessage $message): void
+    {
+    }
+
     private function fetchNative(EmailInbox $inbox): array
     {
         $processed = $inbox->mailbox_processed_ids ?? [];

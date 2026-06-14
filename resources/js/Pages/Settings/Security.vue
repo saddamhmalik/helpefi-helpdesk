@@ -5,6 +5,7 @@ import PlanFeatureBanner from '../../Components/PlanFeatureBanner.vue';
 import SettingsSectionNav from '../../Components/SettingsSectionNav.vue';
 import AppConfirmDialog from '../../Components/AppConfirmDialog.vue';
 import { useConfirmDialog } from '../../composables/useConfirmDialog.js';
+import { useClipboard } from '../../composables/useClipboard.js';
 import { computed } from 'vue';
 import { useSettingsSection } from '../../composables/useSettingsSection.js';
 import { useI18n } from 'vue-i18n';
@@ -29,6 +30,9 @@ const sectionTabs = computed(() => [
 ]);
 
 const { state: confirm, ask: askConfirm, close: closeConfirm, confirm: onConfirm } = useConfirmDialog();
+const { copied: callbackCopied, copy: copyCallback } = useClipboard();
+const { copied: acsCopied, copy: copyAcs } = useClipboard();
+const { copied: metadataCopied, copy: copyMetadata } = useClipboard();
 
 const form = useForm({
     mfa_required_for_agents: props.observability.settings.mfa_required_for_agents,
@@ -222,10 +226,40 @@ const saveSso = () => {
                     <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('settings_security.allowed_email_domains_one_per_line') }}</label>
                     <textarea v-model="ssoForm.sso_config.allowed_domains" rows="3" class="w-full rounded-lg border agent-border px-3 py-2 text-sm" placeholder="company.com" />
                 </div>
-                <div class="rounded-lg agent-panel-muted p-3 text-xs agent-text-muted">
-                    <p>Callback: {{ sso?.callback_url }}</p>
-                    <p class="mt-1">ACS: {{ sso?.acs_url }}</p>
-                    <p class="mt-1">Metadata: {{ sso?.metadata_url }}</p>
+                <div class="space-y-3 rounded-lg border agent-border-subtle bg-slate-50 p-4 dark:bg-slate-950/50">
+                    <div>
+                        <p class="text-sm font-medium agent-text">{{ $t('settings_security.idp_redirect_urls') }}</p>
+                        <p class="mt-1 text-xs agent-text-muted">{{ $t('settings_security.idp_redirect_urls_help') }}</p>
+                    </div>
+                    <div v-if="ssoForm.sso_protocol === 'oidc' && sso?.callback_url">
+                        <label class="mb-1 block text-xs font-medium agent-text-subtle">{{ $t('settings_security.oidc_callback_uri') }}</label>
+                        <div class="flex gap-2">
+                            <input :value="sso.callback_url" type="text" readonly class="min-w-0 flex-1 rounded-lg border agent-border bg-white px-3 py-2 font-mono text-xs dark:bg-slate-900" />
+                            <button type="button" class="shrink-0 rounded-lg border agent-border px-3 py-2 text-sm" @click="copyCallback(sso.callback_url)">
+                                {{ callbackCopied ? $t('settings_security.copied') : $t('settings_security.copy') }}
+                            </button>
+                        </div>
+                    </div>
+                    <template v-else-if="ssoForm.sso_protocol === 'saml'">
+                        <div v-if="sso?.acs_url">
+                            <label class="mb-1 block text-xs font-medium agent-text-subtle">{{ $t('settings_security.saml_acs_url') }}</label>
+                            <div class="flex gap-2">
+                                <input :value="sso.acs_url" type="text" readonly class="min-w-0 flex-1 rounded-lg border agent-border bg-white px-3 py-2 font-mono text-xs dark:bg-slate-900" />
+                                <button type="button" class="shrink-0 rounded-lg border agent-border px-3 py-2 text-sm" @click="copyAcs(sso.acs_url)">
+                                    {{ acsCopied ? $t('settings_security.copied') : $t('settings_security.copy') }}
+                                </button>
+                            </div>
+                        </div>
+                        <div v-if="sso?.metadata_url">
+                            <label class="mb-1 block text-xs font-medium agent-text-subtle">{{ $t('settings_security.saml_metadata_url') }}</label>
+                            <div class="flex gap-2">
+                                <input :value="sso.metadata_url" type="text" readonly class="min-w-0 flex-1 rounded-lg border agent-border bg-white px-3 py-2 font-mono text-xs dark:bg-slate-900" />
+                                <button type="button" class="shrink-0 rounded-lg border agent-border px-3 py-2 text-sm" @click="copyMetadata(sso.metadata_url)">
+                                    {{ metadataCopied ? $t('settings_security.copied') : $t('settings_security.copy') }}
+                                </button>
+                            </div>
+                        </div>
+                    </template>
                 </div>
                 <button type="submit" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700" :disabled="ssoForm.processing">{{ $t('settings_security.save_sso_settings') }}</button>
             </form>
