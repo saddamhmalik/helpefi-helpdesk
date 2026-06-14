@@ -75,11 +75,18 @@ class GoogleMailOAuthProvider implements MailOAuthProviderInterface
         $list = Http::withToken($accessToken)
             ->get('https://gmail.googleapis.com/gmail/v1/users/me/messages', [
                 'q' => 'is:unread in:inbox',
-                'maxResults' => 25,
+                'maxResults' => 50,
             ]);
 
         if (! $list->successful()) {
-            throw new InvalidArgumentException($list->json('error.message') ?? 'Gmail API request failed.');
+            $message = $list->json('error.message') ?? 'Gmail API request failed.';
+            $reason = $list->json('error.errors.0.reason');
+
+            if ($reason === 'accessNotConfigured') {
+                throw new InvalidArgumentException('Gmail API is not enabled in your Google Cloud project. Enable it at console.cloud.google.com/apis/library/gmail.googleapis.com');
+            }
+
+            throw new InvalidArgumentException($message);
         }
 
         $messages = [];

@@ -143,12 +143,7 @@ const submit = () => form.post('/login', {
             </button>
         </form>
 
-        <p class="mt-8 text-center text-sm text-slate-600 dark:text-slate-400">
-            {{ $t('auth.no_account') }}
-            <Link href="/register" class="font-semibold text-blue-600 transition hover:text-blue-700 dark:hover:text-blue-300 dark:text-blue-300">{{ $t('auth.create_one') }}</Link>
-        </p>
-
-        <p v-if="page.props.helpCenter" class="mt-4 text-center text-sm text-slate-500 dark:text-slate-400 lg:hidden">
+        <p v-if="page.props.helpCenter" class="mt-8 text-center text-sm text-slate-500 dark:text-slate-400 lg:hidden">
             {{ $t('auth.looking_for_help') }}
             <Link :href="page.props.helpCenter.homeUrl" class="font-medium text-blue-600 hover:text-blue-700 dark:hover:text-blue-300 dark:text-blue-300">{{ page.props.helpCenter.title }}</Link>
         </p>

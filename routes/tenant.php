@@ -259,7 +259,6 @@ Route::middleware('auth')->group(function () {
             Route::post('/settings/email/inboxes/{inbox}/mailbox/test', [EmailSettingController::class, 'testInboxMailbox'])->name('settings.email.inboxes.mailbox.test');
             Route::post('/settings/email/inboxes/{inbox}/mailbox/poll', [EmailSettingController::class, 'pollInboxMailbox'])->name('settings.email.inboxes.mailbox.poll');
             Route::get('/settings/email/inboxes/{inbox}/oauth/{provider}', [\App\Domains\Channels\Controllers\MailboxOAuthController::class, 'redirect'])->name('settings.email.inboxes.oauth.redirect');
-            Route::get('/settings/email/oauth/{provider}/callback', [\App\Domains\Channels\Controllers\MailboxOAuthController::class, 'callback'])->name('settings.email.oauth.callback');
             Route::post('/settings/email/inboxes/{inbox}/oauth/disconnect', [\App\Domains\Channels\Controllers\MailboxOAuthController::class, 'disconnect'])->name('settings.email.inboxes.oauth.disconnect');
             Route::put('/settings/email/outbound', [EmailSettingController::class, 'updateOutbound'])->name('settings.email.outbound');
             Route::put('/settings/email/advanced', [EmailSettingController::class, 'updateAdvanced'])->name('settings.email.advanced');

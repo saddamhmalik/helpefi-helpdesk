@@ -4,7 +4,6 @@ namespace App\Console\Commands;
 
 use App\Domains\Channels\Services\InboundMailboxPollService;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Log;
 
 class PollEmailInboxesCommand extends Command
 {
@@ -18,12 +17,21 @@ class PollEmailInboxesCommand extends Command
 
         $this->info("Polled {$result['polled']} mailbox(es).");
 
+        foreach ($result['stats'] ?? [] as $address => $stats) {
+            $this->line(sprintf(
+                '  %s: fetched=%d created=%d replies=%d duplicates=%d ignored=%d failed=%d',
+                $address,
+                $stats['fetched'],
+                $stats['created'],
+                $stats['reply'],
+                $stats['duplicate'],
+                $stats['ignored'] ?? 0,
+                $stats['failed'],
+            ));
+        }
+
         foreach ($result['errors'] as $inbox => $message) {
             $this->warn("{$inbox}: {$message}");
-            Log::warning('Mailbox poll failed.', [
-                'inbox' => $inbox,
-                'message' => $message,
-            ]);
         }
 
         return self::SUCCESS;

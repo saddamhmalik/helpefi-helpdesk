@@ -45,6 +45,9 @@ const removeSample = () => {
 
     router.delete('/setup/dummy-data', {
         preserveScroll: true,
+        onSuccess: () => {
+            router.reload({ only: ['dummyData'] });
+        },
         onFinish: () => {
             confirmingSample.value = false;
             removingSample.value = false;
@@ -62,6 +65,9 @@ const removeBootstrap = () => {
 
     router.delete('/setup/bootstrap-demo', {
         preserveScroll: true,
+        onSuccess: () => {
+            router.reload({ only: ['dummyData'] });
+        },
         onFinish: () => {
             confirmingBootstrap.value = false;
             removingBootstrap.value = false;

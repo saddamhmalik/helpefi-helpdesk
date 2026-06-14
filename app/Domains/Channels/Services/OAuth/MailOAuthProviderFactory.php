@@ -30,6 +30,8 @@ class MailOAuthProviderFactory
                 'help' => config("helpdesk.mail_oauth.{$provider}.help"),
                 'configured' => $instance->isConfigured(),
                 'redirect_uri' => $oauth->redirectUri($provider),
+                'setup_console_url' => config("helpdesk.mail_oauth.{$provider}.setup_console_url"),
+                'gmail_api_enable_url' => config("helpdesk.mail_oauth.{$provider}.gmail_api_enable_url"),
             ];
         }
 

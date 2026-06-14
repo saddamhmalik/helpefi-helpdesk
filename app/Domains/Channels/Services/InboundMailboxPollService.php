@@ -5,7 +5,9 @@ namespace App\Domains\Channels\Services;
 use App\Domains\Channels\Models\EmailInbox;
 use App\Domains\Channels\Repositories\EmailInboxRepository;
 use App\Domains\Channels\Services\Mailbox\MailboxReaderFactory;
+use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
+use Throwable;
 
 class InboundMailboxPollService
 {
@@ -20,17 +22,23 @@ class InboundMailboxPollService
     {
         $polled = 0;
         $errors = [];
+        $stats = [];
 
         foreach ($this->inboxes->pollable() as $inbox) {
             try {
-                $this->pollInbox($inbox);
+                $stats[$inbox->address] = $this->pollInbox($inbox);
                 $polled++;
-            } catch (InvalidArgumentException $exception) {
-                $errors[$inbox->name ?: $inbox->address] = $exception->getMessage();
+            } catch (Throwable $exception) {
+                $label = $inbox->name ?: $inbox->address;
+                $errors[$label] = $exception->getMessage();
+                Log::warning('Mailbox poll failed.', [
+                    'inbox' => $label,
+                    'message' => $exception->getMessage(),
+                ]);
             }
         }
 
-        return ['polled' => $polled, 'errors' => $errors];
+        return ['polled' => $polled, 'errors' => $errors, 'stats' => $stats];
     }
 
     public function pollInbox(EmailInbox $inbox): array
@@ -45,9 +53,11 @@ class InboundMailboxPollService
                 'created' => 0,
                 'reply' => 0,
                 'duplicate' => 0,
+                'ignored' => 0,
                 'failed' => 0,
             ];
             $processed = $inbox->mailbox_processed_ids ?? [];
+            $failures = [];
 
             foreach ($messages as $message) {
                 try {
@@ -69,16 +79,27 @@ class InboundMailboxPollService
                         'created' => $stats['created']++,
                         'reply', 'side_reply' => $stats['reply']++,
                         'duplicate' => $stats['duplicate']++,
+                        'ignored', 'blocked' => $stats['ignored']++,
                         default => null,
                     };
-                } catch (InvalidArgumentException) {
+                } catch (Throwable $exception) {
                     $stats['failed']++;
+                    $failures[] = $exception->getMessage();
+
+                    Log::warning('Mailbox message import failed.', [
+                        'inbox' => $inbox->address,
+                        'from' => $message->fromEmail,
+                        'subject' => $message->subject,
+                        'message' => $exception->getMessage(),
+                    ]);
                 }
             }
 
+            $pollError = $this->summarizeFailures($failures);
+
             $inbox->update([
                 'last_polled_at' => now(),
-                'poll_error' => null,
+                'poll_error' => $pollError,
                 'mailbox_processed_ids' => array_values(array_slice(array_unique($processed), -5000)),
             ]);
 
@@ -97,6 +118,17 @@ class InboundMailboxPollService
     {
         $this->assertPollable($inbox, requirePassword: true);
         $this->readers->forInbox($inbox)->testConnection($inbox);
+    }
+
+    private function summarizeFailures(array $failures): ?string
+    {
+        if ($failures === []) {
+            return null;
+        }
+
+        $unique = array_values(array_unique($failures));
+
+        return count($failures).' message(s) could not be imported: '.implode(' | ', array_slice($unique, 0, 2));
     }
 
     private function assertPollable(EmailInbox $inbox, bool $requirePassword = false): void

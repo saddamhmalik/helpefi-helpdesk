@@ -146,7 +146,7 @@ class TenantDummyDataService
 
         $this->settings->update($setting, [
             'dummy_data_active' => false,
-            'dummy_data_manifest' => null,
+            'dummy_data_manifest' => ['bootstrap_demo_removed' => true],
         ]);
 
         self::forgetPublicStateCache();
@@ -154,6 +154,12 @@ class TenantDummyDataService
 
     public function hasBootstrapDemo(): bool
     {
+        $setting = $this->settings->current();
+
+        if (($setting->dummy_data_manifest['bootstrap_demo_removed'] ?? false) === true) {
+            return false;
+        }
+
         if (Organization::query()->whereIn('name', BootstrapDemoContent::DEMO_ORGANIZATION_NAMES)->exists()) {
             return true;
         }
@@ -207,14 +213,34 @@ class TenantDummyDataService
     public function removeBootstrapDemo(): void
     {
         if (! $this->hasBootstrapDemo()) {
-            throw ValidationException::withMessages([
-                'bootstrap_demo' => 'There is no default demo content to remove.',
-            ]);
+            $this->markBootstrapDemoRemoved();
+            self::forgetPublicStateCache();
+
+            return;
         }
 
         DB::transaction(function () {
             $this->purgeBootstrapDemoContent();
         });
+
+        $this->markBootstrapDemoRemoved();
+        self::forgetPublicStateCache();
+    }
+
+    private function markBootstrapDemoRemoved(): void
+    {
+        $setting = $this->settings->current()->fresh();
+        $manifest = $setting->dummy_data_manifest ?? [];
+
+        if (($manifest['bootstrap_demo_removed'] ?? false) === true) {
+            return;
+        }
+
+        $this->settings->update($setting, [
+            'dummy_data_manifest' => array_merge($manifest, [
+                'bootstrap_demo_removed' => true,
+            ]),
+        ]);
     }
 
     private function purgeSampleData(array $manifest): void
@@ -347,9 +373,22 @@ class TenantDummyDataService
 
     private function purgeDemoTags(): void
     {
-        Tag::query()
+        $tags = Tag::query()
             ->whereIn('slug', BootstrapDemoContent::DEMO_TAG_SLUGS)
-            ->delete();
+            ->get();
+
+        if ($tags->isEmpty()) {
+            return;
+        }
+
+        $tagIds = $tags->pluck('id')->all();
+
+        foreach ($tags as $tag) {
+            $tag->contacts()->detach();
+            $tag->tickets()->detach();
+        }
+
+        Tag::query()->whereIn('id', $tagIds)->delete();
     }
 
     private function seed(User $admin): array

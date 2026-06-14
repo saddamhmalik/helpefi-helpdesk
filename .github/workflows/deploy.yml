@@ -1,0 +1,58 @@
+name: Deploy to Production
+
+# Run only when changes land on main (e.g. after a PR merge).
+on:
+  push:
+    branches:
+      - main
+
+# Prevent overlapping deploys; let the in-flight deployment finish.
+concurrency:
+  group: production-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy to EC2
+    runs-on: ubuntu-latest
+
+    steps:
+      # SSH into the Ubuntu EC2 host and run the full release script remotely.
+      # script_stop: true exits the job on the first failing command.
+      - name: Deploy application over SSH
+        uses: appleboy/ssh-action@v1.2.2
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT || 22 }}
+          script_stop: true
+          command_timeout: 30m
+          script: |
+            set -euo pipefail
+
+            APP_DIR="/home/ubuntu/helpefi-helpdesk"
+            cd "$APP_DIR"
+
+            # Sync the server checkout with the latest main branch.
+            git fetch origin main
+            git checkout main
+            git pull origin main
+
+            # Install PHP dependencies for production (no dev packages).
+            composer install --no-dev --optimize-autoloader --no-interaction
+
+            # Install frontend dependencies and compile Vite assets.
+            npm install
+            npm run build
+
+            # Apply central and tenant database migrations in production.
+            php artisan migrate --force
+            php artisan tenants:migrate --force
+
+            # Clear stale caches, then rebuild Laravel optimization caches.
+            php artisan optimize:clear
+            php artisan optimize
+
+            # Signal queue workers to restart after the current job finishes.
+            php artisan queue:restart

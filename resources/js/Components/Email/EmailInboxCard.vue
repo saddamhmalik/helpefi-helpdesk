@@ -9,6 +9,7 @@ import AppCollapse from '../AppCollapse.vue';
 import AppRowActions from '../AppRowActions.vue';
 import AppEditAction from '../AppEditAction.vue';
 import AppDeleteAction from '../AppDeleteAction.vue';
+import MailOAuthSetupGuide from './MailOAuthSetupGuide.vue';
 
 const props = defineProps({
     inbox: { type: Object, required: true },
@@ -383,6 +384,12 @@ const save = () => {
 
                 <template #oauth>
                     <div class="space-y-4 rounded-xl border agent-border agent-panel-muted p-5">
+                        <MailOAuthSetupGuide
+                            v-for="provider in oauthProviderList"
+                            :key="`oauth-setup-${provider.key}`"
+                            :provider="provider.key"
+                            :console-url="provider.setup_console_url || provider.gmail_api_enable_url"
+                        />
                         <div>
                             <p class="text-sm font-medium agent-text">{{ $t('components.oauth_mailbox') }}</p>
                             <p class="mt-1 text-xs agent-text-muted">{{ $t('components.connect_google_microsoft_or_zoho_to_sync_mail_without_storing_password') }}</p>
@@ -411,6 +418,9 @@ const save = () => {
                                 </div>
                             </div>
                         </div>
+                        <p v-if="localInbox.oauth_connected && localInbox.oauth_provider === 'google'" class="rounded-lg border border-sky-200 bg-sky-50 px-3 py-2 text-xs text-sky-900 dark:border-sky-900/60 dark:bg-sky-950/40 dark:text-sky-200">
+                            {{ $t('components.gmail_oauth_import_hint', { email: localInbox.oauth_connected_email || localInbox.address }) }}
+                        </p>
                         <p v-if="localInbox.poll_error" class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-800 dark:border-red-900/60 dark:bg-red-950/40 dark:text-red-200">{{ localInbox.poll_error }}</p>
                         <div v-if="localInbox.oauth_connected" class="flex flex-wrap items-center gap-3 border-t agent-border pt-4">
                             <button type="button" class="rounded-lg border agent-border agent-panel px-4 py-2 text-sm agent-hover-surface" @click="pollMailbox">{{ $t('components.check_for_mail_now') }}</button>
