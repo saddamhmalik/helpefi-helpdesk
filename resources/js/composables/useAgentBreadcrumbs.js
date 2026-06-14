@@ -195,6 +195,16 @@ export function useAgentBreadcrumbs() {
             return [{ label: t('common.notifications') }];
         }
 
+        if (path.startsWith('/settings/members')) {
+            const items = [{ label: navOr('/settings/members', 'nav.agents'), href: '/settings/members' }];
+
+            if (/^\/settings\/members\/\d+$/.test(path) && props.member) {
+                items.push({ label: props.member.name });
+            }
+
+            return items;
+        }
+
         if (path.startsWith('/settings')) {
             const root = { label: t('common.settings'), href: '/settings' };
             const pageLabel = settingsLabelForPath(path, url);
@@ -211,9 +221,7 @@ export function useAgentBreadcrumbs() {
             const pageHref = matchingNavItem?.href ?? `/settings/${segments.join('/')}`;
             const items = [root, { label: pageLabel, href: pageHref }];
 
-            if (segments.length > 1 && section === 'members') {
-                items.push({ label: props.member?.name ?? segmentLabel(segments[1]) });
-            } else if (segments.length > 1 && section === 'performance') {
+            if (segments.length > 1 && section === 'performance') {
                 items.push({ label: props.user?.name ?? t('components.performance') });
             }
 

@@ -4,6 +4,8 @@ namespace Tests\Feature;
 
 use App\Domains\Billing\Services\RazorpayAddonSyncService;
 use App\Domains\Billing\Services\RazorpayPlanSyncService;
+use App\Domains\Tenancy\Models\PendingRegistration;
+use App\Domains\Tenancy\Support\AddonCatalogDefinition;
 use App\Models\Tenant;
 use App\Models\User;
 use Database\Seeders\PlatformUserSeeder;
@@ -274,19 +276,22 @@ class CentralSettingsTest extends TestCase
             'plan_catalog' => [
                 'starter' => [
                     'name' => 'Starter',
-                    'price' => 40,
+                    'price_monthly' => 40,
+                    'price_yearly' => 400,
                     'limits' => ['agents' => 3, 'tickets_monthly' => 50],
                     'features' => [],
                 ],
                 'professional' => [
                     'name' => 'Growth',
-                    'price' => 120,
+                    'price_monthly' => 120,
+                    'price_yearly' => 1200,
                     'limits' => ['agents' => 15, 'tickets_monthly' => 500],
                     'features' => ['automation', 'sla'],
                 ],
                 'enterprise' => [
                     'name' => 'Scale',
-                    'price' => 300,
+                    'price_monthly' => 300,
+                    'price_yearly' => 3000,
                     'limits' => ['agents' => null, 'tickets_monthly' => null],
                     'features' => ['automation', 'ai', 'integrations', 'assets'],
                 ],
@@ -314,10 +319,12 @@ class CentralSettingsTest extends TestCase
             'email' => 'jane@trial.test',
             'password' => 'password123',
             'password_confirmation' => 'password123',
-        ], [
-            'X-Inertia' => 'true',
-            'X-Requested-With' => 'XMLHttpRequest',
-        ])->assertStatus(409);
+        ])->assertRedirect(route('central.register'));
+
+        $pending = PendingRegistration::query()->where('slug', 'trial-length')->firstOrFail();
+
+        $this->get('http://'.config('tenancy.central_app_domain').'/register/verify/'.$pending->token)
+            ->assertRedirect();
 
         $tenant = Tenant::query()->where('slug', 'trial-length')->firstOrFail();
         $subscription = \App\Domains\Billing\Models\Subscription::query()->where('tenant_id', $tenant->id)->firstOrFail();
@@ -337,10 +344,12 @@ class CentralSettingsTest extends TestCase
             'email' => 'sam.admin@register.test',
             'password' => 'SecurePass123!',
             'password_confirmation' => 'SecurePass123!',
-        ], [
-            'X-Inertia' => 'true',
-            'X-Requested-With' => 'XMLHttpRequest',
-        ])->assertStatus(409);
+        ])->assertRedirect(route('central.register'));
+
+        $pending = PendingRegistration::query()->where('slug', 'same-email-co')->firstOrFail();
+
+        $this->get('http://'.config('tenancy.central_app_domain').'/register/verify/'.$pending->token)
+            ->assertRedirect();
 
         $tenant = Tenant::query()->where('slug', 'same-email-co')->firstOrFail();
 
@@ -356,5 +365,58 @@ class CentralSettingsTest extends TestCase
         $this->assertTrue(Hash::check('SecurePass123!', $admin->password));
 
         tenancy()->end();
+    }
+
+    public function test_admin_can_update_addon_pricing_and_homepage_reflects_it(): void
+    {
+        config([
+            'razorpay.enabled' => false,
+            'razorpay.secret' => null,
+        ]);
+
+        \App\Domains\Tenancy\Models\CentralSetting::query()->update([
+            'currency' => 'USD',
+            'india_pricing' => true,
+        ]);
+
+        $this->adminLogin();
+
+        $addonPayload = collect(AddonCatalogDefinition::keys())->map(fn (string $key) => [
+            'key' => $key,
+            'name' => match ($key) {
+                'ai_copilot' => 'AI Copilot',
+                'integrations' => 'Integrations Pack',
+                default => 'Service Desk (ITSM)',
+            },
+            'description' => 'Configured through platform admin.',
+            'price_monthly' => match ($key) {
+                'ai_copilot' => 15,
+                'integrations' => 10,
+                default => 35,
+            },
+            'price_india' => match ($key) {
+                'ai_copilot' => 699,
+                'integrations' => 499,
+                default => 1599,
+            },
+            'enabled' => true,
+        ])->all();
+
+        $this->put('http://'.config('tenancy.central_app_domain').'/admin/settings', [
+            'addons' => $addonPayload,
+        ])->assertRedirect();
+
+        $settings = app(\App\Domains\Tenancy\Services\CentralSettingsService::class);
+        $aiAddon = collect($settings->addonsForDisplay())->firstWhere('key', 'ai_copilot');
+
+        $this->assertSame(15, $aiAddon['price_monthly']);
+        $this->assertSame(699, $aiAddon['price_monthly_india']);
+
+        $this->get('http://'.config('tenancy.central_app_domain').'/')
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->where('addons', fn ($addons) => collect($addons)->firstWhere('key', 'ai_copilot')['price_monthly'] === 15
+                    && collect($addons)->firstWhere('key', 'ai_copilot')['price_monthly_india'] === 699)
+            );
     }
 }

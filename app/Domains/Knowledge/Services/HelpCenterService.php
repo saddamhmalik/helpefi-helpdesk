@@ -4,6 +4,8 @@ namespace App\Domains\Knowledge\Services;
 
 use App\Domains\Brands\Services\BrandService;
 use App\Domains\Knowledge\Repositories\KnowledgeRepository;
+use App\Support\TenantCache;
+use Illuminate\Support\Facades\Cache;
 
 class HelpCenterService
 {
@@ -33,5 +35,18 @@ class HelpCenterService
         } catch (\Throwable) {
             return null;
         }
+    }
+
+    public function cachedGuestState(): ?array
+    {
+        if (! tenant('id')) {
+            return null;
+        }
+
+        if (app()->environment('testing')) {
+            return $this->guestState();
+        }
+
+        return Cache::remember(TenantCache::key('help_center.guest'), 300, fn () => $this->guestState());
     }
 }

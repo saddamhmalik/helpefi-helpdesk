@@ -3,18 +3,38 @@ import { Link } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import CentralLayout from '../../Layouts/CentralLayout.vue';
-import CentralSeoHead from '../../Components/CentralSeoHead.vue';
 import CentralAiDemoWidget from '../../Components/CentralAiDemoWidget.vue';
 import IntegrationStackIcon from '../../Components/IntegrationStackIcon.vue';
 import { useCurrency } from '../../composables/useCurrency.js';
 import { useBillingInterval } from '../../composables/useBillingInterval.js';
 
-const { t } = useI18n();
+const { t, tm } = useI18n();
+
+const homeKey = (suffix) => `central.home.${suffix}`;
+
+const centralArray = (suffix) => {
+    const value = tm(`central.${suffix}`);
+
+    return Array.isArray(value) ? value : [];
+};
+
+const homeArray = (suffix) => {
+    const value = tm(homeKey(suffix));
+
+    return Array.isArray(value) ? value : [];
+};
+
+const homeObject = (suffix) => {
+    const value = tm(homeKey(suffix));
+
+    return value && typeof value === 'object' && !Array.isArray(value) ? value : {};
+};
 
 const props = defineProps({
     brand: { type: String, default: 'helpefi' },
     trialDays: { type: Number, default: 14 },
     plans: { type: Array, default: () => [] },
+    addons: { type: Array, default: () => [] },
     currency: { type: Object, default: () => ({ code: 'USD', symbol: '$', name: 'US Dollar' }) },
     baseCurrency: { type: Object, default: () => ({ code: 'USD', symbol: '$', name: 'US Dollar' }) },
     indiaCurrency: { type: Object, default: () => ({ code: 'INR', symbol: '₹', name: 'Indian Rupee' }) },
@@ -24,9 +44,17 @@ const props = defineProps({
     contactEmail: { type: String, default: '' },
     aiDemoEnabled: { type: Boolean, default: true },
     socialLinks: { type: Array, default: () => [] },
+    testimonialsEnabled: { type: Boolean, default: true },
+    testimonials: { type: Array, default: () => [] },
+    comparePages: { type: Array, default: () => [] },
+    featurePages: { type: Array, default: () => [] },
 });
 
 const platformName = computed(() => t('app.name'));
+
+const socialProofLogos = computed(() => centralArray('social_proof_logos'));
+
+const compareNavLabel = (slug) => t(`central.comparisons.${slug}.nav_label`);
 
 const workspaceDomainExample = computed(() => {
     const domain = props.centralDomain || 'helpefi.com';
@@ -61,161 +89,116 @@ const { formatPrice } = useCurrency(() => activeCurrency.value);
 
 const { billingInterval, intervalSuffix, planPrice, yearlySavingsPercent } = useBillingInterval();
 
+const addonPrice = (addon) => (
+    isIndia.value
+        ? (addon.price_monthly_india ?? addon.price_monthly ?? 0)
+        : (addon.price_monthly ?? 0)
+);
+
 const previewTab = ref('ai');
 const featureCategory = ref('operations');
 const openFaq = ref(null);
 
-const featureLabels = {
-    automation: 'Automation & macros',
-    service_catalog: 'Service catalog',
-    channels: 'Live chat & channels',
-    sla: 'SLA & business hours',
-    workspace: 'Multi-brand workspace',
-    ai: 'AI assist & deflection',
-    integrations: 'Integrations & webhooks',
-    assets: 'Asset management (CMDB)',
-    custom_domain: 'Custom workspace domain',
-    sso: 'SSO (SAML / OIDC)',
-    service_desk: 'Service Desk ITSM',
-};
+const featureLabels = computed(() => homeObject('feature_labels'));
 
-const previewTabs = [
-    { id: 'ai', label: 'AI Copilot' },
+const previewTabs = computed(() => [
+    { id: 'ai', label: t(homeKey('preview_tab_ai')) },
     { id: 'inbox', label: t('central.shared_inbox') },
     { id: 'chat', label: t('central.live_chat') },
     { id: 'servicedesk', label: t('nav.service_desk') },
     { id: 'analytics', label: t('central.analytics') },
-];
+]);
 
-const aiCapabilities = [
+const aiCapabilityMeta = [
     {
-        title: 'Agent Copilot',
-        body: 'Side-panel assistant on every ticket — summarize threads, draft replies, suggest KB articles, and recommend next steps with full context.',
         icon: 'M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z',
         accent: 'from-violet-500/20 to-purple-500/10',
         iconWrap: 'bg-violet-500/15 text-violet-200 ring-violet-400/25',
     },
     {
-        title: 'Reply drafts & summaries',
-        body: 'One-click AI reply drafts and thread summaries in the composer. Agents review before sending — faster responses without losing the human touch.',
         icon: 'M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z',
         accent: 'from-indigo-500/20 to-blue-500/10',
         iconWrap: 'bg-indigo-500/15 text-indigo-200 ring-indigo-400/25',
     },
     {
-        title: 'Customer deflection',
-        body: 'AI answers on your portal and live chat widget before customers submit tickets. Semantic search finds the right article even when wording differs.',
         icon: 'M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z',
         accent: 'from-fuchsia-500/20 to-pink-500/10',
         iconWrap: 'bg-fuchsia-500/15 text-fuchsia-200 ring-fuchsia-400/25',
     },
     {
-        title: 'AI triage',
-        body: 'New tickets analyzed on creation for suggested priority, tags, and routing hints. Agents accept or override — smarter queues from day one.',
         icon: 'M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z',
         accent: 'from-cyan-500/20 to-sky-500/10',
         iconWrap: 'bg-cyan-500/15 text-cyan-200 ring-cyan-400/25',
     },
 ];
 
-const aiStats = [
-    { value: 'Up to 40%', label: 'Tickets deflected before they reach an agent' },
-    { value: '3× faster', label: 'First-response drafting with Copilot' },
-    { value: 'Day one', label: 'Auto-triage on every new ticket' },
+const aiCapabilities = computed(() => homeArray('ai_capabilities').map((item, index) => ({
+    ...item,
+    ...(aiCapabilityMeta[index] ?? aiCapabilityMeta[0]),
+})));
+
+const aiStats = computed(() => homeArray('ai_stats'));
+
+const aiHighlights = computed(() => homeArray('ai_highlights'));
+
+const aiSectionSubtitle = computed(() => t(homeKey('ai_section.subtitle'), { brand: platformName.value }));
+
+const featureCategoryDefs = [
+    { id: 'operations', labelKey: 'central.ticket_operations', icon: 'M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4' },
+    { id: 'channels', labelKey: 'settings.groups.channels', icon: 'M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z' },
+    { id: 'selfservice', labelKey: 'central.self-service', icon: 'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253' },
+    { id: 'automation', labelKey: 'central.automation_ai', icon: 'M13 10V3L4 14h7v7l9-11h-7z' },
+    { id: 'itsm', labelKey: 'central.service_desk_itsm', icon: 'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z' },
+    { id: 'platform', labelKey: 'central.platform', icon: 'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4' },
 ];
 
-const aiHighlights = [
-    'Included on every plan — no AI add-on fees',
-    'Grounded in your knowledge base, not generic answers',
-    'Agents stay in control — review before anything sends',
-];
+const featureCategories = computed(() => featureCategoryDefs.map((category) => ({
+    ...category,
+    label: t(category.labelKey),
+})));
 
-const featureCategories = [
-    { id: 'operations', label: t('central.ticket_operations'), icon: 'M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4' },
-    { id: 'channels', label: t('settings.groups.channels'), icon: 'M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z' },
-    { id: 'selfservice', label: t('central.self-service'), icon: 'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253' },
-    { id: 'automation', label: t('central.automation_ai'), icon: 'M13 10V3L4 14h7v7l9-11h-7z' },
-    { id: 'itsm', label: t('central.service_desk_itsm'), icon: 'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z' },
-    { id: 'platform', label: t('central.platform'), icon: 'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4' },
-];
-
-const categoryContent = {
+const categoryMeta = {
     operations: {
-        title: t('central.run_support_like_a_well-oiled_machine'),
-        description: t('central.every_conversation_becomes_a_trackable_ticket_with_ownership_priority_'),
-        highlights: [
-            'Split-pane agent workspace with queue, conversation, and sidebar',
-            'Saved views, filters, bulk actions, merge/split, and custom fields',
-            'Assignments, teams, departments, skills routing, and collision detection',
-            'Side conversations to email third parties without merging tickets',
-            'Time tracking, watchers, CCs, and full audit trail on every ticket',
-            'Real-time updates, presence, and scheduled report delivery',
-        ],
+        titleKey: 'central.run_support_like_a_well-oiled_machine',
+        descriptionKey: 'central.every_conversation_becomes_a_trackable_ticket_with_ownership_priority_',
     },
     channels: {
-        title: t('central.meet_customers_where_they_are'),
-        description: t('central.email_live_chat_sms_and_your_branded_portal_all_feed_the_same_queue_mu'),
-        highlights: [
-            'Inbound email via webhook, IMAP, or OAuth with CC parsing',
-            'Embeddable live chat widget with visitor context and deflection',
-            'Branded customer portal with guest and authenticated ticket tracking',
-            'Multi-brand portals, inboxes, KB skins, and ticket forms',
-            'CSAT surveys on portal and email after resolve/close',
-            'Twilio SMS messaging and real-time agent notifications',
-        ],
+        titleKey: 'central.meet_customers_where_they_are',
+        descriptionKey: 'central.email_live_chat_sms_and_your_branded_portal_all_feed_the_same_queue_mu',
     },
     selfservice: {
-        title: t('central.deflect_tickets_before_they_arrive'),
-        description: t('central.publish_a_searchable_knowledge_base_route_structured_requests_through_'),
-        highlights: [
-            'Rich-text articles with collections, versions, and locale support',
-            'Semantic KB search and suggested articles on portal submit',
-            'Customer-facing AI deflection on portal and live chat',
-            'Service catalog with categories, request types, and approval flows',
-            'Public help center linked from your portal and chat widget',
-            'CSAT feedback to measure article and deflection effectiveness',
-        ],
+        titleKey: 'central.deflect_tickets_before_they_arrive',
+        descriptionKey: 'central.publish_a_searchable_knowledge_base_route_structured_requests_through_',
     },
     automation: {
-        title: t('central.automate_the_repetitive_work'),
-        description: t('central.route_tickets_automatically_apply_macros_chain_multi-step_workflows_an'),
-        highlights: [
-            'Round-robin and load-based auto-assignment rules',
-            'Canned responses with placeholders and macro actions',
-            'Automation triggers with delays, webhooks, and auto-tagging',
-            'AI-suggested replies, thread summaries, and KB assist',
-            'SLA policies with business hours, escalations, and team SLAs',
-            'Outbound webhooks with HMAC-signed ticket event delivery',
-        ],
+        titleKey: 'central.automate_the_repetitive_work',
+        descriptionKey: 'central.route_tickets_automatically_apply_macros_chain_multi-step_workflows_an',
     },
     itsm: {
-        title: t('central.full_itsm_on_top_of_your_helpdesk'),
-        description: t('central.enterprise_teams_get_itil-style_workflows_type_queues_approvals_change'),
-        highlights: [
-            'Service Desk hub with incident, request, change, and problem queues',
-            'Catalog and change approval workflows with email and in-app inbox',
-            'Change records with risk, schedule, CAB, and change calendar',
-            'Problem management with root cause, known errors, and linked incidents',
-            'Major incident declaration, war room, and post-incident review',
-            'Asset CMDB with network discovery linked to tickets and catalog items',
-        ],
+        titleKey: 'central.full_itsm_on_top_of_your_helpdesk',
+        descriptionKey: 'central.enterprise_teams_get_itil-style_workflows_type_queues_approvals_change',
     },
     platform: {
-        title: t('central.built_for_teams_that_scale'),
-        description: t('central.role-based_access_crm_context_enterprise_integrations_sso_and_billing_'),
-        highlights: [
-            'Admin, agent, and customer roles with custom permissions',
-            'HubSpot, Salesforce, Shopify, Slack, Jira, and Linear integrations',
-            'Customer context panel with CRM, commerce, and health scores in the ticket sidebar',
-            'Network asset discovery imports devices into your CMDB automatically',
-            'Two-factor auth, SSO (SAML/OIDC), audit logs, and data retention',
-            'Custom workspace domain on Enterprise plans',
-            'REST API, OpenAPI docs, and usage-based plan limits',
-        ],
+        titleKey: 'central.built_for_teams_that_scale',
+        descriptionKey: 'central.role-based_access_crm_context_enterprise_integrations_sso_and_billing_',
     },
 };
 
-const allFeatures = [
+const categoryContent = computed(() => {
+    const highlightsByCategory = homeObject('category_highlights');
+
+    return Object.fromEntries(Object.entries(categoryMeta).map(([id, meta]) => {
+        const highlights = highlightsByCategory[id];
+
+        return [id, {
+            title: t(meta.titleKey),
+            description: t(meta.descriptionKey),
+            highlights: Array.isArray(highlights) ? highlights : [],
+        }];
+    }));
+});
+
+const allFeatures = computed(() => [
     { title: t('central.shared_inbox_tickets'), description: t('central.manage_email_chat_sms_and_portal_requests_in_one_workspace_with_merge_'), icon: 'M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4' },
     { title: t('central.agent_workspace'), description: t('central.split-pane_queue_conversation_and_details_sidebar_with_real-time_updat'), icon: 'M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z' },
     { title: t('central.live_chat_sms'), description: t('central.embed_a_chat_widget_on_your_site_and_receive_sms_via_twilio_every_conv'), icon: 'M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z' },
@@ -232,7 +215,7 @@ const allFeatures = [
     { title: t('central.contacts_organizations'), description: t('central.track_customers_companies_vip_tags_activity_timelines_and_crm_context_'), icon: 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z' },
     { title: t('central.security_sso'), description: t('central.two-factor_authentication_saml_oidc_single_sign-on_role_permissions_au'), icon: 'M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z' },
     { title: t('central.workforce_management'), description: t('central.organize_agents_into_teams_and_departments_with_skills_routing_perform'), icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2' },
-];
+]);
 
 const featurePalette = [
     { icon: 'bg-gradient-to-br from-blue-500 to-indigo-600 shadow-blue-500/30', glow: 'from-blue-400 to-indigo-400' },
@@ -246,20 +229,30 @@ const featurePalette = [
 ];
 
 const featureGroupDefs = [
-    { label: 'Inbox & workspace', hint: 'Where agents live every day', indices: [0, 1, 13, 15] },
-    { label: 'Channels & self-service', hint: 'Meet customers and deflect tickets', indices: [2, 3, 4, 8] },
-    { label: 'Automation, SLA & insights', hint: 'Work smarter and measure results', indices: [6, 7, 9, 10] },
-    { label: 'ITSM & enterprise', hint: 'Scale with IT and security', indices: [5, 11, 12, 14] },
+    { indices: [0, 1, 13, 15] },
+    { indices: [2, 3, 4, 8] },
+    { indices: [6, 7, 9, 10] },
+    { indices: [5, 11, 12, 14] },
 ];
 
-const bentoItems = [
-    { title: t('central.one_inbox_every_channel'), body: 'Email, chat, SMS, and portal tickets land in a single queue with smart routing and multi-brand support.', span: 'lg:col-span-2', accent: 'from-blue-600/20 to-indigo-600/10', icon: 'M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4' },
-    { title: t('central.sla_timers'), body: 'Never miss a deadline with visual countdowns, business hours, and breach alerts.', span: '', accent: 'from-amber-500/20 to-orange-500/10', icon: 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z' },
-    { title: t('central.ai_reply_drafts'), body: 'Agents get suggested responses and KB articles; customers get deflection before they submit.', span: '', accent: 'from-violet-600/20 to-purple-600/10', icon: 'M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z' },
-    { title: t('central.customer_portal'), body: 'Branded self-service hub for articles, service catalog requests, and ticket tracking.', span: 'lg:col-span-2', accent: 'from-emerald-600/20 to-teal-600/10', icon: 'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253' },
-    { title: t('central.service_desk_itsm'), body: 'Incidents, changes, problems, approvals, and major incident war rooms on Enterprise.', span: '', accent: 'from-red-500/20 to-rose-500/10', icon: 'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z' },
-    { title: t('central.real-time_workspace'), body: 'Live ticket updates, agent presence, and collision warnings — no refresh required.', span: '', accent: 'from-cyan-500/20 to-sky-500/10', icon: 'M13 10V3L4 14h7v7l9-11h-7z' },
+const bentoDefs = [
+    { titleKey: 'central.one_inbox_every_channel', bodyKey: 'one_inbox', span: 'lg:col-span-2', accent: 'from-blue-600/20 to-indigo-600/10', icon: 'M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4' },
+    { titleKey: 'central.sla_timers', bodyKey: 'sla', span: '', accent: 'from-amber-500/20 to-orange-500/10', icon: 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z' },
+    { titleKey: 'central.ai_reply_drafts', bodyKey: 'ai', span: '', accent: 'from-violet-600/20 to-purple-600/10', icon: 'M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z' },
+    { titleKey: 'central.customer_portal', bodyKey: 'portal', span: 'lg:col-span-2', accent: 'from-emerald-600/20 to-teal-600/10', icon: 'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253' },
+    { titleKey: 'central.service_desk_itsm', bodyKey: null, span: 'lg:col-span-2', accent: 'from-red-500/20 to-rose-500/10', icon: 'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z' },
+    { titleKey: 'central.real-time_workspace', bodyKey: 'realtime', span: '', accent: 'from-cyan-500/20 to-sky-500/10', icon: 'M13 10V3L4 14h7v7l9-11h-7z' },
 ];
+
+const bentoItems = computed(() => bentoDefs.map((item) => ({
+    title: t(item.titleKey),
+    body: item.bodyKey
+        ? t(homeKey(`bento_bodies.${item.bodyKey}`))
+        : t('central.service_desk_itsm_card_body'),
+    span: item.span,
+    accent: item.accent,
+    icon: item.icon,
+})));
 
 const differentiatorDefs = [
     { titleKey: 'diff_support_itsm_title', bodyKey: 'diff_support_itsm_body', badgeKey: 'built_different_badge_itsm', accent: 'from-red-500/15 to-rose-500/5', icon: 'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z' },
@@ -274,125 +267,77 @@ const differentiatorDefs = [
     { titleKey: 'diff_catalog_approvals_title', bodyKey: 'diff_catalog_approvals_body', accent: 'from-teal-500/15 to-emerald-500/5', icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4' },
 ];
 
-const differentiators = computed(() => differentiatorDefs.map((item) => ({
+const differentiators = computed(() => differentiatorDefs.map((item, index) => ({
     title: t(`central.${item.titleKey}`),
     body: t(`central.${item.bodyKey}`),
     badge: item.badgeKey ? t(`central.${item.badgeKey}`) : null,
     accent: item.accent,
     icon: item.icon,
+    featured: index === differentiatorDefs.length - 1,
 })));
 
 const builtDifferentSubtitle = computed(() => t('central.built_different_subtitle', { brand: platformName.value }));
 
-const steps = [
-    { title: t('central.create_your_workspace'), body: 'Pick a subdomain, register in seconds, and get a dedicated environment for your team — no credit card required.', detail: 'Your workspace lives on its own subdomain with isolated data, roles, and admin access.' },
-    { title: t('central.connect_your_channels'), body: 'Follow the guided setup wizard to configure email, chat widget, SMS, portal branding, SLA policies, and service catalog.', detail: 'Inbound email, outbound SMTP, chat embed code, and Twilio SMS — configured step by step.' },
-    { title: t('central.invite_your_team_go_live'), body: 'Add agents, assign roles, publish your knowledge base, and start resolving tickets from day one.', detail: 'Full platform access during your free trial. Upgrade to Enterprise for Service Desk ITSM when you need it.' },
+const painPointMeta = [
+    { icon: 'M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4' },
+    { icon: 'M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z' },
+    { icon: 'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z' },
+    { icon: 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z' },
 ];
 
-const integrationGroups = [
-    {
-        label: 'Channels',
-        items: [
-            { id: 'email', name: 'Email' },
-            { id: 'live-chat', name: 'Live chat' },
-            { id: 'sms', name: 'SMS' },
-            { id: 'portal', name: 'Portal' },
-        ],
-    },
-    {
-        label: 'Collaboration',
-        items: [
-            { id: 'slack', name: 'Slack' },
-            { id: 'teams', name: 'Microsoft Teams' },
-            { id: 'jira', name: 'Jira' },
-            { id: 'linear', name: 'Linear' },
-        ],
-    },
-    {
-        label: 'CRM & commerce',
-        items: [
-            { id: 'hubspot', name: 'HubSpot' },
-            { id: 'salesforce', name: 'Salesforce' },
-            { id: 'shopify', name: 'Shopify' },
-        ],
-    },
-    {
-        label: 'Platform',
-        items: [
-            { id: 'webhooks', name: 'Webhooks' },
-            { id: 'rest-api', name: 'REST API' },
-            { id: 'sso', name: 'SSO' },
-        ],
-    },
+const painPoints = computed(() => homeArray('pain_points').map((item, index) => ({
+    ...item,
+    icon: painPointMeta[index]?.icon ?? painPointMeta[0].icon,
+})));
+
+const stackSavings = computed(() => homeArray('stack_savings'));
+
+const switchOldTools = computed(() => homeArray('switch_section.old_tools'));
+
+const switchMockNav = [
+    { icon: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6' },
+    { icon: 'M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4', active: true },
+    { icon: 'M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z' },
+    { icon: 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z' },
+    { icon: 'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253' },
 ];
 
-const planTaglines = {
-    starter: 'Essentials for small teams',
-    professional: 'Automation, SLA & channels',
-    enterprise: 'ITSM, AI, SSO & custom domain',
-};
+const comparisons = computed(() => homeArray('comparisons'));
 
-const trustBadges = [
-    'No credit card required',
-    'Live in under 2 minutes',
-    'Full platform access',
-    'Cancel anytime',
+const faqs = computed(() => homeArray('faqs').map((item) => ({
+    q: String(item.q).replace(/\{trialDays\}/g, String(props.trialDays)),
+    a: String(item.a).replace(/\{trialDays\}/g, String(props.trialDays)),
+})));
+
+const planTaglines = computed(() => homeObject('plan_taglines'));
+
+const integrationGroups = computed(() => homeArray('integration_groups'));
+
+const categoryHints = computed(() => homeObject('category_hints'));
+
+const switchSectionSubtitle = computed(() => t(homeKey('switch_section.subtitle'), { brand: platformName.value }));
+
+const compareSectionTitle = computed(() => t(homeKey('compare_section.title'), { brand: platformName.value }));
+
+const productSectionSubtitle = computed(() => t(homeKey('product_section.subtitle'), { brand: platformName.value }));
+
+const featuresSectionSubtitle = computed(() => t(homeKey('features_section.subtitle'), { brand: platformName.value }));
+
+const stepDefs = [
+    { titleKey: 'central.create_your_workspace' },
+    { titleKey: 'central.connect_your_channels' },
+    { titleKey: 'central.invite_your_team_go_live', detailKey: 'central.invite_your_team_go_live_detail' },
 ];
 
-const heroAiPills = [
-    { label: 'Agent Copilot', icon: 'M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z' },
-    { label: 'Smart deflection', icon: 'M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z' },
-    { label: 'AI triage', icon: 'M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z' },
-    { label: 'Reply drafts', icon: 'M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z' },
-];
+const steps = computed(() => {
+    const copy = homeArray('steps');
 
-const heroAiStats = [
-    { value: '40%', label: 'fewer tickets', detail: 'with AI deflection' },
-    { value: '3×', label: 'faster replies', detail: 'with Copilot drafts' },
-    { value: 'Included', label: 'in free trial', detail: 'no add-on fees' },
-];
-
-const outcomeStats = [
-    { value: '3×', label: 'Faster first response', detail: 'vs. scattered inboxes' },
-    { value: '40%', label: 'Fewer repeat tickets', detail: 'with KB deflection' },
-    { value: '94%', label: 'Average CSAT', detail: 'across active teams' },
-    { value: '2 min', label: 'Median setup time', detail: 'from signup to first ticket' },
-];
-
-const painPoints = [
-    {
-        pain: 'Tickets scattered across email, Slack, and spreadsheets',
-        gain: 'One unified inbox for every channel',
-        icon: 'M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4',
-        oldTools: ['Gmail', 'Slack', 'Sheets'],
-    },
-    {
-        pain: 'Agents switching between 4+ tools to resolve a ticket',
-        gain: 'Full context in a single helpdesk',
-        icon: 'M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z',
-        oldTools: ['CRM', 'Chat', 'KB', 'ITSM'],
-    },
-    {
-        pain: 'ITSM bolted on as a separate expensive product',
-        gain: 'Service Desk ITSM built in on Enterprise',
-        icon: 'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z',
-        oldTools: ['Separate ITSM tool', 'Extra license'],
-    },
-    {
-        pain: 'Customers waiting hours for a first reply',
-        gain: 'SLA timers, AI drafts, and smart routing',
-        icon: 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z',
-        oldTools: ['Manual triage', 'No SLA'],
-    },
-];
-
-const stackSavings = [
-    { label: 'Tools replaced', value: '3–5' },
-    { label: 'Avg. cost saved', value: '$2k+/mo' },
-    { label: 'Setup time', value: '<2 min' },
-    { label: 'Context lost', value: 'Zero' },
-];
+    return stepDefs.map((def, index) => ({
+        title: t(def.titleKey),
+        body: copy[index]?.body ?? '',
+        detail: def.detailKey ? t(def.detailKey) : (copy[index]?.detail ?? ''),
+    }));
+});
 
 const heroAvatars = [
     { initials: 'SC', color: 'from-blue-500 to-indigo-600' },
@@ -400,33 +345,25 @@ const heroAvatars = [
     { initials: 'ER', color: 'from-violet-500 to-purple-600' },
 ];
 
-const comparisons = [
-    { feature: 'Unified inbox (email + chat + portal + SMS)', us: true, them: false },
-    { feature: 'Built-in knowledge base & portal', us: true, them: 'Add-on' },
-    { feature: 'Service catalog with approval workflows', us: true, them: 'Enterprise only' },
-    { feature: 'Service Desk ITSM (changes, problems, major incidents)', us: true, them: 'Separate product' },
-    { feature: 'Customer 360 with CRM & commerce in the ticket sidebar', us: true, them: 'Add-on' },
-    { feature: 'Network asset discovery & CMDB', us: true, them: false },
-    { feature: 'Skills routing & tier-based SLA policies', us: true, them: 'Rare' },
-    { feature: 'Semantic KB search & AI deflection', us: true, them: 'Extra cost' },
-    { feature: 'Major incident war rooms & post-incident review', us: true, them: 'Separate product' },
-    { feature: 'SLA policies & business hours', us: true, them: 'Enterprise only' },
-    { feature: 'Multi-brand workspaces', us: true, them: false },
-    { feature: 'Dedicated workspace URL + custom domain', us: true, them: 'Add-on' },
-    { feature: 'SSO (SAML / OIDC) & agent performance scoring', us: true, them: 'Enterprise only' },
-    { feature: 'Free trial, no credit card', us: true, them: 'Limited' },
+const trustBadges = computed(() => homeArray('trust_badges'));
+
+const heroAiPillIcons = [
+    'M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z',
+    'M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z',
+    'M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z',
+    'M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z',
 ];
 
-const faqs = computed(() => [
-    { q: `How does the ${props.trialDays}-day free trial work?`, a: `Sign up and get full platform access for ${props.trialDays} days. No credit card required. When your trial ends, choose a plan that fits your team to keep your workspace active.` },
-    { q: 'Can I use my own domain?', a: 'Yes. Every workspace includes a dedicated subdomain (e.g. acme.yourplatform.com). On Enterprise plans, connect your own domain (e.g. support.yourcompany.com) from Settings → Custom domain — add the DNS records we provide, verify ownership, and optionally redirect visitors from your platform subdomain to your branded URL.' },
-    { q: 'What channels are supported?', a: 'Email (inbound webhook, IMAP, and OAuth), live chat widget, SMS via Twilio, and a branded customer portal. All channels create tickets in the same shared inbox with multi-brand routing.' },
-    { q: 'What is Service Desk ITSM?', a: 'Service Desk is an Enterprise add-on that adds ITIL-style workflows on top of your existing tickets: type queues for incidents, requests, changes, and problems; catalog and change approvals; change calendar with CAB; problem records with linked incidents; and major incident war rooms with post-incident review.' },
-    { q: 'Is there an API?', a: 'Yes. A REST API covers authentication, tickets, contacts, service desk records, knowledge base, and billing snapshots — plus OpenAPI documentation for custom integrations and internal tooling.' },
-    { q: 'Do you support SSO?', a: 'Enterprise plans include SAML and OIDC single sign-on. Configure your identity provider in Settings → Security and agents sign in with your corporate credentials alongside optional two-factor authentication.' },
-    { q: 'How does pricing work after the trial?', a: 'Plans are based on team size (agents) and monthly ticket volume. Professional includes automation, SLA, service catalog, and live chat. Enterprise adds AI, integrations, assets, SSO, custom domain, and Service Desk ITSM. Upgrade anytime from your workspace billing settings.' },
-    { q: 'Can I migrate existing data?', a: 'Export tickets and contacts via CSV, or use the API to import data programmatically. Our unified inbox and service catalog make it straightforward to ramp without losing context.' },
-]);
+const heroAiPills = computed(() => homeArray('hero_ai_pills').map((item, index) => ({
+    label: item.label,
+    icon: heroAiPillIcons[index] ?? heroAiPillIcons[0],
+})));
+
+const heroAiStats = computed(() => homeArray('hero_ai_stats'));
+
+const outcomeStats = computed(() => homeArray('outcome_stats'));
+
+const heroMobileAiPoints = computed(() => homeArray('hero_mobile_ai_points'));
 
 const categoryHighlightIcons = {
     operations: [
@@ -467,7 +404,7 @@ const categoryHighlightIcons = {
     ],
 };
 
-const activeCategory = computed(() => categoryContent[featureCategory.value]);
+const activeCategory = computed(() => categoryContent.value[featureCategory.value]);
 const categoryThemes = {
     operations: { gradient: 'from-blue-600 via-blue-700 to-indigo-700', iconBg: 'bg-blue-600', iconBgMuted: 'bg-blue-100 text-blue-700 dark:text-blue-300' },
     channels: { gradient: 'from-emerald-600 via-teal-600 to-cyan-700', iconBg: 'bg-emerald-600', iconBgMuted: 'bg-emerald-100 text-emerald-700 dark:text-emerald-300' },
@@ -475,15 +412,6 @@ const categoryThemes = {
     automation: { gradient: 'from-amber-500 via-orange-500 to-red-600', iconBg: 'bg-amber-500', iconBgMuted: 'bg-amber-100 text-amber-800' },
     itsm: { gradient: 'from-red-600 via-rose-600 to-orange-700', iconBg: 'bg-red-600', iconBgMuted: 'bg-red-100 text-red-700 dark:text-red-300' },
     platform: { gradient: 'from-slate-700 via-slate-800 to-slate-900', iconBg: 'bg-slate-800', iconBgMuted: 'bg-slate-200 text-slate-700 dark:text-slate-300' },
-};
-
-const categoryHints = {
-    operations: 'Inbox, workspace & collaboration',
-    channels: 'Email, chat, SMS & portal',
-    selfservice: 'KB, catalog & deflection',
-    automation: 'Rules, macros & AI',
-    itsm: 'Changes, problems & war rooms',
-    platform: 'Integrations, SSO & API',
 };
 
 const categoryFeatureMap = {
@@ -499,7 +427,7 @@ const activeTheme = computed(() => categoryThemes[featureCategory.value] ?? cate
 
 const categoryRelatedFeatures = computed(() => {
     const indices = categoryFeatureMap[featureCategory.value] ?? [0, 1, 2];
-    return indices.map((index) => allFeatures[index]).filter(Boolean);
+    return indices.map((index) => allFeatures.value[index]).filter(Boolean);
 });
 
 const primaryHighlights = computed(() => activeCategory.value.highlights.slice(0, 4));
@@ -516,19 +444,24 @@ const primaryHighlightItems = computed(() => {
 
 
 
-const formatLimit = (value) => (value === null || value === 'unlimited' ? 'Unlimited' : value);
+const formatLimit = (value) => (
+    value === null || value === 'unlimited'
+        ? t(homeKey('plan_limits.unlimited'))
+        : value
+);
 
 const planHighlights = (plan) => {
+    const labels = featureLabels.value;
     const agents = formatLimit(plan.limits?.agents);
     const tickets = formatLimit(plan.limits?.tickets_monthly);
     const items = [
-        `${agents} team members`,
-        `${tickets} tickets / month`,
+        t(homeKey('plan_limits.team_members'), { count: agents }),
+        t(homeKey('plan_limits.tickets_per_month'), { count: tickets }),
     ];
 
     (plan.features ?? []).forEach((key) => {
-        if (featureLabels[key]) {
-            items.push(featureLabels[key]);
+        if (labels[key]) {
+            items.push(labels[key]);
         }
     });
 
@@ -539,17 +472,21 @@ const toggleFaq = (index) => {
     openFaq.value = openFaq.value === index ? null : index;
 };
 
-const featureGroups = computed(() => featureGroupDefs.map((group) => ({
-    ...group,
-    features: group.indices.map((index) => ({
-        ...allFeatures[index],
-        palette: featurePalette[index % featurePalette.length],
-    })).filter((feature) => feature.title),
-})));
+const featureGroups = computed(() => {
+    const groups = homeArray('feature_groups');
+
+    return featureGroupDefs.map((group, index) => ({
+        label: groups[index]?.label ?? '',
+        hint: groups[index]?.hint ?? '',
+        features: group.indices.map((featureIndex) => ({
+            ...allFeatures.value[featureIndex],
+            palette: featurePalette[featureIndex % featurePalette.length],
+        })).filter((feature) => feature.title),
+    }));
+});
 </script>
 
 <template>
-    <CentralSeoHead page="home" :brand="platformName" :trial-days="trialDays" />
     <CentralLayout :brand="platformName" :trial-days="trialDays" :social-links="socialLinks">
         <section class="relative overflow-hidden bg-slate-950 text-white">
             <div class="pointer-events-none absolute inset-0">
@@ -570,33 +507,32 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
                                     <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
                                     <span class="relative inline-flex h-2 w-2 rounded-full bg-emerald-400" />
                                 </span>
-                                {{ trialDays }}-day free trial · No credit card · Cancel anytime
+                                {{ $t('central.home.hero_trial_badge', { days: trialDays }) }}
                             </div>
                             <a
                                 href="#ai"
                                 class="inline-flex items-center gap-1.5 rounded-full border border-violet-400/40 bg-gradient-to-r from-violet-600/25 to-fuchsia-600/20 px-3 py-1.5 text-[11px] font-bold text-violet-200 shadow-lg shadow-violet-900/20 backdrop-blur transition hover:border-violet-300/50 hover:text-white sm:px-4 sm:text-xs"
                             >
                                 <svg class="h-3.5 w-3.5 text-violet-300" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>
-                                AI Copilot built in
+                                {{ $t('central.home.hero_ai_badge') }}
                             </a>
                         </div>
 
                         <h1 class="mt-6 text-3xl font-extrabold leading-[1.08] tracking-tight sm:mt-8 sm:text-[2.75rem] sm:leading-[1.05] lg:text-5xl xl:text-[3.5rem]">
-                            Stop juggling tools.
+                            {{ $t('central.home.hero_title_line1') }}
                             <span class="mt-1 block bg-gradient-to-r from-blue-400 via-indigo-300 to-violet-400 bg-clip-text text-transparent">
-                                Start delighting customers.
+                                {{ $t('central.home.hero_title_line2') }}
                             </span>
                         </h1>
 
                         <p class="mt-5 text-base leading-relaxed text-slate-300 sm:mt-6 sm:text-lg lg:text-xl">
-                            <span class="font-semibold text-violet-200">Built-in AI</span> drafts replies, deflects tickets, and triages your queue —
-                            plus inbox, chat, knowledge base, SLAs, and ITSM in one helpdesk your team will actually love.
+                            {{ $t('central.home.hero_subtitle') }}
                         </p>
 
                         <div class="mt-6 overflow-hidden rounded-2xl border border-violet-500/25 bg-gradient-to-br from-violet-950/50 via-slate-900/80 to-indigo-950/50 p-4 ring-1 ring-violet-400/10 sm:mt-7 sm:p-5">
                             <div class="flex items-center justify-between gap-3">
-                                <p class="text-xs font-bold uppercase tracking-wider text-violet-300">AI-native from day one</p>
-                                <a href="#ai" class="shrink-0 text-[11px] font-semibold text-violet-300 underline-offset-2 hover:text-white hover:underline sm:text-xs">See it live →</a>
+                                <p class="text-xs font-bold uppercase tracking-wider text-violet-300">{{ $t('central.home.hero_ai_heading') }}</p>
+                                <a href="#ai" class="shrink-0 text-[11px] font-semibold text-violet-300 underline-offset-2 hover:text-white hover:underline sm:text-xs">{{ $t('central.home.hero_ai_link') }}</a>
                             </div>
                             <div class="mt-3 flex gap-2 overflow-x-auto pb-0.5 sm:flex-wrap sm:overflow-visible">
                                 <span
@@ -609,8 +545,8 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
                                 </span>
                             </div>
                             <div class="mt-4 grid grid-cols-3 gap-2 border-t border-white/10 pt-4 sm:gap-3">
-                                <div v-for="stat in heroAiStats" :key="stat.label" class="text-center sm:text-left">
-                                    <p class="text-base font-extrabold text-white sm:text-lg">{{ stat.value }}</p>
+                                <div v-for="stat in heroAiStats" :key="stat.label" class="text-center sm:text-start">
+                                    <p class="text-base font-extrabold text-white sm:text-lg" dir="ltr">{{ stat.value }}</p>
                                     <p class="text-[10px] font-medium text-violet-200 sm:text-xs">{{ stat.label }}</p>
                                     <p class="hidden text-[10px] text-slate-500 dark:text-slate-400 sm:block">{{ stat.detail }}</p>
                                 </div>
@@ -622,16 +558,16 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
                                 href="/register"
                                 class="group relative inline-flex items-center justify-center gap-2 overflow-hidden rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-3.5 text-sm font-bold text-white shadow-2xl shadow-blue-600/40 transition hover:from-blue-500 hover:to-indigo-500 hover:shadow-blue-500/50 sm:px-8 sm:py-4 sm:text-base"
                             >
-                                <span class="sm:hidden">Start free trial</span>
-                                <span class="hidden sm:inline">Start free trial — it takes 2 minutes</span>
-                                <svg class="h-5 w-5 transition group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
+                                <span class="sm:hidden">{{ $t('central.home.hero_cta_short') }}</span>
+                                <span class="hidden sm:inline">{{ $t('central.home.hero_cta_long') }}</span>
+                                <svg class="h-5 w-5 transition group-hover:translate-x-1 rtl:rotate-180 rtl:group-hover:-translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
                             </Link>
                             <a
                                 href="#ai"
                                 class="inline-flex items-center justify-center gap-2 rounded-2xl border border-white/20 bg-white/5 px-6 py-4 text-sm font-semibold text-white backdrop-blur transition hover:bg-white/10"
                             >
                                 <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                                Try AI live
+                                {{ $t('central.home.hero_try_ai') }}
                             </a>
                         </div>
 
@@ -658,42 +594,43 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
                                     <svg v-for="n in 5" :key="n" class="h-4 w-4 text-amber-400" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>
                                 </div>
                                 <p class="mt-0.5 text-sm text-slate-400 dark:text-slate-500">
-                                    <span class="font-semibold text-white">Trusted by support & IT teams</span> worldwide
+                                    <span class="font-semibold text-white">{{ $t('central.home.hero_trusted_emphasis') }}</span>
+                                    {{ $t('central.home.hero_trusted_suffix') }}
                                 </p>
                             </div>
                         </div>
                     </div>
 
-                    <div class="mx-auto w-full max-w-xl md:max-w-none lg:pl-4">
+                    <div class="mx-auto w-full max-w-xl md:max-w-none lg:ps-4">
                         <div class="md:hidden rounded-2xl border border-violet-500/25 bg-gradient-to-br from-violet-950/40 to-slate-900/80 p-5 shadow-xl backdrop-blur-xl ring-1 ring-violet-400/15">
                             <div class="flex items-center gap-2">
                                 <span class="flex h-8 w-8 items-center justify-center rounded-xl bg-violet-500/20 text-violet-300">
                                     <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg>
                                 </span>
                                 <div>
-                                    <p class="text-sm font-semibold text-white">AI Copilot on every ticket</p>
-                                    <p class="text-xs text-violet-200">Drafts, deflection & triage included</p>
+                                    <p class="text-sm font-semibold text-white">{{ $t('central.home.hero_mobile_ai_title') }}</p>
+                                    <p class="text-xs text-violet-200">{{ $t('central.home.hero_mobile_ai_body') }}</p>
                                 </div>
                             </div>
                             <ul class="mt-4 space-y-2.5 text-sm text-slate-300">
-                                <li v-for="item in ['Agent Copilot side panel with full context', 'Portal & chat deflection before tickets', 'Shared inbox, KB, SLA & ITSM in one place']" :key="item" class="flex items-start gap-2">
+                                <li v-for="item in heroMobileAiPoints" :key="item" class="flex items-start gap-2">
                                     <svg class="mt-0.5 h-4 w-4 shrink-0 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" /></svg>
                                     {{ item }}
                                 </li>
                             </ul>
                             <a href="#ai" class="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-violet-300 hover:text-white">
-                                Try AI live
-                                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
+                                {{ $t('central.home.hero_try_ai') }}
+                                <svg class="h-4 w-4 rtl:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
                             </a>
                         </div>
 
                         <div class="relative mt-6 hidden md:block lg:mt-0">
-                            <div class="pointer-events-none absolute -right-2 -top-3 z-10 flex items-center gap-1.5 rounded-full border border-violet-400/40 bg-violet-600/90 px-3 py-1.5 text-[11px] font-bold text-white shadow-lg shadow-violet-900/40 backdrop-blur">
+                            <div class="pointer-events-none absolute -end-2 -top-3 z-10 flex items-center gap-1.5 rounded-full border border-violet-400/40 bg-violet-600/90 px-3 py-1.5 text-[11px] font-bold text-white shadow-lg shadow-violet-900/40 backdrop-blur">
                                 <span class="relative flex h-1.5 w-1.5">
                                     <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-white dark:bg-slate-900 opacity-75" />
                                     <span class="relative inline-flex h-1.5 w-1.5 rounded-full bg-white dark:bg-slate-900" />
                                 </span>
-                                AI Copilot live
+                                {{ $t('central.home.hero_mockup_badge') }}
                             </div>
                             <div class="pointer-events-none absolute -inset-4 rounded-3xl bg-gradient-to-r from-blue-600/20 via-indigo-500/20 to-violet-600/20 blur-2xl" />
                             <div class="relative rounded-2xl border border-white/15 bg-white/5 p-2 shadow-2xl shadow-black/60 backdrop-blur-xl ring-1 ring-white/10">
@@ -753,24 +690,24 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
 
                                 <div v-else-if="previewTab === 'ai'" class="grid grid-cols-5">
                                     <div class="col-span-2 border-r border-white/10 bg-slate-950/90 p-4">
-                                        <p class="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Ticket #1042</p>
-                                        <p class="mt-2 text-xs font-medium text-white">Payment failed — need help</p>
+                                        <p class="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">{{ $t('central.home.mockup_ai_ticket_id') }}</p>
+                                        <p class="mt-2 text-xs font-medium text-white">{{ $t('central.payment_failed_need_help') }}</p>
                                         <div class="mt-4 space-y-2">
-                                            <div class="rounded-lg bg-white/5 px-3 py-2"><p class="text-[10px] text-slate-300">Customer: charged twice after failed payment</p></div>
-                                            <div class="rounded-lg bg-blue-600/20 px-3 py-2 ring-1 ring-blue-500/30"><p class="text-[10px] text-blue-100">Agent: refund initiated, plan extended</p></div>
+                                            <div class="rounded-lg bg-white/5 px-3 py-2"><p class="text-[10px] text-slate-300">{{ $t('central.home.mockup_ai_customer_msg') }}</p></div>
+                                            <div class="rounded-lg bg-blue-600/20 px-3 py-2 ring-1 ring-blue-500/30"><p class="text-[10px] text-blue-100">{{ $t('central.home.mockup_ai_agent_msg') }}</p></div>
                                         </div>
-                                        <span class="mt-4 inline-flex rounded-md bg-violet-500/20 px-2 py-1 text-[10px] text-violet-200">AI draft ready</span>
+                                        <span class="mt-4 inline-flex rounded-md bg-violet-500/20 px-2 py-1 text-[10px] text-violet-200">{{ $t('central.ai_draft_ready') }}</span>
                                     </div>
                                     <div class="col-span-3 flex flex-col bg-gradient-to-b from-violet-950/40 to-slate-950/90 p-4">
                                         <div class="flex items-center justify-between border-b border-violet-500/20 pb-3">
-                                            <p class="text-xs font-semibold text-violet-200">Agent Copilot</p>
-                                            <span class="rounded-full bg-violet-500/20 px-2 py-0.5 text-[9px] text-violet-300">live</span>
+                                            <p class="text-xs font-semibold text-violet-200">{{ $t('central.home.mockup_ai_copilot_title') }}</p>
+                                            <span class="rounded-full bg-violet-500/20 px-2 py-0.5 text-[9px] text-violet-300">{{ $t('central.home.mockup_ai_live') }}</span>
                                         </div>
                                         <div class="mt-3 flex-1 space-y-2">
-                                            <div class="ml-auto max-w-[90%] rounded-xl rounded-br-sm bg-violet-600/50 px-3 py-2"><p class="text-[10px] text-violet-50">Summarize and suggest next steps</p></div>
-                                            <div class="max-w-[95%] rounded-xl rounded-bl-sm border border-violet-500/20 bg-white/5 px-3 py-2"><p class="text-[10px] leading-relaxed text-slate-200">Duplicate charge confirmed. Refund queued; subscription extended 30 days. Send confirmation email and close when refund clears.</p></div>
+                                            <div class="ml-auto max-w-[90%] rounded-xl rounded-br-sm bg-violet-600/50 px-3 py-2"><p class="text-[10px] text-violet-50">{{ $t('central.home.mockup_ai_user_prompt') }}</p></div>
+                                            <div class="max-w-[95%] rounded-xl rounded-bl-sm border border-violet-500/20 bg-white/5 px-3 py-2"><p class="text-[10px] leading-relaxed text-slate-200">{{ $t('central.home.mockup_ai_copilot_reply') }}</p></div>
                                         </div>
-                                        <p class="mt-3 text-[9px] text-violet-300/70">3 KB articles matched · Insert draft →</p>
+                                        <p class="mt-3 text-[9px] text-violet-300/70">{{ $t('central.home.mockup_ai_kb_matched') }}</p>
                                     </div>
                                 </div>
 
@@ -783,7 +720,7 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
                                         </div>
                                     </div>
                                     <div class="mt-4 space-y-3">
-                                        <div class="max-w-[80%] rounded-2xl rounded-bl-md bg-white/10 px-3 py-2"><p class="text-xs text-slate-200">Do you offer annual billing?</p></div>
+                                        <div class="max-w-[80%] rounded-2xl rounded-bl-md bg-white/10 px-3 py-2"><p class="text-xs text-slate-200">{{ $t('central.home.mockup_chat_visitor_question') }}</p></div>
                                         <div class="ml-auto max-w-[80%] rounded-2xl rounded-br-md bg-blue-600/40 px-3 py-2"><p class="text-xs text-blue-50">{{ $t('central.yes_annual_plans_save_20_i_can_send_details_to_your_email') }}</p></div>
                                         <div class="max-w-[80%] rounded-2xl rounded-bl-md bg-white/10 px-3 py-2"><p class="text-xs text-slate-200">{{ $t('central.perfect_please_do') }}</p></div>
                                     </div>
@@ -851,7 +788,7 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
                         :key="stat.label"
                         class="rounded-2xl border border-slate-100 dark:border-slate-800 bg-gradient-to-br from-slate-50 to-white p-6 text-center shadow-sm"
                     >
-                        <p class="text-3xl font-extrabold tracking-tight text-slate-900 dark:text-slate-100 sm:text-4xl">{{ stat.value }}</p>
+                        <p class="text-3xl font-extrabold tracking-tight text-slate-900 dark:text-slate-100 sm:text-4xl" dir="ltr">{{ stat.value }}</p>
                         <p class="mt-1 text-sm font-semibold text-slate-800 dark:text-slate-200">{{ stat.label }}</p>
                         <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">{{ stat.detail }}</p>
                     </div>
@@ -863,119 +800,150 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
             <div class="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-50 via-white to-white" />
             <div class="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                 <div class="mx-auto max-w-3xl text-center">
-                    <p class="text-sm font-semibold uppercase tracking-wider text-blue-600">Why teams switch</p>
+                    <p class="text-sm font-semibold uppercase tracking-wider text-blue-600">{{ $t('central.home.switch_section.eyebrow') }}</p>
                     <h2 class="mt-3 text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100 sm:text-4xl lg:text-5xl">
-                        From tool chaos to one calm helpdesk
+                        {{ $t('central.home.switch_section.title') }}
                     </h2>
                     <p class="mt-4 text-lg text-slate-600 dark:text-slate-400">
-                        Most teams pay for 3–5 separate products and still lose context. {{ platformName }} replaces the stack — not adds to it.
+                        {{ switchSectionSubtitle }}
                     </p>
                 </div>
 
-                <div class="relative mt-16">
-                    <div class="absolute left-1/2 top-1/2 z-10 hidden -translate-x-1/2 -translate-y-1/2 lg:block">
-                        <span class="flex h-14 w-14 items-center justify-center rounded-full bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 shadow-xl ring-4 ring-slate-100 dark:ring-slate-800">
-                            <svg class="h-6 w-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
-                        </span>
-                    </div>
+                <div class="relative mt-14 lg:mt-16">
+                    <div class="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-2xl shadow-slate-200/50 dark:border-slate-800 dark:bg-slate-900 dark:shadow-none lg:grid lg:min-h-[22rem] lg:grid-cols-2">
+                        <div class="relative flex flex-col border-b border-slate-200 bg-gradient-to-b from-slate-50 to-white p-8 sm:p-10 lg:border-b-0 lg:border-e dark:border-slate-800 dark:from-slate-950 dark:to-slate-900">
+                            <span class="inline-flex items-center gap-2 rounded-full bg-red-50 px-3 py-1 text-xs font-bold uppercase tracking-wide text-red-600 ring-1 ring-red-100 dark:bg-red-950/40 dark:text-red-300 dark:ring-red-900/50">
+                                <span class="h-1.5 w-1.5 rounded-full bg-red-500" />
+                                {{ $t('central.home.switch_section.old_way_badge') }}
+                            </span>
+                            <h3 class="mt-5 text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100 sm:text-[1.65rem]">
+                                {{ $t('central.home.switch_section.old_way_title') }}
+                            </h3>
+                            <p class="mt-3 max-w-md text-sm leading-relaxed text-slate-600 dark:text-slate-400">
+                                {{ $t('central.home.switch_section.old_way_body') }}
+                            </p>
 
-                    <div class="overflow-hidden rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xl shadow-slate-200/60 lg:grid lg:grid-cols-2">
-                        <div class="relative border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 p-8 sm:p-10 lg:border-b-0 lg:border-r">
-                            <div class="absolute inset-0 opacity-[0.03]" style="background-image: radial-gradient(circle, #64748b 1px, transparent 1px); background-size: 20px 20px;" />
-                            <div class="relative">
-                                <span class="inline-flex items-center gap-2 rounded-full bg-red-50 dark:bg-red-950/40 px-3 py-1 text-xs font-bold uppercase tracking-wide text-red-600 ring-1 ring-red-100">
-                                    <span class="h-1.5 w-1.5 rounded-full bg-red-500" />
-                                    The old way
-                                </span>
-                                <p class="mt-4 text-lg font-semibold text-slate-800 dark:text-slate-200">Five tabs. Zero context.</p>
-                                <p class="mt-2 text-sm leading-relaxed text-slate-500 dark:text-slate-400">
-                                    Agents hunt across disconnected tools while customers wait — and nothing syncs.
-                                </p>
-
-                                <div class="mt-8 flex flex-wrap gap-2 sm:relative sm:h-36">
-                                    <span class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-2 text-xs font-semibold text-slate-600 dark:text-slate-400 shadow-md sm:absolute sm:left-0 sm:top-0 sm:rotate-[-6deg]">Email</span>
-                                    <span class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-2 text-xs font-semibold text-slate-600 dark:text-slate-400 shadow-md sm:absolute sm:left-24 sm:top-6 sm:rotate-[3deg]">Slack</span>
-                                    <span class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-2 text-xs font-semibold text-slate-600 dark:text-slate-400 shadow-md sm:absolute sm:right-8 sm:top-0 sm:rotate-[6deg]">Spreadsheet</span>
-                                    <span class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-2 text-xs font-semibold text-slate-600 dark:text-slate-400 shadow-md sm:absolute sm:bottom-4 sm:left-8 sm:rotate-[-3deg]">Legacy ITSM</span>
-                                    <span class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-2 text-xs font-semibold text-slate-600 dark:text-slate-400 shadow-md sm:absolute sm:bottom-0 sm:right-12 sm:rotate-[2deg]">Add-on KB</span>
-                                    <svg class="hidden h-full w-full text-slate-300 sm:absolute sm:inset-0 sm:block" fill="none" viewBox="0 0 300 120">
-                                        <path d="M40 20 L120 50 M120 50 L220 25 M80 90 L160 60 M160 60 L240 85" stroke="currentColor" stroke-dasharray="4 4" stroke-width="1.5" />
-                                    </svg>
-                                </div>
-
-                                <ul class="mt-6 space-y-3">
-                                    <li
-                                        v-for="item in painPoints"
-                                        :key="item.pain"
-                                        class="flex items-start gap-3 rounded-xl border border-red-100 bg-red-50 dark:bg-red-950/40/50 px-4 py-3"
+                            <div class="mt-auto rounded-2xl border border-dashed border-red-200/80 bg-white p-5 dark:border-red-900/40 dark:bg-slate-950/60">
+                                <div class="grid grid-cols-2 gap-2.5 sm:grid-cols-3">
+                                    <span
+                                        v-for="tool in switchOldTools"
+                                        :key="tool"
+                                        class="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-center text-xs font-semibold text-slate-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300"
                                     >
-                                        <span class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-red-100 text-red-500">
-                                            <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12" /></svg>
-                                        </span>
-                                        <span class="text-sm text-slate-600 dark:text-slate-400 line-through decoration-red-300/60">{{ item.pain }}</span>
-                                    </li>
-                                </ul>
+                                        {{ tool }}
+                                    </span>
+                                </div>
                             </div>
                         </div>
 
-                        <div class="relative overflow-hidden bg-gradient-to-br from-blue-600 via-indigo-600 to-violet-700 p-8 text-white sm:p-10">
-                            <div class="pointer-events-none absolute -right-10 -top-10 h-48 w-48 rounded-full bg-white/10 blur-2xl" />
-                            <div class="pointer-events-none absolute -bottom-8 -left-8 h-40 w-40 rounded-full bg-violet-400/20 blur-2xl" />
+                        <div class="relative flex flex-col overflow-hidden bg-gradient-to-br from-blue-600 via-indigo-600 to-violet-700 p-8 text-white sm:p-10">
+                            <div class="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-white/10 blur-3xl" />
+                            <div class="pointer-events-none absolute -bottom-12 -left-12 h-44 w-44 rounded-full bg-fuchsia-400/20 blur-3xl" />
                             <div class="relative">
                                 <span class="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-xs font-bold uppercase tracking-wide text-white ring-1 ring-white/25">
-                                    <span class="h-1.5 w-1.5 rounded-full bg-emerald-400" />
-                                    With {{ platformName }}
+                                    <span class="relative flex h-1.5 w-1.5">
+                                        <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+                                        <span class="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                                    </span>
+                                    {{ $t('central.home.switch_section.with_brand_badge', { brand: platformName }) }}
                                 </span>
-                                <p class="mt-4 text-lg font-semibold">One helpdesk. Full picture.</p>
-                                <p class="mt-2 text-sm leading-relaxed text-blue-100">
-                                    Every channel, ticket, and IT workflow lives together — with AI and SLAs built in.
+                                <h3 class="mt-5 text-2xl font-bold tracking-tight sm:text-[1.65rem]">
+                                    {{ $t('central.home.switch_section.new_way_title') }}
+                                </h3>
+                                <p class="mt-3 max-w-md text-sm leading-relaxed text-blue-100">
+                                    {{ $t('central.home.switch_section.new_way_body') }}
                                 </p>
 
-                                <div class="mt-8 overflow-hidden rounded-2xl border border-white/20 bg-white/10 p-4 backdrop-blur-sm">
-                                    <div class="flex items-center gap-2 border-b border-white/10 pb-3">
-                                        <span class="h-2 w-2 rounded-full bg-emerald-400" />
-                                        <span class="text-[10px] font-medium text-white/70">{{ platformName }} helpdesk</span>
+                                <div class="mt-auto overflow-hidden rounded-2xl border border-white/20 bg-slate-950/50 shadow-2xl shadow-indigo-950/30 backdrop-blur-md">
+                                    <div class="flex items-center gap-2 border-b border-white/10 px-4 py-2.5">
+                                        <span class="flex gap-1.5">
+                                            <span class="h-2.5 w-2.5 rounded-full bg-red-400/70" />
+                                            <span class="h-2.5 w-2.5 rounded-full bg-amber-400/70" />
+                                            <span class="h-2.5 w-2.5 rounded-full bg-emerald-400/70" />
+                                        </span>
+                                        <span class="mx-auto truncate text-[10px] font-medium text-white/55">{{ $t('central.home.switch_section.helpdesk_label', { brand: platformName }) }}</span>
                                     </div>
-                                    <div class="mt-3 grid grid-cols-3 gap-2">
-                                        <div class="rounded-lg bg-white/10 px-2 py-2 text-center">
-                                            <p class="text-lg font-bold">12</p>
-                                            <p class="text-[9px] text-white/60">Open</p>
+                                    <div class="grid grid-cols-[2.75rem_1fr]">
+                                        <div class="flex flex-col gap-1.5 border-e border-white/10 bg-[#111827]/80 p-2">
+                                            <span
+                                                v-for="(nav, navIndex) in switchMockNav"
+                                                :key="navIndex"
+                                                class="flex h-7 w-full items-center justify-center rounded-md transition"
+                                                :class="nav.active ? 'bg-white/15 text-white ring-1 ring-white/25' : 'text-white/35'"
+                                            >
+                                                <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" :d="nav.icon" />
+                                                </svg>
+                                            </span>
                                         </div>
-                                        <div class="rounded-lg bg-white/10 px-2 py-2 text-center">
-                                            <p class="text-lg font-bold text-emerald-300">4m</p>
-                                            <p class="text-[9px] text-white/60">Avg reply</p>
-                                        </div>
-                                        <div class="rounded-lg bg-white/10 px-2 py-2 text-center">
-                                            <p class="text-lg font-bold">94%</p>
-                                            <p class="text-[9px] text-white/60">CSAT</p>
+                                        <div class="p-3.5">
+                                            <div class="grid grid-cols-3 gap-1.5">
+                                                <div class="rounded-lg bg-white/10 px-1.5 py-2.5 text-center ring-1 ring-white/10">
+                                                    <p class="text-lg font-bold leading-none">12</p>
+                                                    <p class="mt-1 text-[8px] font-semibold uppercase tracking-wide text-white/50">{{ $t('central.home.switch_section.stat_open') }}</p>
+                                                </div>
+                                                <div class="rounded-lg bg-emerald-500/25 px-1.5 py-2.5 text-center ring-1 ring-emerald-400/35">
+                                                    <p class="text-lg font-bold leading-none text-emerald-200">4m</p>
+                                                    <p class="mt-1 text-[8px] font-semibold uppercase tracking-wide text-emerald-100/65">{{ $t('central.home.switch_section.stat_avg_reply') }}</p>
+                                                </div>
+                                                <div class="rounded-lg bg-white/10 px-1.5 py-2.5 text-center ring-1 ring-white/10">
+                                                    <p class="text-lg font-bold leading-none">94%</p>
+                                                    <p class="mt-1 text-[8px] font-semibold uppercase tracking-wide text-white/50">{{ $t('central.home.switch_section.stat_csat') }}</p>
+                                                </div>
+                                            </div>
+                                            <div class="mt-3 space-y-1.5">
+                                                <div class="flex items-center gap-2 rounded-md bg-white/5 px-2 py-1.5 ring-1 ring-white/5">
+                                                    <span class="h-1.5 w-1.5 shrink-0 rounded-full bg-blue-400" />
+                                                    <span class="h-1.5 flex-1 rounded-full bg-white/15" />
+                                                </div>
+                                                <div class="flex items-center gap-2 rounded-md bg-white/5 px-2 py-1.5 ring-1 ring-white/5">
+                                                    <span class="h-1.5 w-1.5 shrink-0 rounded-full bg-violet-400" />
+                                                    <span class="h-1.5 w-4/5 rounded-full bg-white/15" />
+                                                </div>
+                                                <div class="flex items-center gap-2 rounded-md bg-white/10 px-2 py-1.5 ring-1 ring-white/15">
+                                                    <span class="h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-400" />
+                                                    <span class="h-1.5 w-3/5 rounded-full bg-gradient-to-r from-blue-400/70 to-violet-400/70" />
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
+                            </div>
+                        </div>
+                    </div>
 
-                                <ul class="mt-6 space-y-3">
-                                    <li
-                                        v-for="item in painPoints"
-                                        :key="item.gain"
-                                        class="flex items-start gap-3 rounded-xl border border-white/15 bg-white/10 px-4 py-3 backdrop-blur-sm"
-                                    >
-                                        <span class="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white/15 text-white ring-1 ring-white/20">
-                                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" :d="item.icon" /></svg>
-                                        </span>
-                                        <div class="min-w-0">
-                                            <p class="text-sm font-semibold leading-snug">{{ item.gain }}</p>
-                                            <div class="mt-1.5 flex flex-wrap gap-1">
-                                                <span
-                                                    v-for="tool in item.oldTools"
-                                                    :key="tool"
-                                                    class="rounded-md bg-white/10 px-1.5 py-0.5 text-[10px] text-white/60 line-through"
-                                                >
-                                                    {{ tool }}
-                                                </span>
-                                                <span class="rounded-md bg-emerald-400/20 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-200">→ unified</span>
-                                            </div>
-                                        </div>
-                                    </li>
-                                </ul>
+                    <div class="mt-8 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+                        <div class="hidden border-b border-slate-100 bg-slate-50 px-6 py-3 text-xs font-semibold uppercase tracking-wider text-slate-500 sm:grid sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] sm:gap-6 dark:border-slate-800 dark:bg-slate-950/50 dark:text-slate-400">
+                            <span>{{ $t('central.home.switch_section.comparison_before') }}</span>
+                            <span class="w-9" />
+                            <span>{{ $t('central.home.switch_section.comparison_after', { brand: platformName }) }}</span>
+                        </div>
+                        <div
+                            v-for="(item, index) in painPoints"
+                            :key="item.pain"
+                            class="flex flex-col gap-3 px-5 py-4 sm:grid sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] sm:items-center sm:gap-6 sm:px-6 sm:py-5"
+                            :class="[
+                                index > 0 ? 'border-t border-slate-100 dark:border-slate-800' : '',
+                                index % 2 === 1 ? 'bg-slate-50/70 dark:bg-slate-950/30' : '',
+                            ]"
+                        >
+                            <div class="flex items-start gap-3 sm:items-center">
+                                <span class="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-red-50 text-red-500 ring-1 ring-red-100 dark:bg-red-950/50 dark:ring-red-900/40 sm:mt-0">
+                                    <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" /></svg>
+                                </span>
+                                <p class="text-sm leading-relaxed text-slate-600 dark:text-slate-400">{{ item.pain }}</p>
+                            </div>
+                            <div class="flex justify-center sm:justify-center">
+                                <span class="flex h-8 w-8 items-center justify-center rounded-full bg-blue-50 text-blue-600 ring-1 ring-blue-100 dark:bg-blue-950/50 dark:text-blue-300 dark:ring-blue-900/50 sm:h-9 sm:w-9">
+                                    <svg class="h-3.5 w-3.5 sm:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 14l-7 7m0 0l-7-7m7 7V3" /></svg>
+                                    <svg class="hidden h-4 w-4 sm:block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
+                                </span>
+                            </div>
+                            <div class="flex items-start gap-3 sm:items-center">
+                                <span class="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-blue-600 to-indigo-600 text-white shadow-md shadow-blue-600/20 sm:mt-0">
+                                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" :d="item.icon" /></svg>
+                                </span>
+                                <p class="text-sm font-semibold leading-relaxed text-slate-900 dark:text-slate-100">{{ item.gain }}</p>
                             </div>
                         </div>
                     </div>
@@ -997,10 +965,10 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
                         href="/register"
                         class="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 px-8 py-4 text-sm font-bold text-white shadow-xl shadow-blue-600/30 transition hover:from-blue-500 hover:to-indigo-500"
                     >
-                        Ditch the stack — start free trial
+                        {{ $t('central.home.switch_section.cta') }}
                         <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
                     </Link>
-                    <p class="mt-3 text-sm text-slate-500 dark:text-slate-400">{{ trialDays }}-day trial · No credit card · Migrate in an afternoon</p>
+                    <p class="mt-3 text-sm text-slate-500 dark:text-slate-400">{{ $t('central.home.switch_section.cta_footnote', { days: trialDays }) }}</p>
                 </div>
             </div>
         </section>
@@ -1017,16 +985,16 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
                     <div>
                         <p class="inline-flex items-center gap-2 rounded-full border border-violet-400/30 bg-violet-500/10 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-violet-300">
                             <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg>
-                            AI-powered
+                            {{ $t('central.home.ai_section.badge') }}
                         </p>
                         <h2 class="mt-5 text-3xl font-bold tracking-tight sm:text-4xl lg:text-5xl">
-                            AI that works for agents
+                            {{ $t('central.home.ai_section.title_line1') }}
                             <span class="mt-1 block bg-gradient-to-r from-violet-400 via-fuchsia-300 to-indigo-400 bg-clip-text text-transparent">
-                                and your customers
+                                {{ $t('central.home.ai_section.title_line2') }}
                             </span>
                         </h2>
                         <p class="mt-5 text-lg leading-relaxed text-slate-300">
-                            {{ platformName }} ships AI where support actually happens — not as a bolt-on. Deflect tickets before they arrive, draft replies in seconds, and give every agent a Copilot with full ticket context.
+                            {{ aiSectionSubtitle }}
                         </p>
 
                         <div class="mt-10 grid gap-4 sm:grid-cols-2">
@@ -1062,15 +1030,15 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
                                 href="/register"
                                 class="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-violet-600 to-indigo-600 px-6 py-3.5 text-sm font-bold text-white shadow-xl shadow-violet-600/30 transition hover:from-violet-500 hover:to-indigo-500"
                             >
-                                Start free trial
+                                {{ $t('central.home.ai_section.cta') }}
                                 <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
                             </Link>
-                            <p class="text-sm text-slate-400">Enterprise · AI included · No credit card</p>
+                            <p class="text-sm text-slate-400">{{ $t('central.home.ai_section.footnote') }}</p>
                         </div>
                     </div>
 
                     <div class="lg:sticky lg:top-24 lg:self-start">
-                        <CentralAiDemoWidget :enabled="aiDemoEnabled" />
+                        <CentralAiDemoWidget :enabled="aiDemoEnabled" :brand="platformName" />
 
                         <dl class="mt-5 grid grid-cols-3 gap-3">
                             <div
@@ -1085,7 +1053,7 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
 
                         <p class="mt-4 flex items-center justify-center gap-2 text-xs text-slate-500">
                             <svg class="h-3.5 w-3.5 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
-                            Your data stays private — never used to train external models
+                            {{ $t('central.home.ai_section.privacy_note') }}
                         </p>
                     </div>
                 </div>
@@ -1122,26 +1090,26 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
                 <div class="max-w-3xl">
                     <p class="text-sm font-semibold uppercase tracking-wider text-blue-600">{{ $t('central.platform_overview') }}</p>
                     <h2 class="mt-3 text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100 sm:text-4xl">
-                        Everything your team needs — nothing they don't
+                        {{ $t('central.home.product_section.title') }}
                     </h2>
                     <p class="mt-4 text-lg leading-relaxed text-slate-600 dark:text-slate-400">
-                        From the first customer message to resolution and feedback — {{ platformName }} gives agents the context, tools, and automation they need without switching tabs or paying for add-ons.
+                        {{ productSectionSubtitle }}
                     </p>
                 </div>
-                <div class="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                <div class="mt-12 grid auto-rows-fr gap-4 sm:grid-cols-2 lg:grid-cols-3">
                     <article
                         v-for="item in bentoItems"
                         :key="item.title"
-                        class="group relative overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg"
+                        class="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm transition duration-300 hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-lg dark:border-slate-800 dark:bg-slate-900 dark:hover:border-slate-700"
                         :class="item.span"
                     >
-                        <div class="pointer-events-none absolute inset-0 bg-gradient-to-br opacity-60 transition group-hover:opacity-100" :class="item.accent" />
-                        <div class="relative">
-                            <div class="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-900 text-white shadow-sm transition group-hover:scale-105">
+                        <div class="pointer-events-none absolute inset-0 bg-gradient-to-br opacity-50 transition duration-300 group-hover:opacity-80" :class="item.accent" />
+                        <div class="relative flex h-full flex-col">
+                            <div class="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-900 text-white shadow-md ring-1 ring-white/10 transition duration-300 group-hover:scale-105 dark:bg-slate-950">
                                 <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" :d="item.icon" /></svg>
                             </div>
-                            <h3 class="mt-4 text-lg font-semibold text-slate-900 dark:text-slate-100">{{ item.title }}</h3>
-                            <p class="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-400">{{ item.body }}</p>
+                            <h3 class="mt-5 text-lg font-semibold tracking-tight text-slate-900 dark:text-slate-100">{{ item.title }}</h3>
+                            <p class="mt-2 flex-1 text-sm leading-relaxed text-slate-600 dark:text-slate-400">{{ item.body }}</p>
                         </div>
                     </article>
                 </div>
@@ -1161,32 +1129,35 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
                     </p>
                 </div>
 
-                <div class="mt-16 grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+                <div class="mt-16 grid auto-rows-fr gap-4 sm:grid-cols-2 xl:grid-cols-3">
                     <article
                         v-for="item in differentiators"
                         :key="item.title"
-                        class="group relative overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm transition duration-300 hover:-translate-y-0.5 hover:border-slate-300 dark:hover:border-slate-600 dark:border-slate-700 hover:shadow-lg"
+                        class="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm transition duration-300 hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-lg dark:border-slate-800 dark:bg-slate-900 dark:hover:border-slate-700"
+                        :class="item.featured ? 'sm:col-span-2 xl:col-span-3 xl:mx-auto xl:max-w-4xl' : ''"
                     >
                         <div
-                            class="pointer-events-none absolute inset-0 bg-gradient-to-br opacity-70 transition group-hover:opacity-100"
+                            class="pointer-events-none absolute inset-0 bg-gradient-to-br opacity-50 transition duration-300 group-hover:opacity-80"
                             :class="item.accent"
                         />
-                        <div class="relative">
-                            <div class="flex items-start justify-between gap-3">
-                                <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-slate-900 text-white shadow-md transition group-hover:scale-105">
+                        <div class="relative flex h-full flex-col" :class="item.featured ? 'xl:flex-row xl:items-start xl:gap-8' : ''">
+                            <div class="flex items-start justify-between gap-3" :class="item.featured ? 'xl:shrink-0 xl:flex-col xl:items-start xl:gap-4' : ''">
+                                <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-slate-900 text-white shadow-md ring-1 ring-white/10 transition duration-300 group-hover:scale-105 dark:bg-slate-950">
                                     <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" :d="item.icon" />
                                     </svg>
                                 </div>
                                 <span
                                     v-if="item.badge"
-                                    class="shrink-0 rounded-full bg-white dark:bg-slate-900/90 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-slate-600 dark:text-slate-400 ring-1 ring-slate-200 dark:ring-slate-700"
+                                    class="shrink-0 rounded-full bg-white/90 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-slate-600 ring-1 ring-slate-200 dark:bg-slate-900/90 dark:text-slate-400 dark:ring-slate-700"
                                 >
                                     {{ item.badge }}
                                 </span>
                             </div>
-                            <h3 class="mt-5 text-lg font-semibold text-slate-900 dark:text-slate-100">{{ item.title }}</h3>
-                            <p class="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-400">{{ item.body }}</p>
+                            <div :class="item.featured ? 'xl:min-w-0 xl:flex-1' : ''">
+                                <h3 class="mt-5 text-lg font-semibold tracking-tight text-slate-900 dark:text-slate-100 xl:mt-0">{{ item.title }}</h3>
+                                <p class="mt-2 flex-1 text-sm leading-relaxed text-slate-600 dark:text-slate-400">{{ item.body }}</p>
+                            </div>
                         </div>
                     </article>
                 </div>
@@ -1196,10 +1167,10 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
                         href="/register"
                         class="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 px-8 py-4 text-sm font-bold text-white shadow-xl shadow-blue-600/25 transition hover:from-blue-500 hover:to-indigo-500"
                     >
-                        Try everything — start free trial
+                        {{ $t('central.home.differentiators_cta') }}
                         <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
                     </Link>
-                    <p class="mt-3 text-sm text-slate-500 dark:text-slate-400">{{ trialDays }}-day trial · No credit card · Cloud-hosted workspace</p>
+                    <p class="mt-3 text-sm text-slate-500 dark:text-slate-400">{{ $t('central.home.differentiators_footnote', { days: trialDays }) }}</p>
                 </div>
             </div>
         </section>
@@ -1210,7 +1181,7 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
                     <p class="text-sm font-semibold uppercase tracking-wider text-blue-600">{{ $t('central.deep_dive') }}</p>
                     <h2 class="mt-3 text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100 sm:text-4xl">{{ $t('central.explore_by_capability') }}</h2>
                     <p class="mt-4 text-lg leading-relaxed text-slate-600 dark:text-slate-400">
-                        Pick a workflow area to see how {{ platformName }} handles it — from first contact through ITSM resolution.
+                        {{ featuresSectionSubtitle }}
                     </p>
                 </div>
 
@@ -1254,7 +1225,7 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
                                 <div class="pointer-events-none absolute -right-8 -top-8 h-40 w-40 rounded-full bg-white/10 blur-2xl" />
                                 <div class="relative">
                                     <span v-if="featureCategory === 'itsm'" class="mb-3 inline-flex rounded-full bg-white/15 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-white/90 ring-1 ring-white/20">
-                                        Enterprise add-on
+                                        {{ $t('central.built_different_badge_itsm') }}
                                     </span>
                                     <h3 class="text-2xl font-bold tracking-tight sm:text-3xl">{{ activeCategory.title }}</h3>
                                     <p class="mt-3 max-w-2xl text-base leading-relaxed text-white/85">{{ activeCategory.description }}</p>
@@ -1281,7 +1252,7 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
                                 </div>
 
                                 <div v-if="secondaryHighlights.length" class="mt-5 border-t border-slate-100 dark:border-slate-800 pt-5">
-                                    <p class="mb-3 text-[11px] font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500">Also included</p>
+                                    <p class="mb-3 text-[11px] font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500">{{ $t('central.home.features_section.also_included') }}</p>
                                     <div class="flex flex-wrap gap-2">
                                         <span
                                             v-for="item in secondaryHighlights"
@@ -1312,6 +1283,20 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
                     </div>
                 </div>
 
+                <div v-if="featurePages.length" class="mt-12 text-center">
+                    <p class="text-sm font-medium text-slate-600 dark:text-slate-400">{{ $t('central.feature_landing_links') }}</p>
+                    <div class="mt-4 flex flex-wrap items-center justify-center gap-2">
+                        <Link
+                            v-for="page in featurePages"
+                            :key="page.slug"
+                            :href="page.path"
+                            class="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-blue-300 hover:text-blue-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+                        >
+                            {{ $t(`central.feature_pages.${page.slug}.nav_label`) }}
+                        </Link>
+                    </div>
+                </div>
+
                 <div class="relative mt-24 overflow-hidden rounded-[2rem] border border-slate-200 dark:border-slate-800/80 bg-gradient-to-b from-white via-slate-50/80 to-white p-6 shadow-xl shadow-slate-200/40 sm:p-10 lg:p-12">
                     <div class="pointer-events-none absolute -left-20 top-0 h-64 w-64 rounded-full bg-blue-400/10 blur-3xl" />
                     <div class="pointer-events-none absolute -right-20 bottom-0 h-64 w-64 rounded-full bg-violet-400/10 blur-3xl" />
@@ -1320,22 +1305,22 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
                         <div>
                             <span class="inline-flex items-center gap-2 rounded-full bg-blue-50 dark:bg-blue-950/40 px-3 py-1 text-xs font-bold uppercase tracking-wide text-blue-700 dark:text-blue-300 ring-1 ring-blue-100">
                                 <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
-                                Everything included
+                                {{ $t('central.home.features_section.everything_included') }}
                             </span>
-                            <h3 class="mt-4 text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100 sm:text-4xl">Full platform feature list</h3>
+                            <h3 class="mt-4 text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100 sm:text-4xl">{{ $t('central.home.features_section.full_platform_title') }}</h3>
                             <p class="mt-3 max-w-xl text-base leading-relaxed text-slate-600 dark:text-slate-400">
-                                All plans include core ticketing. Professional and Enterprise unlock automation, channels, AI, and ITSM capabilities.
+                                {{ $t('central.home.features_section.full_platform_body') }}
                             </p>
                         </div>
                         <div class="mt-5 flex w-full flex-wrap justify-center gap-4 sm:mt-8 sm:w-auto sm:shrink-0 sm:gap-6 rounded-2xl border border-slate-200 dark:border-slate-800/80 bg-white dark:bg-slate-900/80 px-4 py-3 backdrop-blur-sm sm:px-6 sm:py-4">
                             <div class="text-center">
                                 <p class="text-2xl font-extrabold text-slate-900 dark:text-slate-100">{{ allFeatures.length }}</p>
-                                <p class="text-xs font-medium text-slate-500 dark:text-slate-400">Capabilities</p>
+                                <p class="text-xs font-medium text-slate-500 dark:text-slate-400">{{ $t('central.home.features_section.capabilities_label') }}</p>
                             </div>
                             <div class="w-px bg-slate-200" />
                             <div class="text-center">
                                 <p class="text-2xl font-extrabold text-slate-900 dark:text-slate-100">4</p>
-                                <p class="text-xs font-medium text-slate-500 dark:text-slate-400">Workflow areas</p>
+                                <p class="text-xs font-medium text-slate-500 dark:text-slate-400">{{ $t('central.home.features_section.workflow_areas_label') }}</p>
                             </div>
                         </div>
                     </div>
@@ -1348,7 +1333,7 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
                                     <p class="mt-0.5 text-sm text-slate-500 dark:text-slate-400">{{ group.hint }}</p>
                                 </div>
                                 <span class="rounded-full bg-slate-100 dark:bg-slate-900 px-3 py-1 text-xs font-semibold text-slate-600 dark:text-slate-400">
-                                    {{ group.features.length }} features
+                                    {{ $t('central.home.features_section.features_count', { count: group.features.length }) }}
                                 </span>
                             </div>
                             <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -1383,12 +1368,51 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
             </div>
         </section>
 
+        <section v-if="testimonialsEnabled && testimonials.length" id="social-proof" class="border-y border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 py-16 sm:py-20">
+            <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                <div class="text-center">
+                    <p class="text-sm font-semibold uppercase tracking-wider text-blue-600">{{ $t('central.social_proof_eyebrow') }}</p>
+                    <h2 class="mt-3 text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100 sm:text-4xl">{{ $t('central.social_proof_title') }}</h2>
+                    <p class="mx-auto mt-4 max-w-2xl text-lg text-slate-600 dark:text-slate-400">{{ $t('central.social_proof_subtitle') }}</p>
+                </div>
+
+                <div class="mt-10 flex flex-wrap items-center justify-center gap-3">
+                    <span
+                        v-for="logo in socialProofLogos"
+                        :key="logo"
+                        class="rounded-full border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 px-4 py-2 text-sm font-semibold text-slate-600 dark:text-slate-300"
+                    >
+                        {{ logo }}
+                    </span>
+                </div>
+
+                <div class="mt-12 grid gap-6 lg:grid-cols-3">
+                    <article
+                        v-for="item in testimonials"
+                        :key="item.id"
+                        class="flex flex-col rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 p-6 shadow-sm"
+                    >
+                        <div class="flex gap-0.5">
+                            <svg v-for="n in 5" :key="n" class="h-4 w-4 text-amber-400" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>
+                        </div>
+                        <blockquote class="mt-4 flex-1 text-sm leading-relaxed text-slate-700 dark:text-slate-300">
+                            “{{ item.quote }}”
+                        </blockquote>
+                        <div class="mt-6 border-t border-slate-200 dark:border-slate-800 pt-4">
+                            <p class="text-sm font-semibold text-slate-900 dark:text-slate-100">{{ item.name }}</p>
+                            <p class="text-xs text-slate-500 dark:text-slate-400">{{ item.role }} · {{ item.company_type }}</p>
+                        </div>
+                    </article>
+                </div>
+            </div>
+        </section>
+
         <section id="compare" class="bg-slate-900 py-16 sm:py-24 text-white">
             <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                 <div class="text-center">
                     <p class="text-sm font-semibold uppercase tracking-wider text-blue-400">{{ $t('central.why_teams_switch') }}</p>
-                    <h2 class="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">{{ platformName }} vs. pieced-together tools</h2>
-                    <p class="mx-auto mt-4 max-w-2xl text-base text-slate-400 dark:text-slate-500">One helpdesk for support and IT — without stacking separate inbox, KB, and ITSM products.</p>
+                    <h2 class="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">{{ compareSectionTitle }}</h2>
+                    <p class="mx-auto mt-4 max-w-2xl text-base text-slate-400 dark:text-slate-500">{{ $t('central.home.compare_section.subtitle') }}</p>
                 </div>
                 <div class="mt-12 space-y-3 lg:hidden">
                     <article
@@ -1441,15 +1465,29 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
                         </tbody>
                     </table>
                 </div>
+                <div v-if="comparePages.length" class="mt-12 text-center">
+                    <p class="text-sm font-medium text-slate-400">{{ $t('central.compare_detailed_pages') }}</p>
+                    <div class="mt-4 flex flex-wrap items-center justify-center gap-2">
+                        <Link
+                            v-for="page in comparePages"
+                            :key="page.slug"
+                            :href="page.path"
+                            class="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/5 px-4 py-2 text-sm font-medium text-slate-200 transition hover:border-blue-400/40 hover:bg-blue-500/10 hover:text-white"
+                        >
+                            {{ platformName }} vs {{ compareNavLabel(page.slug) }}
+                            <svg class="h-3.5 w-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
+                        </Link>
+                    </div>
+                </div>
                 <div class="mt-14 text-center">
                     <Link
                         href="/register"
                         class="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 px-8 py-4 text-sm font-bold text-white shadow-xl shadow-blue-600/30 transition hover:from-blue-500 hover:to-indigo-500"
                     >
-                        Get everything above — start free trial
+                        {{ $t('central.home.compare_section.cta') }}
                         <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
                     </Link>
-                    <p class="mt-3 text-sm text-slate-500 dark:text-slate-400">{{ trialDays }}-day trial · No credit card · Full access</p>
+                    <p class="mt-3 text-sm text-slate-500 dark:text-slate-400">{{ $t('central.home.compare_section.cta_footnote', { days: trialDays }) }}</p>
                 </div>
             </div>
         </section>
@@ -1459,7 +1497,7 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
                 <div class="text-center">
                     <p class="text-sm font-semibold uppercase tracking-wider text-blue-600">{{ $t('central.how_it_works') }}</p>
                     <h2 class="mt-3 text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100 sm:text-4xl">{{ $t('central.go_live_in_three_steps') }}</h2>
-                    <p class="mx-auto mt-4 max-w-2xl text-lg text-slate-600 dark:text-slate-400">Most teams complete setup during their {{ trialDays }}-day trial — guided every step of the way.</p>
+                    <p class="mx-auto mt-4 max-w-2xl text-lg text-slate-600 dark:text-slate-400">{{ $t('central.home.how_it_works_subtitle', { days: trialDays }) }}</p>
                 </div>
                 <div class="mt-16 grid gap-8 lg:grid-cols-3 lg:gap-6">
                     <article
@@ -1489,10 +1527,10 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
                 <div class="text-center">
                     <p class="text-sm font-semibold uppercase tracking-wider text-blue-400">{{ $t('central.pricing') }}</p>
                     <h2 class="mt-3 text-3xl font-bold tracking-tight sm:text-4xl lg:text-5xl">
-                        Simple pricing. Serious value.
+                        {{ $t('central.home.pricing_section.title') }}
                     </h2>
                     <p class="mx-auto mt-4 max-w-2xl text-lg text-slate-400 dark:text-slate-500">
-                        Start with a {{ trialDays }}-day free trial on any plan. Most teams save thousands by replacing multiple tools with one helpdesk.
+                        {{ $t('central.home.pricing_section.subtitle', { days: trialDays }) }}
                     </p>
                     <div class="mt-8 flex justify-center">
                         <div class="inline-flex rounded-xl border border-white/10 bg-white/5 p-1 backdrop-blur">
@@ -1550,7 +1588,7 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
                             <span class="text-slate-400 dark:text-slate-500">{{ intervalSuffix }}</span>
                         </p>
                         <p v-if="billingInterval === 'year' && yearlySavingsPercent(plan, isIndia) > 0" class="mt-2 text-sm font-semibold text-emerald-400">
-                            Save {{ yearlySavingsPercent(plan, isIndia) }}% vs monthly
+                            {{ $t('central.home.pricing_section.save_vs_monthly', { percent: yearlySavingsPercent(plan, isIndia) }) }}
                         </p>
                         <ul class="mt-8 flex-1 space-y-3">
                             <li v-for="item in planHighlights(plan)" :key="item" class="flex items-start gap-2.5 text-sm text-slate-300">
@@ -1565,7 +1603,7 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
                                 ? 'bg-white text-slate-900 shadow-xl hover:bg-slate-100'
                                 : 'border border-white/20 text-white hover:bg-white/10'"
                         >
-                            Start {{ trialDays }}-day free trial
+                            {{ $t('central.home.pricing_section.start_trial', { days: trialDays }) }}
                         </Link>
                         <p class="mt-3 text-center text-xs text-slate-500 dark:text-slate-400">{{ $t('central.no_credit_card_required') }}</p>
                     </article>
@@ -1602,6 +1640,28 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
                         </div>
                     </div>
                 </div>
+
+                <div v-if="addons.length" class="mx-auto mt-16 max-w-5xl">
+                    <div class="text-center">
+                        <p class="text-sm font-semibold uppercase tracking-wider text-violet-400">{{ $t('central.pricing_addons_label') }}</p>
+                        <h3 class="mt-2 text-2xl font-bold text-white sm:text-3xl">{{ $t('central.pricing_addons_title') }}</h3>
+                        <p class="mx-auto mt-3 max-w-2xl text-sm text-slate-400">{{ $t('central.pricing_addons_subtitle') }}</p>
+                    </div>
+                    <div class="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                        <article
+                            v-for="addon in addons"
+                            :key="addon.key"
+                            class="flex flex-col rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur transition hover:border-white/20"
+                        >
+                            <h4 class="text-lg font-bold text-white">{{ addon.name }}</h4>
+                            <p class="mt-2 flex-1 text-sm leading-relaxed text-slate-400">{{ addon.description }}</p>
+                            <p class="mt-5 text-2xl font-extrabold text-white">
+                                {{ formatPrice(addonPrice(addon)) }}
+                                <span class="text-sm font-medium text-slate-400">{{ $t('central.pricing_addon_per_month') }}</span>
+                            </p>
+                        </article>
+                    </div>
+                </div>
             </div>
         </section>
 
@@ -1632,27 +1692,26 @@ const featureGroups = computed(() => featureGroupDefs.map((group) => ({
             </div>
             <div class="relative mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
                 <div class="overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-b from-white/10 to-white/5 p-6 text-center backdrop-blur-xl sm:p-10 lg:p-14">
-                    <p class="text-sm font-semibold uppercase tracking-wider text-blue-300">Limited-time offer</p>
+                    <p class="text-sm font-semibold uppercase tracking-wider text-blue-300">{{ $t('central.home.final_cta.eyebrow') }}</p>
                     <h2 class="mt-4 text-3xl font-extrabold tracking-tight text-white sm:text-4xl lg:text-5xl">
-                        Your customers are waiting.<br class="hidden sm:block" />
-                        <span class="bg-gradient-to-r from-blue-400 to-violet-400 bg-clip-text text-transparent">Give them answers today.</span>
+                        {{ $t('central.home.final_cta.title_line1') }}<br class="hidden sm:block" />
+                        <span class="bg-gradient-to-r from-blue-400 to-violet-400 bg-clip-text text-transparent">{{ $t('central.home.final_cta.title_highlight') }}</span>
                     </h2>
                     <p class="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-slate-300">
-                        Join teams who replaced scattered inboxes and separate ITSM tools with one modern helpdesk. Setup takes minutes — not weeks.
+                        {{ $t('central.home.final_cta.body') }}
                     </p>
                     <div class="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
                         <Link
                             href="/register"
                             class="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 px-10 py-4 text-base font-bold text-white shadow-2xl shadow-blue-600/40 transition hover:from-blue-500 hover:to-indigo-500 sm:w-auto"
                         >
-                            Start {{ trialDays }}-day free trial
-                            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
+                            {{ $t('central.home.final_cta.start_trial', { days: trialDays }) }}
                         </Link>
                         <Link
                             href="/login"
                             class="inline-flex w-full items-center justify-center rounded-2xl border border-white/20 px-10 py-4 text-sm font-semibold text-white transition hover:bg-white/10 sm:w-auto"
                         >
-                            Sign in to workspace
+                            {{ $t('central.home.final_cta.sign_in') }}
                         </Link>
                     </div>
                     <div class="mt-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-slate-400 dark:text-slate-500">

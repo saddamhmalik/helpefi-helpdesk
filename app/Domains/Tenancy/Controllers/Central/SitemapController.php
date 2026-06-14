@@ -10,13 +10,11 @@ class SitemapController extends Controller
 {
     public function __invoke(CentralSeoService $seo): Response
     {
-        $entries = $seo->sitemapEntries();
-        $lastmod = now()->toAtomString();
-
-        $urls = collect($entries)->map(function (array $entry) use ($lastmod): string {
+        $urls = collect($seo->sitemapEntries())->map(function (array $entry): string {
             $loc = htmlspecialchars($entry['loc'], ENT_XML1 | ENT_QUOTES, 'UTF-8');
             $changefreq = htmlspecialchars($entry['changefreq'], ENT_XML1 | ENT_QUOTES, 'UTF-8');
             $priority = htmlspecialchars($entry['priority'], ENT_XML1 | ENT_QUOTES, 'UTF-8');
+            $lastmod = htmlspecialchars($entry['lastmod'], ENT_XML1 | ENT_QUOTES, 'UTF-8');
 
             return <<<XML
   <url>

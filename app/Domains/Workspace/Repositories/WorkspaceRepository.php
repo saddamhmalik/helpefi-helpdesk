@@ -63,7 +63,7 @@ class WorkspaceRepository
         return TicketMessage::query()
             ->where('ticket_id', $ticketId)
             ->where('created_at', '>', $since)
-            ->with(['user:id,name', 'contact:id,name,email'])
+            ->with(['user:id,name,email,avatar_type,avatar_path', 'contact:id,name,email'])
             ->orderBy('created_at')
             ->get()
             ->all();

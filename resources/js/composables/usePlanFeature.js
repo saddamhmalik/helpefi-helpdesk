@@ -18,6 +18,12 @@ const FEATURE_I18N_KEYS = {
     service_desk: 'settings_billing.feature_labels.service_desk',
 };
 
+const FEATURE_TO_ADDON = {
+    ai: 'ai_copilot',
+    integrations: 'integrations',
+    service_desk: 'service_desk',
+};
+
 export function usePlanFeature(feature) {
     const { t, te } = useI18n();
     const billing = computed(() => usePage().props.billing ?? null);
@@ -56,15 +62,27 @@ export function usePlanFeature(feature) {
 
     const requiredPlanName = computed(() => requiredPlan.value?.name ?? 'Professional');
 
+    const addonKey = FEATURE_TO_ADDON[feature] ?? null;
+
     const addon = computed(() => {
-        if (feature !== 'service_desk') {
+        if (!addonKey) {
             return null;
         }
 
-        return billing.value?.available_addons?.find((item) => item.key === 'service_desk') ?? null;
+        return billing.value?.available_addons?.find((item) => item.key === addonKey) ?? null;
     });
 
-    const isAddonFeature = computed(() => feature === 'service_desk');
+    const isAddonFeature = computed(() => {
+        if (!addonKey) {
+            return false;
+        }
+
+        if (!billing.value?.features) {
+            return false;
+        }
+
+        return !billing.value.features.includes(feature);
+    });
 
     return {
         billing,

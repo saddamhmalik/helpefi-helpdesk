@@ -35,8 +35,6 @@ const summaryLabel = computed(() => {
     return t('components.dummy_data_default_summary');
 });
 
-const sampleMessage = computed(() => `${summaryLabel.value}${t('components.dummy_data_remove_hint')}`);
-
 const removeSample = () => {
     if (!confirmingSample.value) {
         confirmingSample.value = true;
@@ -75,63 +73,79 @@ const removeBootstrap = () => {
 <template>
     <div
         v-if="showSampleBanner"
-        class="mb-2 flex flex-col gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 dark:border-amber-900/60 dark:bg-amber-950/40 sm:flex-row sm:items-center"
+        class="flex items-center gap-2 rounded-md border border-amber-200/70 bg-amber-50/80 px-2 py-1 text-xs dark:border-amber-900/40 dark:bg-amber-950/30"
         role="status"
-        :title="sampleMessage"
+        :title="`${summaryLabel}${t('components.dummy_data_remove_hint')} ${t('components.sample_remove_includes_bootstrap')}`"
     >
-        <div class="min-w-0 flex-1">
-            <p class="text-sm font-semibold text-amber-950 dark:text-amber-100">{{ $t('components.sample_data_is_active_for_testing') }}</p>
-            <p class="mt-0.5 text-sm text-amber-800 dark:text-amber-200">{{ sampleMessage }}</p>
-            <p class="mt-1 text-xs text-amber-900/80 dark:text-amber-200/80">{{ $t('components.sample_remove_includes_bootstrap') }}</p>
-        </div>
-        <div class="flex shrink-0 items-center gap-1.5 sm:ml-auto">
+        <span class="shrink-0 rounded bg-amber-600 px-1.5 py-px text-[10px] font-bold uppercase leading-none tracking-wide text-white">
+            {{ $t('components.demo_badge') }}
+        </span>
+        <span class="min-w-0 flex-1 truncate text-amber-950 dark:text-amber-100">{{ summaryLabel }}</span>
+        <div class="flex shrink-0 items-center gap-1">
+            <template v-if="confirmingSample">
+                <span class="hidden text-amber-800 sm:inline dark:text-amber-200">{{ $t('components.confirm_remove') }}</span>
+                <button
+                    type="button"
+                    class="rounded px-1.5 py-px font-medium text-amber-900 hover:bg-amber-100 dark:text-amber-200 dark:hover:bg-amber-900/40"
+                    @click="confirmingSample = false"
+                >
+                    {{ $t('components.cancel') }}
+                </button>
+                <button
+                    type="button"
+                    class="rounded bg-red-600 px-1.5 py-px font-semibold text-white hover:bg-red-700 disabled:opacity-60"
+                    :disabled="removingSample"
+                    @click="removeSample"
+                >
+                    {{ removingSample ? $t('components.removing') : $t('components.yes_remove') }}
+                </button>
+            </template>
             <button
-                v-if="confirmingSample"
+                v-else
                 type="button"
-                class="rounded-md px-2 py-1 text-xs font-medium text-amber-900 hover:bg-amber-100 dark:text-amber-200 dark:hover:bg-amber-900/40"
-                @click="confirmingSample = false"
-            >
-                {{ $t('components.cancel') }}
-            </button>
-            <button
-                type="button"
-                class="rounded-md px-2.5 py-1 text-xs font-semibold transition disabled:opacity-60"
-                :class="confirmingSample ? 'bg-red-600 text-white hover:bg-red-700' : 'bg-amber-900 text-white hover:bg-amber-950'"
-                :disabled="removingSample"
+                class="rounded px-1.5 py-px font-semibold text-amber-900 underline-offset-2 hover:underline dark:text-amber-100"
                 @click="removeSample"
             >
-                {{ removingSample ? $t('components.removing') : (confirmingSample ? $t('components.yes_remove') : $t('components.remove_sample_data')) }}
+                {{ $t('components.remove') }}
             </button>
         </div>
     </div>
 
     <div
         v-if="showBootstrapBanner"
-        class="mb-2 flex flex-col gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 dark:border-slate-700 dark:bg-slate-900 sm:flex-row sm:items-center"
+        class="flex items-center gap-2 rounded-md border border-slate-200/80 bg-slate-50/80 px-2 py-1 text-xs dark:border-slate-700/60 dark:bg-slate-900/60"
         role="status"
+        :title="t('components.bootstrap_demo_keeps_admin')"
     >
-        <div class="min-w-0 flex-1">
-            <p class="text-sm font-semibold text-slate-900 dark:text-slate-100">{{ $t('components.bootstrap_demo_title') }}</p>
-            <p class="mt-0.5 text-sm text-slate-700 dark:text-slate-300">{{ $t('components.bootstrap_demo_present') }}</p>
-            <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">{{ $t('components.bootstrap_demo_keeps_admin') }}</p>
-        </div>
-        <div class="flex shrink-0 items-center gap-1.5 sm:ml-auto">
+        <span class="shrink-0 rounded bg-slate-600 px-1.5 py-px text-[10px] font-bold uppercase leading-none tracking-wide text-white dark:bg-slate-500">
+            {{ $t('components.demo_badge') }}
+        </span>
+        <span class="min-w-0 flex-1 truncate text-slate-800 dark:text-slate-200">{{ $t('components.bootstrap_demo_present') }}</span>
+        <div class="flex shrink-0 items-center gap-1">
+            <template v-if="confirmingBootstrap">
+                <button
+                    type="button"
+                    class="rounded px-1.5 py-px font-medium text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
+                    @click="confirmingBootstrap = false"
+                >
+                    {{ $t('components.cancel') }}
+                </button>
+                <button
+                    type="button"
+                    class="rounded bg-red-600 px-1.5 py-px font-semibold text-white hover:bg-red-700 disabled:opacity-60"
+                    :disabled="removingBootstrap"
+                    @click="removeBootstrap"
+                >
+                    {{ removingBootstrap ? $t('components.removing') : $t('components.yes_remove') }}
+                </button>
+            </template>
             <button
-                v-if="confirmingBootstrap"
+                v-else
                 type="button"
-                class="rounded-md px-2 py-1 text-xs font-medium text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
-                @click="confirmingBootstrap = false"
-            >
-                {{ $t('components.cancel') }}
-            </button>
-            <button
-                type="button"
-                class="rounded-md px-2.5 py-1 text-xs font-semibold transition disabled:opacity-60"
-                :class="confirmingBootstrap ? 'bg-red-600 text-white hover:bg-red-700' : 'bg-slate-800 text-white hover:bg-slate-900 dark:bg-slate-700 dark:hover:bg-slate-600'"
-                :disabled="removingBootstrap"
+                class="rounded px-1.5 py-px font-semibold text-slate-800 underline-offset-2 hover:underline dark:text-slate-200"
                 @click="removeBootstrap"
             >
-                {{ removingBootstrap ? $t('components.removing') : (confirmingBootstrap ? $t('components.yes_remove') : $t('components.bootstrap_demo_remove')) }}
+                {{ $t('components.remove') }}
             </button>
         </div>
     </div>

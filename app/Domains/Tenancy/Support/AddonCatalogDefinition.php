@@ -51,11 +51,51 @@ class AddonCatalogDefinition
             'feature' => (string) ($addon['feature'] ?? $defaults['feature'] ?? $key),
             'description' => (string) ($addon['description'] ?? $defaults['description'] ?? ''),
             'price_monthly' => max(0, (int) ($addon['price_monthly'] ?? $defaults['price_monthly'] ?? 0)),
+            'price_monthly_india' => max(0, (int) ($addon['price_monthly_india'] ?? $defaults['price_monthly_india'] ?? 0)),
             'enabled' => (bool) ($addon['enabled'] ?? true),
             'razorpay_plan_id_monthly' => isset($addon['razorpay_plan_id_monthly']) && $addon['razorpay_plan_id_monthly'] !== ''
                 ? (string) $addon['razorpay_plan_id_monthly']
                 : null,
+            'razorpay_plan_id_monthly_india' => isset($addon['razorpay_plan_id_monthly_india']) && $addon['razorpay_plan_id_monthly_india'] !== ''
+                ? (string) $addon['razorpay_plan_id_monthly_india']
+                : null,
         ];
+    }
+
+    public static function priceForRegion(array $addon, bool $india = false): int
+    {
+        if ($india) {
+            return max(0, (int) ($addon['price_monthly_india'] ?? 0));
+        }
+
+        return max(0, (int) ($addon['price_monthly'] ?? 0));
+    }
+
+    public static function razorpayPlanIdForRegion(array $addon, bool $india = false): ?string
+    {
+        $key = $india ? 'razorpay_plan_id_monthly_india' : 'razorpay_plan_id_monthly';
+        $planId = $addon[$key] ?? null;
+
+        if ($planId !== null && $planId !== '') {
+            return (string) $planId;
+        }
+
+        return $india ? null : self::razorpayPlanId($addon);
+    }
+
+    public static function razorpayPlanIds(array $addon): array
+    {
+        $ids = [];
+
+        foreach (['razorpay_plan_id_monthly', 'razorpay_plan_id_monthly_india'] as $key) {
+            $planId = $addon[$key] ?? null;
+
+            if ($planId !== null && $planId !== '') {
+                $ids[] = (string) $planId;
+            }
+        }
+
+        return array_values(array_unique($ids));
     }
 
     public static function mergeCatalog(?array $stored): array

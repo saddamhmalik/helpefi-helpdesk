@@ -11,7 +11,9 @@ use App\Domains\Tenancy\Services\CentralSettingsService;
 use App\Domains\Tenancy\Support\AddonCatalogDefinition;
 use App\Domains\Tenancy\Support\CurrencyCatalog;
 use App\Domains\Tenancy\Support\PlanCatalogDefinition;
+use App\Support\TenantCache;
 use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Validation\ValidationException;
 
 class BillingService
@@ -84,6 +86,70 @@ class BillingService
         ];
     }
 
+    public function layoutSnapshot(): array
+    {
+        if (! tenant('id') || app()->environment('testing')) {
+            return $this->buildLayoutSnapshot();
+        }
+
+        return Cache::remember(
+            TenantCache::key('billing.layout'),
+            60,
+            fn () => $this->buildLayoutSnapshot(),
+        );
+    }
+
+    private function buildLayoutSnapshot(): array
+    {
+        $subscription = $this->subscriptions->current();
+        $plan = $this->currentPlan($subscription);
+        $displayCurrency = $subscription->currency ?: $this->regionCurrency->resolve(request());
+        $india = $this->regionCurrency->isIndiaCurrency($displayCurrency);
+        $currency = CurrencyCatalog::meta($displayCurrency);
+
+        return [
+            'currency' => $currency,
+            'base_currency' => $this->centralSettings->currencyMeta(),
+            'india_pricing' => $this->centralSettings->indiaPricingEnabled(),
+            'status' => $subscription->status,
+            'on_trial' => $subscription->isOnTrial(),
+            'trial_expired' => $subscription->isTrialExpired(),
+            'trial_ends_at' => $subscription->trial_ends_at?->toIso8601String(),
+            'trial_days_remaining' => $subscription->trialDaysRemaining(),
+            'renews_at' => $subscription->renews_at?->toIso8601String(),
+            'cancelled_at' => $subscription->cancelled_at?->toIso8601String(),
+            'access_ends_at' => $subscription->access_ends_at?->toIso8601String(),
+            'in_grace_period' => $subscription->isInGracePeriod(),
+            'grace_days_remaining' => $subscription->graceDaysRemaining(),
+            'cancellation_grace_days' => app(SubscriptionLifecycleService::class)->graceDays(),
+            'cancellation_pending' => $subscription->cancelled_at !== null && $subscription->isActive(),
+            'show_cancellation_banner' => $subscription->cancelled_at !== null
+                && $subscription->access_ends_at?->isFuture(),
+            'features' => $this->effectiveFeatures($subscription, $plan),
+            'limits' => $this->formattedLimits($plan['limits']),
+            'usage' => $this->usageStats(),
+            'available_plans' => collect($this->plans->all())
+                ->map(fn (array $item, string $slug) => [
+                    'slug' => $slug,
+                    'name' => $item['name'],
+                    'features' => $item['features'],
+                ])
+                ->values()
+                ->all(),
+            'available_addons' => collect($this->centralSettings->addonCatalog())
+                ->filter(fn (array $addon) => $addon['enabled'] ?? true)
+                ->map(fn (array $addon, string $key) => [
+                    'key' => $key,
+                    'name' => $addon['name'],
+                    'feature' => $addon['feature'],
+                    'price_monthly' => AddonCatalogDefinition::priceForRegion($addon, $india),
+                    'currency' => $currency,
+                ])
+                ->values()
+                ->all(),
+        ];
+    }
+
     private function trialOffer(): array
     {
         $trialPlan = $this->plans->find(config('billing.trial_plan', 'enterprise'));
@@ -150,6 +216,14 @@ class BillingService
             return $subscription;
         }
 
+        $feature = AddonCatalogDefinition::featureForAddon($addonKey);
+
+        if ($feature && in_array($feature, $this->currentPlan($subscription)['features'] ?? [], true)) {
+            throw ValidationException::withMessages([
+                'addon' => 'This feature is already included in your current plan.',
+            ]);
+        }
+
         return $this->subscriptions->update($subscription, [
             'active_addons' => array_values(array_unique([...$active, $addonKey])),
         ]);
@@ -177,6 +251,13 @@ class BillingService
         $this->centralSettings->findAddon($addonKey);
 
         $subscription = $this->subscriptions->current();
+        $feature = AddonCatalogDefinition::featureForAddon($addonKey);
+
+        if ($feature && in_array($feature, $this->currentPlan($subscription)['features'] ?? [], true)) {
+            throw ValidationException::withMessages([
+                'addon' => 'This feature is already included in your current plan.',
+            ]);
+        }
 
         if ($subscription->isOnTrial()) {
             return $this->activateAddon($addonKey);
@@ -442,23 +523,31 @@ class BillingService
 
     private function availableAddons(Subscription $subscription): array
     {
-        $currency = $this->centralSettings->currencyMeta();
+        $displayCurrency = $subscription->currency ?: $this->regionCurrency->resolve(request());
+        $india = $this->regionCurrency->isIndiaCurrency($displayCurrency);
+        $currency = CurrencyCatalog::meta($displayCurrency);
+        $planFeatures = $this->currentPlan($subscription)['features'] ?? [];
 
         return collect($this->centralSettings->addonCatalog())
             ->filter(fn (array $addon) => $addon['enabled'] ?? true)
-            ->map(fn (array $addon, string $key) => [
-                'key' => $key,
-                'name' => $addon['name'],
-                'feature' => $addon['feature'],
-                'description' => $addon['description'],
-                'price_monthly' => $addon['price_monthly'],
-                'currency' => $currency,
-                'active' => in_array($key, $subscription->active_addons ?? [], true),
-                'trial_access' => $subscription->isOnTrial()
-                    && in_array($key, $subscription->active_addons ?? [], true),
-                'paid' => isset(($subscription->razorpay_addon_items ?? [])[$key]),
-                'billing_ready' => ! empty(AddonCatalogDefinition::razorpayPlanId($addon)),
-            ])
+            ->map(function (array $addon, string $key) use ($subscription, $currency, $planFeatures, $india) {
+                $includedInPlan = in_array($addon['feature'], $planFeatures, true);
+
+                return [
+                    'key' => $key,
+                    'name' => $addon['name'],
+                    'feature' => $addon['feature'],
+                    'description' => $addon['description'],
+                    'price_monthly' => AddonCatalogDefinition::priceForRegion($addon, $india),
+                    'currency' => $currency,
+                    'included_in_plan' => $includedInPlan,
+                    'active' => $includedInPlan || in_array($key, $subscription->active_addons ?? [], true),
+                    'trial_access' => $subscription->isOnTrial()
+                        && in_array($key, $subscription->active_addons ?? [], true),
+                    'paid' => isset(($subscription->razorpay_addon_items ?? [])[$key]),
+                    'billing_ready' => ! empty(AddonCatalogDefinition::razorpayPlanIdForRegion($addon, $india)),
+                ];
+            })
             ->values()
             ->all();
     }

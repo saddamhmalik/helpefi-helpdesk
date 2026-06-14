@@ -12,6 +12,7 @@ class CentralDatabaseSeeder extends Seeder
             PlatformPermissionSeeder::class,
             PlatformUserSeeder::class,
             PlatformEmailTemplateSeeder::class,
+            MarketingBlogPostSeeder::class,
         ]);
     }
 }

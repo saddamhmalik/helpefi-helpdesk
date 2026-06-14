@@ -50,6 +50,7 @@ return Application::configure(basePath: dirname(__DIR__))
             \App\Http\Middleware\SetUserLocale::class,
             \App\Http\Middleware\HandleInertiaRequests::class,
             \App\Http\Middleware\TrackMarketingPageView::class,
+            \App\Http\Middleware\MarketingSecurityHeaders::class,
         ]);
 
         $middleware->validateCsrfTokens(except: [

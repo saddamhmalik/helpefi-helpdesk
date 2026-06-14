@@ -200,7 +200,7 @@ const cancelAddon = (key) => {
 };
 
 const addonPurchaseDisabled = (addon) => {
-    if (addon.active) {
+    if (addon.included_in_plan || addon.active) {
         return true;
     }
 
@@ -212,6 +212,10 @@ const addonPurchaseDisabled = (addon) => {
 };
 
 const addonStatusLabel = (addon) => {
+    if (addon.included_in_plan) {
+        return t('settings_billing.addon_included_in_plan');
+    }
+
     if (addon.trial_access) {
         return t('settings_billing.trial_access');
     }
@@ -484,7 +488,7 @@ const formatLimit = (limit) => (limit === 'unlimited' ? t('settings_billing.unli
                                 {{ addonStatusLabel(addon) }}
                             </span>
                             <button
-                                v-if="addon.active"
+                                v-if="addon.active && !addon.included_in_plan"
                                 type="button"
                                 class="agent-btn-secondary px-3 py-1.5"
                                 @click="cancelAddon(addon.key)"

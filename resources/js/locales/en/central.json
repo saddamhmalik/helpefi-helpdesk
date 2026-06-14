@@ -343,6 +343,10 @@
         "why_teams_switch": "Why teams switch",
         "how_it_works": "How it works",
         "pricing": "Pricing",
+        "pricing_addons_label": "Optional add-ons",
+        "pricing_addons_title": "Extend any paid plan",
+        "pricing_addons_subtitle": "Add AI Copilot, Integrations, or Service Desk ITSM on Professional — or keep them bundled on Pro.",
+        "pricing_addon_per_month": "/mo add-on",
         "save_up_to_2_months_with_annual_billing": "Save up to 2 months with annual billing",
         "no_credit_card_required": "No credit card required",
         "faq": "FAQ",
@@ -374,7 +378,7 @@
         "automate_the_repetitive_work": "Automate the repetitive work",
         "route_tickets_automatically_apply_macros_chain_multi-step_workflows_an": "Route tickets automatically, apply macros, chain multi-step workflows, and let AI draft replies so agents focus on complex issues.",
         "full_itsm_on_top_of_your_helpdesk": "Full ITSM on top of helpefi",
-        "enterprise_teams_get_itil-style_workflows_type_queues_approvals_change": "Enterprise teams get ITIL-style workflows — type queues, approvals, change management, problem records, and major incident war rooms — without a separate tool.",
+        "enterprise_teams_get_itil-style_workflows_type_queues_approvals_change": "Add Service Desk when you need ITIL-style workflows — type queues, approvals, change management, problem records, and major incident war rooms — without a separate tool.",
         "built_for_teams_that_scale": "Built for teams that scale",
         "role-based_access_crm_context_enterprise_integrations_sso_and_billing_": "Role-based access, CRM context, enterprise integrations, SSO, and billing that grows with your team — each workspace on its own isolated subdomain.",
         "shared_inbox_tickets": "Shared inbox & tickets",
@@ -387,7 +391,8 @@
         "publish_help_articles_with_semantic_search_locale_support_and_a_brande": "Publish help articles with semantic search, locale support, and a branded self-service portal for customers.",
         "service_catalog": "Service catalog",
         "structured_request_types_on_your_portal_with_per-item_approval_workflo": "Structured request types on your portal with per-item approval workflows and automatic ticket creation.",
-        "itil_type_queues_change_calendar_problem_linking_catalog_approvals_and": "ITIL type queues, change calendar, problem linking, catalog approvals, and major incident war rooms on Enterprise.",
+        "itil_type_queues_change_calendar_problem_linking_catalog_approvals_and": "ITIL type queues, change calendar, problem linking, catalog approvals, and major incident war rooms — available as a paid add-on.",
+        "service_desk_itsm_card_body": "Incidents, changes, problems, approvals, and major incident war rooms — available as a paid add-on.",
         "sla_business_hours": "SLA & business hours",
         "set_response_targets_escalation_rules_team_slas_and_operating_hours_wi": "Set response targets, escalation rules, team SLAs, and operating hours with visual countdown timers.",
         "automation_macros": "Automation & macros",
@@ -416,6 +421,7 @@
         "create_your_workspace": "Create your workspace",
         "connect_your_channels": "Connect your channels",
         "invite_your_team_go_live": "Invite your team & go live",
+        "invite_your_team_go_live_detail": "Full platform access during your free trial. Upgrade to Pro for AI, SSO, and integrations — add Service Desk ITSM when you need it.",
         "acme": "acme",
         "you_company_com": "you{'@'}company.com",
         "welcome_back": "Welcome back",
@@ -459,7 +465,7 @@
         "diff_multi_brand_title": "Multi-brand workspaces",
         "diff_multi_brand_body": "Run separate portals, inboxes, knowledge bases, and ticket forms for each brand from a single agent workspace.",
         "diff_custom_domain_title": "Your workspace, your domain",
-        "diff_custom_domain_body": "Every team gets a dedicated workspace URL on signup. Connect your own support domain on Enterprise for a fully branded experience.",
+        "diff_custom_domain_body": "Every team gets a dedicated workspace URL on signup. Connect your own support domain on Pro for a fully branded experience.",
         "diff_semantic_kb_title": "Semantic knowledge base",
         "diff_semantic_kb_body": "Vector search surfaces the right articles before customers submit. AI deflection on the portal and live chat reduces repeat questions.",
         "diff_realtime_title": "Real-time collaboration",
@@ -468,7 +474,7 @@
         "diff_performance_body": "Track how agents perform against SLAs and CSAT with built-in scoring — no separate workforce analytics tool required.",
         "diff_catalog_approvals_title": "Service catalog with approvals",
         "diff_catalog_approvals_body": "Publish structured request types on your portal with custom fields, then route them through multi-step approvals before work begins.",
-        "built_different_badge_itsm": "Enterprise add-on",
+        "built_different_badge_itsm": "Paid add-on",
         "built_different_badge_enterprise": "Enterprise",
         "why_us_nav": "Why us",
         "features": "Features",
@@ -476,14 +482,1378 @@
         "live_chat_widget": "Live chat widget",
         "sla_automation": "SLA & automation",
         "ai_assist_integrations": "AI assist & integrations",
+        "verticals": {
+            "ecommerce": {
+                "nav_label": "E-commerce",
+                "badge": "For e-commerce & D2C brands",
+                "hero_title": "Customer support software for online stores",
+                "hero_highlight": "Turn order questions into loyal customers.",
+                "hero_subtitle": "Unify Shopify order context, email, live chat, and your help center in one inbox. Deflect WISMO tickets with AI and SLAs that survive sale season spikes.",
+                "pains": [
+                    {
+                        "title": "Refund and delivery tickets flood the inbox",
+                        "body": "Agents jump between Shopify, Gmail, and WhatsApp with no shared history or ownership."
+                    },
+                    {
+                        "title": "Peak sale weeks break response times",
+                        "body": "Manual triage cannot keep up when order volume doubles overnight."
+                    },
+                    {
+                        "title": "Help center does not deflect repeat questions",
+                        "body": "Customers still email about shipping, returns, and order status because self-service is disconnected."
+                    }
+                ],
+                "features": [
+                    {
+                        "title": "Shopify in the ticket sidebar",
+                        "body": "See orders, fulfillment status, and customer spend without leaving the conversation."
+                    },
+                    {
+                        "title": "Live chat + branded portal",
+                        "body": "Embed chat on your storefront and let customers track tickets on a portal that matches your brand."
+                    },
+                    {
+                        "title": "AI deflection & reply drafts",
+                        "body": "Suggest answers from your KB and draft replies for common order and return questions."
+                    },
+                    {
+                        "title": "SLA policies for peak seasons",
+                        "body": "Set response targets, business hours, and escalation rules before your next campaign."
+                    },
+                    {
+                        "title": "CSAT on resolve",
+                        "body": "Measure satisfaction after every ticket close and spot product or fulfillment issues early."
+                    },
+                    {
+                        "title": "Affordable INR pricing",
+                        "body": "Start on Professional from ₹999/mo with optional AI Copilot and Integrations add-ons."
+                    }
+                ],
+                "faq": [
+                    {
+                        "q": "Does helpefi integrate with Shopify?",
+                        "a": "Yes. Connect Shopify on Pro or add the Integrations Pack on Professional to pull order and customer data into every ticket."
+                    },
+                    {
+                        "q": "Can we handle festival sale volume spikes?",
+                        "a": "Yes. Use SLA policies, automation, and AI triage to prioritize urgent order issues during high-traffic periods."
+                    },
+                    {
+                        "q": "How fast can a D2C brand go live?",
+                        "a": "Most teams connect email and publish a help center within a day. Live chat embed code takes minutes."
+                    }
+                ],
+                "cta_title": "Ready to support shoppers at scale?",
+                "cta_body": "Start a free trial with full platform access. Connect your channels and see order context in your first ticket."
+            },
+            "it-teams": {
+                "nav_label": "IT teams",
+                "badge": "For internal IT & service desks",
+                "hero_title": "Helpdesk and ITSM for internal IT teams",
+                "hero_highlight": "Without buying two separate tools.",
+                "hero_subtitle": "Run employee support on Professional, then add Service Desk ITSM for incidents, changes, problems, approvals, and major incident war rooms — all in one workspace.",
+                "pains": [
+                    {
+                        "title": "Employees email IT while changes live in spreadsheets",
+                        "body": "Incidents, access requests, and change approvals have no shared queue or audit trail."
+                    },
+                    {
+                        "title": "Freshservice or Jira Service Management is overkill",
+                        "body": "Small and mid-size IT teams pay enterprise prices for features they never use."
+                    },
+                    {
+                        "title": "Major incidents lack a coordinated war room",
+                        "body": "Outages spread across chat threads with no single timeline or post-incident review."
+                    }
+                ],
+                "features": [
+                    {
+                        "title": "Service Desk ITSM add-on",
+                        "body": "Type queues for incidents, changes, and problems with ITIL-style workflows on any paid plan."
+                    },
+                    {
+                        "title": "Service catalog & approvals",
+                        "body": "Publish laptop, access, and software requests with approval chains agents can track."
+                    },
+                    {
+                        "title": "Change calendar & CAB-ready flows",
+                        "body": "Plan maintenance windows and link changes to related incidents and problems."
+                    },
+                    {
+                        "title": "CMDB & asset discovery",
+                        "body": "Track hardware and software on Pro, with network discovery for growing IT departments."
+                    },
+                    {
+                        "title": "SSO for agents",
+                        "body": "SAML and OIDC on Pro so IT staff sign in with your identity provider."
+                    },
+                    {
+                        "title": "Transparent add-on pricing",
+                        "body": "Add Service Desk ITSM when you need it — configure pricing in platform admin."
+                    }
+                ],
+                "faq": [
+                    {
+                        "q": "Do we need Pro to use Service Desk ITSM?",
+                        "a": "No. Service Desk is a monthly add-on on any paid plan. Pro bundles platform features like AI, integrations, SSO, and assets."
+                    },
+                    {
+                        "q": "Can we start with employee helpdesk only?",
+                        "a": "Yes. Many IT teams begin on Professional for tickets and SLAs, then enable Service Desk when ITIL workflows are needed."
+                    },
+                    {
+                        "q": "Is there a major incident war room?",
+                        "a": "Yes, included with the Service Desk add-on — coordinate responders, timeline, and post-incident review in one place."
+                    }
+                ],
+                "cta_title": "Give your IT team one system of record",
+                "cta_body": "Try helpefi free, set up your employee portal, and enable Service Desk when your processes mature."
+            },
+            "agencies": {
+                "nav_label": "Agencies",
+                "badge": "For agencies & multi-client teams",
+                "hero_title": "White-label helpdesk for client support",
+                "hero_highlight": "One platform, many brands.",
+                "hero_subtitle": "Run separate brands, portals, and inboxes per client from a single workspace. Give each client their own subdomain or custom domain without spinning up new tools.",
+                "pains": [
+                    {
+                        "title": "Every client wants their own support portal",
+                        "body": "Managing separate Freshdesk accounts multiplies cost and admin overhead."
+                    },
+                    {
+                        "title": "Agents context-switch between client inboxes",
+                        "body": "Shared Gmail labels and spreadsheets do not scale past a handful of retainers."
+                    },
+                    {
+                        "title": "Reporting per client is manual",
+                        "body": "Exporting tickets and CSAT by brand every month wastes billable hours."
+                    }
+                ],
+                "features": [
+                    {
+                        "title": "Multi-brand workspaces",
+                        "body": "Separate portals, KB skins, inboxes, and SLAs per client brand on Professional and above."
+                    },
+                    {
+                        "title": "Custom domain on Pro",
+                        "body": "Host each client portal on their own domain for a fully white-label experience."
+                    },
+                    {
+                        "title": "Role-based agent access",
+                        "body": "Invite agents per brand and control who sees which client queue."
+                    },
+                    {
+                        "title": "Per-brand analytics",
+                        "body": "Track ticket volume, response times, and CSAT filtered by brand for client QBRs."
+                    },
+                    {
+                        "title": "Automation per client",
+                        "body": "Macros, routing rules, and SLA policies tuned to each retainer's SLA commitments."
+                    },
+                    {
+                        "title": "Scales with your roster",
+                        "body": "Add clients as brands instead of provisioning new SaaS accounts every time."
+                    }
+                ],
+                "faq": [
+                    {
+                        "q": "Can each client have their own portal URL?",
+                        "a": "Yes. Each brand gets its own portal path and styling. Pro adds custom domain support per workspace."
+                    },
+                    {
+                        "q": "How many brands can we run?",
+                        "a": "Professional includes multi-brand workspace support. Limits depend on your plan tier — see pricing for agent and ticket limits."
+                    },
+                    {
+                        "q": "Can clients submit tickets without seeing other brands?",
+                        "a": "Yes. Portals and inboxes are isolated per brand. Customers only see the brand they contact."
+                    }
+                ],
+                "cta_title": "Support every client from one login",
+                "cta_body": "Start your trial, create a brand per client, and publish branded portals in an afternoon."
+            }
+        },
+        "compare_nav": "Compare",
+        "compare_detailed_pages": "See detailed competitor comparisons",
+        "feature_landing_links": "Explore dedicated feature pages",
+        "explore_product_features": "Explore product features",
+        "home": {
+            "promo_trial": "{days}-day free trial — full platform access, no credit card.",
+            "promo_start": "Start now →",
+            "hero_trial_badge": "{days}-day free trial · No credit card · Cancel anytime",
+            "hero_ai_badge": "AI Copilot built in",
+            "hero_title_line1": "Stop juggling tools.",
+            "hero_title_line2": "Start delighting customers.",
+            "hero_subtitle": "Built-in AI drafts replies, deflects tickets, and triages your queue — plus inbox, chat, knowledge base, SLAs, and ITSM in one helpdesk your team will actually love.",
+            "hero_subtitle_ai": "Built-in AI",
+            "hero_ai_heading": "AI-native from day one",
+            "hero_ai_link": "See it live →",
+            "hero_cta_short": "Start free trial",
+            "hero_cta_long": "Start free trial — it takes 2 minutes",
+            "hero_try_ai": "Try AI live",
+            "hero_trusted_emphasis": "Trusted by support & IT teams",
+            "hero_trusted_suffix": "worldwide",
+            "hero_mobile_ai_title": "AI Copilot on every ticket",
+            "hero_mobile_ai_body": "Drafts, deflection & triage included",
+            "hero_mobile_ai_points": [
+                "Agent Copilot side panel with full context",
+                "Portal & chat deflection before tickets",
+                "Shared inbox, KB, SLA & ITSM in one place"
+            ],
+            "hero_mockup_badge": "AI Copilot live",
+            "trust_badges": [
+                "No credit card required",
+                "Live in under 2 minutes",
+                "Full platform access",
+                "Cancel anytime"
+            ],
+            "hero_ai_pills": [
+                { "label": "Agent Copilot" },
+                { "label": "Smart deflection" },
+                { "label": "AI triage" },
+                { "label": "Reply drafts" }
+            ],
+            "hero_ai_stats": [
+                { "value": "40%", "label": "fewer tickets", "detail": "with AI deflection" },
+                { "value": "3×", "label": "faster replies", "detail": "with Copilot drafts" },
+                { "value": "Included", "label": "in free trial", "detail": "no add-on fees" }
+            ],
+            "outcome_stats": [
+                { "value": "3×", "label": "Faster first response", "detail": "vs. scattered inboxes" },
+                { "value": "40%", "label": "Fewer repeat tickets", "detail": "with KB deflection" },
+                { "value": "94%", "label": "Average CSAT", "detail": "across active teams" },
+                { "value": "2 min", "label": "Median setup time", "detail": "from signup to first ticket" }
+            ],
+            "preview_tab_ai": "AI Copilot",
+            "mockup_ai_ticket_id": "Ticket #1042",
+            "mockup_ai_customer_msg": "Customer: charged twice after failed payment",
+            "mockup_ai_agent_msg": "Agent: refund initiated, plan extended",
+            "mockup_ai_copilot_title": "Agent Copilot",
+            "mockup_ai_live": "live",
+            "mockup_ai_user_prompt": "Summarize and suggest next steps",
+            "mockup_ai_copilot_reply": "Duplicate charge confirmed. Refund queued; subscription extended 30 days. Send confirmation email and close when refund clears.",
+            "mockup_ai_kb_matched": "3 KB articles matched · Insert draft →",
+            "mockup_chat_visitor_question": "Do you offer annual billing?",
+            "feature_labels": {
+                "automation": "Automation & macros",
+                "service_catalog": "Service catalog",
+                "channels": "Live chat & channels",
+                "sla": "SLA & business hours",
+                "workspace": "Multi-brand workspace",
+                "ai": "AI assist & deflection",
+                "integrations": "Integrations & webhooks",
+                "assets": "Asset management (CMDB)",
+                "custom_domain": "Custom workspace domain",
+                "sso": "SSO (SAML / OIDC)",
+                "service_desk": "Service Desk ITSM"
+            },
+            "ai_capabilities": [
+                {
+                    "title": "Agent Copilot",
+                    "body": "Side-panel assistant on every ticket — summarize threads, draft replies, suggest KB articles, and recommend next steps with full context."
+                },
+                {
+                    "title": "Reply drafts & summaries",
+                    "body": "One-click AI reply drafts and thread summaries in the composer. Agents review before sending — faster responses without losing the human touch."
+                },
+                {
+                    "title": "Customer deflection",
+                    "body": "AI answers on your portal and live chat widget before customers submit tickets. Semantic search finds the right article even when wording differs."
+                },
+                {
+                    "title": "AI triage",
+                    "body": "New tickets analyzed on creation for suggested priority, tags, and routing hints. Agents accept or override — smarter queues from day one."
+                }
+            ],
+            "ai_stats": [
+                { "value": "Up to 40%", "label": "Tickets deflected before they reach an agent" },
+                { "value": "3× faster", "label": "First-response drafting with Copilot" },
+                { "value": "Day one", "label": "Auto-triage on every new ticket" }
+            ],
+            "ai_highlights": [
+                "Included on every plan — no AI add-on fees",
+                "Grounded in your knowledge base, not generic answers",
+                "Agents stay in control — review before anything sends"
+            ],
+            "ai_section": {
+                "badge": "AI-powered",
+                "title_line1": "AI that works for agents",
+                "title_line2": "and your customers",
+                "subtitle": "{brand} ships AI where support actually happens — not as a bolt-on. Deflect tickets before they arrive, draft replies in seconds, and give every agent a Copilot with full ticket context.",
+                "cta": "Start free trial",
+                "footnote": "Enterprise · AI included · No credit card",
+                "privacy_note": "Your data stays private — never used to train external models"
+            },
+            "ai_demo": {
+                "title": "Try AI deflection",
+                "subtitle": "Live demo — ask about {brand} AI features",
+                "empty_title": "Ask a support-style question",
+                "empty_body": "See how customers get instant answers from your knowledge base.",
+                "sample_prompts": [
+                    "How does AI deflection work?",
+                    "What can Agent Copilot do?",
+                    "Is AI included in the free trial?"
+                ],
+                "loading": "Searching knowledge base and drafting an answer…",
+                "error_generic": "Something went wrong. Try again.",
+                "error_network": "Unable to reach the AI demo. Check your connection and try again.",
+                "sources": "Sources",
+                "placeholder": "e.g. How do AI reply drafts work?",
+                "ask": "Ask"
+            },
+            "switch_section": {
+                "eyebrow": "Why teams switch",
+                "title": "From tool chaos to one calm helpdesk",
+                "subtitle": "Most teams pay for 3–5 separate products and still lose context. {brand} replaces the stack — not adds to it.",
+                "old_way_badge": "The old way",
+                "old_way_title": "Five tabs. Zero context.",
+                "old_way_body": "Agents hunt across disconnected tools while customers wait — and nothing syncs.",
+                "old_tools": ["Email", "Slack", "Spreadsheet", "Legacy ITSM", "Add-on KB"],
+                "with_brand_badge": "With {brand}",
+                "new_way_title": "One helpdesk. Full picture.",
+                "new_way_body": "Every channel, ticket, and IT workflow lives together — with AI and SLAs built in.",
+                "helpdesk_label": "{brand} helpdesk",
+                "stat_open": "Open",
+                "stat_avg_reply": "Avg reply",
+                "stat_csat": "CSAT",
+                "unified_label": "→ unified",
+                "comparison_before": "Without a unified helpdesk",
+                "comparison_after": "With {brand}",
+                "cta": "Ditch the stack — start free trial",
+                "cta_footnote": "{days}-day trial · No credit card · Migrate in an afternoon"
+            },
+            "pain_points": [
+                {
+                    "pain": "Tickets scattered across email, Slack, and spreadsheets",
+                    "gain": "One unified inbox for every channel",
+                    "oldTools": ["Gmail", "Slack", "Sheets"]
+                },
+                {
+                    "pain": "Agents switching between 4+ tools to resolve a ticket",
+                    "gain": "Full context in a single helpdesk",
+                    "oldTools": ["CRM", "Chat", "KB", "ITSM"]
+                },
+                {
+                    "pain": "ITSM bolted on as a separate expensive product",
+                    "gain": "Service Desk ITSM available as a paid add-on",
+                    "oldTools": ["Separate ITSM tool", "Extra license"]
+                },
+                {
+                    "pain": "Customers waiting hours for a first reply",
+                    "gain": "SLA timers, AI drafts, and smart routing",
+                    "oldTools": ["Manual triage", "No SLA"]
+                }
+            ],
+            "stack_savings": [
+                { "label": "Tools replaced", "value": "3–5" },
+                { "label": "Avg. cost saved", "value": "$2k+/mo" },
+                { "label": "Setup time", "value": "<2 min" },
+                { "label": "Context lost", "value": "Zero" }
+            ],
+            "bento_bodies": {
+                "one_inbox": "Email, chat, SMS, and portal tickets land in a single queue with smart routing and multi-brand support.",
+                "sla": "Never miss a deadline with visual countdowns, business hours, and breach alerts.",
+                "ai": "Agents get suggested responses and KB articles; customers get deflection before they submit.",
+                "portal": "Branded self-service hub for articles, service catalog requests, and ticket tracking.",
+                "realtime": "Live ticket updates, agent presence, and collision warnings — no refresh required."
+            },
+            "feature_groups": [
+                { "label": "Inbox & workspace", "hint": "Where agents live every day" },
+                { "label": "Channels & self-service", "hint": "Meet customers and deflect tickets" },
+                { "label": "Automation, SLA & insights", "hint": "Work smarter and measure results" },
+                { "label": "ITSM & enterprise", "hint": "Scale with IT and security" }
+            ],
+            "category_highlights": {
+                "operations": [
+                    "Split-pane agent workspace with queue, conversation, and sidebar",
+                    "Saved views, filters, bulk actions, merge/split, and custom fields",
+                    "Assignments, teams, departments, skills routing, and collision detection",
+                    "Side conversations to email third parties without merging tickets",
+                    "Time tracking, watchers, CCs, and full audit trail on every ticket",
+                    "Real-time updates, presence, and scheduled report delivery"
+                ],
+                "channels": [
+                    "Inbound email via webhook, IMAP, or OAuth with CC parsing",
+                    "Embeddable live chat widget with visitor context and deflection",
+                    "Branded customer portal with guest and authenticated ticket tracking",
+                    "Multi-brand portals, inboxes, KB skins, and ticket forms",
+                    "CSAT surveys on portal and email after resolve/close",
+                    "Twilio SMS messaging and real-time agent notifications"
+                ],
+                "selfservice": [
+                    "Rich-text articles with collections, versions, and locale support",
+                    "Semantic KB search and suggested articles on portal submit",
+                    "Customer-facing AI deflection on portal and live chat",
+                    "Service catalog with categories, request types, and approval flows",
+                    "Public help center linked from your portal and chat widget",
+                    "CSAT feedback to measure article and deflection effectiveness"
+                ],
+                "automation": [
+                    "Round-robin and load-based auto-assignment rules",
+                    "Canned responses with placeholders and macro actions",
+                    "Automation triggers with delays, webhooks, and auto-tagging",
+                    "AI-suggested replies, thread summaries, and KB assist",
+                    "SLA policies with business hours, escalations, and team SLAs",
+                    "Outbound webhooks with HMAC-signed ticket event delivery"
+                ],
+                "itsm": [
+                    "Service Desk hub with incident, request, change, and problem queues",
+                    "Catalog and change approval workflows with email and in-app inbox",
+                    "Change records with risk, schedule, CAB, and change calendar",
+                    "Problem management with root cause, known errors, and linked incidents",
+                    "Major incident declaration, war room, and post-incident review",
+                    "Asset CMDB with network discovery linked to tickets and catalog items"
+                ],
+                "platform": [
+                    "Admin, agent, and customer roles with custom permissions",
+                    "HubSpot, Salesforce, Shopify, Slack, Jira, and Linear integrations",
+                    "Customer context panel with CRM, commerce, and health scores in the ticket sidebar",
+                    "Network asset discovery imports devices into your CMDB automatically",
+                    "Two-factor auth, SSO (SAML/OIDC), audit logs, and data retention",
+                    "Custom workspace domain on Pro plans",
+                    "REST API, OpenAPI docs, and usage-based plan limits"
+                ]
+            },
+            "category_hints": {
+                "operations": "Inbox, workspace & collaboration",
+                "channels": "Email, chat, SMS & portal",
+                "selfservice": "KB, catalog & deflection",
+                "automation": "Rules, macros & AI",
+                "itsm": "Changes, problems & war rooms",
+                "platform": "Integrations, SSO & API"
+            },
+            "steps": [
+                {
+                    "body": "Pick a subdomain, register in seconds, and get a dedicated environment for your team — no credit card required.",
+                    "detail": "Your workspace lives on its own subdomain with isolated data, roles, and admin access."
+                },
+                {
+                    "body": "Follow the guided setup wizard to configure email, chat widget, SMS, portal branding, SLA policies, and service catalog.",
+                    "detail": "Inbound email, outbound SMTP, chat embed code, and Twilio SMS — configured step by step."
+                }
+            ],
+            "integration_groups": [
+                {
+                    "label": "Channels",
+                    "items": [
+                        { "id": "email", "name": "Email" },
+                        { "id": "live-chat", "name": "Live chat" },
+                        { "id": "sms", "name": "SMS" },
+                        { "id": "portal", "name": "Portal" }
+                    ]
+                },
+                {
+                    "label": "Collaboration",
+                    "items": [
+                        { "id": "slack", "name": "Slack" },
+                        { "id": "teams", "name": "Microsoft Teams" },
+                        { "id": "jira", "name": "Jira" },
+                        { "id": "linear", "name": "Linear" }
+                    ]
+                },
+                {
+                    "label": "CRM & commerce",
+                    "items": [
+                        { "id": "hubspot", "name": "HubSpot" },
+                        { "id": "salesforce", "name": "Salesforce" },
+                        { "id": "shopify", "name": "Shopify" }
+                    ]
+                },
+                {
+                    "label": "Platform",
+                    "items": [
+                        { "id": "webhooks", "name": "Webhooks" },
+                        { "id": "rest-api", "name": "REST API" },
+                        { "id": "sso", "name": "SSO" }
+                    ]
+                }
+            ],
+            "plan_taglines": {
+                "starter": "Essentials for small teams",
+                "professional": "Automation, SLA & channels",
+                "enterprise": "AI, integrations, SSO & custom domain"
+            },
+            "comparisons": [
+                { "feature": "Unified inbox (email + chat + portal + SMS)", "us": true, "them": false },
+                { "feature": "Built-in knowledge base & portal", "us": true, "them": "Add-on" },
+                { "feature": "Service catalog with approval workflows", "us": true, "them": "Enterprise only" },
+                { "feature": "Service Desk ITSM (changes, problems, major incidents)", "us": true, "them": "Separate product" },
+                { "feature": "Customer 360 with CRM & commerce in the ticket sidebar", "us": true, "them": "Add-on" },
+                { "feature": "Network asset discovery & CMDB", "us": true, "them": false },
+                { "feature": "Skills routing & tier-based SLA policies", "us": true, "them": "Rare" },
+                { "feature": "Semantic KB search & AI deflection", "us": true, "them": "Extra cost" },
+                { "feature": "Major incident war rooms & post-incident review", "us": true, "them": "Separate product" },
+                { "feature": "SLA policies & business hours", "us": true, "them": "Enterprise only" },
+                { "feature": "Multi-brand workspaces", "us": true, "them": false },
+                { "feature": "Dedicated workspace URL + custom domain", "us": true, "them": "Add-on" },
+                { "feature": "SSO (SAML / OIDC) & agent performance scoring", "us": true, "them": "Enterprise only" },
+                { "feature": "Free trial, no credit card", "us": true, "them": "Limited" }
+            ],
+            "faqs": [
+                {
+                    "q": "How does the {trialDays}-day free trial work?",
+                    "a": "Sign up and get full platform access for {trialDays} days. No credit card required. When your trial ends, choose a plan that fits your team to keep your workspace active."
+                },
+                {
+                    "q": "Can I use my own domain?",
+                    "a": "Yes. Every workspace includes a dedicated subdomain (e.g. acme.yourplatform.com). On Pro plans, connect your own domain (e.g. support.yourcompany.com) from Settings → Custom domain — add the DNS records we provide, verify ownership, and optionally redirect visitors from your platform subdomain to your branded URL."
+                },
+                {
+                    "q": "What channels are supported?",
+                    "a": "Email (inbound webhook, IMAP, and OAuth), live chat widget, SMS via Twilio, and a branded customer portal. All channels create tickets in the same shared inbox with multi-brand routing."
+                },
+                {
+                    "q": "What is Service Desk ITSM?",
+                    "a": "Service Desk is an optional paid add-on for any paid plan. It adds ITIL-style workflows on top of your existing tickets: type queues for incidents, requests, changes, and problems; catalog and change approvals; change calendar with CAB; problem records with linked incidents; and major incident war rooms with post-incident review."
+                },
+                {
+                    "q": "Is there an API?",
+                    "a": "Yes. A REST API covers authentication, tickets, contacts, service desk records, knowledge base, and billing snapshots — plus OpenAPI documentation for custom integrations and internal tooling."
+                },
+                {
+                    "q": "Do you support SSO?",
+                    "a": "Pro plans include SAML and OIDC single sign-on. Configure your identity provider in Settings → Security and agents sign in with your corporate credentials alongside optional two-factor authentication."
+                },
+                {
+                    "q": "How does pricing work after the trial?",
+                    "a": "Plans are based on team size (agents) and monthly ticket volume. Professional includes automation, SLA, service catalog, and live chat. Pro adds AI, integrations, assets, SSO, and custom domain. AI Copilot, Integrations, and Service Desk ITSM are optional monthly add-ons on any paid plan. Upgrade anytime from your workspace billing settings."
+                },
+                {
+                    "q": "Can I migrate existing data?",
+                    "a": "Export tickets and contacts via CSV, or use the API to import data programmatically. Our unified inbox and service catalog make it straightforward to ramp without losing context."
+                }
+            ],
+            "product_section": {
+                "title": "Everything your team needs — nothing they don't",
+                "subtitle": "From the first customer message to resolution and feedback — {brand} gives agents the context, tools, and automation they need without switching tabs or paying for add-ons."
+            },
+            "features_section": {
+                "subtitle": "Pick a workflow area to see how {brand} handles it — from first contact through ITSM resolution.",
+                "also_included": "Also included",
+                "everything_included": "Everything included",
+                "full_platform_title": "Full platform feature list",
+                "full_platform_body": "All plans include core ticketing. Higher tiers unlock automation, channels, AI, and platform features. Service Desk ITSM is optional on any paid plan.",
+                "capabilities_label": "Capabilities",
+                "workflow_areas_label": "Workflow areas",
+                "features_count": "{count} features"
+            },
+            "differentiators_cta": "Try everything — start free trial",
+            "differentiators_footnote": "{days}-day trial · No credit card · Cloud-hosted workspace",
+            "compare_section": {
+                "title": "{brand} vs. pieced-together tools",
+                "subtitle": "One helpdesk for support and IT — without stacking separate inbox, KB, and ITSM products.",
+                "cta": "Get everything above — start free trial",
+                "cta_footnote": "{days}-day trial · No credit card · Full access"
+            },
+            "how_it_works_subtitle": "Most teams complete setup during their {days}-day trial — guided every step of the way.",
+            "pricing_section": {
+                "title": "Simple pricing. Serious value.",
+                "subtitle": "Start with a {days}-day free trial on any plan. Most teams save thousands by replacing multiple tools with one helpdesk.",
+                "save_vs_monthly": "Save {percent}% vs monthly",
+                "start_trial": "Start {days}-day free trial"
+            },
+            "plan_limits": {
+                "unlimited": "Unlimited",
+                "team_members": "{count} team members",
+                "tickets_per_month": "{count} tickets / month"
+            },
+            "final_cta": {
+                "eyebrow": "Limited-time offer",
+                "title_line1": "Your customers are waiting.",
+                "title_highlight": "Give them answers today.",
+                "body": "Join teams who replaced scattered inboxes and separate ITSM tools with one modern helpdesk. Setup takes minutes — not weeks.",
+                "start_trial": "Start {days}-day free trial",
+                "sign_in": "Sign in to workspace"
+            }
+        },
+        "social_proof_eyebrow": "Trusted by support teams",
+        "social_proof_title": "One platform, fewer tools to manage",
+        "social_proof_subtitle": "Teams switch from shared inboxes and pieced-together stacks when they need SLA, chat, KB, and optional ITSM in one workspace.",
+        "social_proof_logos": ["E-commerce", "SaaS", "Agencies", "IT & ops", "Professional services"],
+        "social_proof_testimonials": [
+            {
+                "quote": "We replaced email threads and a separate KB in the first week. Agents finally work from one inbox with SLA timers that actually match our hours.",
+                "name": "Priya S.",
+                "role": "Head of Support",
+                "company_type": "D2C brand"
+            },
+            {
+                "quote": "Live chat plus the portal deflected a third of repeat questions before they became tickets. Setup during the trial was straightforward.",
+                "name": "Marcus T.",
+                "role": "IT Operations Lead",
+                "company_type": "B2B SaaS"
+            },
+            {
+                "quote": "Multi-brand support for client portals without juggling logins — that alone paid for the switch from our old helpdesk.",
+                "name": "Elena R.",
+                "role": "Client Services Director",
+                "company_type": "Digital agency"
+            }
+        ],
+        "view_pricing": "View pricing",
+        "feature_comparison": "Feature comparison",
+        "compare_disclaimer": "Comparison based on publicly available product information. Competitor plans and packaging change — verify current details on their websites.",
+        "compare_why_switch_title": "Why teams switch from {competitor}",
+        "compare_vs": "vs {name}",
+        "comparisons": {
+            "freshdesk": {
+                "nav_label": "Freshdesk",
+                "competitor_name": "Freshdesk",
+                "badge": "helpefi vs Freshdesk",
+                "hero_title": "Freshdesk alternative for growing support teams",
+                "hero_highlight": "More platform, clearer pricing.",
+                "hero_subtitle": "Get shared inbox, chat, KB, SLA, AI, and optional ITSM in one workspace — with INR-friendly plans and modular add-ons instead of stacking Freshdesk modules and Freshservice.",
+                "reasons": [
+                    {
+                        "title": "Support + ITSM without two products",
+                        "body": "Add Service Desk ITSM on any paid plan instead of buying Freshservice separately for changes, problems, and major incidents."
+                    },
+                    {
+                        "title": "AI and integrations your way",
+                        "body": "Enable AI Copilot or Integrations on Professional, or bundle everything on Pro — no surprise per-agent AI surcharges."
+                    },
+                    {
+                        "title": "Transparent India pricing",
+                        "body": "Professional from ₹999/mo with optional add-ons. No credit card required to start your free trial."
+                    }
+                ],
+                "rows": [
+                    { "feature": "Unified inbox (email, chat, portal, SMS)", "us": true, "them": true },
+                    { "feature": "Built-in knowledge base & portal", "us": true, "them": true },
+                    { "feature": "Service catalog with approvals", "us": true, "them": "Higher tiers" },
+                    { "feature": "ITSM (changes, problems, war rooms)", "us": "Add-on", "them": "Freshservice" },
+                    { "feature": "Shopify / CRM sidebar context", "us": "Integrations add-on", "them": "Marketplace apps" },
+                    { "feature": "Semantic KB search & AI drafts", "us": "AI add-on or Pro", "them": "Freddy AI add-on" },
+                    { "feature": "Multi-brand workspaces", "us": true, "them": "Higher tiers" },
+                    { "feature": "Custom domain", "us": "Pro", "them": "Higher tiers" },
+                    { "feature": "SSO (SAML / OIDC)", "us": "Pro", "them": "Enterprise" },
+                    { "feature": "Free trial, no credit card", "us": true, "them": "Limited trial" }
+                ],
+                "faq": [
+                    {
+                        "q": "Is helpefi cheaper than Freshdesk?",
+                        "a": "For many Indian SMB teams, Professional plus optional add-ons costs less than Freshdesk Growth/Pro with AI and marketplace apps — especially when you need ITSM alongside support."
+                    },
+                    {
+                        "q": "Can we migrate from Freshdesk?",
+                        "a": "Export tickets and contacts to CSV and import via the API or admin tools. Most teams run both systems briefly during cutover."
+                    },
+                    {
+                        "q": "Does helpefi replace Freshservice too?",
+                        "a": "The Service Desk add-on covers incidents, changes, problems, approvals, and major incident war rooms — so you may not need a separate ITSM product."
+                    }
+                ],
+                "cta_title": "Try the Freshdesk alternative free",
+                "cta_body": "Start your trial, connect email, and compare side by side with your current Freshdesk workflow."
+            },
+            "zendesk": {
+                "nav_label": "Zendesk",
+                "competitor_name": "Zendesk",
+                "badge": "helpefi vs Zendesk",
+                "hero_title": "Zendesk alternative without enterprise complexity",
+                "hero_highlight": "Modern helpdesk, simpler stack.",
+                "hero_subtitle": "Zendesk excels at scale but often means multiple products, add-ons, and per-agent AI fees. helpefi bundles support, self-service, automation, and optional ITSM with straightforward plans.",
+                "reasons": [
+                    {
+                        "title": "Fewer products to stitch together",
+                        "body": "KB, portal, chat, SLA, and automations live in one workspace — not Zendesk Support plus half a dozen add-ons."
+                    },
+                    {
+                        "title": "AI on your terms",
+                        "body": "AI Copilot as an add-on or included on Pro — not a separate Advanced AI line item per agent."
+                    },
+                    {
+                        "title": "Built for mid-market teams",
+                        "body": "Fast setup, dedicated subdomain, and pricing that makes sense for 5–50 agent teams."
+                    }
+                ],
+                "rows": [
+                    { "feature": "Shared inbox & ticketing", "us": true, "them": true },
+                    { "feature": "Live chat widget", "us": true, "them": true },
+                    { "feature": "Help center & KB", "us": true, "them": true },
+                    { "feature": "SLA & business hours", "us": "Professional+", "them": "Suite plans" },
+                    { "feature": "Service catalog & approvals", "us": true, "them": "Limited" },
+                    { "feature": "ITSM / change management", "us": "Service Desk add-on", "them": "Separate products" },
+                    { "feature": "AI reply drafts & deflection", "us": "AI add-on or Pro", "them": "Advanced AI add-on" },
+                    { "feature": "Multi-brand / multi-entity", "us": true, "them": "Complex setup" },
+                    { "feature": "Custom agent domain", "us": "Pro", "them": "Add-on" },
+                    { "feature": "No credit card trial", "us": true, "them": false }
+                ],
+                "faq": [
+                    {
+                        "q": "Who should consider helpefi over Zendesk?",
+                        "a": "Teams outgrowing shared inboxes but not ready for Zendesk Suite pricing, or teams that want ITSM adjacent to support without a second vendor."
+                    },
+                    {
+                        "q": "How does AI pricing compare?",
+                        "a": "helpefi offers AI Copilot as a flat monthly add-on or bundled on Pro. Zendesk Advanced AI is typically priced per agent on top of base seats."
+                    },
+                    {
+                        "q": "Can we keep our existing integrations?",
+                        "a": "helpefi supports Slack, Jira, HubSpot, Salesforce, Shopify, webhooks, and a REST API on Pro or with the Integrations add-on."
+                    }
+                ],
+                "cta_title": "See if helpefi fits your team",
+                "cta_body": "Run a parallel trial alongside Zendesk — most teams know within a week."
+            },
+            "zoho-desk": {
+                "nav_label": "Zoho Desk",
+                "competitor_name": "Zoho Desk",
+                "badge": "helpefi vs Zoho Desk",
+                "hero_title": "Zoho Desk alternative with ITSM and AI built in",
+                "hero_highlight": "Beyond ticket tracking alone.",
+                "hero_subtitle": "Zoho Desk is strong inside the Zoho ecosystem. helpefi targets teams that want modern AI, optional Service Desk ITSM, and multi-brand support without committing to the full Zoho stack.",
+                "reasons": [
+                    {
+                        "title": "Optional ITSM in the same product",
+                        "body": "Enable Service Desk for changes, problems, and war rooms — not just customer tickets."
+                    },
+                    {
+                        "title": "AI Copilot without ecosystem lock-in",
+                        "body": "Semantic search, reply drafts, and triage without requiring Zoho CRM or Zia bundles."
+                    },
+                    {
+                        "title": "Agency-friendly multi-brand",
+                        "body": "Run client brands with separate portals and inboxes from one login."
+                    }
+                ],
+                "rows": [
+                    { "feature": "Email, chat & portal channels", "us": true, "them": true },
+                    { "feature": "Knowledge base", "us": true, "them": true },
+                    { "feature": "Automation & macros", "us": "Professional+", "them": true },
+                    { "feature": "SLA management", "us": "Professional+", "them": "Higher tiers" },
+                    { "feature": "ITSM workflows", "us": "Service Desk add-on", "them": false },
+                    { "feature": "Asset / CMDB tracking", "us": "Pro", "them": false },
+                    { "feature": "AI assist & semantic search", "us": "AI add-on or Pro", "them": "Zia / higher tiers" },
+                    { "feature": "HubSpot / Salesforce / Shopify", "us": "Integrations add-on or Pro", "them": "Zoho-centric" },
+                    { "feature": "SSO", "us": "Pro", "them": "Enterprise" },
+                    { "feature": "INR pricing for India teams", "us": true, "them": true }
+                ],
+                "faq": [
+                    {
+                        "q": "We already use Zoho CRM — should we switch?",
+                        "a": "If Zoho Desk meets your needs inside CRM, stay. helpefi fits teams that want stronger ITSM, multi-brand agency workflows, or best-of-breed integrations outside Zoho."
+                    },
+                    {
+                        "q": "Is helpefi priced similarly in INR?",
+                        "a": "Professional starts at ₹999/mo with optional add-ons. Compare your Zoho Desk tier plus any AI or marketplace costs."
+                    },
+                    {
+                        "q": "Can agents use both during migration?",
+                        "a": "Yes. Import CSV exports and run helpefi in parallel until you're ready to cut over."
+                    }
+                ],
+                "cta_title": "Compare helpefi to Zoho Desk",
+                "cta_body": "Start a free trial and test ITSM, AI, and multi-brand workflows side by side."
+            },
+            "freshservice": {
+                "nav_label": "Freshservice",
+                "competitor_name": "Freshservice",
+                "badge": "helpefi vs Freshservice",
+                "hero_title": "Freshservice alternative for IT + employee support",
+                "hero_highlight": "One workspace, two missions.",
+                "hero_subtitle": "Freshservice is ITSM-first. helpefi gives employee and customer support teams a shared inbox, then adds Service Desk ITSM when you need incidents, changes, and war rooms — without a second Freshworks contract.",
+                "reasons": [
+                    {
+                        "title": "Customer and employee support together",
+                        "body": "External customer tickets and internal IT requests in one platform with shared automations and KB."
+                    },
+                    {
+                        "title": "Pay for ITSM when ready",
+                        "body": "Start on Professional for helpdesk workflows, enable Service Desk ITSM as an add-on when processes mature."
+                    },
+                    {
+                        "title": "AI for agents and deflection",
+                        "body": "Copilot drafts, summaries, and KB assist on Pro or via the AI Copilot add-on."
+                    }
+                ],
+                "rows": [
+                    { "feature": "Employee / internal ticketing", "us": true, "them": true },
+                    { "feature": "Customer-facing support channels", "us": true, "them": "Limited" },
+                    { "feature": "Incident & change queues", "us": "Service Desk add-on", "them": true },
+                    { "feature": "Problem management", "us": "Service Desk add-on", "them": true },
+                    { "feature": "Major incident war rooms", "us": "Service Desk add-on", "them": true },
+                    { "feature": "Service catalog & approvals", "us": true, "them": true },
+                    { "feature": "Live chat & customer portal", "us": true, "them": "Add-on / separate" },
+                    { "feature": "CMDB & asset discovery", "us": "Pro", "them": true },
+                    { "feature": "Multi-brand external support", "us": true, "them": false },
+                    { "feature": "Modular pricing for SMB IT", "us": true, "them": "ITSM seat pricing" }
+                ],
+                "faq": [
+                    {
+                        "q": "Can helpefi replace Freshservice for a 20-person IT team?",
+                        "a": "Yes, if you enable the Service Desk add-on and use Pro for assets and SSO. Smaller teams often start without ITSM and add it later."
+                    },
+                    {
+                        "q": "Do you support employee self-service?",
+                        "a": "Yes — publish a branded portal with KB articles and service catalog items for laptop requests, access, and more."
+                    },
+                    {
+                        "q": "What about change advisory board workflows?",
+                        "a": "Service Desk includes change calendar, approvals, and CAB-ready flows linked to incidents and problems."
+                    }
+                ],
+                "cta_title": "Unify IT and support on helpefi",
+                "cta_body": "Trial the platform free, then enable Service Desk when your ITIL processes need it."
+            },
+            "helpscout": {
+                "nav_label": "Help Scout",
+                "competitor_name": "Help Scout",
+                "badge": "helpefi vs Help Scout",
+                "hero_title": "Help Scout alternative when you outgrow shared inbox",
+                "hero_highlight": "Keep simplicity, gain depth.",
+                "hero_subtitle": "Help Scout is excellent for lightweight email support. helpefi picks up where shared inbox ends — SLA, service catalog, live chat, SMS, AI, integrations, and optional ITSM.",
+                "reasons": [
+                    {
+                        "title": "SLA and escalation built in",
+                        "body": "Business hours, breach alerts, and tier policies without third-party tools."
+                    },
+                    {
+                        "title": "More channels than email alone",
+                        "body": "Live chat, SMS, portal, and multi-brand routing alongside your inbox."
+                    },
+                    {
+                        "title": "Room to grow into ITSM",
+                        "body": "Add Service Desk later if internal IT requests need change and incident management."
+                    }
+                ],
+                "rows": [
+                    { "feature": "Shared inbox & collision detection", "us": true, "them": true },
+                    { "feature": "Knowledge base & docs site", "us": true, "them": true },
+                    { "feature": "Live chat widget", "us": true, "them": "Beacon" },
+                    { "feature": "SMS channel", "us": true, "them": false },
+                    { "feature": "SLA policies & business hours", "us": "Professional+", "them": "Limited" },
+                    { "feature": "Service catalog & approvals", "us": true, "them": false },
+                    { "feature": "Automation & skills routing", "us": "Professional+", "them": "Basic" },
+                    { "feature": "AI drafts & semantic search", "us": "AI add-on or Pro", "them": "AI Answers add-on" },
+                    { "feature": "ITSM / change management", "us": "Service Desk add-on", "them": false },
+                    { "feature": "Multi-brand workspaces", "us": true, "them": false }
+                ],
+                "faq": [
+                    {
+                        "q": "Is helpefi overkill if we only need email?",
+                        "a": "If email-only is enough, Help Scout may suffice. helpefi fits teams adding chat, SLAs, catalog, or IT workflows within the next 12 months."
+                    },
+                    {
+                        "q": "Will helpefi feel as simple as Help Scout?",
+                        "a": "The agent workspace stays focused — split pane inbox, clean replies, and KB sidebar. Advanced features stay in settings until you need them."
+                    },
+                    {
+                        "q": "How does pricing compare?",
+                        "a": "Starter and Professional tiers target SMB budgets with INR options. Compare Help Scout Plus with AI Answers against helpefi Professional plus add-ons."
+                    }
+                ],
+                "cta_title": "Graduate from inbox-only support",
+                "cta_body": "Start your trial and connect email first — add chat, SLA, and AI when you're ready."
+            }
+        },
+        "feature_pages": {
+            "ai": {
+                "nav_label": "AI Features",
+                "badge": "AI customer support",
+                "hero_title": "AI helpdesk software that resolves tickets faster",
+                "hero_highlight": "Copilot, deflection, and smart routing",
+                "hero_subtitle": "Use AI across your helpdesk to draft replies, deflect repetitive questions, and route complex tickets to the right agent — without replacing human judgment.",
+                "features": [
+                    { "title": "AI Copilot for agents", "body": "Draft replies, summarize threads, and suggest next steps inside the agent workspace." },
+                    { "title": "Semantic knowledge search", "body": "Surface relevant articles and past tickets so customers and agents find answers faster." },
+                    { "title": "AI deflection on portal and chat", "body": "Answer common questions before a ticket is created, reducing queue volume." }
+                ],
+                "faq": [
+                    { "q": "Does AI replace support agents?", "a": "No. Helpefi AI assists agents and deflects repetitive questions. Your team stays in control of every customer conversation." },
+                    { "q": "Can AI use our knowledge base?", "a": "Yes. AI features can reference published articles and approved content to keep answers accurate and on-brand." }
+                ],
+                "cta_title": "Try AI-powered support today",
+                "cta_body": "Start your free trial and see how AI reduces handle time while improving customer satisfaction."
+            },
+            "ticket-management": {
+                "nav_label": "Ticket Management",
+                "badge": "Ticket management system",
+                "hero_title": "Modern ticket management for support teams",
+                "hero_highlight": "Shared inbox, SLA, and collaboration",
+                "hero_subtitle": "Manage email, chat, SMS, and portal requests in one ticket management system with SLA policies, internal notes, and skills-based routing.",
+                "features": [
+                    { "title": "Unified shared inbox", "body": "Every channel creates a ticket in one workspace with full conversation history." },
+                    { "title": "SLA and escalation rules", "body": "Set response and resolution targets with business hours, tiers, and automated escalations." },
+                    { "title": "Collaboration built in", "body": "Private notes, @mentions, and linked incidents keep teams aligned on complex issues." }
+                ],
+                "faq": [
+                    { "q": "Which channels create tickets?", "a": "Email, live chat, SMS, and your customer portal all route into the same shared inbox." },
+                    { "q": "Can we route tickets by skill or team?", "a": "Yes. Use assignment rules, skills routing, and tier-based SLA policies to match tickets to the right agents." }
+                ],
+                "cta_title": "Upgrade your ticket workflow",
+                "cta_body": "Launch a dedicated workspace in minutes and give your team a faster, clearer way to manage support volume."
+            },
+            "knowledge-base": {
+                "nav_label": "Knowledge Base",
+                "badge": "Self-service knowledge base",
+                "hero_title": "Help customers help themselves",
+                "hero_highlight": "Articles, portal, and deflection",
+                "hero_subtitle": "Publish a branded knowledge base that powers your customer portal, reduces ticket volume, and feeds AI deflection across chat and email.",
+                "features": [
+                    { "title": "Branded customer portal", "body": "Host help content on your domain with categories, search, and ticket submission." },
+                    { "title": "Semantic search", "body": "Customers and agents find answers by meaning, not just keywords." },
+                    { "title": "Article analytics", "body": "See which articles deflect tickets and where content gaps remain." }
+                ],
+                "faq": [
+                    { "q": "Can we restrict articles by audience?", "a": "Yes. Control visibility by brand, portal, or customer segment." },
+                    { "q": "Does the knowledge base work with AI?", "a": "Published articles power AI deflection and Copilot suggestions in the agent workspace." }
+                ],
+                "cta_title": "Launch your knowledge base",
+                "cta_body": "Reduce repeat questions and give customers 24/7 self-service without adding headcount."
+            },
+            "automation": {
+                "nav_label": "Automation",
+                "badge": "Support automation",
+                "hero_title": "Automate repetitive support work",
+                "hero_highlight": "Rules, macros, and workflows",
+                "hero_subtitle": "Build support automation with triggers, SLA policies, macros, and approval workflows so agents focus on complex customer issues.",
+                "features": [
+                    { "title": "Trigger-based automation", "body": "Assign, tag, notify, and escalate tickets automatically based on conditions you define." },
+                    { "title": "Macros and canned responses", "body": "Speed up replies with reusable templates and multi-action macros." },
+                    { "title": "Service catalog approvals", "body": "Route service requests through approval chains before fulfillment." }
+                ],
+                "faq": [
+                    { "q": "Do I need developers to automate?", "a": "No. Most automations are configured in the admin UI with visual rule builders." },
+                    { "q": "Can automation work with SLA policies?", "a": "Yes. Combine SLA timers, business hours, and automation rules for reliable escalations." }
+                ],
+                "cta_title": "Automate your support queue",
+                "cta_body": "Start a free trial and configure your first automation rules in the setup wizard."
+            },
+            "live-chat": {
+                "nav_label": "Live Chat",
+                "badge": "Live chat support",
+                "hero_title": "Live chat that converts and resolves",
+                "hero_highlight": "Widget, routing, and context",
+                "hero_subtitle": "Embed live chat on your site, route conversations to available agents, and convert chats into tracked tickets with full customer context.",
+                "features": [
+                    { "title": "Embeddable chat widget", "body": "Customize colors, placement, and pre-chat forms to match your brand." },
+                    { "title": "Real-time agent workspace", "body": "Handle multiple chats alongside email and portal tickets in one inbox." },
+                    { "title": "Chat-to-ticket continuity", "body": "Every chat becomes a ticket with history, SLA tracking, and follow-up via email." }
+                ],
+                "faq": [
+                    { "q": "Can chat hand off to email?", "a": "Yes. Offline messages and follow-ups continue as email tickets with the same thread." },
+                    { "q": "Does live chat support AI deflection?", "a": "Yes. Suggest knowledge base articles before connecting visitors to an agent." }
+                ],
+                "cta_title": "Add live chat to your site",
+                "cta_body": "Install the widget during setup and start engaging visitors in real time."
+            },
+            "integrations": {
+                "nav_label": "Integrations",
+                "badge": "Helpdesk integrations",
+                "hero_title": "Connect your helpdesk to your stack",
+                "hero_highlight": "CRM, commerce, and dev tools",
+                "hero_subtitle": "Integrate Helpefi with Slack, HubSpot, Salesforce, Shopify, Jira, Linear, and more — with customer context surfaced directly in tickets.",
+                "features": [
+                    { "title": "CRM and commerce context", "body": "View HubSpot, Salesforce, and Shopify data in the ticket sidebar." },
+                    { "title": "Dev tool sync", "body": "Link Jira and Linear issues to support tickets for engineering handoffs." },
+                    { "title": "SSO and webhooks", "body": "SAML/OIDC sign-in, REST API, and webhooks for custom integrations." }
+                ],
+                "faq": [
+                    { "q": "Is there a REST API?", "a": "Yes. Helpefi exposes a documented REST API and webhooks for custom workflows." },
+                    { "q": "Which integrations are included?", "a": "Core integrations include Slack, HubSpot, Salesforce, Shopify, Jira, Linear, Twilio SMS, and SSO." }
+                ],
+                "cta_title": "Connect your tools",
+                "cta_body": "Start your trial and enable integrations from the admin setup wizard."
+            }
+        },
+        "static_pages": {
+            "pricing": {
+                "nav_label": "Pricing",
+                "hero_title": "Simple, transparent helpdesk pricing",
+                "hero_subtitle": "Choose a plan that fits your team. Every plan includes a {days}-day free trial with full platform access — no credit card required.",
+                "sections": [
+                    { "title": "Plans for every stage", "body": "From Starter for small teams to Enterprise with SSO, custom domains, and advanced ITSM — scale without switching platforms." },
+                    { "title": "Add-ons when you need more", "body": "Enable Service Desk ITSM, additional brands, or AI capacity as modular add-ons on Professional and Enterprise plans." }
+                ],
+                "cta_title": "Start your free trial",
+                "cta_body": "Create your workspace in minutes and explore every feature before you commit."
+            },
+            "about": {
+                "nav_label": "About",
+                "hero_title": "About Helpefi",
+                "hero_subtitle": "We build modern helpdesk and ITSM software for teams that want AI, automation, and customer context without enterprise complexity.",
+                "sections": [
+                    { "title": "Our mission", "body": "Helpefi helps growing support and IT teams deliver faster, clearer customer service with one platform for tickets, chat, knowledge base, and optional Service Desk workflows." },
+                    { "title": "Built for operators", "body": "Product, support, and IT leaders use Helpefi to unify channels, measure SLA performance, and scale self-service." }
+                ],
+                "cta_title": "Join teams on Helpefi",
+                "cta_body": "Start a free trial and see why teams choose Helpefi over legacy helpdesk tools."
+            },
+            "contact": {
+                "nav_label": "Contact",
+                "hero_title": "Contact Helpefi",
+                "hero_subtitle": "Questions about pricing, security, or enterprise plans? Email hello@helpefi.com — we typically respond within one business day.",
+                "sections": [
+                    { "title": "Sales and general inquiries", "body": "Email hello@helpefi.com for demos, partnership questions, or help choosing the right plan for your team." },
+                    { "title": "Existing customers", "body": "Sign in to your workspace for product support. For billing or account questions, email hello@helpefi.com from your registered address." }
+                ],
+                "cta_title": "Ready to get started?",
+                "cta_body": "Skip the wait — launch your free trial and explore the platform immediately."
+            },
+            "privacy": {
+                "nav_label": "Privacy Policy",
+                "hero_title": "Privacy Policy",
+                "hero_subtitle": "This Privacy Policy explains how Helpefi collects, uses, shares, and protects personal information when you visit our website, create an account, or use our helpdesk platform.",
+                "effective_date": "Effective date: June 13, 2026 · Last updated: June 13, 2026",
+                "sections": [
+                    {
+                        "title": "1. Introduction",
+                        "body": "Helpefi (\"Helpefi,\" \"we,\" \"us,\" or \"our\") provides cloud-based customer support and IT service management software. This Privacy Policy applies to visitors of helpefi.com, trial users, paying customers, and authorized users of Helpefi workspaces.",
+                        "paragraphs": [
+                            "If you use Helpefi on behalf of an organization, that organization is the controller of most data processed in its workspace. Helpefi processes that data as a service provider according to your organization's instructions and our agreement with you."
+                        ]
+                    },
+                    {
+                        "title": "2. Information we collect",
+                        "body": "We collect information in three broad categories: information you provide, information generated through use of the service, and information collected automatically."
+                    },
+                    {
+                        "title": "2.1 Account and registration information",
+                        "items": [
+                            "Name, email address, job title, and organization name",
+                            "Workspace subdomain, billing details, and subscription plan selections",
+                            "Authentication credentials and security settings such as two-factor authentication",
+                            "Communications with us, including support requests and sales inquiries"
+                        ]
+                    },
+                    {
+                        "title": "2.2 Workspace and customer support data",
+                        "body": "When you use Helpefi, you and your authorized users may submit data into your workspace. Depending on how you configure the platform, this may include:",
+                        "items": [
+                            "Support tickets, chat transcripts, SMS messages, and email content",
+                            "Contact and organization records for your customers or employees",
+                            "Knowledge base articles, attachments, internal notes, and macros",
+                            "Service catalog requests, approvals, and ITSM records",
+                            "Integration data synced from third-party tools you connect"
+                        ],
+                        "paragraphs": [
+                            "You control what data is submitted to your workspace. You are responsible for providing appropriate notices to your end users and obtaining any required consents."
+                        ]
+                    },
+                    {
+                        "title": "2.3 Usage, device, and log data",
+                        "items": [
+                            "IP address, browser type, device identifiers, and operating system",
+                            "Pages viewed, features used, timestamps, and referral URLs on our marketing site",
+                            "Application logs, error reports, performance metrics, and security audit events",
+                            "Cookie and similar technology data as described below"
+                        ]
+                    },
+                    {
+                        "title": "2.4 Payment information",
+                        "body": "Subscription payments are processed by our payment partners. We receive billing status, transaction identifiers, and limited payment metadata, but we do not store full payment card numbers on our servers."
+                    },
+                    {
+                        "title": "3. How we use information",
+                        "body": "We use personal information to operate, secure, and improve Helpefi, including to:",
+                        "items": [
+                            "Create and administer accounts, workspaces, and user access",
+                            "Provide ticketing, chat, knowledge base, automation, AI, and ITSM features",
+                            "Process subscriptions, invoices, trials, and account notifications",
+                            "Monitor service performance, troubleshoot issues, and prevent fraud or abuse",
+                            "Respond to support requests and communicate product updates",
+                            "Analyze aggregated usage to improve reliability, usability, and features",
+                            "Comply with legal obligations and enforce our Terms of Service"
+                        ]
+                    },
+                    {
+                        "title": "4. AI and automated processing",
+                        "body": "Helpefi offers optional AI capabilities such as reply suggestions, semantic search, and deflection. When enabled, content from your workspace may be processed to generate outputs for your users.",
+                        "paragraphs": [
+                            "We do not use your workspace content to train public or third-party foundation models for general purposes. AI features are provided to deliver functionality within your account.",
+                            "You are responsible for reviewing AI-generated content before sending it to customers or relying on it for business decisions."
+                        ]
+                    },
+                    {
+                        "title": "5. Legal bases for processing (EEA, UK, and Switzerland)",
+                        "body": "Where applicable data protection law requires a legal basis, we rely on one or more of the following:",
+                        "items": [
+                            "Performance of a contract with you or your organization",
+                            "Legitimate interests in operating, securing, and improving the service, balanced against your rights",
+                            "Compliance with legal obligations",
+                            "Consent, where required, such as for certain marketing cookies or optional communications"
+                        ]
+                    },
+                    {
+                        "title": "6. How we share information",
+                        "body": "We do not sell personal information. We may share information only as described below:",
+                        "items": [
+                            "Service providers and subprocessors that help us host infrastructure, send email, process payments, provide analytics, or deliver customer support tools",
+                            "Integration partners you choose to connect to your workspace",
+                            "Professional advisers, auditors, or authorities when required by law or to protect rights and safety",
+                            "Successors in connection with a merger, acquisition, or asset sale, subject to this Privacy Policy"
+                        ]
+                    },
+                    {
+                        "title": "7. International data transfers",
+                        "body": "Helpefi may process and store information in countries other than where you are located. Where required, we implement appropriate safeguards such as standard contractual clauses or equivalent mechanisms for cross-border transfers."
+                    },
+                    {
+                        "title": "8. Data retention",
+                        "body": "We retain information for as long as needed to provide the service, meet legal obligations, resolve disputes, and enforce agreements.",
+                        "paragraphs": [
+                            "Workspace data is retained according to your subscription and workspace settings. After account termination, we may delete or anonymize data within a reasonable period unless law requires longer retention.",
+                            "Marketing site analytics and security logs are retained for limited periods consistent with operational needs."
+                        ]
+                    },
+                    {
+                        "title": "9. Security",
+                        "body": "We implement administrative, technical, and organizational measures designed to protect personal information, including access controls, encryption in transit, tenant isolation, audit logging, and regular monitoring.",
+                        "paragraphs": [
+                            "No method of transmission or storage is completely secure. You are responsible for safeguarding credentials and configuring roles and permissions within your workspace."
+                        ]
+                    },
+                    {
+                        "title": "10. Your rights and choices",
+                        "body": "Depending on your location, you may have rights to access, correct, delete, restrict, or object to certain processing of your personal information, and to data portability or withdrawal of consent.",
+                        "paragraphs": [
+                            "Workspace end users should contact their organization first, because the organization typically controls data in the workspace.",
+                            "To exercise rights relating to your Helpefi account or this website, email hello@helpefi.com. We may need to verify your identity before responding.",
+                            "You may also lodge a complaint with your local data protection authority."
+                        ]
+                    },
+                    {
+                        "title": "11. Cookies and analytics",
+                        "body": "Our marketing website may use cookies and similar technologies for essential functionality, preferences, and analytics. You can control cookies through your browser settings.",
+                        "paragraphs": [
+                            "If we use analytics tools such as Google Analytics, those providers may collect information about your interactions with our site according to their own policies."
+                        ]
+                    },
+                    {
+                        "title": "12. Children's privacy",
+                        "body": "Helpefi is not directed to children under 16, and we do not knowingly collect personal information from children. If you believe a child has provided us information, contact hello@helpefi.com and we will take appropriate steps."
+                    },
+                    {
+                        "title": "13. Changes to this Privacy Policy",
+                        "body": "We may update this Privacy Policy from time to time. If changes are material, we will provide notice by updating the effective date on this page or through other reasonable means. Continued use of Helpefi after changes become effective constitutes acceptance of the updated policy."
+                    },
+                    {
+                        "title": "14. Contact us",
+                        "body": "For privacy questions, data subject requests, or security reports, contact us at hello@helpefi.com."
+                    }
+                ],
+                "cta_title": "",
+                "cta_body": ""
+            },
+            "terms": {
+                "nav_label": "Terms of Service",
+                "hero_title": "Terms of Service",
+                "hero_subtitle": "These Terms of Service govern access to and use of the Helpefi website, platform, APIs, and related services. Please read them carefully before creating an account.",
+                "effective_date": "Effective date: June 13, 2026 · Last updated: June 13, 2026",
+                "sections": [
+                    {
+                        "title": "1. Agreement to these Terms",
+                        "body": "By accessing or using Helpefi, creating an account, starting a trial, or clicking to accept these Terms, you agree to be bound by these Terms of Service and our Privacy Policy.",
+                        "paragraphs": [
+                            "If you use Helpefi on behalf of a company or other entity, you represent that you have authority to bind that entity, and \"you\" refers to that entity.",
+                            "If you do not agree to these Terms, do not use the service."
+                        ]
+                    },
+                    {
+                        "title": "2. Description of the service",
+                        "body": "Helpefi is a multi-tenant software-as-a-service platform for customer support, service desk, and related workflows, which may include ticketing, live chat, knowledge base, automation, AI features, integrations, and optional ITSM capabilities.",
+                        "paragraphs": [
+                            "We may update, modify, or discontinue features from time to time. Beta or preview features may be offered as-is and may change without notice."
+                        ]
+                    },
+                    {
+                        "title": "3. Eligibility and account registration",
+                        "items": [
+                            "You must be at least 18 years old and able to form a binding contract",
+                            "Registration information must be accurate, current, and complete",
+                            "You are responsible for all activity under your account and for maintaining the confidentiality of credentials",
+                            "You must promptly notify us of unauthorized access at hello@helpefi.com"
+                        ]
+                    },
+                    {
+                        "title": "4. Free trials and subscriptions",
+                        "body": "Helpefi may offer free trials and paid subscription plans. Trial length, included features, and conversion to paid plans are described on our website or order flow.",
+                        "paragraphs": [
+                            "Unless otherwise stated, trials do not require a payment method. At the end of a trial, continued use may require selecting a paid plan.",
+                            "Paid subscriptions renew automatically according to the billing interval you select unless cancelled before the renewal date.",
+                            "Fees are exclusive of applicable taxes unless stated otherwise. You are responsible for taxes associated with your purchase."
+                        ]
+                    },
+                    {
+                        "title": "5. Acceptable use",
+                        "body": "You agree not to misuse Helpefi. Without limiting other restrictions, you must not:",
+                        "items": [
+                            "Violate any applicable law, regulation, or third-party rights",
+                            "Upload malware, spam, or unlawful, infringing, or abusive content",
+                            "Attempt to gain unauthorized access to the service, other accounts, or our infrastructure",
+                            "Reverse engineer, scrape, or probe the service except as permitted by law",
+                            "Use the service to send unsolicited communications or harvest personal data without consent",
+                            "Interfere with service integrity, security, or performance",
+                            "Resell or provide the service to third parties except as expressly permitted in your plan"
+                        ],
+                        "paragraphs": [
+                            "We may investigate violations and suspend or terminate access where reasonably necessary to protect the service or other users."
+                        ]
+                    },
+                    {
+                        "title": "6. Customer data and privacy",
+                        "body": "You retain ownership of data you and your users submit to your workspace (\"Customer Data\"). You grant Helpefi a limited license to host, process, transmit, and display Customer Data solely to provide and improve the service, prevent abuse, and comply with law.",
+                        "paragraphs": [
+                            "You are responsible for Customer Data and for ensuring that your collection and use of personal information through Helpefi complies with applicable privacy laws, including providing notices and obtaining consents where required.",
+                            "Our Privacy Policy describes how Helpefi handles personal information. For workspace data, you act as controller and Helpefi acts as processor, except where we act as controller for account, billing, and website data."
+                        ]
+                    },
+                    {
+                        "title": "7. AI features",
+                        "body": "AI-powered features are designed to assist users and may produce inaccurate or incomplete outputs. You are solely responsible for reviewing AI-generated content before use.",
+                        "paragraphs": [
+                            "Helpefi does not guarantee that AI outputs will be error-free, unbiased, or suitable for any particular purpose. You should not use AI outputs as legal, medical, financial, or other professional advice."
+                        ]
+                    },
+                    {
+                        "title": "8. Intellectual property",
+                        "body": "Helpefi and its licensors own all rights in the service, software, documentation, branding, and underlying technology, excluding Customer Data.",
+                        "paragraphs": [
+                            "Subject to these Terms and payment of applicable fees, we grant you a limited, non-exclusive, non-transferable, revocable license to use the service for your internal business purposes during your subscription term.",
+                            "You may not copy, modify, distribute, or create derivative works of the service except as expressly allowed."
+                        ]
+                    },
+                    {
+                        "title": "9. Third-party services and integrations",
+                        "body": "Helpefi may integrate with third-party products or services. Your use of third-party services is governed by their terms and privacy policies, not these Terms.",
+                        "paragraphs": [
+                            "We are not responsible for third-party services, and enabling an integration may involve sharing data with that provider at your direction."
+                        ]
+                    },
+                    {
+                        "title": "10. Service availability and support",
+                        "body": "We use commercially reasonable efforts to maintain availability of the service, but uninterrupted or error-free operation is not guaranteed.",
+                        "paragraphs": [
+                            "Planned maintenance, emergency maintenance, and events outside our reasonable control may affect availability.",
+                            "Support channels and response targets may vary by plan. Unless a separate written agreement specifies uptime commitments, the service is provided without a service level agreement."
+                        ]
+                    },
+                    {
+                        "title": "11. Confidentiality",
+                        "body": "Each party may receive non-public information from the other. The receiving party will use the other party's confidential information only to perform under these Terms and will protect it with reasonable care."
+                    },
+                    {
+                        "title": "12. Termination",
+                        "body": "You may stop using Helpefi at any time and may cancel a paid subscription according to the billing controls in your account.",
+                        "paragraphs": [
+                            "We may suspend or terminate access if you materially breach these Terms, fail to pay fees when due, or if continued provision poses security or legal risk.",
+                            "Upon termination, your right to access the service ends. We may delete workspace data after a reasonable retention period unless law requires otherwise. Sections that by nature should survive termination will survive."
+                        ]
+                    },
+                    {
+                        "title": "13. Disclaimers",
+                        "body": "To the maximum extent permitted by law, the service is provided \"as is\" and \"as available\" without warranties of any kind, whether express, implied, or statutory, including implied warranties of merchantability, fitness for a particular purpose, title, and non-infringement."
+                    },
+                    {
+                        "title": "14. Limitation of liability",
+                        "body": "To the maximum extent permitted by law, Helpefi will not be liable for any indirect, incidental, special, consequential, cover, or punitive damages, or for loss of profits, revenue, data, goodwill, or business opportunity, even if advised of the possibility of such damages.",
+                        "paragraphs": [
+                            "To the maximum extent permitted by law, Helpefi's total liability arising out of or related to the service or these Terms will not exceed the amounts paid by you to Helpefi for the service in the twelve (12) months before the event giving rise to liability.",
+                            "Some jurisdictions do not allow certain limitations, so these limits may not apply to you fully."
+                        ]
+                    },
+                    {
+                        "title": "15. Indemnification",
+                        "body": "You will defend, indemnify, and hold harmless Helpefi and its affiliates, officers, directors, employees, and agents from claims, damages, losses, and expenses (including reasonable legal fees) arising from Customer Data, your use of the service, your violation of these Terms, or your violation of applicable law or third-party rights."
+                    },
+                    {
+                        "title": "16. Changes to these Terms",
+                        "body": "We may modify these Terms from time to time. If we make material changes, we will provide notice by posting the updated Terms on this page and updating the effective date, or by other reasonable means.",
+                        "paragraphs": [
+                            "Continued use of Helpefi after changes become effective constitutes acceptance of the revised Terms. If you do not agree, you must stop using the service."
+                        ]
+                    },
+                    {
+                        "title": "17. General provisions",
+                        "items": [
+                            "These Terms constitute the entire agreement regarding the service and supersede prior or contemporaneous understandings on the same subject",
+                            "If any provision is unenforceable, the remaining provisions remain in effect",
+                            "You may not assign these Terms without our consent; we may assign them in connection with a merger, acquisition, or sale of assets",
+                            "Failure to enforce a provision is not a waiver of the right to enforce it later",
+                            "Except where prohibited by applicable law, these Terms are governed by the laws of India, without regard to conflict of law principles, and courts in Bengaluru, Karnataka shall have exclusive jurisdiction"
+                        ]
+                    },
+                    {
+                        "title": "18. Contact",
+                        "body": "Questions about these Terms may be sent to hello@helpefi.com."
+                    }
+                ],
+                "cta_title": "",
+                "cta_body": ""
+            }
+        },
+        "blog": {
+            "index_nav_label": "Blog",
+            "index_title": "Helpefi Blog",
+            "index_subtitle": "Guides on AI helpdesk software, ticket management, ITSM, and customer support best practices.",
+            "empty_state": "New articles coming soon.",
+            "cta_title": "Put these ideas into practice",
+            "cta_body": "Start your {days}-day free trial and launch an AI-powered helpdesk today.",
+            "posts": {
+                "ai-helpdesk-software-guide": {
+                    "title": "How to choose AI helpdesk software in 2026",
+                    "excerpt": "A practical guide to evaluating AI customer support tools — deflection, Copilot, security, and total cost of ownership.",
+                    "body_paragraphs": [
+                        "AI helpdesk software has moved from novelty to expectation. Support leaders now evaluate platforms on how well AI reduces handle time, deflects repetitive tickets, and keeps agents in control.",
+                        "Start with outcomes: measure what percentage of tickets can be deflected with your existing knowledge base, and how much agent time Copilot saves on draft replies.",
+                        "Look for semantic search across articles and past tickets, not just keyword matching. The best AI customer support tools ground answers in your approved content.",
+                        "Security matters. Confirm data retention policies, whether models train on your tickets, and how SSO and audit logs fit your compliance requirements.",
+                        "Finally, compare total cost: base plan, AI add-ons, per-seat pricing, and whether ITSM or multi-brand support requires a separate product. Helpefi combines helpdesk, AI, and optional Service Desk in one platform with transparent pricing."
+                    ]
+                }
+            }
+        },
         "seo": {
-            "home_title": "{brand} — Customer support & ITSM software",
-            "home_description": "Cloud-hosted helpefi for growing teams: shared inbox, live chat, knowledge base, SLA automation, AI deflection, and Service Desk ITSM in one helpdesk. Start a {days}-day free trial.",
+            "home_title": "AI Helpdesk Software for Modern Teams | {brand}",
+            "home_description": "AI-powered helpdesk and ticketing software for modern support teams. Shared inbox, live chat, knowledge base, automation, and optional ITSM. Start a {days}-day free trial.",
             "register_title": "Start free trial · {brand}",
             "register_description": "Create your dedicated {brand} workspace in minutes. Full platform access for {days} days — tickets, chat, knowledge base, automation, and more. No credit card required.",
             "login_title": "Sign in · {brand}",
             "login_description": "Sign in to your {brand} workspace. Enter your team URL to open the agent login for your organization.",
-            "trial_offer": "{days}-day free trial with full platform access"
+            "trial_offer": "{days}-day free trial with full platform access",
+            "vertical_ecommerce_title": "E-commerce customer support software · {brand}",
+            "vertical_ecommerce_description": "Helpdesk for Shopify and D2C brands: unified inbox, live chat, order context in tickets, AI deflection, and SLA automation. INR pricing from ₹999/mo. {days}-day free trial.",
+            "vertical_it_teams_title": "IT helpdesk & ITSM software for internal teams · {brand}",
+            "vertical_it_teams_description": "Employee support plus optional Service Desk ITSM: incidents, changes, problems, approvals, and war rooms in one platform. Start a {days}-day free trial on {brand}.",
+            "vertical_agencies_title": "Multi-brand helpdesk for agencies · {brand}",
+            "vertical_agencies_description": "Run client support with separate brands, portals, and custom domains from one workspace. White-label helpdesk for agencies. {days}-day free trial, no credit card.",
+            "compare_freshdesk_title": "Freshdesk alternative · {brand} vs Freshdesk",
+            "compare_freshdesk_description": "Compare {brand} and Freshdesk: shared inbox, AI, SLA, optional ITSM, and INR pricing. {days}-day free trial, no credit card required.",
+            "compare_zendesk_title": "Zendesk alternative · {brand} vs Zendesk",
+            "compare_zendesk_description": "Modern {brand} helpdesk alternative to Zendesk — KB, chat, SLA, AI, and optional Service Desk without enterprise complexity. Start a {days}-day free trial.",
+            "compare_zoho_desk_title": "Zoho Desk alternative · {brand} vs Zoho Desk",
+            "compare_zoho_desk_description": "Compare {brand} and Zoho Desk for teams that want ITSM, AI Copilot, and multi-brand support outside the Zoho stack. {days}-day free trial.",
+            "compare_freshservice_title": "Freshservice alternative · {brand} vs Freshservice",
+            "compare_freshservice_description": "IT helpdesk and optional Service Desk ITSM in one platform — a Freshservice alternative for employee and customer support. {days}-day free trial on {brand}.",
+            "compare_helpscout_title": "Help Scout alternative · {brand} vs Help Scout",
+            "compare_helpscout_description": "Outgrow shared inbox with {brand}: SLA, chat, SMS, AI, and optional ITSM beyond Help Scout. {days}-day free trial, no credit card.",
+            "feature_ai_title": "AI Helpdesk Features · {brand}",
+            "feature_ai_description": "AI customer support with Copilot, semantic search, and deflection. Reduce handle time without losing human oversight. {days}-day free trial.",
+            "feature_ticket_management_title": "Ticket Management System · {brand}",
+            "feature_ticket_management_description": "Unified ticket management for email, chat, SMS, and portal. SLA policies, routing, and collaboration in one helpdesk. Start a {days}-day free trial.",
+            "feature_knowledge_base_title": "Knowledge Base Software · {brand}",
+            "feature_knowledge_base_description": "Self-service knowledge base and customer portal with semantic search and AI deflection. Reduce ticket volume. {days}-day free trial.",
+            "feature_automation_title": "Support Automation · {brand}",
+            "feature_automation_description": "Automate assignments, escalations, macros, and approvals in your helpdesk. {days}-day free trial on {brand}.",
+            "feature_live_chat_title": "Live Chat for Customer Support · {brand}",
+            "feature_live_chat_description": "Embeddable live chat that routes to agents and creates tracked tickets. Part of {brand} helpdesk software. {days}-day free trial.",
+            "feature_integrations_title": "Helpdesk Integrations · {brand}",
+            "feature_integrations_description": "Connect Slack, HubSpot, Salesforce, Shopify, Jira, and more. CRM context in every ticket. {days}-day free trial.",
+            "static_pricing_title": "Helpdesk Pricing · {brand}",
+            "static_pricing_description": "Transparent helpdesk and ITSM pricing for growing teams. Starter, Professional, and Enterprise plans. {days}-day free trial, no credit card.",
+            "static_about_title": "About {brand}",
+            "static_about_description": "Learn about {brand} — modern AI helpdesk and ITSM software built for support and IT teams.",
+            "static_contact_title": "Contact {brand}",
+            "static_contact_description": "Contact {brand} at hello@helpefi.com for sales, demos, and enterprise inquiries.",
+            "static_privacy_title": "Privacy Policy · {brand}",
+            "static_privacy_description": "Read how {brand} collects, uses, shares, and protects personal information for website visitors, account holders, and workspace users.",
+            "static_terms_title": "Terms of Service · {brand}",
+            "static_terms_description": "Terms governing use of the {brand} helpdesk platform, subscriptions, acceptable use, data handling, and legal responsibilities.",
+            "blog_title": "Blog · {brand}",
+            "blog_description": "Guides on AI helpdesk software, ticket management, ITSM, and customer support best practices from {brand}.",
+            "blog_ai_helpdesk_software_guide_title": "How to Choose AI Helpdesk Software · {brand}",
+            "blog_ai_helpdesk_software_guide_description": "Evaluate AI customer support tools: deflection, Copilot, security, and pricing. A practical guide from {brand}."
         }
     }
 }

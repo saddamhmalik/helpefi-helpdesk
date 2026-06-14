@@ -2,7 +2,6 @@
 import { Link, router, useForm, usePage } from '@inertiajs/vue3';
 import { computed, ref, watch } from 'vue';
 import CentralLayout from '../../Layouts/CentralLayout.vue';
-import CentralSeoHead from '../../Components/CentralSeoHead.vue';
 import { useI18n } from 'vue-i18n';
 
 const props = defineProps({
@@ -115,7 +114,6 @@ const inputClass = 'w-full rounded-xl border border-slate-200 dark:border-slate-
 </script>
 
 <template>
-    <CentralSeoHead page="register" :brand="platformName" :trial-days="trialDays" />
     <CentralLayout :brand="platformName" :trial-days="trialDays" :show-footer="false">
         <div class="min-h-[calc(100dvh-3.5rem)] bg-slate-50 dark:bg-slate-950 sm:min-h-[calc(100vh-4rem)]">
             <div class="mx-auto grid max-w-6xl lg:min-h-[calc(100vh-4rem)] lg:grid-cols-2">
@@ -133,7 +131,7 @@ const inputClass = 'w-full rounded-xl border border-slate-200 dark:border-slate-
                             Create your {{ platformName }} workspace
                         </h1>
                         <p class="mt-4 max-w-md text-sm leading-relaxed text-slate-400 dark:text-slate-500">
-                            Get full access during your trial — tickets, chat, KB, service catalog, automation, and more. Upgrade to Enterprise for Service Desk ITSM, SSO, and AI.
+                            Get full access during your trial — tickets, chat, KB, service catalog, automation, and more. Upgrade to Pro for AI, SSO, and integrations. Add Service Desk ITSM as an optional add-on when you need ITIL workflows.
                         </p>
                     </div>
                     <ul class="relative space-y-4">

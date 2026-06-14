@@ -93,11 +93,11 @@ Route::get('/workspace-blocked', [\App\Domains\Tenancy\Controllers\TenantBlocked
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
-    Route::post('/login', [AuthController::class, 'login']);
+    Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:5,1');
     Route::get('/forgot-password', [PasswordResetController::class, 'showForgot'])->name('password.request');
-    Route::post('/forgot-password', [PasswordResetController::class, 'sendLink'])->name('password.email');
+    Route::post('/forgot-password', [PasswordResetController::class, 'sendLink'])->middleware('throttle:3,1')->name('password.email');
     Route::get('/reset-password/{token}', [PasswordResetController::class, 'showReset'])->name('password.reset');
-    Route::post('/reset-password', [PasswordResetController::class, 'reset'])->name('password.update');
+    Route::post('/reset-password', [PasswordResetController::class, 'reset'])->middleware('throttle:5,1')->name('password.update');
     Route::get('/auth/sso/redirect', [SsoController::class, 'redirect'])->name('sso.redirect');
     Route::get('/auth/sso/callback', [SsoController::class, 'callback'])->name('sso.callback');
     Route::post('/auth/sso/acs', [SsoController::class, 'acs'])->name('sso.acs');
@@ -111,7 +111,7 @@ Route::get('/invitations/{token}', [InvitationAcceptController::class, 'show'])-
 Route::post('/invitations/{token}', [InvitationAcceptController::class, 'accept'])->name('invitations.accept');
 
 Route::get('/two-factor-challenge', [TwoFactorController::class, 'showChallenge'])->name('two-factor.challenge');
-Route::post('/two-factor-challenge', [TwoFactorController::class, 'verifyChallenge'])->name('two-factor.verify');
+Route::post('/two-factor-challenge', [TwoFactorController::class, 'verifyChallenge'])->middleware('throttle:5,1')->name('two-factor.verify');
 
 Route::get('/api/docs', [OpenApiController::class, 'docs'])->name('api.docs');
 
@@ -145,9 +145,9 @@ Route::prefix('portal/{brand:slug}')->middleware(['brand', 'portal.locale'])->na
 
     Route::middleware('guest')->group(function () {
         Route::get('/login', [PortalAuthController::class, 'showLogin'])->name('login');
-        Route::post('/login', [PortalAuthController::class, 'login']);
+        Route::post('/login', [PortalAuthController::class, 'login'])->middleware('throttle:5,1');
         Route::get('/register', [PortalAuthController::class, 'showRegister'])->name('register');
-        Route::post('/register', [PortalAuthController::class, 'register']);
+        Route::post('/register', [PortalAuthController::class, 'register'])->middleware('throttle:5,1');
     });
 
     Route::middleware(['auth', 'customer'])->group(function () {
@@ -161,6 +161,7 @@ Route::prefix('portal/{brand:slug}')->middleware(['brand', 'portal.locale'])->na
 Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
     Route::put('/settings/appearance', [ProfileController::class, 'updateAppearance'])->name('settings.appearance.update');
+    Route::put('/settings/locale', [ProfileController::class, 'updateLocale'])->name('settings.locale.update');
 
     Route::get('/subscription-required', [\App\Domains\Billing\Controllers\SubscriptionRequiredController::class, 'show'])
         ->name('subscription.required');
@@ -195,6 +196,12 @@ Route::middleware('auth')->group(function () {
 
         Route::get('/settings/profile', [ProfileController::class, 'edit'])->name('settings.profile');
         Route::put('/settings/profile', [ProfileController::class, 'update'])->name('settings.profile.update');
+        Route::post('/settings/profile/avatar', [ProfileController::class, 'uploadAvatar'])
+            ->middleware('throttle:10,1')
+            ->name('settings.profile.avatar.upload');
+        Route::delete('/settings/profile/avatar', [ProfileController::class, 'destroyAvatar'])
+            ->middleware('throttle:10,1')
+            ->name('settings.profile.avatar.destroy');
         Route::put('/settings/password', [ProfileController::class, 'updatePassword'])->name('settings.password.update');
         Route::post('/settings/two-factor/setup', [TwoFactorController::class, 'setup'])->name('settings.two-factor.setup');
         Route::post('/settings/two-factor/confirm', [TwoFactorController::class, 'confirm'])->name('settings.two-factor.confirm');

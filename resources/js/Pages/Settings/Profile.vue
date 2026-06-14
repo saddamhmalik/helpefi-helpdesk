@@ -2,6 +2,8 @@
 import { useForm, usePage } from '@inertiajs/vue3';
 import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
+import QRCode from 'qrcode';
+import AppAvatar from '../../Components/AppAvatar.vue';
 import SettingsPage from '../../Components/SettingsPage.vue';
 import SettingsSectionNav from '../../Components/SettingsSectionNav.vue';
 import { useSettingsSection } from '../../composables/useSettingsSection.js';
@@ -13,6 +15,10 @@ const props = defineProps({
     locale: { type: String, default: 'en' },
     storedTimezone: { type: String, default: null },
     appearance: { type: String, default: 'system' },
+    avatarType: { type: String, default: 'initials' },
+    avatarUrl: { type: String, default: null },
+    gravatarPreviewUrl: { type: String, default: null },
+    avatarOptions: { type: Array, default: () => [] },
     localeOptions: { type: Array, default: () => [] },
     timezoneOptions: { type: Array, default: () => [] },
     appearanceOptions: { type: Array, default: () => [] },
@@ -42,6 +48,31 @@ const user = computed(() => page.props.auth.user);
 const helpdeskTimezone = computed(() => page.props.helpdesk?.timezone ?? 'UTC');
 const setup = computed(() => page.props.flash?.two_factor_setup);
 const recoveryCodes = computed(() => page.props.flash?.recovery_codes);
+const qrDataUrl = ref('');
+
+watch(
+    setup,
+    async (value) => {
+        if (!value?.otpauth_url) {
+            qrDataUrl.value = '';
+            return;
+        }
+
+        try {
+            qrDataUrl.value = await QRCode.toDataURL(value.otpauth_url, {
+                width: 220,
+                margin: 2,
+                color: {
+                    dark: '#0f172a',
+                    light: '#ffffff',
+                },
+            });
+        } catch {
+            qrDataUrl.value = '';
+        }
+    },
+    { immediate: true },
+);
 
 const timezoneHint = computed(() => t('profile.timezone_hint', { timezone: helpdeskTimezone.value }));
 
@@ -51,7 +82,85 @@ const profileForm = useForm({
     locale: props.locale,
     timezone: props.storedTimezone ?? '',
     appearance: props.appearance,
+    avatar_type: props.avatarType,
 });
+
+const avatarUploadForm = useForm({
+    avatar: null,
+});
+
+const avatarFileInput = ref(null);
+const localPreviewUrl = ref(null);
+
+const previewImageUrl = computed(() => {
+    if (localPreviewUrl.value) {
+        return localPreviewUrl.value;
+    }
+
+    if (profileForm.avatar_type === 'upload') {
+        return props.avatarUrl;
+    }
+
+    if (profileForm.avatar_type === 'gravatar') {
+        return props.gravatarPreviewUrl;
+    }
+
+    return null;
+});
+
+const canRemoveAvatar = computed(() => props.avatarType === 'upload' || profileForm.avatar_type === 'upload');
+
+const onAvatarFileChange = (event) => {
+    const file = event.target.files?.[0];
+
+    if (!file) {
+        return;
+    }
+
+    avatarUploadForm.avatar = file;
+
+    if (localPreviewUrl.value) {
+        URL.revokeObjectURL(localPreviewUrl.value);
+    }
+
+    localPreviewUrl.value = URL.createObjectURL(file);
+};
+
+const uploadAvatar = () => {
+    if (!avatarUploadForm.avatar) {
+        avatarFileInput.value?.click();
+        return;
+    }
+
+    avatarUploadForm.post('/settings/profile/avatar', {
+        forceFormData: true,
+        preserveScroll: true,
+        onSuccess: () => {
+            avatarUploadForm.reset();
+            localPreviewUrl.value = null;
+            profileForm.avatar_type = 'upload';
+
+            if (avatarFileInput.value) {
+                avatarFileInput.value.value = '';
+            }
+        },
+    });
+};
+
+const removeAvatar = () => {
+    useForm({}).delete('/settings/profile/avatar', {
+        preserveScroll: true,
+        onSuccess: () => {
+            profileForm.avatar_type = 'initials';
+            localPreviewUrl.value = null;
+            avatarUploadForm.reset();
+
+            if (avatarFileInput.value) {
+                avatarFileInput.value.value = '';
+            }
+        },
+    });
+};
 
 watch(
     () => profileForm.appearance,
@@ -121,7 +230,79 @@ const disableTwoFactor = () => {
         </div>
 
         <div v-show="activeSection === 'profile'" class="max-w-2xl rounded-xl border agent-border agent-panel p-6 shadow-sm">
-            <form class="space-y-4" @submit.prevent="updateProfile">
+            <form class="space-y-6" @submit.prevent="updateProfile">
+                <div class="flex flex-col gap-4 border-b agent-border-subtle pb-6 sm:flex-row sm:items-start">
+                    <AppAvatar
+                        :name="profileForm.name || user?.name"
+                        :email="profileForm.email || user?.email"
+                        :image-url="previewImageUrl"
+                        size="lg"
+                    />
+                    <div class="min-w-0 flex-1 space-y-4">
+                        <div>
+                            <p class="text-sm font-medium text-slate-700 dark:text-slate-300">{{ t('profile.avatar') }}</p>
+                            <p class="mt-1 text-xs agent-text-subtle">{{ t('profile.avatar_hint') }}</p>
+                        </div>
+                        <div class="grid gap-2 sm:grid-cols-3">
+                            <label
+                                v-for="option in avatarOptions"
+                                :key="option.value"
+                                class="flex cursor-pointer flex-col rounded-lg border px-3 py-2.5 text-sm transition"
+                                :class="profileForm.avatar_type === option.value
+                                    ? 'border-blue-500 bg-blue-50 text-blue-900 dark:border-blue-400 dark:bg-blue-950/40 dark:text-blue-100'
+                                    : 'agent-border agent-panel agent-text-muted agent-hover-surface'"
+                            >
+                                <span class="flex items-center gap-2">
+                                    <input
+                                        v-model="profileForm.avatar_type"
+                                        type="radio"
+                                        class="sr-only"
+                                        name="avatar_type"
+                                        :value="option.value"
+                                    />
+                                    <span class="font-medium">{{ t(`profile.avatar_${option.value}`) }}</span>
+                                </span>
+                                <span class="mt-1 text-xs opacity-80">{{ t(`profile.avatar_${option.value}_hint`) }}</span>
+                            </label>
+                        </div>
+                        <div v-if="profileForm.avatar_type === 'upload'" class="flex flex-wrap items-center gap-3">
+                            <input
+                                ref="avatarFileInput"
+                                type="file"
+                                accept="image/jpeg,image/png,image/gif,image/webp"
+                                class="hidden"
+                                @change="onAvatarFileChange"
+                            />
+                            <button
+                                type="button"
+                                class="rounded-lg border agent-border px-3 py-2 text-sm font-medium agent-text-muted agent-hover-surface"
+                                @click="avatarFileInput?.click()"
+                            >
+                                {{ t('profile.avatar_choose_file') }}
+                            </button>
+                            <button
+                                type="button"
+                                class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+                                :disabled="avatarUploadForm.processing"
+                                @click="uploadAvatar"
+                            >
+                                {{ t('profile.avatar_upload_button') }}
+                            </button>
+                            <p v-if="avatarUploadForm.errors.avatar" class="w-full text-sm text-red-600">{{ avatarUploadForm.errors.avatar }}</p>
+                        </div>
+                        <button
+                            v-if="canRemoveAvatar"
+                            type="button"
+                            class="text-sm text-red-600 hover:text-red-700 dark:text-red-300"
+                            @click="removeAvatar"
+                        >
+                            {{ t('profile.avatar_remove') }}
+                        </button>
+                        <p v-if="profileForm.errors.avatar_type" class="text-sm text-red-600">{{ profileForm.errors.avatar_type }}</p>
+                    </div>
+                </div>
+
+                <div class="space-y-4">
                 <div>
                     <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ t('profile.name') }}</label>
                     <input v-model="profileForm.name" type="text" class="w-full rounded-lg border px-3 py-2 agent-input" required />
@@ -179,6 +360,7 @@ const disableTwoFactor = () => {
                     <p class="mt-1 text-xs agent-text-subtle">{{ t('profile.appearance_hint') }}</p>
                     <p v-if="profileForm.errors.appearance" class="mt-1 text-sm text-red-600">{{ profileForm.errors.appearance }}</p>
                 </div>
+                </div>
                 <button type="submit" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700" :disabled="profileForm.processing">
                     {{ t('profile.save_profile') }}
                 </button>
@@ -230,15 +412,47 @@ const disableTwoFactor = () => {
                 </ul>
             </div>
 
-            <div v-if="setup && !twoFactor.enabled" class="mt-4 rounded-lg border border-blue-200 dark:border-blue-900/60 bg-blue-50 dark:bg-blue-950/40 p-4">
-                <p class="text-sm text-blue-900">{{ t('profile.authenticator_secret') }}</p>
-                <p class="mt-2 break-all font-mono text-sm text-blue-950">{{ setup.secret }}</p>
-                <p class="mt-2 break-all text-xs text-blue-800">{{ setup.otpauth_url }}</p>
-                <form class="mt-4 flex flex-wrap items-end gap-3" @submit.prevent="confirmSetup">
+            <div v-if="setup && !twoFactor.enabled" class="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-5 dark:border-slate-700 dark:bg-slate-900/60">
+                <p class="text-sm font-medium text-slate-900 dark:text-slate-100">{{ t('profile.scan_qr_code') }}</p>
+
+                <div class="mt-4 flex flex-col gap-6 sm:flex-row sm:items-start">
+                    <div class="shrink-0 rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
+                        <img
+                            v-if="qrDataUrl"
+                            :src="qrDataUrl"
+                            width="220"
+                            height="220"
+                            alt="Authenticator QR code"
+                            class="block h-[220px] w-[220px]"
+                        />
+                        <div v-else class="flex h-[220px] w-[220px] items-center justify-center text-sm text-slate-500">
+                            Loading QR code…
+                        </div>
+                    </div>
+
+                    <div class="min-w-0 flex-1">
+                        <p class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                            {{ t('profile.manual_entry_secret') }}
+                        </p>
+                        <p class="mt-2 break-all rounded-lg border border-slate-200 bg-white px-3 py-2 font-mono text-sm text-slate-900 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100">
+                            {{ setup.secret }}
+                        </p>
+                    </div>
+                </div>
+
+                <form class="mt-6 flex flex-wrap items-end gap-3 border-t border-slate-200 pt-5 dark:border-slate-700" @submit.prevent="confirmSetup">
                     <div>
                         <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ t('profile.verification_code') }}</label>
-                        <input v-model="confirmForm.code" type="text" class="rounded-lg border agent-border px-3 py-2 text-sm" required />
-                        <p v-if="confirmForm.errors.code" class="mt-1 text-sm text-red-600">{{ confirmForm.errors.code }}</p>
+                        <input
+                            v-model="confirmForm.code"
+                            type="text"
+                            inputmode="numeric"
+                            autocomplete="one-time-code"
+                            maxlength="6"
+                            class="w-40 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 dark:border-slate-600 dark:bg-slate-950 dark:text-slate-100"
+                            required
+                        />
+                        <p v-if="confirmForm.errors.code" class="mt-1 text-sm text-red-600 dark:text-red-400">{{ confirmForm.errors.code }}</p>
                     </div>
                     <button type="submit" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700" :disabled="confirmForm.processing">
                         {{ t('profile.confirm_enable') }}

@@ -7,6 +7,8 @@ use App\Domains\Performance\Services\PerformanceService;
 use App\Domains\Settings\Services\HelpdeskSettingService;
 use App\Models\User;
 
+use App\Support\AvatarSupport;
+
 class MemberProfileService
 {
     public function __construct(
@@ -45,7 +47,7 @@ class MemberProfileService
 
     private function serializeMember(User $member): array
     {
-        return [
+        return array_merge([
             'id' => $member->id,
             'name' => $member->name,
             'email' => $member->email,
@@ -58,7 +60,7 @@ class MemberProfileService
                 'slug' => $skill->slug,
             ])->values(),
             'created_at' => $member->created_at,
-        ];
+        ], AvatarSupport::payload($member));
     }
 
     private function serializeMemberships(User $member): array

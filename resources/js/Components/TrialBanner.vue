@@ -23,7 +23,7 @@ onMounted(() => {
 const eligible = computed(() => billing.value?.on_trial && billing.value?.trial_days_remaining !== null);
 const show = computed(() => eligible.value && !dismissed.value);
 
-const message = computed(() => t('components.trial_days_remaining_message', {
+const message = computed(() => t('components.trial_days_remaining_short', {
     days: billing.value?.trial_days_remaining,
 }));
 
@@ -36,19 +36,22 @@ const dismiss = () => {
 <template>
     <div
         v-if="show"
-        class="mb-2 flex items-center gap-2 rounded-lg border border-blue-200 dark:border-blue-900/60 bg-blue-50 dark:bg-blue-950/40 px-3 py-2"
+        class="flex items-center gap-2 rounded-md border border-blue-200/70 bg-blue-50/80 px-2 py-1 text-xs dark:border-blue-900/40 dark:bg-blue-950/30"
         role="status"
+        :title="t('components.trial_days_remaining_message', { days: billing?.trial_days_remaining })"
     >
-        <span class="shrink-0 text-sm font-semibold text-blue-900">{{ $t('components.free_trial_active') }}</span>
-        <span class="min-w-0 flex-1 truncate text-sm text-blue-800">{{ message }}</span>
+        <span class="shrink-0 rounded bg-blue-600 px-1.5 py-px text-[10px] font-bold uppercase leading-none tracking-wide text-white">
+            {{ $t('components.trial_badge') }}
+        </span>
+        <span class="min-w-0 flex-1 truncate text-blue-900 dark:text-blue-100">{{ message }}</span>
         <button
             type="button"
-            class="shrink-0 rounded-md p-1.5 text-blue-700 dark:text-blue-300 transition hover:bg-blue-100 hover:text-blue-900"
+            class="shrink-0 rounded p-0.5 text-blue-700/80 transition hover:bg-blue-100 hover:text-blue-900 dark:text-blue-300 dark:hover:bg-blue-900/40 dark:hover:text-blue-100"
             :title="$t('components.dismiss')"
             :aria-label="$t('components.dismiss')"
             @click="dismiss"
         >
-            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
             </svg>
         </button>

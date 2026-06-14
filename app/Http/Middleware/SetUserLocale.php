@@ -5,6 +5,7 @@ namespace App\Http\Middleware;
 use App\Domains\Auth\Services\UserPreferenceService;
 use App\Domains\Tenancy\Support\CentralDomain;
 use App\Models\User;
+use App\Support\LocaleSupport;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
@@ -19,6 +20,8 @@ class SetUserLocale
     public function handle(Request $request, Closure $next): Response
     {
         if (CentralDomain::isCentralHost($request->getHost())) {
+            App::setLocale('en');
+
             return $next($request);
         }
 

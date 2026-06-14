@@ -88,8 +88,10 @@ class AdminSettingsController extends Controller
             'addons.*.name' => ['required', 'string', 'max:100'],
             'addons.*.description' => ['nullable', 'string', 'max:500'],
             'addons.*.price_monthly' => ['required', 'integer', 'min:0', 'max:99999'],
+            'addons.*.price_india' => ['nullable', 'integer', 'min:0', 'max:99999'],
             'addons.*.enabled' => ['required', 'boolean'],
             'addons.*.razorpay_plan_id_monthly' => ['nullable', 'string', 'max:255'],
+            'addons.*.razorpay_plan_id_monthly_india' => ['nullable', 'string', 'max:255'],
         ];
 
         foreach (PlanCatalogDefinition::limitDefinitions() as $key => $definition) {

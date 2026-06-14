@@ -5,11 +5,13 @@ namespace App\Domains\Realtime\Support;
 use App\Domains\Chat\Models\ChatSession;
 use App\Domains\Tickets\Models\TicketMessage;
 
+use App\Support\AvatarSupport;
+
 class RealtimeMessagePayload
 {
     public static function fromMessage(TicketMessage $message): array
     {
-        $message->loadMissing(['user:id,name', 'contact:id,name,email']);
+        $message->loadMissing(['user:id,name,email,avatar_type,avatar_path', 'contact:id,name,email']);
 
         return [
             'id' => $message->id,
@@ -22,7 +24,11 @@ class RealtimeMessagePayload
             'author_name' => $message->user_id
                 ? ($message->user?->name ?? 'Agent')
                 : ($message->contact?->name ?? 'Visitor'),
-            'user' => $message->user ? ['id' => $message->user->id, 'name' => $message->user->name] : null,
+            'user' => $message->user ? array_merge([
+                'id' => $message->user->id,
+                'name' => $message->user->name,
+                'email' => $message->user->email,
+            ], AvatarSupport::payload($message->user)) : null,
             'contact' => $message->contact ? [
                 'id' => $message->contact->id,
                 'name' => $message->contact->name,

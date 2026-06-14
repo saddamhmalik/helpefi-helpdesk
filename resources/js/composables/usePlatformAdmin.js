@@ -101,6 +101,24 @@ export function usePlatformAdmin() {
             });
         }
 
+        if (can('blog.view')) {
+            platformItems.push({
+                label: t('layouts.admin.nav_blog'),
+                href: '/admin/blog',
+                permission: 'blog.view',
+                match: (url) => url.startsWith('/admin/blog'),
+            });
+        }
+
+        if (can('testimonials.view')) {
+            platformItems.push({
+                label: t('layouts.admin.nav_testimonials'),
+                href: '/admin/testimonials',
+                permission: 'testimonials.view',
+                match: (url) => url.startsWith('/admin/testimonials'),
+            });
+        }
+
         if (can('backups.view')) {
             platformItems.push({
                 label: t('layouts.admin.nav_backups'),

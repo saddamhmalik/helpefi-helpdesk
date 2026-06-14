@@ -25,7 +25,7 @@ class RazorpayAddonSyncService
         return array_values(array_unique($this->skipped));
     }
 
-    public function syncCatalog(array $catalog, string $currency): array
+    public function syncCatalog(array $catalog, string $currency, ?string $indiaCurrency = null): array
     {
         $this->skipped = [];
 
@@ -42,29 +42,60 @@ class RazorpayAddonSyncService
                 continue;
             }
 
-            $synced[$key] = $this->syncAddon($key, $addon, $currency);
+            $synced[$key] = $this->syncAddon($key, $addon, $currency, $indiaCurrency);
         }
 
         return $synced;
     }
 
-    private function syncAddon(string $key, array $addon, string $currency): array
+    private function syncAddon(string $key, array $addon, string $currency, ?string $indiaCurrency): array
     {
-        $amountMinor = max(0, (int) ($addon['price_monthly'] ?? 0)) * 100;
-        $existingPlanId = AddonCatalogDefinition::razorpayPlanId($addon);
+        $monthlyPlanId = $this->resolvePlanId(
+            $key,
+            $addon,
+            AddonCatalogDefinition::priceForRegion($addon, false) * 100,
+            $currency,
+            'razorpay_plan_id_monthly',
+        );
 
-        if ($amountMinor <= 0) {
-            return $addon;
+        $addon = array_merge($addon, [
+            'razorpay_plan_id_monthly' => $monthlyPlanId,
+        ]);
+
+        if ($indiaCurrency !== null && strtoupper($indiaCurrency) !== strtoupper($currency)) {
+            $addon = array_merge($addon, [
+                'razorpay_plan_id_monthly_india' => $this->resolvePlanId(
+                    $key,
+                    $addon,
+                    AddonCatalogDefinition::priceForRegion($addon, true) * 100,
+                    $indiaCurrency,
+                    'razorpay_plan_id_monthly_india',
+                ),
+            ]);
         }
+
+        return $addon;
+    }
+
+    private function resolvePlanId(
+        string $key,
+        array $addon,
+        int $amountMinor,
+        string $currency,
+        string $primaryKey,
+    ): ?string {
+        if ($amountMinor <= 0) {
+            return null;
+        }
+
+        $existingPlanId = $addon[$primaryKey] ?? null;
 
         try {
             if (is_string($existingPlanId) && $existingPlanId !== '') {
                 $existingPlan = $this->razorpayCatalog->retrievePlan($existingPlanId);
 
                 if ($this->razorpayCatalog->planMatches($existingPlan, $amountMinor, $currency, 'month')) {
-                    return array_merge($addon, [
-                        'razorpay_plan_id_monthly' => $existingPlanId,
-                    ]);
+                    return $existingPlanId;
                 }
             }
 
@@ -75,9 +106,7 @@ class RazorpayAddonSyncService
                 $key,
             );
 
-            return array_merge($addon, [
-                'razorpay_plan_id_monthly' => (string) ($created['id'] ?? '') ?: null,
-            ]);
+            return (string) ($created['id'] ?? '') ?: null;
         } catch (Error $exception) {
             Log::warning('Razorpay add-on sync skipped for unsupported currency or API error', [
                 'addon' => $key,
@@ -87,9 +116,7 @@ class RazorpayAddonSyncService
 
             $this->skipped[] = sprintf('%s add-on (%s)', $key, strtoupper($currency));
 
-            return array_merge($addon, [
-                'razorpay_plan_id_monthly' => $existingPlanId,
-            ]);
+            return is_string($existingPlanId) && $existingPlanId !== '' ? $existingPlanId : null;
         }
     }
 }

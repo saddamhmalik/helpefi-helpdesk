@@ -16,13 +16,14 @@ use Database\Seeders\EmailSeeder;
 use Database\Seeders\SlaSeeder;
 use Database\Seeders\TicketLookupSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Validation\ValidationException;
 use Tests\TenantTestCase;
 
 class BillingTest extends TenantTestCase
 {
     use RefreshDatabase;
 
-    private function setPlan(string $plan): void
+    private function setPlan(string $plan, array $activeAddons = []): void
     {
         Subscription::query()->updateOrCreate(
             ['tenant_id' => tenant('id')],
@@ -30,6 +31,7 @@ class BillingTest extends TenantTestCase
                 'plan' => $plan,
                 'status' => Subscription::STATUS_ACTIVE,
                 'renews_at' => now()->addMonth(),
+                'active_addons' => $activeAddons,
             ],
         );
     }
@@ -330,5 +332,52 @@ class BillingTest extends TenantTestCase
                 'role' => 'agent',
             ])
             ->assertSessionHasErrors('email');
+    }
+
+    public function test_professional_ai_copilot_addon_grants_ai_feature(): void
+    {
+        config(['razorpay.enabled' => false]);
+        $this->setPlan('professional');
+        $billing = app(BillingService::class);
+
+        $this->assertFalse($billing->canUseFeature('ai'));
+
+        $billing->activateAddon('ai_copilot');
+
+        $this->assertTrue(app(BillingService::class)->canUseFeature('ai'));
+    }
+
+    public function test_professional_integrations_addon_grants_integrations_feature(): void
+    {
+        config(['razorpay.enabled' => false]);
+        $this->setPlan('professional');
+        $billing = app(BillingService::class);
+
+        $this->assertFalse($billing->canUseFeature('integrations'));
+
+        $billing->activateAddon('integrations');
+
+        $this->assertTrue(app(BillingService::class)->canUseFeature('integrations'));
+    }
+
+    public function test_enterprise_plan_cannot_purchase_ai_copilot_addon(): void
+    {
+        $this->setPlan('enterprise');
+
+        $this->expectException(ValidationException::class);
+
+        app(BillingService::class)->activateAddon('ai_copilot');
+    }
+
+    public function test_enterprise_plan_marks_ai_addon_as_included_in_plan(): void
+    {
+        $this->setPlan('enterprise');
+        $billing = app(BillingService::class)->snapshot();
+
+        $aiAddon = collect($billing['available_addons'])->firstWhere('key', 'ai_copilot');
+
+        $this->assertNotNull($aiAddon);
+        $this->assertTrue($aiAddon['included_in_plan']);
+        $this->assertTrue($aiAddon['active']);
     }
 }
