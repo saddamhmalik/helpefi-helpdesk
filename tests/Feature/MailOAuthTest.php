@@ -306,4 +306,55 @@ class MailOAuthTest extends TestCase
         $this->assertNull($inbox->oauth_connected_email);
         $this->assertFalse($inbox->isOAuthConnected());
     }
+
+    public function test_zoho_fetch_unread_builds_message_from_html_content_and_list_metadata(): void
+    {
+        $this->provisionTenancy('mail-oauth-zoho-fetch');
+        tenancy()->initialize($this->tenant);
+        $this->seed(EmailSeeder::class);
+
+        config([
+            'helpdesk.mail_oauth.zoho.region' => 'com',
+        ]);
+
+        $inbox = EmailInbox::query()->first();
+        $inbox->update([
+            'inbound_method' => 'oauth',
+            'oauth_provider' => 'zoho',
+            'oauth_access_token' => 'zoho-access',
+            'oauth_metadata' => [
+                'zoho_account_id' => 'acct-1',
+                'zoho_folder_id' => 'folder-inbox',
+            ],
+        ]);
+
+        Http::fake([
+            'mail.zoho.com/api/accounts/acct-1/messages/view*' => Http::response([
+                'data' => [[
+                    'messageId' => '1709876190693100009',
+                    'fromAddress' => 'customer@example.com',
+                    'sender' => 'Jane Customer',
+                    'subject' => 'Need help with billing',
+                    'summary' => 'Fallback summary',
+                ]],
+            ]),
+            'mail.zoho.com/api/accounts/acct-1/folders/folder-inbox/messages/1709876190693100009/content' => Http::response([
+                'data' => [
+                    'messageId' => '1709876190693100009',
+                    'content' => '<div><div>Hello support team,</div><div>Please help with my invoice.</div></div>',
+                ],
+            ]),
+        ]);
+
+        $provider = app(\App\Domains\Channels\Services\OAuth\ZohoMailOAuthProvider::class);
+        $messages = $provider->fetchUnreadMessages($inbox, 'zoho-access');
+
+        $this->assertCount(1, $messages);
+        $this->assertSame('customer@example.com', $messages[0]->fromEmail);
+        $this->assertSame('Jane Customer', $messages[0]->fromName);
+        $this->assertSame('Need help with billing', $messages[0]->subject);
+        $this->assertStringContainsString('Please help with my invoice.', $messages[0]->body);
+        $this->assertStringNotContainsString('unknown@unknown.test', $messages[0]->fromEmail);
+        $this->assertNotSame('(empty message)', $messages[0]->body);
+    }
 }

@@ -110,10 +110,12 @@ class ZohoMailOAuthProvider implements MailOAuthProviderInterface
                 continue;
             }
 
-            $raw = $content->json('data.content') ?? $content->body();
+            $rawContent = $content->json('data.content');
 
-            if (! is_string($raw) || trim($raw) === '') {
-                $raw = $this->buildSyntheticRaw($item);
+            if (is_string($rawContent) && trim($rawContent) !== '' && $this->isRfc822Message($rawContent)) {
+                $raw = $rawContent;
+            } else {
+                $raw = $this->buildSyntheticRaw($item, is_string($rawContent) ? $rawContent : null);
             }
 
             $messages[] = InboundMailParser::parse($raw, (string) $messageId);
@@ -190,13 +192,112 @@ class ZohoMailOAuthProvider implements MailOAuthProviderInterface
         ];
     }
 
-    private function buildSyntheticRaw(array $item): string
+    private function buildSyntheticRaw(array $item, ?string $body = null): string
     {
-        $from = $item['fromAddress'] ?? $item['sender'] ?? 'unknown@zoho.test';
-        $subject = $item['subject'] ?? 'Email from Zoho';
-        $summary = $item['summary'] ?? $item['snippet'] ?? '(no body)';
+        $from = $this->resolveFromHeader($item);
+        $subject = trim((string) ($item['subject'] ?? ''));
+        $subject = $subject !== '' ? $subject : 'Email from Zoho';
+        $messageId = $item['messageId'] ?? uniqid();
+        $bodyText = $this->resolveBodyText($item, $body);
 
-        return "From: {$from}\r\nSubject: {$subject}\r\nMessage-ID: <zoho-".($item['messageId'] ?? uniqid())."@zoho>\r\n\r\n{$summary}";
+        return "From: {$from}\r\nSubject: {$subject}\r\nMessage-ID: <zoho-{$messageId}@zoho>\r\n\r\n{$bodyText}";
+    }
+
+    private function resolveFromHeader(array $item): string
+    {
+        $email = trim((string) ($item['fromAddress'] ?? ''));
+
+        if ($email === '' && isset($item['sender']) && str_contains((string) $item['sender'], '@')) {
+            $email = trim((string) $item['sender']);
+        }
+
+        if ($email === '') {
+            $parsed = $this->parseZohoAddress($item['from'] ?? null);
+
+            if ($parsed !== '') {
+                return $parsed;
+            }
+        }
+
+        $name = trim((string) ($item['sender'] ?? ''));
+
+        if ($name !== '' && ! str_contains($name, '@') && $email !== '') {
+            return "{$name} <{$email}>";
+        }
+
+        if ($email !== '') {
+            return $email;
+        }
+
+        return 'unknown@zoho.test';
+    }
+
+    private function parseZohoAddress(mixed $value): string
+    {
+        if (! is_string($value) || trim($value) === '') {
+            return '';
+        }
+
+        if (preg_match('/<([^>]+@[^>]+)>/', $value, $matches)) {
+            $email = strtolower(trim($matches[1]));
+            $name = trim(str_replace($matches[0], '', $value), ' "');
+
+            if ($name !== '') {
+                return "{$name} <{$email}>";
+            }
+
+            return $email;
+        }
+
+        if (filter_var(trim($value), FILTER_VALIDATE_EMAIL)) {
+            return strtolower(trim($value));
+        }
+
+        return '';
+    }
+
+    private function resolveBodyText(array $item, ?string $body): string
+    {
+        if (is_string($body) && trim($body) !== '') {
+            if ($this->looksLikeHtml($body)) {
+                return $this->htmlToPlainText($body);
+            }
+
+            return trim($body);
+        }
+
+        $summary = trim((string) ($item['summary'] ?? $item['snippet'] ?? ''));
+
+        return $summary !== '' ? $summary : '(no body)';
+    }
+
+    private function isRfc822Message(string $raw): bool
+    {
+        $headerBlock = explode("\n\n", str_replace("\r\n", "\n", $raw), 2)[0];
+
+        return (bool) preg_match('/^from\s*:/mi', $headerBlock);
+    }
+
+    private function looksLikeHtml(string $value): bool
+    {
+        $trimmed = ltrim($value);
+
+        return str_starts_with($trimmed, '<') || preg_match('/<(html|body|div|meta|p)\b/i', $trimmed) === 1;
+    }
+
+    private function htmlToPlainText(string $html): string
+    {
+        $html = preg_replace('/<style\b[^>]*>.*?<\/style>/is', '', $html) ?? $html;
+        $html = preg_replace('/<script\b[^>]*>.*?<\/script>/is', '', $html) ?? $html;
+        $html = preg_replace('/<(br|BR)\s*\/?>/', "\n", $html) ?? $html;
+        $html = preg_replace('/<\/(p|div|tr|li|h[1-6])>/i', "\n\n", $html) ?? $html;
+        $html = preg_replace('/<li[^>]*>/i', '- ', $html) ?? $html;
+
+        $text = html_entity_decode(strip_tags($html), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        $text = preg_replace("/[ \t]+\n/", "\n", $text) ?? $text;
+        $text = preg_replace("/\n{3,}/", "\n\n", $text) ?? $text;
+
+        return trim($text);
     }
 
     private function tokenRequest(array $payload): array
