@@ -43,7 +43,7 @@ class MailOAuthTest extends TestCase
 
         $inbox = EmailInbox::query()->first();
         $state = 'test-state-token';
-        Cache::put('central:mail_oauth:'.$state, [
+        Cache::store('central')->put('central:mail_oauth:'.$state, [
             'tenant_id' => $this->tenant->id,
             'inbox_id' => $inbox->id,
             'provider' => 'google',
@@ -101,7 +101,7 @@ class MailOAuthTest extends TestCase
 
         $inbox = EmailInbox::query()->first();
         $state = 'microsoft-state-token';
-        Cache::put('central:mail_oauth:'.$state, [
+        Cache::store('central')->put('central:mail_oauth:'.$state, [
             'tenant_id' => $this->tenant->id,
             'inbox_id' => $inbox->id,
             'provider' => 'microsoft',
@@ -147,7 +147,7 @@ class MailOAuthTest extends TestCase
 
         $inbox = EmailInbox::query()->first();
         $state = 'zoho-state-token';
-        Cache::put('central:mail_oauth:'.$state, [
+        Cache::store('central')->put('central:mail_oauth:'.$state, [
             'tenant_id' => $this->tenant->id,
             'inbox_id' => $inbox->id,
             'provider' => 'zoho',
@@ -184,6 +184,53 @@ class MailOAuthTest extends TestCase
         $inbox->refresh();
         $this->assertSame('zoho', $inbox->oauth_provider);
         $this->assertSame('support@company.com', $inbox->oauth_connected_email);
+    }
+
+    public function test_oauth_state_survives_tenant_cache_isolation_for_zoho_callback(): void
+    {
+        $this->provisionTenancy('mail-oauth-zoho-state');
+        tenancy()->initialize($this->tenant);
+        $this->seed(EmailSeeder::class);
+
+        config([
+            'helpdesk.mail_oauth.callback_base_url' => 'http://helpdesk.test',
+            'helpdesk.mail_oauth.zoho.client_id' => 'zoho-client',
+            'helpdesk.mail_oauth.zoho.client_secret' => 'zoho-secret',
+            'helpdesk.mail_oauth.zoho.region' => 'com',
+        ]);
+
+        $inbox = EmailInbox::query()->first();
+        $oauth = app(\App\Domains\Channels\Services\OAuth\MailOAuthService::class);
+        $authorizationUrl = $oauth->beginConnect($inbox->id, 'zoho');
+        parse_str((string) parse_url($authorizationUrl, PHP_URL_QUERY), $query);
+
+        Http::fake([
+            'accounts.zoho.com/oauth/v2/token' => Http::response([
+                'access_token' => 'zoho-access',
+                'refresh_token' => 'zoho-refresh',
+                'expires_in' => 3600,
+            ]),
+            'mail.zoho.com/api/accounts' => Http::response([
+                'data' => [[
+                    'accountId' => 'acct-1',
+                    'primaryEmailAddress' => 'support@company.com',
+                ]],
+            ]),
+            'mail.zoho.com/api/accounts/acct-1/folders' => Http::response([
+                'data' => [[
+                    'folderId' => 'folder-inbox',
+                    'folderName' => 'Inbox',
+                ]],
+            ]),
+            'mail.zoho.com/api/accounts/acct-1/messages/view*' => Http::response(['data' => []]),
+        ]);
+
+        tenancy()->end();
+
+        $response = $this->get('http://helpdesk.test/oauth/mail/zoho/callback?code=abc&state='.$query['state']);
+
+        $response->assertRedirect();
+        $this->assertStringContainsString('oauth=connected', (string) $response->headers->get('Location'));
     }
 
     public function test_webhook_rejected_for_oauth_inbox(): void
