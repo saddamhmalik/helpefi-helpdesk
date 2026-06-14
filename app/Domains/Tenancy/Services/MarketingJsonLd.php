@@ -40,6 +40,17 @@ class MarketingJsonLd
             ]];
         }
 
+        $parentName = config('marketing_seo.organization.parent_company_name');
+        $parentUrl = config('marketing_seo.organization.parent_company_url');
+
+        if (is_string($parentName) && $parentName !== '' && is_string($parentUrl) && $parentUrl !== '') {
+            $node['parentOrganization'] = [
+                '@type' => 'Organization',
+                'name' => $parentName,
+                'url' => $parentUrl,
+            ];
+        }
+
         return $node;
     }
 

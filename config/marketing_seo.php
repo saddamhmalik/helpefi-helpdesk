@@ -8,6 +8,8 @@ return [
         'contact_email' => env('MARKETING_CONTACT_EMAIL', 'hello@helpefi.com'),
         'contact_type' => 'customer support',
         'logo_path' => '/og-image.png',
+        'parent_company_name' => env('MARKETING_PARENT_COMPANY_NAME', 'Codikal'),
+        'parent_company_url' => rtrim((string) env('MARKETING_PARENT_COMPANY_URL', 'https://codikal.com'), '/'),
     ],
 
     'analytics' => [

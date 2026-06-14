@@ -1472,7 +1472,7 @@
             "about": {
                 "nav_label": "About",
                 "hero_title": "About Helpefi",
-                "hero_subtitle": "We build modern helpdesk and ITSM software for teams that want AI, automation, and customer context without enterprise complexity.",
+                "hero_subtitle": "We build modern helpdesk and ITSM software for teams that want AI, automation, and customer context without enterprise complexity. helpefi is a product of Codikal.",
                 "sections": [
                     { "title": "Our mission", "body": "Helpefi helps growing support and IT teams deliver faster, clearer customer service with one platform for tickets, chat, knowledge base, and optional Service Desk workflows." },
                     { "title": "Built for operators", "body": "Product, support, and IT leaders use Helpefi to unify channels, measure SLA performance, and scale self-service." }
