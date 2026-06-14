@@ -33,6 +33,11 @@ jobs:
             APP_DIR="/home/ubuntu/helpefi-helpdesk"
             cd "$APP_DIR"
 
+            # Recover from root-owned files after manual sudo npm/composer on the server.
+            if [ ! -w package-lock.json ] || { [ -d node_modules ] && [ ! -w node_modules ]; }; then
+              sudo chown -R ubuntu:ubuntu package.json package-lock.json node_modules 2>/dev/null || true
+            fi
+
             # Sync the server checkout with the latest main branch.
             git fetch origin main
             git checkout main
@@ -41,15 +46,20 @@ jobs:
             # Install PHP dependencies for production (no dev packages).
             composer install --no-dev --optimize-autoloader --no-interaction
 
-            # Install frontend dependencies and compile Vite assets.
-            npm install
+            # Vite, Tailwind, and laravel-vite-plugin are devDependencies but required to build assets.
+            npm ci
             npm run build
+            npm prune --omit=dev
 
             # Apply central and tenant database migrations in production.
             php artisan migrate --force
             php artisan tenants:migrate --force
 
             php artisan helpdesk:seed-handbook
+
+            # Laravel writable paths for PHP-FPM (www-data).
+            sudo chown -R www-data:www-data storage bootstrap/cache
+            sudo chmod -R ug+rwx storage bootstrap/cache
 
             # Clear stale caches, then rebuild Laravel optimization caches.
             php artisan optimize:clear
