@@ -18,7 +18,7 @@ jobs:
 
     steps:
       # SSH into the Ubuntu EC2 host and run the full release script remotely.
-      # script_stop: true exits the job on the first failing command.
+      # set -euo pipefail in the script exits on the first failing command.
       - name: Deploy application over SSH
         uses: appleboy/ssh-action@v1.2.2
         with:
@@ -26,7 +26,6 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.SSH_PORT || 22 }}
-          script_stop: true
           command_timeout: 30m
           script: |
             set -euo pipefail
