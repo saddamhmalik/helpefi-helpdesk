@@ -4,6 +4,7 @@ namespace App\Domains\Channels\Services\OAuth;
 
 use App\Domains\Channels\Models\EmailInbox;
 use App\Domains\Channels\Repositories\EmailInboxRepository;
+use Illuminate\Contracts\Cache\Repository as CacheRepository;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 use InvalidArgumentException;
@@ -33,7 +34,7 @@ class MailOAuthService
         }
 
         $state = Str::random(48);
-        Cache::put($this->stateKey($state), [
+        $this->centralCache()->put($this->stateKey($state), [
             'tenant_id' => tenant('id'),
             'inbox_id' => $inbox->id,
             'provider' => $provider,
@@ -44,14 +45,14 @@ class MailOAuthService
 
     public function peekState(string $state): ?array
     {
-        $cached = Cache::get($this->stateKey($state));
+        $cached = $this->centralCache()->get($this->stateKey($state));
 
         return is_array($cached) ? $cached : null;
     }
 
     public function pullState(string $state): ?array
     {
-        $cached = Cache::pull($this->stateKey($state));
+        $cached = $this->centralCache()->pull($this->stateKey($state));
 
         return is_array($cached) ? $cached : null;
     }
@@ -163,5 +164,10 @@ class MailOAuthService
     private function stateKey(string $state): string
     {
         return 'central:mail_oauth:'.$state;
+    }
+
+    private function centralCache(): CacheRepository
+    {
+        return Cache::store('central');
     }
 }
