@@ -1,5 +1,5 @@
 <script setup>
-import { router, usePage } from '@inertiajs/vue3';
+import { Link, router, usePage } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
@@ -87,6 +87,7 @@ const removeBootstrap = () => {
             {{ $t('components.demo_badge') }}
         </span>
         <span class="min-w-0 flex-1 truncate text-amber-950 dark:text-amber-100">{{ summaryLabel }}</span>
+        <Link href="/how-to" class="hidden shrink-0 text-amber-900 underline-offset-2 hover:underline sm:inline dark:text-amber-100">{{ $t('components.open_handbook') }}</Link>
         <div class="flex shrink-0 items-center gap-1">
             <template v-if="confirmingSample">
                 <span class="hidden text-amber-800 sm:inline dark:text-amber-200">{{ $t('components.confirm_remove') }}</span>

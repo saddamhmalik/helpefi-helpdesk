@@ -24,6 +24,7 @@ class KnowledgeService
         private KnowledgeCollectionRepository $collections,
         private KnowledgeSettingRepository $settings,
         private AuditRecorder $audit,
+        private PlatformHandbookService $handbook,
     ) {
     }
 
@@ -67,6 +68,14 @@ class KnowledgeService
     public function update(int $id, array $data, int $userId): KnowledgeArticle
     {
         $article = $this->articles->find($id);
+
+        if ($this->handbook->isSystemArticle($article)) {
+            unset($data['knowledge_collection_id'], $data['slug']);
+
+            if (array_key_exists('is_public', $data) && ! auth()->user()?->hasRole('admin')) {
+                unset($data['is_public']);
+            }
+        }
 
         if ($this->shouldVersion($article, $data)) {
             $this->versions->snapshot($article, $userId);
@@ -130,12 +139,24 @@ class KnowledgeService
 
     public function updateCollection(int $id, array $data): KnowledgeCollection
     {
-        return $this->collections->update($this->collections->find($id), $data);
+        $collection = $this->collections->find($id);
+
+        if ($this->handbook->isSystemCollection($collection)) {
+            unset($data['slug'], $data['is_public']);
+        }
+
+        return $this->collections->update($collection, $data);
     }
 
     public function deleteCollection(int $id): void
     {
-        $this->collections->delete($this->collections->find($id));
+        $collection = $this->collections->find($id);
+
+        if ($this->handbook->isSystemCollection($collection)) {
+            throw new InvalidArgumentException('This collection is part of the platform handbook and cannot be deleted.');
+        }
+
+        $this->collections->delete($collection);
     }
 
     public function collectionBySlug(string $slug): KnowledgeCollection

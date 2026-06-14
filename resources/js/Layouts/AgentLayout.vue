@@ -32,6 +32,14 @@ const isFullHeightPage = computed(() => {
     return /^\/tickets\/\d+/.test(path);
 });
 
+const isSettingsPage = computed(() => {
+    const path = pageKey.value;
+
+    return path === '/settings' || path.startsWith('/settings/');
+});
+
+const isConstrainedHeightPage = computed(() => isFullHeightPage.value || isSettingsPage.value);
+
 const isSetupPage = computed(() => pageKey.value === '/setup');
 
 const isActive = (href) => {
@@ -43,6 +51,10 @@ const isActive = (href) => {
 
     if (href === settingsHref.value) {
         return path.startsWith('/settings') || path === '/admin';
+    }
+
+    if (href === '/how-to') {
+        return path === '/how-to';
     }
 
     return path === href || path.startsWith(`${href}/`);
@@ -158,7 +170,10 @@ const iconWrapClass = (href) => isActive(href)
             </div>
         </aside>
 
-        <div class="flex h-screen max-h-screen min-w-0 flex-1 flex-col overflow-hidden lg:pl-[4.25rem]">
+        <div
+            class="flex h-screen max-h-screen min-w-0 flex-1 flex-col overflow-hidden transition-sidebar"
+            :class="isOpen ? 'lg:pl-[15.5rem]' : 'lg:pl-[4.25rem]'"
+        >
             <AgentTopBar />
 
             <nav class="flex gap-1 overflow-x-auto border-b agent-border agent-panel px-3 py-2 lg:hidden">
@@ -181,14 +196,13 @@ const iconWrapClass = (href) => isActive(href)
                 </div>
                 <PlatformNoticeModal />
                 <div
-                    class="flex min-h-0 flex-1 flex-col overflow-x-hidden"
-                    :class="isFullHeightPage ? 'h-full overflow-hidden' : 'overflow-y-auto px-4 pb-4 pt-3 sm:px-6 sm:pb-6 sm:pt-4'"
+                    class="flex min-h-0 flex-1 flex-col overflow-x-hidden px-4 pb-4 pt-3 sm:px-6 sm:pb-6 sm:pt-4"
+                    :class="isConstrainedHeightPage ? 'overflow-hidden' : 'overflow-y-auto'"
                 >
                     <Transition name="page" mode="out-in">
                         <div
                             :key="pageKey"
-                            class="flex min-h-0 flex-1 flex-col"
-                            :class="isFullHeightPage ? 'h-full' : ''"
+                            :class="isFullHeightPage ? 'flex h-full min-h-0 flex-1 flex-col' : isSettingsPage ? 'flex min-h-0 flex-1 flex-col' : 'w-full'"
                         >
                             <slot />
                         </div>

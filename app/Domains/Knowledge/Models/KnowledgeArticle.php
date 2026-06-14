@@ -21,6 +21,8 @@ class KnowledgeArticle extends Model
         'excerpt',
         'body',
         'is_published',
+        'is_public',
+        'is_system',
         'published_at',
     ];
 
@@ -28,6 +30,8 @@ class KnowledgeArticle extends Model
     {
         return [
             'is_published' => 'boolean',
+            'is_public' => 'boolean',
+            'is_system' => 'boolean',
             'published_at' => 'datetime',
         ];
     }

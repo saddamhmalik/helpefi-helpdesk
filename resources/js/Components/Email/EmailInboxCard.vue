@@ -3,7 +3,6 @@ import { router } from '@inertiajs/vue3';
 import { computed, reactive, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useDateTime } from '../../composables/useDateTime.js';
-import { useClipboard } from '../../composables/useClipboard.js';
 import AppTabs from '../AppTabs.vue';
 import AppCollapse from '../AppCollapse.vue';
 import AppRowActions from '../AppRowActions.vue';
@@ -25,8 +24,6 @@ const emit = defineEmits(['remove']);
 
 const { t } = useI18n();
 const { formatDateTime } = useDateTime();
-const { copy: copyRedirect } = useClipboard();
-const copiedRedirectUri = ref(null);
 
 const brandOptions = computed(() => Array.isArray(props.brands) ? props.brands : []);
 const departmentOptions = computed(() => Array.isArray(props.departments) ? props.departments : []);
@@ -63,10 +60,28 @@ const localInbox = reactive({
 
 const aliasesText = ref((props.inbox.aliases ?? []).join('\n'));
 const methodTab = ref(props.inbox.inbound_method || 'webhook');
+const oauthProviderTab = ref(props.inbox.oauth_provider || oauthProviderList.value[0]?.key || 'google');
 const mailboxPassword = ref('');
 const mailboxTesting = ref(false);
 const tokenCopied = ref(false);
-const isExpanded = ref(props.expanded);
+
+const needsSetup = computed(() => {
+    if (!localInbox.is_active) {
+        return false;
+    }
+
+    if (localInbox.inbound_method === 'oauth' && !localInbox.oauth_connected) {
+        return true;
+    }
+
+    if (localInbox.inbound_method === 'poll' && !localInbox.has_mailbox_password) {
+        return true;
+    }
+
+    return false;
+});
+
+const isExpanded = ref(props.expanded || needsSetup.value);
 
 watch(() => props.expanded, (value) => {
     if (value) {
@@ -74,15 +89,61 @@ watch(() => props.expanded, (value) => {
     }
 });
 
+watch(needsSetup, (value) => {
+    if (value) {
+        isExpanded.value = true;
+    }
+});
+
+const oauthProviderTabs = computed(() =>
+    oauthProviderList.value.map((provider) => ({ id: provider.key, label: provider.label })),
+);
+
+const activeOAuthProvider = computed(() =>
+    oauthProviderList.value.find((provider) => provider.key === oauthProviderTab.value) ?? oauthProviderList.value[0] ?? null,
+);
+
+const guessOAuthProvider = () => {
+    const address = (localInbox.address || '').toLowerCase();
+
+    if (address.includes('@gmail.com') || address.includes('@googlemail.com')) {
+        return 'google';
+    }
+
+    if (address.includes('@outlook.') || address.includes('@hotmail.') || address.includes('@live.')) {
+        return 'microsoft';
+    }
+
+    if (address.includes('@zoho.')) {
+        return 'zoho';
+    }
+
+    return oauthProviderList.value[0]?.key ?? null;
+};
+
+const quickConnect = () => {
+    const provider = guessOAuthProvider();
+    if (provider) {
+        connectOAuth(provider);
+    }
+};
+
 const toggleExpanded = () => {
     isExpanded.value = !isExpanded.value;
 };
 
-const methodTabs = computed(() => [
-    { id: 'webhook', label: t('components.forward_webhook') },
-    { id: 'poll', label: t('components.imap_pop3') },
-    { id: 'oauth', label: t('components.oauth') },
-]);
+const methodTabs = computed(() => {
+    const tabs = [
+        { id: 'webhook', label: t('components.forward_webhook') },
+        { id: 'poll', label: t('components.imap_pop3') },
+    ];
+
+    if (oauthProviderList.value.length) {
+        tabs.push({ id: 'oauth', label: t('components.oauth') });
+    }
+
+    return tabs;
+});
 
 const filteredTeams = computed(() =>
     teamOptions.value.filter((team) => !localInbox.department_id || team.department_id === Number(localInbox.department_id)),
@@ -161,19 +222,6 @@ const connectOAuth = (provider) => {
     window.location.href = `/settings/email/inboxes/${localInbox.id}/oauth/${provider}`;
 };
 
-const copyRedirectUri = async (uri, providerKey) => {
-    const success = await copyRedirect(uri);
-
-    if (success) {
-        copiedRedirectUri.value = providerKey;
-        window.setTimeout(() => {
-            if (copiedRedirectUri.value === providerKey) {
-                copiedRedirectUri.value = null;
-            }
-        }, 2000);
-    }
-};
-
 const disconnectOAuth = () => {
     router.post(`/settings/email/inboxes/${localInbox.id}/oauth/disconnect`, {}, { preserveScroll: true });
 };
@@ -196,6 +244,7 @@ watch(() => props.inbox.oauth_connected, (connected) => {
     if (connected) {
         methodTab.value = 'oauth';
         localInbox.inbound_method = 'oauth';
+        oauthProviderTab.value = props.inbox.oauth_provider || oauthProviderTab.value;
     }
 });
 
@@ -250,11 +299,28 @@ const save = () => {
                 <div class="flex flex-wrap items-center gap-2">
                     <h3 class="font-semibold agent-text">{{ localInbox.name }}</h3>
                     <span class="rounded-full px-2.5 py-0.5 text-xs font-medium" :class="methodBadge.class">{{ methodBadge.label }}</span>
+                    <span v-if="needsSetup" class="rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-medium text-amber-900 dark:bg-amber-950/50 dark:text-amber-200">{{ $t('settings_email.setup_required') }}</span>
                     <span v-if="!localInbox.is_active" class="rounded-full bg-slate-200 px-2.5 py-0.5 text-xs font-medium text-slate-600 dark:text-slate-400">{{ $t('components.inactive') }}</span>
                 </div>
                 <p class="mt-0.5 text-sm agent-text-muted">{{ localInbox.address }}</p>
             </button>
             <AppRowActions class="shrink-0">
+                <button
+                    v-if="needsSetup && localInbox.inbound_method === 'oauth' && !localInbox.oauth_connected"
+                    type="button"
+                    class="rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700"
+                    @click.stop="quickConnect"
+                >
+                    {{ $t('components.connect') }}
+                </button>
+                <button
+                    v-else-if="localInbox.oauth_connected || (localInbox.inbound_method === 'poll' && localInbox.has_mailbox_password)"
+                    type="button"
+                    class="rounded-lg border agent-border px-3 py-1.5 text-xs font-medium agent-hover-surface"
+                    @click.stop="pollMailbox"
+                >
+                    {{ $t('components.check_for_mail_now') }}
+                </button>
                 <AppEditAction
                     :label="isExpanded ? $t('components.collapse') : $t('components.edit')"
                     @click="toggleExpanded"
@@ -384,40 +450,25 @@ const save = () => {
 
                 <template #oauth>
                     <div class="space-y-4 rounded-xl border agent-border agent-panel-muted p-5">
+                        <AppTabs v-if="oauthProviderTabs.length > 1" v-model="oauthProviderTab" :items="oauthProviderTabs" variant="pills" class="mb-1" />
+
                         <MailOAuthSetupGuide
-                            v-for="provider in oauthProviderList"
-                            :key="`oauth-setup-${provider.key}`"
-                            :provider="provider.key"
-                            :console-url="provider.setup_console_url || provider.gmail_api_enable_url"
+                            v-if="activeOAuthProvider && !localInbox.oauth_connected"
+                            :provider="activeOAuthProvider.key"
                         />
-                        <div>
-                            <p class="text-sm font-medium agent-text">{{ $t('components.oauth_mailbox') }}</p>
-                            <p class="mt-1 text-xs agent-text-muted">{{ $t('components.connect_google_microsoft_or_zoho_to_sync_mail_without_storing_password') }}</p>
-                        </div>
-                        <div class="space-y-3">
-                            <div v-for="provider in oauthProviderList" :key="provider.key" class="rounded-lg border agent-border agent-panel p-4">
-                                <div class="flex flex-wrap items-start justify-between gap-3">
-                                    <div class="min-w-0 flex-1">
-                                        <p class="text-sm font-medium agent-text">{{ provider.label }}</p>
-                                        <p v-if="isProviderConnected(provider.key)" class="mt-1 text-xs font-medium text-emerald-700 dark:text-emerald-300">{{ $t('components.connected_as', { email: localInbox.oauth_connected_email }) }}</p>
-                                        <p v-else-if="!provider.configured" class="mt-1 text-xs text-amber-700 dark:text-amber-300">{{ $t('components.not_configured_on_server') }}</p>
-                                        <p v-if="provider.help" class="mt-1 text-xs agent-text-subtle">{{ provider.help }}</p>
-                                    </div>
-                                    <button v-if="isProviderConnected(provider.key)" type="button" class="shrink-0 rounded-lg border border-red-200 px-3 py-1.5 text-sm text-red-700 dark:border-red-900/60 dark:text-red-300" @click="disconnectOAuth">{{ $t('components.disconnect') }}</button>
-                                    <button v-else type="button" class="shrink-0 rounded-lg bg-indigo-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50" :disabled="!provider.configured" @click="connectOAuth(provider.key)">{{ $t('components.connect') }}</button>
+
+                        <div v-if="activeOAuthProvider" class="rounded-lg border agent-border agent-panel p-4">
+                            <div class="flex flex-wrap items-start justify-between gap-3">
+                                <div class="min-w-0 flex-1">
+                                    <p class="text-sm font-medium agent-text">{{ activeOAuthProvider.label }}</p>
+                                    <p v-if="isProviderConnected(activeOAuthProvider.key)" class="mt-1 text-xs font-medium text-emerald-700 dark:text-emerald-300">{{ $t('components.connected_as', { email: localInbox.oauth_connected_email }) }}</p>
+                                    <p v-else class="mt-1 text-xs agent-text-muted">{{ activeOAuthProvider.help }}</p>
                                 </div>
-                                <div v-if="provider.redirect_uri" class="mt-3 border-t agent-border-subtle pt-3">
-                                    <label class="mb-1 block text-xs font-medium agent-text-muted">{{ $t('components.authorized_redirect_uri') }}</label>
-                                    <p v-if="!provider.configured" class="mb-2 text-xs agent-text-subtle">{{ $t('components.oauth_not_configured_help') }}</p>
-                                    <div class="flex gap-2">
-                                        <input :value="provider.redirect_uri" type="text" readonly class="min-w-0 flex-1 rounded-lg border agent-border agent-panel px-3 py-2 font-mono text-[11px] agent-text-muted" />
-                                        <button type="button" class="shrink-0 rounded-lg border agent-border px-3 py-2 text-sm agent-hover-surface" @click="copyRedirectUri(provider.redirect_uri, provider.key)">
-                                            {{ copiedRedirectUri === provider.key ? $t('components.copied') : $t('components.copy') }}
-                                        </button>
-                                    </div>
-                                </div>
+                                <button v-if="isProviderConnected(activeOAuthProvider.key)" type="button" class="shrink-0 rounded-lg border border-red-200 px-3 py-1.5 text-sm text-red-700 dark:border-red-900/60 dark:text-red-300" @click="disconnectOAuth">{{ $t('components.disconnect') }}</button>
+                                <button v-else type="button" class="shrink-0 rounded-lg bg-indigo-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-indigo-700" @click="connectOAuth(activeOAuthProvider.key)">{{ $t('components.connect') }}</button>
                             </div>
                         </div>
+
                         <p v-if="localInbox.oauth_connected && localInbox.oauth_provider === 'google'" class="rounded-lg border border-sky-200 bg-sky-50 px-3 py-2 text-xs text-sky-900 dark:border-sky-900/60 dark:bg-sky-950/40 dark:text-sky-200">
                             {{ $t('components.gmail_oauth_import_hint', { email: localInbox.oauth_connected_email || localInbox.address }) }}
                         </p>

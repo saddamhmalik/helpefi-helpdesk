@@ -36,14 +36,21 @@ const portalArticleUrl = computed(() => {
     <Head :title="article.title" />
     <AgentLayout>
         <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
-            <Link href="/knowledge" class="text-sm text-blue-600 hover:text-blue-700 dark:hover:text-blue-300 dark:text-blue-300">{{ $t('knowledge.back_to_knowledge_base') }}</Link>
+            <Link
+                :href="article.is_system ? '/how-to' : '/knowledge'"
+                class="text-sm text-blue-600 hover:text-blue-700 dark:hover:text-blue-300 dark:text-blue-300"
+            >{{ article.is_system ? $t('handbook.back_to_handbook') : $t('knowledge.back_to_knowledge_base') }}</Link>
             <div class="flex flex-wrap items-center gap-3">
+                <span
+                    v-if="article.is_system"
+                    class="rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-600/15 dark:bg-blue-950/40 dark:text-blue-300"
+                >{{ $t('handbook.system_guide_badge') }}</span>
                 <Link
                     :href="`/knowledge/${article.id}/edit`"
                     class="rounded-lg border agent-border agent-panel px-3 py-1.5 text-sm font-medium text-slate-700 dark:text-slate-300 transition agent-hover-surface"
                 >{{ $t('knowledge.edit') }}</Link>
                 <a
-                    v-if="article.is_published && portalArticleUrl"
+                    v-if="article.is_published && article.is_public && portalArticleUrl"
                     :href="portalArticleUrl"
                     target="_blank"
                     rel="noopener noreferrer"
@@ -57,6 +64,12 @@ const portalArticleUrl = computed(() => {
                 <article class="rounded-xl border agent-border agent-panel p-8 shadow-sm">
                     <div class="mb-6 flex flex-wrap items-center gap-2">
                         <span class="rounded-full bg-slate-100 dark:bg-slate-900 px-2.5 py-0.5 text-xs font-semibold uppercase agent-text-muted">{{ article.locale || 'en' }}</span>
+                        <span
+                            class="inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium"
+                            :class="article.is_public ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 ring-1 ring-inset ring-emerald-600/15' : 'bg-slate-100 dark:bg-slate-900 agent-text-muted'"
+                        >
+                            {{ article.is_public ? $t('knowledge.public_on_portal') : $t('handbook.visibility_agents_only') }}
+                        </span>
                         <span
                             class="inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium"
                             :class="article.is_published ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 ring-1 ring-inset ring-emerald-600/15' : 'bg-slate-100 dark:bg-slate-900 agent-text-muted'"

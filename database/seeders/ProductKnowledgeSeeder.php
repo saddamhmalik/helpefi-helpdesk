@@ -66,6 +66,8 @@ class ProductKnowledgeSeeder extends Seeder
                 $article,
             );
         }
+
+        $this->call(PlatformHandbookSeeder::class);
     }
 
     private function articles($categoryIds, $collectionIds, ?int $authorId): array

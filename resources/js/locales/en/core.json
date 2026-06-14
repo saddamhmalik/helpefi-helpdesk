@@ -71,6 +71,7 @@
         "departments": "Departments",
         "teams": "Teams",
         "knowledge_base": "Knowledge base",
+        "how_to_use": "How to use helpefi",
         "reports": "Reports",
         "service_desk": "Service Desk",
         "assets": "Assets",
@@ -84,6 +85,7 @@
             "departments": "Support departments",
             "teams": "Agent teams",
             "knowledge_base": "Help articles",
+            "how_to_use": "Setup and daily workflows",
             "reports": "Analytics and exports",
             "service_desk": "ITSM queues and workflows",
             "assets": "CMDB, discovery, and warranty"
