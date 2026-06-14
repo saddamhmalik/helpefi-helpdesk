@@ -378,7 +378,11 @@
         "time_tracking": "Time tracking",
         "no_time_logged_yet": "No time logged yet.",
         "free_trial_active": "Free trial active",
+        "trial_badge": "Trial",
+        "trial_days_remaining_short": "{days} days left · full access",
         "trial_days_remaining_message": "{days} day(s) left with full platform access. We'll ask you to choose a plan when your trial ends.",
+        "demo_badge": "Demo",
+        "confirm_remove": "Remove?",
         "subscription_scheduled_to_end": "Subscription scheduled to end",
         "export_grace_period": "Export grace period",
         "cancellation_paid_access_message": "Paid access until {periodEnd}. {graceDays}-day export window after (until {accessEnds}).",
@@ -414,6 +418,7 @@
         "settings": "Settings",
         "forwarding_instructions_detail": "Configure your email provider to forward messages to {address} and POST the parsed payload to the webhook URL with the token as a query parameter or header.",
         "new_ticket": "New ticket",
-        "theme": "Theme"
+        "theme": "Theme",
+        "language": "Language"
     }
 }

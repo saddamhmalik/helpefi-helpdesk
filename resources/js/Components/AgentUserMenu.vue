@@ -45,7 +45,7 @@ onUnmounted(() => document.removeEventListener('click', onDocumentClick));
             :aria-expanded="open"
             @click.stop="toggle"
         >
-            <AppAvatar :name="user?.name" :email="user?.email" size="sm" />
+            <AppAvatar :name="user?.name" :email="user?.email" :image-url="user?.avatar_url" size="sm" />
             <span class="hidden max-w-[8rem] truncate text-sm font-medium text-slate-700 dark:text-slate-300 dark:text-slate-200 lg:block">{{ initials }}</span>
             <svg class="hidden h-4 w-4 text-slate-400 dark:text-slate-500 lg:block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />

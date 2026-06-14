@@ -11,6 +11,8 @@ use App\Domains\Sla\Models\BusinessHours;
 use App\Domains\Sla\Models\SlaPolicy;
 use App\Domains\Tenancy\Support\BootstrapDemoContent;
 use App\Models\User;
+use App\Support\TenantCache;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 class TenantSetupService
@@ -61,6 +63,37 @@ class TenantSetupService
         return $warnings;
     }
 
+    public function sharedAdminMenuState(): array
+    {
+        if (! tenant('id')) {
+            return [
+                'warnings' => [],
+                'guide_dismissed' => true,
+            ];
+        }
+
+        if (app()->environment('testing')) {
+            return [
+                'warnings' => $this->incompleteRequiredWarnings(),
+                'guide_dismissed' => ! $this->shouldRedirect(),
+            ];
+        }
+
+        return Cache::remember(TenantCache::key('setup.admin_menu'), 120, fn () => [
+            'warnings' => $this->incompleteRequiredWarnings(),
+            'guide_dismissed' => ! $this->shouldRedirect(),
+        ]);
+    }
+
+    public static function forgetAdminMenuCache(): void
+    {
+        if (! tenant('id')) {
+            return;
+        }
+
+        Cache::forget(TenantCache::key('setup.admin_menu'));
+    }
+
     public function snapshot(): array
     {
         $setting = $this->settings->current();
@@ -97,6 +130,8 @@ class TenantSetupService
             'setup_steps_completed' => $completed,
         ]);
 
+        self::forgetAdminMenuCache();
+
         return $this->snapshot();
     }
 
@@ -107,6 +142,8 @@ class TenantSetupService
         $this->settings->update($setting, [
             'setup_completed_at' => now(),
         ]);
+
+        self::forgetAdminMenuCache();
 
         return $this->snapshot();
     }
@@ -147,18 +184,10 @@ class TenantSetupService
                 'required' => true,
             ],
             [
-                'key' => 'email_inbox',
-                'title' => 'Email inbox',
-                'description' => 'Configure the support address that receives tickets and copy the inbound webhook URL for your mail provider.',
-                'warning' => 'Connect inbound email via webhook forwarding or mailbox polling so tickets can be created from email.',
-                'url' => route('settings.email'),
-                'required' => true,
-            ],
-            [
-                'key' => 'email_outbound',
-                'title' => 'Outbound email (SMTP)',
-                'description' => 'Set SMTP or a connected mailbox so ticket replies reach customers.',
-                'warning' => 'Enable outbound email and configure SMTP so ticket replies reach customers.',
+                'key' => 'email',
+                'title' => 'Email (inbox & SMTP)',
+                'description' => 'Configure inbound support mail and outbound SMTP so tickets and replies flow end to end.',
+                'warning' => 'Email is not fully configured. Set up inbound receiving and outbound SMTP for ticket replies.',
                 'url' => route('settings.email'),
                 'required' => true,
             ],
@@ -221,8 +250,7 @@ class TenantSetupService
 
         return match ($key) {
             'business_hours' => $this->hasConfiguredBusinessHours(),
-            'email_inbox' => $this->hasInboundEmailConfigured(),
-            'email_outbound' => $this->hasOutboundMailConfigured(),
+            'email' => $this->hasInboundEmailConfigured() && $this->hasOutboundMailConfigured(),
             'chat_widget' => filled($chatSettings['widget_key'] ?? null),
             'invite_team' => User::query()->count() > 1,
             'sla_policies' => SlaPolicy::query()->exists(),
@@ -278,6 +306,12 @@ class TenantSetupService
 
     private function isStepComplete(string $key, array $manual): bool
     {
+        if ($key === 'email') {
+            return in_array('email', $manual, true)
+                || in_array('email_inbox', $manual, true)
+                || in_array('email_outbound', $manual, true);
+        }
+
         return in_array($key, $manual, true);
     }
 

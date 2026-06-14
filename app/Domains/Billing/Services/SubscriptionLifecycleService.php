@@ -176,9 +176,7 @@ class SubscriptionLifecycleService
         $planToAddon = [];
 
         foreach ($addonCatalog as $key => $addon) {
-            $planId = AddonCatalogDefinition::razorpayPlanId($addon);
-
-            if ($planId) {
+            foreach (AddonCatalogDefinition::razorpayPlanIds($addon) as $planId) {
                 $planToAddon[$planId] = $key;
             }
         }

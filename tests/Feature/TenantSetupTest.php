@@ -87,7 +87,7 @@ class TenantSetupTest extends TenantTestCase
                 ->where('setupWarnings', function ($warnings) {
                     $keys = collect($warnings)->pluck('key');
 
-                    return $keys->contains('email_inbox') && $keys->contains('email_outbound');
+                    return $keys->contains('email');
                 })
             );
     }
@@ -116,7 +116,7 @@ class TenantSetupTest extends TenantTestCase
                 ->where('setupWarnings', function ($warnings) {
                     $keys = collect($warnings)->pluck('key');
 
-                    return ! $keys->contains('email_inbox') && ! $keys->contains('email_outbound');
+                    return ! $keys->contains('email');
                 })
             );
     }

@@ -2,6 +2,8 @@
 
 use App\Domains\Ai\Controllers\Central\MarketingAiDemoController;
 use App\Domains\Billing\Controllers\RazorpayWebhookController;
+use App\Domains\Platform\Controllers\Central\AdminBlogPostController;
+use App\Domains\Platform\Controllers\Central\AdminTestimonialController;
 use App\Domains\Platform\Controllers\Central\AdminAuditLogController;
 use App\Domains\Platform\Controllers\Central\AdminBackupController;
 use App\Domains\Platform\Controllers\Central\AdminDashboardController;
@@ -23,6 +25,11 @@ use App\Domains\Tenancy\Controllers\Central\LoginController;
 use App\Domains\Tenancy\Controllers\Central\RegisterController;
 use App\Domains\Tenancy\Controllers\Central\RobotsController;
 use App\Domains\Tenancy\Controllers\Central\SitemapController;
+use App\Domains\Tenancy\Controllers\Central\BlogController;
+use App\Domains\Tenancy\Controllers\Central\CompareLandingController;
+use App\Domains\Tenancy\Controllers\Central\FeatureLandingController;
+use App\Domains\Tenancy\Controllers\Central\MarketingStaticPageController;
+use App\Domains\Tenancy\Controllers\Central\VerticalLandingController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -35,6 +42,24 @@ Route::get('/platform-notices/{notice}/image', PlatformNoticeImageController::cl
 Route::get('/robots.txt', RobotsController::class)->name('central.robots');
 Route::get('/sitemap.xml', SitemapController::class)->name('central.sitemap');
 Route::get('/', [HomeController::class, 'index'])->name('central.home');
+Route::get('/features/{feature}', [FeatureLandingController::class, 'show'])
+    ->where('feature', '[a-z0-9-]+')
+    ->name('central.feature');
+Route::get('/for/{vertical}', [VerticalLandingController::class, 'show'])
+    ->where('vertical', '[a-z0-9-]+')
+    ->name('central.vertical');
+Route::get('/vs/{competitor}', [CompareLandingController::class, 'show'])
+    ->where('competitor', '[a-z0-9-]+')
+    ->name('central.compare');
+Route::get('/pricing', fn () => app(MarketingStaticPageController::class)->show('pricing'))->name('central.static.pricing');
+Route::get('/about', fn () => app(MarketingStaticPageController::class)->show('about'))->name('central.static.about');
+Route::get('/contact', fn () => app(MarketingStaticPageController::class)->show('contact'))->name('central.static.contact');
+Route::get('/privacy', fn () => app(MarketingStaticPageController::class)->show('privacy'))->name('central.static.privacy');
+Route::get('/terms', fn () => app(MarketingStaticPageController::class)->show('terms'))->name('central.static.terms');
+Route::get('/blog', [BlogController::class, 'index'])->name('central.blog.index');
+Route::get('/blog/{slug}', [BlogController::class, 'show'])
+    ->where('slug', '[a-z0-9-]+')
+    ->name('central.blog.show');
 
 Route::post('/api/marketing/ai-demo', [MarketingAiDemoController::class, 'store'])
     ->middleware('throttle:10,1')
@@ -58,17 +83,17 @@ Route::get('/admin', function () {
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [LoginController::class, 'create'])->name('central.login');
-    Route::post('/login', [LoginController::class, 'redirect'])->name('central.login.redirect');
+    Route::post('/login', [LoginController::class, 'redirect'])->middleware('throttle:10,1')->name('central.login.redirect');
     Route::get('/register', [RegisterController::class, 'create'])->name('central.register');
-    Route::post('/register', [RegisterController::class, 'store'])->name('central.register.store');
-    Route::post('/register/resend', [RegisterController::class, 'resend'])->name('central.register.resend');
+    Route::post('/register', [RegisterController::class, 'store'])->middleware('throttle:5,1')->name('central.register.store');
+    Route::post('/register/resend', [RegisterController::class, 'resend'])->middleware('throttle:3,1')->name('central.register.resend');
     Route::get('/register/verify/{token}', [RegisterController::class, 'verify'])->name('central.register.verify');
 });
 
 Route::prefix('admin')->name('central.admin.')->group(function () {
     Route::middleware('guest:platform')->group(function () {
         Route::get('/login', [AdminLoginController::class, 'create'])->name('login');
-        Route::post('/login', [AdminLoginController::class, 'store'])->name('login.store');
+        Route::post('/login', [AdminLoginController::class, 'store'])->middleware('throttle:5,1')->name('login.store');
     });
 
     Route::middleware('central.admin')->group(function () {
@@ -141,6 +166,31 @@ Route::prefix('admin')->name('central.admin.')->group(function () {
             Route::post('/notices/{notice}/deactivate', [AdminNoticeController::class, 'deactivate'])->name('notices.deactivate');
             Route::delete('/notices/{notice}', [AdminNoticeController::class, 'destroy'])->name('notices.destroy');
             Route::get('/notices/{notice}/image', [AdminNoticeController::class, 'image'])->name('notices.image');
+        });
+
+        Route::middleware('platform.permission:blog.view')->group(function () {
+            Route::get('/blog', [AdminBlogPostController::class, 'index'])->name('blog.index');
+        });
+
+        Route::middleware('platform.permission:blog.manage')->group(function () {
+            Route::get('/blog/create', [AdminBlogPostController::class, 'create'])->name('blog.create');
+            Route::post('/blog', [AdminBlogPostController::class, 'store'])->name('blog.store');
+            Route::get('/blog/{post}/edit', [AdminBlogPostController::class, 'edit'])->name('blog.edit');
+            Route::put('/blog/{post}', [AdminBlogPostController::class, 'update'])->name('blog.update');
+            Route::delete('/blog/{post}', [AdminBlogPostController::class, 'destroy'])->name('blog.destroy');
+        });
+
+        Route::middleware('platform.permission:testimonials.view')->group(function () {
+            Route::get('/testimonials', [AdminTestimonialController::class, 'index'])->name('testimonials.index');
+        });
+
+        Route::middleware('platform.permission:testimonials.manage')->group(function () {
+            Route::get('/testimonials/create', [AdminTestimonialController::class, 'create'])->name('testimonials.create');
+            Route::post('/testimonials', [AdminTestimonialController::class, 'store'])->name('testimonials.store');
+            Route::put('/testimonials/settings', [AdminTestimonialController::class, 'updateSettings'])->name('testimonials.settings');
+            Route::get('/testimonials/{testimonial}/edit', [AdminTestimonialController::class, 'edit'])->name('testimonials.edit')->whereNumber('testimonial');
+            Route::put('/testimonials/{testimonial}', [AdminTestimonialController::class, 'update'])->name('testimonials.update')->whereNumber('testimonial');
+            Route::delete('/testimonials/{testimonial}', [AdminTestimonialController::class, 'destroy'])->name('testimonials.destroy')->whereNumber('testimonial');
         });
 
         Route::middleware('platform.permission:users.view')->group(function () {

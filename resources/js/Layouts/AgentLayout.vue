@@ -4,7 +4,6 @@ import AppAvatar from '../Components/AppAvatar.vue';
 import AppLogo from '../Components/AppLogo.vue';
 import DummyDataBanner from '../Components/DummyDataBanner.vue';
 import PlatformNoticeModal from '../Components/PlatformNoticeModal.vue';
-import SetupWarningNotifier from '../Components/SetupWarningNotifier.vue';
 import TrialBanner from '../Components/TrialBanner.vue';
 import CancellationGraceBanner from '../Components/CancellationGraceBanner.vue';
 import { Link, usePage } from '@inertiajs/vue3';
@@ -147,7 +146,7 @@ const iconWrapClass = (href) => isActive(href)
                     class="flex items-center rounded-lg px-2 py-2 transition-ui hover:bg-white/5"
                     :class="isOpen ? 'gap-2.5' : 'justify-center'"
                 >
-                    <AppAvatar :name="user?.name" :email="user?.email" size="sm" />
+                    <AppAvatar :name="user?.name" :email="user?.email" :image-url="user?.avatar_url" size="sm" />
                     <div
                         class="sidebar-label min-w-0 flex-1"
                         :class="{ 'sidebar-label--open': isOpen }"
@@ -175,13 +174,12 @@ const iconWrapClass = (href) => isActive(href)
             </nav>
 
             <main class="flex min-h-0 flex-1 flex-col overflow-hidden">
-                <div class="mb-3 shrink-0 space-y-2 empty:mb-0 empty:hidden">
+                <div class="mb-1.5 shrink-0 space-y-1 empty:mb-0 empty:hidden px-4 pt-2 sm:px-6">
                     <TrialBanner />
                     <CancellationGraceBanner />
                     <DummyDataBanner v-if="!isSetupPage" />
                 </div>
                 <PlatformNoticeModal />
-                <SetupWarningNotifier />
                 <div
                     class="flex min-h-0 flex-1 flex-col overflow-x-hidden"
                     :class="isFullHeightPage ? 'h-full overflow-hidden' : 'overflow-y-auto px-4 pb-4 pt-3 sm:px-6 sm:pb-6 sm:pt-4'"

@@ -153,7 +153,7 @@ class TicketRepository
                 'department.head:id,name,email',
                 'serviceCatalogItem:id,name,slug,ticket_type',
                 'assets.type:id,name,slug',
-                'messages.user:id,name,email',
+                'messages.user:id,name,email,avatar_type,avatar_path',
                 'messages.contact:id,name,email',
                 'messages.channel:id,name,slug,type',
                 'messages.attachments',

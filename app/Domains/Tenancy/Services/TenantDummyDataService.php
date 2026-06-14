@@ -24,6 +24,8 @@ use App\Domains\Tickets\Repositories\TicketRepository;
 use App\Domains\Workforce\Models\Department;
 use App\Domains\Workforce\Models\Team;
 use App\Models\User;
+use App\Support\TenantCache;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -66,6 +68,24 @@ class TenantDummyDataService
         ];
     }
 
+    public function cachedPublicState(): array
+    {
+        if (! tenant('id') || app()->environment('testing')) {
+            return $this->publicState();
+        }
+
+        return Cache::remember(TenantCache::key('dummy_data.public'), 120, fn () => $this->publicState());
+    }
+
+    public static function forgetPublicStateCache(): void
+    {
+        if (! tenant('id')) {
+            return;
+        }
+
+        Cache::forget(TenantCache::key('dummy_data.public'));
+    }
+
     public function needsChoice(): bool
     {
         return $this->settings->current()->dummy_data_choice_at === null;
@@ -87,6 +107,8 @@ class TenantDummyDataService
         $this->settings->update($setting, [
             'dummy_data_choice_at' => now(),
         ]);
+
+        self::forgetPublicStateCache();
     }
 
     public function install(User $admin): void
@@ -106,6 +128,8 @@ class TenantDummyDataService
             'dummy_data_choice_at' => now(),
             'dummy_data_manifest' => $manifest,
         ]);
+
+        self::forgetPublicStateCache();
     }
 
     public function remove(): void
@@ -124,6 +148,8 @@ class TenantDummyDataService
             'dummy_data_active' => false,
             'dummy_data_manifest' => null,
         ]);
+
+        self::forgetPublicStateCache();
     }
 
     public function hasBootstrapDemo(): bool

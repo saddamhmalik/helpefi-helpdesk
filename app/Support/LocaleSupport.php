@@ -6,6 +6,8 @@ class LocaleSupport
 {
     public const APP_LOCALES = ['en', 'ar', 'es', 'fr', 'de'];
 
+    public const APP_LOCALE_COOKIE = 'app_locale';
+
     public const LABELS = [
         'en' => 'English',
         'ar' => 'العربية',
@@ -31,6 +33,17 @@ class LocaleSupport
         $normalized = strtolower(trim((string) $locale));
 
         return self::isSupported($normalized) ? $normalized : 'en';
+    }
+
+    public static function resolveFromRequest(\Illuminate\Http\Request $request): string
+    {
+        $cookie = $request->cookie(self::APP_LOCALE_COOKIE);
+
+        if ($cookie) {
+            return self::resolve($cookie);
+        }
+
+        return self::resolve(config('app.locale'));
     }
 
     public static function options(): array

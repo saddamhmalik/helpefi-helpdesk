@@ -15,6 +15,7 @@ class CentralSetting extends Model
         'currency',
         'india_pricing',
         'social_links',
+        'testimonials_enabled',
         'plan_pricing',
         'plan_catalog',
         'addon_catalog',
@@ -37,6 +38,7 @@ class CentralSetting extends Model
             'addon_catalog' => 'array',
             'backup_schedule_enabled' => 'boolean',
             'backup_schedule_weekday' => 'integer',
+            'testimonials_enabled' => 'boolean',
         ];
     }
 }

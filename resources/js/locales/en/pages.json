@@ -199,7 +199,14 @@
         "kb_still_submitted": "{count} still submitted",
         "escalated_to_tickets": "{count} escalated to tickets",
         "portal_widget_split": "{portal} portal / {widget} widget",
-        "open_queue": "Open queue →"
+        "open_queue": "Open queue →",
+        "onboarding_title": "Finish setting up your workspace",
+        "onboarding_progress": "{completed} of {total} required steps complete",
+        "onboarding_next_steps": "Next steps",
+        "onboarding_view_setup": "Open setup guide",
+        "onboarding_sample_prompt": "Load sample tickets and customers to explore the product, or start with an empty workspace.",
+        "onboarding_load_sample": "Explore with sample data",
+        "onboarding_start_empty": "Start with my own data"
     },
     "contacts": {
         "new_customer": "New customer",

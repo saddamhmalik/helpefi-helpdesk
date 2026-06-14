@@ -105,7 +105,12 @@ const customFieldLabel = (name) => props.customFieldDefinitions.find((field) => 
 
                 <div class="mt-4 flex flex-wrap items-start justify-between gap-4">
                     <div class="flex items-start gap-4">
-                        <AppAvatar :name="member.name" :email="member.email" size="lg" />
+                        <AppAvatar
+                            :name="member.name"
+                            :email="member.email"
+                            :image-url="member.avatar_url"
+                            size="lg"
+                        />
                         <div>
                             <h1 class="text-3xl font-bold tracking-tight agent-text">{{ member.name }}</h1>
                             <p class="mt-1 text-sm agent-text-muted">{{ member.email }}</p>

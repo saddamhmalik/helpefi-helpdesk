@@ -1,4 +1,4 @@
-import { reactive, watch } from 'vue';
+import { reactive } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 import { getSharedRealtimeClient, isRealtimeConfigured } from '../lib/realtimeClient.js';
 import { userChannel } from '../lib/realtimeChannels.js';
@@ -118,16 +118,15 @@ export function useNotificationInbox() {
     const page = usePage();
     const toast = useToast();
 
-    const syncFromPage = () => {
-        applySummary(page.props.notifications ?? { unread_count: 0, recent: [] });
-    };
-
     const init = () => {
         if (!page.props.auth?.user) {
             return;
         }
 
-        syncFromPage();
+        if (!state.initialized) {
+            fetchSummary();
+        }
+
         subscribeRealtime(page, toast);
         startPolling();
     };
@@ -150,11 +149,6 @@ export function useNotificationInbox() {
         }));
         state.unread_count = 0;
     };
-
-    watch(
-        () => page.props.notifications,
-        (value) => applySummary(value ?? { unread_count: 0, recent: [] }),
-    );
 
     return {
         summary: state,

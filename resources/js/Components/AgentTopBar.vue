@@ -2,7 +2,9 @@
 import AgentGlobalSearch from './AgentGlobalSearch.vue';
 import AgentThemeToggle from './AgentThemeToggle.vue';
 import AgentUserMenu from './AgentUserMenu.vue';
+import LocaleSwitcher from './LocaleSwitcher.vue';
 import NotificationBell from './NotificationBell.vue';
+import SetupMenu from './SetupMenu.vue';
 import { Link, usePage } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 import { useAgentBreadcrumbs } from '../composables/useAgentBreadcrumbs.js';
@@ -61,6 +63,8 @@ const openSearch = () => {
                     {{ $t('components.new_ticket') }}
                 </Link>
                 <AgentThemeToggle />
+                <LocaleSwitcher persist="api" />
+                <SetupMenu />
                 <NotificationBell />
                 <AgentUserMenu />
             </div>
@@ -98,6 +102,8 @@ const openSearch = () => {
             </Link>
 
             <AgentThemeToggle />
+            <LocaleSwitcher persist="api" />
+            <SetupMenu />
             <NotificationBell />
             <AgentUserMenu />
         </div>

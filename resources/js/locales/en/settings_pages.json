@@ -136,6 +136,7 @@
         "no_addons_available": "No add-ons are available right now.",
         "trial_access": "Trial access",
         "addon_active": "Active",
+        "addon_included_in_plan": "Included in plan",
         "cancel_addon": "Cancel add-on",
         "add_to_subscription": "Add to subscription",
         "addon_trial_included_note": "Included during your free trial. After your trial ends, this add-on costs {price}/mo on top of your paid plan.",

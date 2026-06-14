@@ -36,9 +36,9 @@ class CentralMarketingAiService
             'body' => 'When AI triage is enabled, new tickets are analyzed on creation to suggest priority, tags, and routing hints. Agents stay in control — suggestions appear in the ticket sidebar for quick acceptance or override.',
         ],
         [
-            'title' => 'Free trial and Enterprise AI',
-            'keywords' => ['trial', 'pricing', 'plan', 'enterprise', 'free', 'cost', 'include'],
-            'body' => 'Start a free trial with full platform access — no credit card required. AI assist, deflection, Copilot, semantic search, and triage are included on Enterprise plans. Upgrade anytime from workspace billing settings.',
+            'title' => 'Free trial and Pro AI',
+            'keywords' => ['trial', 'pricing', 'plan', 'pro', 'enterprise', 'free', 'cost', 'include'],
+            'body' => 'Start a free trial with full platform access — no credit card required. AI assist, deflection, Copilot, semantic search, and triage are included on Pro plans. Service Desk ITSM is a separate paid add-on on any paid plan. Upgrade anytime from workspace billing settings.',
         ],
     ];
 

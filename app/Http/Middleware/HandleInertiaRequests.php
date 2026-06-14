@@ -6,11 +6,11 @@ use App\Domains\Tenancy\Support\CentralDomain;
 use App\Domains\Ai\Services\AiAssistService;
 use App\Domains\Auth\Services\UserPreferenceService;
 use App\Domains\Billing\Services\BillingService;
-use App\Domains\Notifications\Services\NotificationService;
 use App\Domains\Realtime\Services\RealtimeTokenService;
 use App\Domains\Sla\Repositories\BusinessHoursRepository;
 use App\Domains\Tenancy\Services\TenantDummyDataService;
 use App\Models\User;
+use App\Support\AvatarSupport;
 use App\Support\LocaleSupport;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
@@ -33,15 +33,24 @@ class HandleInertiaRequests extends Middleware
             'platformAuth' => function () {
                 $platformUser = auth('platform')->user();
 
+                if (! $platformUser) {
+                    return [
+                        'user' => null,
+                        'permissions' => [],
+                    ];
+                }
+
+                $permissions = $platformUser->permissionNames();
+
                 return [
-                    'user' => $platformUser ? [
+                    'user' => [
                         'id' => $platformUser->id,
                         'name' => $platformUser->name,
                         'email' => $platformUser->email,
                         'roles' => $platformUser->roles()->pluck('name')->values()->all(),
-                        'permissions' => $platformUser->permissionNames(),
-                    ] : null,
-                    'permissions' => $platformUser?->permissionNames() ?? [],
+                        'permissions' => $permissions,
+                    ],
+                    'permissions' => $permissions,
                 ];
             },
             'portalBrand' => fn () => app(\App\Domains\Brands\Support\BrandContext::class)->hasBrand()
@@ -53,16 +62,18 @@ class HandleInertiaRequests extends Middleware
             'portalLocales' => fn () => app(\App\Domains\Brands\Support\BrandContext::class)->hasBrand()
                 ? app(\App\Domains\Knowledge\Services\KnowledgeSettingService::class)->localeOptions()
                 : null,
-            'auth' => [
+            'auth' => fn () => [
                 'user' => $user ? $this->authUserPayload($user) : null,
             ],
             'locale' => fn () => $user instanceof User
                 ? app(UserPreferenceService::class)->locale($user)
-                : config('app.locale'),
+                : (CentralDomain::isCentralHost($request->getHost()) ? 'en' : LocaleSupport::resolveFromRequest($request)),
             'direction' => fn () => $user instanceof User
                 ? (app(UserPreferenceService::class)->isRtl($user) ? 'rtl' : 'ltr')
-                : 'ltr',
-            'localeOptions' => fn () => LocaleSupport::options(),
+                : (CentralDomain::isCentralHost($request->getHost()) ? 'ltr' : (LocaleSupport::isRtl(LocaleSupport::resolveFromRequest($request)) ? 'rtl' : 'ltr')),
+            'localeOptions' => fn () => CentralDomain::isCentralHost($request->getHost())
+                ? []
+                : LocaleSupport::options(),
             'timezone' => fn () => $user instanceof User
                 ? app(UserPreferenceService::class)->timezone($user)
                 : $this->helpdeskTimezone(),
@@ -70,8 +81,7 @@ class HandleInertiaRequests extends Middleware
                 ? app(UserPreferenceService::class)->appearance($user)
                 : 'light',
             'ai' => fn () => $this->tenantFeature($user, fn () => app(AiAssistService::class)->status()),
-            'billing' => fn () => $this->tenantFeature($user, fn () => app(BillingService::class)->snapshot()),
-            'notifications' => fn () => $this->tenantFeature($user, fn () => app(NotificationService::class)->inboxSummary($user)),
+            'billing' => fn () => $this->tenantFeature($user, fn () => app(BillingService::class)->layoutSnapshot()),
             'realtime' => fn () => $this->tenantFeature($user, fn () => [
                 'url' => config('realtime.ws_url'),
                 'token' => app(RealtimeTokenService::class)->agentToken($user),
@@ -83,21 +93,23 @@ class HandleInertiaRequests extends Middleware
                     return [];
                 }
 
-                return app(\App\Domains\Tenancy\Services\TenantSetupService::class)->incompleteRequiredWarnings();
+                return app(\App\Domains\Tenancy\Services\TenantSetupService::class)
+                    ->sharedAdminMenuState()['warnings'];
             }),
             'setupGuideDismissed' => fn () => $this->tenantFeature($user, function () use ($user) {
                 if (! $user->hasRole('admin')) {
                     return true;
                 }
 
-                return ! app(\App\Domains\Tenancy\Services\TenantSetupService::class)->shouldRedirect();
+                return app(\App\Domains\Tenancy\Services\TenantSetupService::class)
+                    ->sharedAdminMenuState()['guide_dismissed'];
             }),
             'helpdesk' => fn () => [
                 'timezone' => $this->helpdeskTimezone(),
             ],
             'dummyData' => fn () => $this->dummyDataState($user),
             'helpCenter' => fn () => tenant('id')
-                ? app(\App\Domains\Knowledge\Services\HelpCenterService::class)->guestState()
+                ? app(\App\Domains\Knowledge\Services\HelpCenterService::class)->cachedGuestState()
                 : null,
             'flash' => fn () => [
                 'success' => $request->session()->pull('success'),
@@ -118,7 +130,7 @@ class HandleInertiaRequests extends Middleware
     {
         $preferences = app(UserPreferenceService::class);
 
-        return [
+        return array_merge([
             'id' => $user->id,
             'name' => $user->name,
             'email' => $user->email,
@@ -130,7 +142,7 @@ class HandleInertiaRequests extends Middleware
             'is_admin' => $user->hasRole('admin'),
             'is_customer' => $user->hasRole('customer'),
             'contact_id' => $user->contact_id,
-        ];
+        ], AvatarSupport::payload($user));
     }
 
     private function helpdeskTimezone(): string
@@ -162,6 +174,6 @@ class HandleInertiaRequests extends Middleware
             return null;
         }
 
-        return app(TenantDummyDataService::class)->publicState();
+        return app(TenantDummyDataService::class)->cachedPublicState();
     }
 }

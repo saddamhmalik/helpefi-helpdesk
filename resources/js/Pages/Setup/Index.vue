@@ -166,21 +166,21 @@ const copy = async (text) => {
                 v-if="dummyData.needs_choice"
                 class="mb-8 overflow-hidden rounded-2xl border border-blue-200 dark:border-blue-900/60 bg-white dark:bg-slate-900 shadow-sm"
             >
-                <div class="border-b border-blue-100 bg-blue-50 dark:bg-blue-950/40/80 px-5 py-4">
+                <div class="border-b border-blue-100 bg-blue-50 px-5 py-4 dark:border-blue-900/60 dark:bg-blue-950/50">
                     <p class="text-sm font-semibold text-blue-900 dark:text-blue-100">{{ $t('setup_index.how_would_you_like_to_start') }}</p>
-                    <p class="mt-1 text-sm text-blue-800">
+                    <p class="mt-1 text-sm text-blue-800 dark:text-blue-200">
                         {{ $t('setup_index.load_realistic_sample_tickets_and_customers_to_explore_the_product_or_') }}
                     </p>
                 </div>
                 <div class="grid gap-4 p-5 sm:grid-cols-2">
                     <button
                         type="button"
-                        class="rounded-xl border border-blue-200 dark:border-blue-900/60 bg-blue-50 dark:bg-blue-950/40/50 p-5 text-left transition hover:border-blue-400 hover:bg-blue-50 dark:bg-blue-950/40 disabled:opacity-60"
+                        class="rounded-xl border border-blue-200 bg-blue-50 p-5 text-left transition hover:border-blue-400 hover:bg-blue-100 disabled:opacity-60 dark:border-blue-800 dark:bg-blue-950/60 dark:hover:border-blue-600 dark:hover:bg-blue-950/80"
                         :disabled="loadingSample || loadingSkip"
                         @click="loadSampleData"
                     >
                         <p class="text-base font-semibold text-slate-900 dark:text-slate-100">{{ $t('setup_index.explore_with_sample_data') }}</p>
-                        <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">
+                        <p class="mt-2 text-sm text-slate-600 dark:text-slate-300">
                             {{ $t('setup_index.adds_demo_tickets_conversations_customers_tags_teams_and_departments_y') }}
                         </p>
                         <p class="mt-3 text-xs font-medium text-blue-700 dark:text-blue-300">
@@ -381,7 +381,7 @@ const copy = async (text) => {
                                     </button>
                                 </div>
 
-                                <div v-if="step.key === 'email_inbox'" class="mt-3 text-xs text-slate-500 dark:text-slate-400">
+                                <div v-if="step.key === 'email'" class="mt-3 text-xs text-slate-500 dark:text-slate-400">
                                     {{ $t('setup_index.inbound_webhook') }}
                                     <code class="rounded bg-slate-100 dark:bg-slate-900 px-1.5 py-0.5">{{ guide.infrastructure?.inbound_webhook }}</code>
                                 </div>

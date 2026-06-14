@@ -7,6 +7,7 @@ use App\Domains\Billing\Services\RazorpayAddonSyncService;
 use App\Domains\Billing\Services\RazorpayPlanSyncService;
 use App\Domains\Tenancy\Repositories\CentralSettingRepository;
 use App\Domains\Tenancy\Support\AddonCatalogDefinition;
+use App\Domains\Tenancy\Support\CentralMarketingPresenter;
 use App\Domains\Tenancy\Support\CurrencyCatalog;
 use App\Domains\Tenancy\Support\PlanCatalogDefinition;
 use App\Domains\Tenancy\Support\SocialLinkDefinition;
@@ -97,9 +98,11 @@ class CentralSettingsService
                 'feature' => $addon['feature'],
                 'description' => $addon['description'],
                 'price_monthly' => $addon['price_monthly'],
+                'price_monthly_india' => $addon['price_monthly_india'] ?? 0,
                 'currency' => $currency,
                 'enabled' => $addon['enabled'],
                 'razorpay_plan_id_monthly' => $addon['razorpay_plan_id_monthly'] ?? null,
+                'razorpay_plan_id_monthly_india' => $addon['razorpay_plan_id_monthly_india'] ?? null,
             ])
             ->values()
             ->all();
@@ -237,15 +240,17 @@ class CentralSettingsService
             );
         }
 
-        if (isset($data['addons']) || $currencyChanged) {
+        if (isset($data['addons']) || $currencyChanged || $indiaChanged) {
             $payload['addon_catalog'] = $this->razorpayAddonSync->syncCatalog(
                 $this->resolveAddonCatalog($data['addons'] ?? null),
                 $currency,
+                $indiaCurrency,
             );
         }
 
         if ($payload !== []) {
             $this->settings->update($current, $payload);
+            CentralMarketingPresenter::forgetCache();
         }
 
         return $this->snapshot();
@@ -308,11 +313,7 @@ class CentralSettingsService
         foreach ($addons ?? [] as $addon) {
             $key = $addon['key'];
             $existing = $this->addonCatalog()[$key] ?? [];
-            $incoming = $addon;
-
-            if ($this->razorpayAddonSync->isEnabled()) {
-                unset($incoming['razorpay_plan_id_monthly']);
-            }
+            $incoming = $this->normalizeIncomingAddon($addon);
 
             $catalog[$key] = AddonCatalogDefinition::normalizeAddon($key, array_merge($existing, $incoming));
         }
@@ -340,6 +341,24 @@ class CentralSettingsService
             ->map(fn ($url) => is_string($url) ? trim($url) : '')
             ->filter(fn ($url) => $url !== '')
             ->all();
+    }
+
+    private function normalizeIncomingAddon(array $addon): array
+    {
+        $incoming = $addon;
+
+        if (array_key_exists('price_india', $incoming)) {
+            $incoming['price_monthly_india'] = $incoming['price_india'];
+        }
+
+        if ($this->razorpayAddonSync->isEnabled()) {
+            unset(
+                $incoming['razorpay_plan_id_monthly'],
+                $incoming['razorpay_plan_id_monthly_india'],
+            );
+        }
+
+        return $incoming;
     }
 
     private function normalizeIncomingPlan(array $plan, array $existing): array

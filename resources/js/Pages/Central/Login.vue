@@ -3,7 +3,6 @@ import { Link, useForm, usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import CentralLayout from '../../Layouts/CentralLayout.vue';
-import CentralSeoHead from '../../Components/CentralSeoHead.vue';
 
 const props = defineProps({
     brand: { type: String, default: 'helpefi' },
@@ -40,7 +39,6 @@ const inputClass = 'w-full rounded-xl border border-slate-200 dark:border-slate-
 </script>
 
 <template>
-    <CentralSeoHead page="login" :brand="platformName" :trial-days="trialDays" />
     <CentralLayout :brand="platformName" :trial-days="trialDays" :show-footer="false">
         <div class="min-h-[calc(100dvh-3.5rem)] bg-slate-50 dark:bg-slate-950 px-4 py-8 sm:min-h-[calc(100vh-4rem)] sm:px-6 sm:py-12">
             <div class="mx-auto grid max-w-4xl overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm lg:grid-cols-5">

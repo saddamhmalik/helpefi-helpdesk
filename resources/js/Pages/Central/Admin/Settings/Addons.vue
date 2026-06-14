@@ -16,15 +16,26 @@ const selectedCurrency = computed(() => (
         : { symbol: '$', code: 'USD' }
 ));
 
+const indiaEnabled = computed(() => props.settings.india_pricing_effective ?? props.settings.india_pricing ?? false);
+
+const indiaCurrency = computed(() => (
+    typeof props.settings.india_currency === 'object'
+        ? props.settings.india_currency
+        : { symbol: '₹', code: 'INR' }
+));
+
 const { formatPrice } = useCurrency(() => selectedCurrency.value);
+const { formatPrice: formatIndiaPrice } = useCurrency(() => indiaCurrency.value);
 
 const mapAddon = (addon) => ({
     key: addon.key,
     name: addon.name,
     description: addon.description ?? '',
     price_monthly: addon.price_monthly ?? 0,
+    price_india: addon.price_monthly_india ?? 0,
     enabled: addon.enabled ?? true,
     razorpay_plan_id_monthly: addon.razorpay_plan_id_monthly ?? '',
+    razorpay_plan_id_monthly_india: addon.razorpay_plan_id_monthly_india ?? '',
 });
 
 const form = useForm({
@@ -38,8 +49,10 @@ const submit = () => {
             name: addon.name,
             description: addon.description || null,
             price_monthly: addon.price_monthly,
+            price_india: addon.price_india,
             enabled: addon.enabled,
             razorpay_plan_id_monthly: addon.razorpay_plan_id_monthly || null,
+            razorpay_plan_id_monthly_india: addon.razorpay_plan_id_monthly_india || null,
         })),
     })).put('/admin/settings', { preserveScroll: true });
 };
@@ -57,7 +70,11 @@ const submit = () => {
             <SettingsTabs />
 
             <form class="space-y-4" @submit.prevent="submit">
-                <p class="text-sm text-slate-600 dark:text-slate-400">Monthly add-ons tenants purchase on top of their base plan. Prices use {{ selectedCurrency.code }} and sync to Razorpay when enabled.</p>
+                <p class="text-sm text-slate-600 dark:text-slate-400">
+                    Monthly add-ons tenants purchase on top of their base plan. Base prices use {{ selectedCurrency.code }}.
+                    <span v-if="indiaEnabled"> India visitors see separate INR prices when India pricing is enabled.</span>
+                    Prices sync to Razorpay when enabled.
+                </p>
 
                 <div
                     v-for="(addon, index) in form.addons"
@@ -88,6 +105,29 @@ const submit = () => {
                             </div>
                             <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">Tenants see {{ formatPrice(addon.price_monthly) }}/mo</p>
                         </div>
+
+                        <template v-if="indiaEnabled">
+                            <div class="sm:col-span-2">
+                                <p class="text-xs font-semibold uppercase tracking-wider text-violet-600 dark:text-violet-400">{{ $t('central.india_pricing_section') }}</p>
+                            </div>
+                            <div>
+                                <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('central.india_monthly_price') }}</label>
+                                <div class="flex overflow-hidden rounded-xl border border-slate-200 dark:border-slate-800">
+                                    <span class="flex items-center bg-slate-50 dark:bg-slate-950 px-3 text-sm text-slate-500 dark:text-slate-400">{{ indiaCurrency.symbol }}</span>
+                                    <input v-model.number="addon.price_india" type="number" min="0" max="99999" class="min-w-0 flex-1 border-0 bg-transparent px-3 py-2.5 text-sm" />
+                                </div>
+                                <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">India visitors see {{ formatIndiaPrice(addon.price_india) }}/mo</p>
+                                <p v-if="form.errors[`addons.${index}.price_india`]" class="mt-1 text-xs text-red-600">{{ form.errors[`addons.${index}.price_india`] }}</p>
+                            </div>
+                            <div v-if="settings.razorpay_enabled && addon.razorpay_plan_id_monthly_india" class="font-mono text-xs text-violet-700 dark:text-violet-300">
+                                {{ indiaCurrency.code }} monthly plan: {{ addon.razorpay_plan_id_monthly_india }}
+                            </div>
+                            <div v-else-if="!settings.razorpay_enabled" class="sm:col-span-2">
+                                <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Razorpay {{ indiaCurrency.code }} monthly price ID</label>
+                                <input v-model="addon.razorpay_plan_id_monthly_india" type="text" class="w-full rounded-xl border border-slate-200 dark:border-slate-800 px-3.5 py-2.5 font-mono text-sm" />
+                            </div>
+                        </template>
+
                         <div v-if="!settings.razorpay_enabled" class="sm:col-span-2">
                             <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Razorpay monthly price ID</label>
                             <input v-model="addon.razorpay_plan_id_monthly" type="text" class="w-full rounded-xl border border-slate-200 dark:border-slate-800 px-3.5 py-2.5 font-mono text-sm" />

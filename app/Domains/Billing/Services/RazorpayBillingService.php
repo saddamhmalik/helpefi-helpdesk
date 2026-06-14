@@ -243,7 +243,10 @@ class RazorpayBillingService
             ]);
         }
 
-        $planId = AddonCatalogDefinition::razorpayPlanId($addon);
+        $planId = AddonCatalogDefinition::razorpayPlanIdForRegion(
+            $addon,
+            $this->isIndiaCurrency((string) ($subscription->currency ?: $this->centralSettings->currency())),
+        );
 
         if (! $planId) {
             throw ValidationException::withMessages([
@@ -1038,7 +1041,10 @@ class RazorpayBillingService
         }
 
         if ($status === 'created') {
-            $expectedPlanId = AddonCatalogDefinition::razorpayPlanId($addon);
+            $expectedPlanId = AddonCatalogDefinition::razorpayPlanIdForRegion(
+                $addon,
+                $this->isIndiaCurrency((string) ($subscription->currency ?: $this->centralSettings->currency())),
+            );
 
             if ($expectedPlanId && ($entity['plan_id'] ?? null) !== $expectedPlanId) {
                 return null;

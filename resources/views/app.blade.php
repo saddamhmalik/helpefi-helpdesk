@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 @php
-    $isMarketingPage = request()->routeIs('central.home', 'central.login', 'central.register');
+    use App\Domains\Tenancy\Support\MarketingSeoContext;
+
+    $isMarketingPage = MarketingSeoContext::isMarketingRequest(request());
     $appearance = 'light';
     $centralSeo = null;
 
@@ -9,23 +11,23 @@
     }
 
     if ($isMarketingPage) {
-        $centralPage = match (true) {
-            request()->routeIs('central.register') => 'register',
-            request()->routeIs('central.login') => 'login',
-            default => 'home',
-        };
-
         $centralSettings = app(\App\Domains\Tenancy\Services\CentralSettingsService::class);
+        $socialUrls = collect($centralSettings->socialLinks())
+            ->pluck('url')
+            ->filter(fn ($url) => is_string($url) && $url !== '')
+            ->values()
+            ->all();
 
         $centralSeo = app(\App\Domains\Tenancy\Services\CentralSeoService::class)->meta(
-            $centralPage,
+            MarketingSeoContext::pageKey(request()),
             config('app.name', 'helpefi'),
             $centralSettings->trialDays(),
             $centralSettings->currency(),
+            $socialUrls,
         );
     }
 @endphp
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ in_array(app()->getLocale(), ['ar']) ? 'rtl' : 'ltr' }}">
+<html lang="en" dir="ltr">
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -34,6 +36,10 @@
         <link rel="icon" href="/favicon.png" type="image/png" sizes="32x32">
         <link rel="icon" href="/favicon-16.png" type="image/png" sizes="16x16">
         <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+        @if ($isMarketingPage)
+            <link rel="preconnect" href="https://www.googletagmanager.com" crossorigin>
+            <link rel="dns-prefetch" href="https://www.google-analytics.com">
+        @endif
         <title inertia>{{ $centralSeo['title'] ?? config('app.name', 'helpefi') }}</title>
         @if ($centralSeo)
             @include('partials.central-seo', ['seo' => $centralSeo])

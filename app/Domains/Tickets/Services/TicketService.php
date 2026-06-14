@@ -581,7 +581,7 @@ class TicketService
 
     private function broadcastMessage(TicketMessage $message, bool $includeChatChannel): void
     {
-        $message->loadMissing(['user:id,name', 'contact:id,name']);
+        $message->loadMissing(['user:id,name,email,avatar_type,avatar_path', 'contact:id,name']);
 
         $this->realtime->ticketMessage(
             $message->ticket_id,

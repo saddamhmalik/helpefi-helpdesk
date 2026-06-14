@@ -1,5 +1,5 @@
 <script setup>
-import { Link } from '@inertiajs/vue3';
+import { Link, usePage } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import AppLogo from '../Components/AppLogo.vue';
@@ -14,7 +14,12 @@ defineProps({
 });
 
 const { t } = useI18n();
+const page = usePage();
 const mobileOpen = ref(false);
+
+const verticalPages = computed(() => page.props.verticalPages ?? []);
+const comparePages = computed(() => page.props.comparePages ?? []);
+const featurePages = computed(() => page.props.featurePages ?? []);
 
 const socialIcons = {
     x: 'M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z',
@@ -46,9 +51,9 @@ useBodyScrollLock(mobileOpen);
             class="relative z-50 bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 px-4 py-2.5 text-center text-xs font-medium text-white sm:text-sm"
         >
             <div class="mx-auto flex max-w-4xl flex-col items-center justify-center gap-1 sm:flex-row sm:gap-2">
-                <span>🎉 {{ trialDays }}-day free trial — full platform access, no credit card.</span>
+                <span>{{ $t('central.home.promo_trial', { days: trialDays }) }}</span>
                 <Link href="/register" class="font-bold underline underline-offset-2 hover:text-blue-100">
-                    Start now →
+                    {{ $t('central.home.promo_start') }}
                 </Link>
             </div>
         </div>
@@ -148,8 +153,8 @@ useBodyScrollLock(mobileOpen);
 
         <footer v-if="showFooter" class="border-t border-slate-200 bg-slate-950 text-slate-300 dark:border-slate-800">
             <div class="mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-14 lg:px-8">
-                <div class="grid gap-8 sm:grid-cols-2 sm:gap-10 lg:grid-cols-4">
-                    <div class="lg:col-span-1">
+                <div class="flex flex-col gap-8 border-b border-white/10 pb-10 lg:flex-row lg:items-start lg:justify-between lg:gap-12">
+                    <div class="max-w-md">
                         <AppLogo size="md" surface="light" />
                         <p class="mt-3 text-sm leading-relaxed text-slate-400 dark:text-slate-500">
                             {{ $t('layouts.central.footer_tagline') }}
@@ -163,12 +168,33 @@ useBodyScrollLock(mobileOpen);
                                 rel="noopener noreferrer"
                                 :aria-label="social.label"
                                 :title="social.label"
-                                class="flex h-11 w-11 items-center justify-center rounded-lg bg-white/5 text-slate-400 ring-1 ring-white/10 transition hover:bg-white/10 hover:text-white"
+                                class="flex h-10 w-10 items-center justify-center rounded-lg bg-white/5 text-slate-400 ring-1 ring-white/10 transition hover:bg-white/10 hover:text-white"
                             >
                                 <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path :d="iconPath(social.key)" /></svg>
                             </a>
                         </div>
                     </div>
+
+                    <div class="w-full rounded-2xl border border-white/10 bg-gradient-to-br from-white/[0.07] to-white/[0.02] p-5 sm:p-6 lg:max-w-sm lg:shrink-0">
+                        <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">{{ $t('layouts.central.footer_get_started') }}</p>
+                        <Link
+                            href="/register"
+                            class="mt-4 flex w-full items-center justify-center rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-5 py-3 text-sm font-bold text-white shadow-lg shadow-blue-900/30 transition hover:from-blue-500 hover:to-indigo-500"
+                        >
+                            {{ $t('layouts.central.start_free_trial') }}
+                        </Link>
+                        <div class="mt-4 flex flex-col gap-2.5 border-t border-white/10 pt-4 text-sm sm:flex-row sm:flex-wrap sm:gap-x-5 sm:gap-y-2">
+                            <Link href="/login" class="text-slate-300 transition hover:text-white">
+                                {{ $t('layouts.central.footer_sign_in_workspace') }}
+                            </Link>
+                            <a href="/#how-it-works" class="text-slate-400 transition hover:text-white">
+                                {{ $t('layouts.central.how_it_works') }}
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid gap-8 pt-10 sm:grid-cols-2 sm:gap-10 lg:grid-cols-5">
                     <div>
                         <p class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">{{ $t('layouts.central.footer_product') }}</p>
                         <ul class="mt-4 space-y-2.5 text-sm">
@@ -180,22 +206,44 @@ useBodyScrollLock(mobileOpen);
                         </ul>
                     </div>
                     <div>
-                        <p class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">{{ $t('layouts.central.footer_get_started') }}</p>
+                        <p class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">{{ $t('layouts.central.footer_features') }}</p>
                         <ul class="mt-4 space-y-2.5 text-sm">
-                            <li><Link href="/register" class="transition hover:text-white">{{ $t('layouts.central.start_free_trial') }}</Link></li>
-                            <li><Link href="/login" class="transition hover:text-white">{{ $t('layouts.central.footer_sign_in_workspace') }}</Link></li>
-                            <li><a href="/#how-it-works" class="transition hover:text-white">{{ $t('layouts.central.footer_setup_guide') }}</a></li>
+                            <li v-for="feature in featurePages" :key="feature.slug">
+                                <Link :href="feature.path" class="transition hover:text-white">
+                                    {{ $t(`central.feature_pages.${feature.slug}.nav_label`) }}
+                                </Link>
+                            </li>
                         </ul>
                     </div>
                     <div>
-                        <p class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">{{ $t('layouts.central.footer_capabilities') }}</p>
-                        <ul class="mt-4 space-y-2.5 text-sm text-slate-400 dark:text-slate-500">
-                            <li>{{ $t('layouts.central.footer_capability_inbox') }}</li>
-                            <li>{{ $t('layouts.central.footer_capability_channels') }}</li>
-                            <li>{{ $t('layouts.central.footer_capability_kb') }}</li>
-                            <li>{{ $t('layouts.central.footer_capability_sla') }}</li>
-                            <li>{{ $t('layouts.central.footer_capability_service_desk') }}</li>
-                            <li>{{ $t('layouts.central.footer_capability_integrations') }}</li>
+                        <p class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">{{ $t('layouts.central.footer_solutions') }}</p>
+                        <ul class="mt-4 space-y-2.5 text-sm">
+                            <li v-for="vertical in verticalPages" :key="vertical.slug">
+                                <Link :href="vertical.path" class="transition hover:text-white">
+                                    {{ $t(`central.verticals.${vertical.slug}.nav_label`) }}
+                                </Link>
+                            </li>
+                        </ul>
+                    </div>
+                    <div>
+                        <p class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">{{ $t('layouts.central.footer_compare') }}</p>
+                        <ul class="mt-4 space-y-2.5 text-sm">
+                            <li v-for="compare in comparePages" :key="compare.slug">
+                                <Link :href="compare.path" class="transition hover:text-white">
+                                    {{ $t('central.compare_vs', { name: $t(`central.comparisons.${compare.slug}.competitor_name`) }) }}
+                                </Link>
+                            </li>
+                        </ul>
+                    </div>
+                    <div>
+                        <p class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">{{ $t('layouts.central.footer_company') }}</p>
+                        <ul class="mt-4 space-y-2.5 text-sm">
+                            <li><Link href="/about" class="transition hover:text-white">{{ $t('central.static_pages.about.nav_label') }}</Link></li>
+                            <li><Link href="/contact" class="transition hover:text-white">{{ $t('central.static_pages.contact.nav_label') }}</Link></li>
+                            <li><Link href="/blog" class="transition hover:text-white">{{ $t('central.blog.index_nav_label') }}</Link></li>
+                            <li><Link href="/pricing" class="transition hover:text-white">{{ $t('central.static_pages.pricing.nav_label') }}</Link></li>
+                            <li><Link href="/privacy" class="transition hover:text-white">{{ $t('central.static_pages.privacy.nav_label') }}</Link></li>
+                            <li><Link href="/terms" class="transition hover:text-white">{{ $t('central.static_pages.terms.nav_label') }}</Link></li>
                         </ul>
                     </div>
                 </div>

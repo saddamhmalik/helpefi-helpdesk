@@ -33,12 +33,14 @@ export function messageAvatar(message) {
         return {
             name: message.user.name,
             email: message.user.email,
+            imageUrl: message.user.avatar_url ?? null,
         };
     }
 
     return {
         name: message.contact?.name || '',
         email: message.contact?.email || '',
+        imageUrl: null,
     };
 }
 
