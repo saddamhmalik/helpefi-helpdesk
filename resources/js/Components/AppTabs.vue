@@ -17,8 +17,8 @@ const select = (id) => {
 const buttonClass = (active, variant) => {
     if (variant === 'pills') {
         return active
-            ? 'bg-slate-900 text-white shadow-sm dark:bg-slate-100 dark:bg-slate-900 dark:text-slate-900 dark:text-slate-100'
-            : 'agent-text-muted agent-hover-surface hover:text-slate-900 dark:text-slate-100 dark:hover:text-slate-100';
+            ? 'bg-slate-900 text-white shadow-sm dark:bg-slate-100 dark:text-slate-900'
+            : 'agent-text-muted agent-hover-surface hover:text-slate-900 dark:hover:text-slate-100';
     }
 
     return active

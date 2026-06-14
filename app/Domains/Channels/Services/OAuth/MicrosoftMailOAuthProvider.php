@@ -87,8 +87,13 @@ class MicrosoftMailOAuthProvider implements MailOAuthProviderInterface
         }
 
         $messages = [];
+        $processed = $inbox->mailbox_processed_ids ?? [];
 
         foreach ($response->json('value', []) as $item) {
+            if (in_array($item['id'], $processed, true)) {
+                continue;
+            }
+
             $mime = Http::withToken($accessToken)
                 ->get('https://graph.microsoft.com/v1.0/me/messages/'.$item['id'].'/$value');
 

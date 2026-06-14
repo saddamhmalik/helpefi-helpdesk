@@ -83,8 +83,13 @@ class GoogleMailOAuthProvider implements MailOAuthProviderInterface
         }
 
         $messages = [];
+        $processed = $inbox->mailbox_processed_ids ?? [];
 
         foreach ($list->json('messages', []) as $item) {
+            if (in_array($item['id'], $processed, true)) {
+                continue;
+            }
+
             $detail = Http::withToken($accessToken)
                 ->get('https://gmail.googleapis.com/gmail/v1/users/me/messages/'.$item['id'], [
                     'format' => 'raw',

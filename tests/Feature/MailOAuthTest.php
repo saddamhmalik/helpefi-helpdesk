@@ -33,7 +33,8 @@ class MailOAuthTest extends TestCase
                 'refresh_token' => 'google-refresh',
                 'expires_in' => 3600,
             ]),
-            'gmail.googleapis.com/*' => Http::response(['emailAddress' => 'support@gmail.com']),
+            'gmail.googleapis.com/gmail/v1/users/me/profile' => Http::response(['emailAddress' => 'support@gmail.com']),
+            'gmail.googleapis.com/gmail/v1/users/me/messages*' => Http::response(['messages' => []]),
         ]);
 
         $admin = User::factory()->admin()->create();

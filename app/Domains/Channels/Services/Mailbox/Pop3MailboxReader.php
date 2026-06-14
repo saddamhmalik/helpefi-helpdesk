@@ -44,6 +44,10 @@ class Pop3MailboxReader implements MailboxReaderInterface
         return $messages;
     }
 
+    public function markMessageProcessed(EmailInbox $inbox, InboundMailMessage $message): void
+    {
+    }
+
     private function connect(MailboxConnectionConfig $config)
     {
         $context = stream_context_create([

@@ -57,13 +57,17 @@ class InboundMailboxPollService
                         fromPoll: true,
                     );
 
+                    $action = $result['action'] ?? null;
+
                     if ($message->pollUid) {
                         $processed[] = $message->pollUid;
                     }
 
-                    match ($result['action']) {
+                    $reader->markMessageProcessed($inbox, $message);
+
+                    match ($action) {
                         'created' => $stats['created']++,
-                        'reply' => $stats['reply']++,
+                        'reply', 'side_reply' => $stats['reply']++,
                         'duplicate' => $stats['duplicate']++,
                         default => null,
                     };

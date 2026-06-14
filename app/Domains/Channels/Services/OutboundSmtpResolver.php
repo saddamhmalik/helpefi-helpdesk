@@ -80,6 +80,8 @@ class OutboundSmtpResolver
             'inbox_id' => $inbox->id,
             'address' => $inbox->address,
             'name' => $inbox->name,
+            'inbound_method' => $inbox->inbound_method,
+            'oauth_connected' => $inbox->isOAuthConnected(),
             'provider_key' => $providerKey,
             'provider_label' => $preset['label'] ?? 'Custom SMTP',
             'host' => $preset['host'] ?? null,

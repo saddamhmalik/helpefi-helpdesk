@@ -19,6 +19,7 @@ class MailOAuthProviderFactory
 
     public function configuredProviders(): array
     {
+        $oauth = app(MailOAuthService::class);
         $providers = [];
 
         foreach (['google', 'microsoft', 'zoho'] as $provider) {
@@ -28,6 +29,7 @@ class MailOAuthProviderFactory
                 'label' => config("helpdesk.mail_oauth.{$provider}.label"),
                 'help' => config("helpdesk.mail_oauth.{$provider}.help"),
                 'configured' => $instance->isConfigured(),
+                'redirect_uri' => $oauth->redirectUri($provider),
             ];
         }
 

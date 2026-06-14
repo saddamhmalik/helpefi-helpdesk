@@ -370,6 +370,7 @@ BODY;
                 pollUid: 'poll-msg-1',
             ),
         ]);
+        $reader->shouldReceive('markMessageProcessed')->once();
 
         $this->mock(MailboxReaderFactory::class, function ($mock) use ($reader) {
             $mock->shouldReceive('forInbox')->andReturn($reader);
@@ -447,6 +448,81 @@ BODY;
         $this->assertTrue($inbox->poll_enabled);
         $this->assertSame('imap', $inbox->mailbox_protocol);
         $this->assertSame('imap.gmail.com', $inbox->mailbox_host);
+    }
+
+    public function test_oauth_poll_command_imports_fetched_messages(): void
+    {
+        $this->seed([TicketLookupSeeder::class, ChannelSeeder::class, EmailSeeder::class]);
+
+        $inbox = EmailInbox::query()->first();
+        $inbox->update([
+            'inbound_method' => 'oauth',
+            'poll_enabled' => true,
+            'oauth_provider' => 'google',
+            'oauth_refresh_token' => 'refresh',
+            'oauth_access_token' => 'access',
+            'oauth_token_expires_at' => now()->addHour(),
+            'oauth_connected_email' => 'support@helpdesk.test',
+        ]);
+
+        $reader = Mockery::mock(MailboxReaderInterface::class);
+        $reader->shouldReceive('fetch')->once()->andReturn([
+            new InboundMailMessage(
+                messageId: 'oauth-msg-1',
+                fromEmail: 'customer@example.com',
+                fromName: 'Customer',
+                subject: 'OAuth support request',
+                body: 'Help from OAuth polling.',
+                pollUid: 'oauth-msg-1',
+            ),
+        ]);
+        $reader->shouldReceive('markMessageProcessed')->once();
+
+        $this->mock(MailboxReaderFactory::class, function ($mock) use ($reader) {
+            $mock->shouldReceive('forInbox')->andReturn($reader);
+        });
+
+        $this->artisan('channels:poll-inboxes')->assertSuccessful();
+
+        $this->assertDatabaseHas('tickets', ['subject' => 'OAuth support request']);
+    }
+
+    public function test_saving_poll_settings_does_not_clear_oauth_connection(): void
+    {
+        $this->seed(EmailSeeder::class);
+        $admin = User::factory()->admin()->create();
+        $inbox = EmailInbox::query()->first();
+        $inbox->update([
+            'inbound_method' => 'oauth',
+            'poll_enabled' => true,
+            'oauth_provider' => 'google',
+            'oauth_refresh_token' => 'refresh-token',
+            'oauth_access_token' => 'access-token',
+            'oauth_token_expires_at' => now()->addHour(),
+            'oauth_connected_email' => 'support@helpdesk.test',
+        ]);
+
+        $this->actingAs($admin)
+            ->put("/settings/email/inboxes/{$inbox->id}", [
+                'name' => $inbox->name,
+                'address' => $inbox->address,
+                'is_active' => true,
+                'inbound_method' => 'poll',
+                'mailbox_provider' => 'gmail',
+                'mailbox_protocol' => 'imap',
+                'mailbox_host' => 'imap.gmail.com',
+                'mailbox_port' => 993,
+                'mailbox_encryption' => 'ssl',
+                'mailbox_username' => 'support@helpdesk.test',
+                'mailbox_password' => 'app-password',
+                'mailbox_folder' => 'INBOX',
+            ])
+            ->assertRedirect();
+
+        $inbox->refresh();
+        $this->assertSame('oauth', $inbox->inbound_method);
+        $this->assertSame('google', $inbox->oauth_provider);
+        $this->assertSame('refresh-token', $inbox->oauth_refresh_token);
     }
 
     public function test_webhook_rejected_for_poll_inbox(): void
