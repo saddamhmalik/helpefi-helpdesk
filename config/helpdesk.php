@@ -113,7 +113,7 @@ return [
 
         'google' => [
             'label' => 'Google / Gmail',
-            'help' => 'Sign in with Google — no app password needed. Requires Google Cloud OAuth credentials and the Gmail API enabled in the same project.',
+            'help' => 'Sign in with the Gmail account that receives your support emails. Unread Inbox messages are imported automatically.',
             'setup_console_url' => 'https://console.cloud.google.com/apis/library/gmail.googleapis.com',
             'gmail_api_enable_url' => 'https://console.cloud.google.com/apis/library/gmail.googleapis.com',
             'client_id' => env('GOOGLE_MAIL_CLIENT_ID'),
@@ -126,7 +126,7 @@ return [
         ],
         'microsoft' => [
             'label' => 'Microsoft / Outlook',
-            'help' => 'Sign in with Microsoft — works with Outlook.com and Microsoft 365.',
+            'help' => 'Sign in with the Outlook or Microsoft 365 mailbox that receives your support emails.',
             'setup_console_url' => 'https://portal.azure.com/#view/Microsoft_AAD_RegisteredApps/ApplicationsListBlade',
             'client_id' => env('MICROSOFT_MAIL_CLIENT_ID'),
             'client_secret' => env('MICROSOFT_MAIL_CLIENT_SECRET'),
@@ -141,7 +141,7 @@ return [
         ],
         'zoho' => [
             'label' => 'Zoho Mail',
-            'help' => 'Sign in with Zoho — for Zoho Mail business accounts.',
+            'help' => 'Sign in with the Zoho Mail account that receives your support emails.',
             'setup_console_url' => 'https://api-console.zoho.com/',
             'client_id' => env('ZOHO_MAIL_CLIENT_ID'),
             'client_secret' => env('ZOHO_MAIL_CLIENT_SECRET'),

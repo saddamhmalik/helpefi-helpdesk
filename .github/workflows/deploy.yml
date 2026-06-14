@@ -49,6 +49,8 @@ jobs:
             php artisan migrate --force
             php artisan tenants:migrate --force
 
+            php artisan helpdesk:seed-handbook
+
             # Clear stale caches, then rebuild Laravel optimization caches.
             php artisan optimize:clear
             php artisan optimize

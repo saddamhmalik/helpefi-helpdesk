@@ -45,6 +45,7 @@ class KnowledgeArticleController extends Controller
             'knowledge_category_id' => ['nullable', 'exists:knowledge_categories,id'],
             'knowledge_collection_id' => ['nullable', 'exists:knowledge_collections,id'],
             'is_published' => ['boolean'],
+            'is_public' => ['boolean'],
             'locale' => ['nullable', 'string', 'max:10'],
         ]);
 
@@ -83,6 +84,7 @@ class KnowledgeArticleController extends Controller
             'knowledge_category_id' => ['nullable', 'exists:knowledge_categories,id'],
             'knowledge_collection_id' => ['nullable', 'exists:knowledge_collections,id'],
             'is_published' => ['boolean'],
+            'is_public' => ['boolean'],
         ]);
 
         $this->knowledgeService->update($article, $data, $request->user()->id);

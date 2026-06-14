@@ -17,7 +17,7 @@ if [ "$WAIT_FOR_REDIS" != "false" ]; then
     done
 fi
 
-php artisan storage:link --force 2>/dev/null || true
+php artisan storage:link --force --no-interaction 2>/dev/null || true
 
 chown -R www-data:www-data storage bootstrap/cache 2>/dev/null || true
 

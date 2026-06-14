@@ -87,6 +87,24 @@ class MailOAuthTest extends TestCase
         $this->assertSame('https://helpefi.com/oauth/mail/zoho/callback', $oauth->redirectUri('zoho'));
     }
 
+    public function test_configured_oauth_providers_omit_unconfigured_providers(): void
+    {
+        config([
+            'helpdesk.mail_oauth.google.client_id' => 'google-client',
+            'helpdesk.mail_oauth.google.client_secret' => 'google-secret',
+            'helpdesk.mail_oauth.microsoft.client_id' => null,
+            'helpdesk.mail_oauth.microsoft.client_secret' => null,
+            'helpdesk.mail_oauth.zoho.client_id' => 'zoho-client',
+            'helpdesk.mail_oauth.zoho.client_secret' => 'zoho-secret',
+        ]);
+
+        $providers = app(\App\Domains\Channels\Services\OAuth\MailOAuthProviderFactory::class)->configuredProviders();
+
+        $this->assertArrayHasKey('google', $providers);
+        $this->assertArrayHasKey('zoho', $providers);
+        $this->assertArrayNotHasKey('microsoft', $providers);
+    }
+
     public function test_central_oauth_callback_stores_microsoft_tokens(): void
     {
         $this->provisionTenancy('mail-oauth-microsoft');

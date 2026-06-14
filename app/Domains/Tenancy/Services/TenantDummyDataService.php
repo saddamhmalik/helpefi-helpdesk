@@ -303,15 +303,18 @@ class TenantDummyDataService
     private function purgeBootstrapKnowledgeBase(): void
     {
         KnowledgeArticle::query()
+            ->where('is_system', false)
             ->whereIn('slug', BootstrapDemoContent::DEMO_KNOWLEDGE_ARTICLE_SLUGS)
             ->delete();
 
         KnowledgeCollection::query()
+            ->where('is_system', false)
             ->whereIn('slug', BootstrapDemoContent::DEMO_KNOWLEDGE_COLLECTION_SLUGS)
             ->delete();
 
         KnowledgeCategory::query()
             ->whereIn('slug', BootstrapDemoContent::DEMO_KNOWLEDGE_CATEGORY_SLUGS)
+            ->whereDoesntHave('articles', fn ($query) => $query->where('is_system', true))
             ->delete();
     }
 

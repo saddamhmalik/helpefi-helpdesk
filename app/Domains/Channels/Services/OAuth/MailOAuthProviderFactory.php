@@ -24,11 +24,16 @@ class MailOAuthProviderFactory
 
         foreach (['google', 'microsoft', 'zoho'] as $provider) {
             $instance = $this->make($provider);
+
+            if (! $instance->isConfigured()) {
+                continue;
+            }
+
             $providers[$provider] = [
                 'key' => $provider,
                 'label' => config("helpdesk.mail_oauth.{$provider}.label"),
                 'help' => config("helpdesk.mail_oauth.{$provider}.help"),
-                'configured' => $instance->isConfigured(),
+                'configured' => true,
                 'redirect_uri' => $oauth->redirectUri($provider),
                 'setup_console_url' => config("helpdesk.mail_oauth.{$provider}.setup_console_url"),
                 'gmail_api_enable_url' => config("helpdesk.mail_oauth.{$provider}.gmail_api_enable_url"),

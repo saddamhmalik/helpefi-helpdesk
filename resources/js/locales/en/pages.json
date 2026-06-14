@@ -339,6 +339,7 @@
         "description": "Description",
         "sort_order": "Sort order",
         "public_on_portal": "Public on portal",
+        "public_on_portal_hint": "Customers can open this article on the help center portal.",
         "edit_collection": "Edit collection",
         "edit": "Edit",
         "delete": "Delete",

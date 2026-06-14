@@ -305,7 +305,7 @@ defineExpose({ openSearch });
         <svg class="h-4 w-4 shrink-0 text-slate-400 dark:text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
         </svg>
-        <span class="truncate">{{ t('components.global_search_placeholder') }}</span>
+        <span class="truncate text-slate-500 dark:text-slate-400">{{ t('components.global_search_placeholder') }}</span>
         <kbd class="ml-auto hidden shrink-0 rounded-md border agent-border agent-panel px-1.5 py-0.5 text-[10px] font-medium text-slate-400 dark:text-slate-500 sm:inline">⌘K</kbd>
     </button>
 
@@ -356,7 +356,7 @@ defineExpose({ openSearch });
                                     v-model="query"
                                     type="search"
                                     :placeholder="t('components.global_search_placeholder')"
-                                    class="min-w-0 flex-1 bg-transparent text-lg font-normal agent-text placeholder:text-slate-400 dark:text-slate-500 focus:outline-none sm:text-[1.35rem]"
+                                    class="min-w-0 flex-1 bg-transparent text-lg font-normal agent-text placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none sm:text-[1.35rem]"
                                     @keydown="onInputKeydown"
                                 >
                             </div>
@@ -364,7 +364,7 @@ defineExpose({ openSearch });
                             <div v-if="showCopilotPrompt" class="border-b border-violet-100 bg-violet-50/60 px-4 py-2.5 dark:border-violet-900/50 dark:bg-violet-950/40">
                                 <button
                                     type="button"
-                                    class="flex w-full items-center gap-3 rounded-xl px-2 py-2 text-left transition hover:bg-violet-100/80"
+                                    class="flex w-full items-center gap-3 rounded-xl px-2 py-2 text-left transition hover:bg-violet-100/80 dark:hover:bg-violet-900/50"
                                     :disabled="copilotLoading"
                                     @click="askCopilot"
                                 >
@@ -374,10 +374,10 @@ defineExpose({ openSearch });
                                         </svg>
                                     </span>
                                     <span class="min-w-0 flex-1">
-                                        <span class="block text-sm font-medium text-violet-950">{{ t('components.ask_copilot') }}</span>
+                                        <span class="block text-sm font-medium text-violet-950 dark:text-violet-100">{{ t('components.ask_copilot') }}</span>
                                         <span class="block truncate text-xs text-violet-700 dark:text-violet-300">“{{ query.trim() }}”</span>
                                     </span>
-                                    <span v-if="copilotLoading" class="text-xs text-violet-600">{{ t('components.thinking') }}</span>
+                                    <span v-if="copilotLoading" class="text-xs text-violet-600 dark:text-violet-300">{{ t('components.thinking') }}</span>
                                     <kbd v-else class="hidden shrink-0 rounded border border-violet-200 dark:border-violet-900/60 bg-white dark:bg-slate-900 px-1.5 py-0.5 text-[10px] text-violet-500 sm:inline">↵</kbd>
                                 </button>
                             </div>

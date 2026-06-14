@@ -3,6 +3,7 @@ import { Head, Link, router, useForm, usePage } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 import AgentLayout from '../../Layouts/AgentLayout.vue';
 import AppModal from '../../Components/AppModal.vue';
+import AppToggle from '../../Components/AppToggle.vue';
 import FormRichTextField from '../../Components/FormRichTextField.vue';
 import { formInputClass, formSelectClass } from '../../composables/useFormControls.js';
 import { useI18n } from 'vue-i18n';
@@ -28,6 +29,7 @@ const form = useForm({
     knowledge_category_id: props.article.knowledge_category_id,
     knowledge_collection_id: props.article.knowledge_collection_id,
     is_published: props.article.is_published,
+    is_public: props.article.is_public ?? true,
 });
 
 const translationForm = useForm({
@@ -134,6 +136,11 @@ const portalArticleUrl = computed(() => {
                             <input v-model="form.is_published" type="checkbox" class="rounded agent-border" />
                             Published
                         </label>
+                        <AppToggle
+                            v-model="form.is_public"
+                            :label="$t('knowledge.public_on_portal')"
+                            :description="article.is_system ? $t('handbook.system_article_public_hint') : $t('knowledge.public_on_portal_hint')"
+                        />
                         <button type="submit" class="rounded-lg bg-blue-600 px-4 py-2 font-medium text-white hover:bg-blue-700" :disabled="form.processing">{{ $t('knowledge.update_article') }}</button>
                     </form>
                 </div>

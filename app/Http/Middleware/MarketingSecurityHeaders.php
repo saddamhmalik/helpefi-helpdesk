@@ -26,8 +26,11 @@ class MarketingSecurityHeaders
         $response->headers->set('X-Frame-Options', 'SAMEORIGIN');
         $response->headers->set('Referrer-Policy', 'strict-origin-when-cross-origin');
         $response->headers->set('Permissions-Policy', 'camera=(), microphone=(), geolocation=(), payment=()');
-        $response->headers->set('Cross-Origin-Opener-Policy', 'same-origin');
-        $response->headers->set('Cross-Origin-Resource-Policy', 'same-site');
+
+        if (! app()->environment('local') || $request->secure()) {
+            $response->headers->set('Cross-Origin-Opener-Policy', 'same-origin');
+            $response->headers->set('Cross-Origin-Resource-Policy', 'same-site');
+        }
 
         if ($request->secure()) {
             $response->headers->set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
@@ -59,14 +62,14 @@ class MarketingSecurityHeaders
         ];
 
         if (app()->environment('local', 'testing')) {
-            foreach (['http://localhost:5173', 'http://127.0.0.1:5173', 'http://[::1]:5173', 'ws://localhost:5173', 'ws://127.0.0.1:5173', 'ws://[::1]:5173'] as $devOrigin) {
+            foreach (['http://localhost:5173', 'http://127.0.0.1:5173', 'ws://localhost:5173', 'ws://127.0.0.1:5173'] as $devOrigin) {
                 $scriptSources[] = $devOrigin;
                 $styleSources[] = $devOrigin;
                 $connectSources[] = $devOrigin;
             }
         }
 
-        return implode('; ', [
+        $directives = [
             "default-src 'self'",
             'base-uri \'self\'',
             "form-action 'self'",
@@ -77,6 +80,13 @@ class MarketingSecurityHeaders
             'script-src '.implode(' ', $scriptSources),
             'style-src '.implode(' ', $styleSources),
             'connect-src '.implode(' ', $connectSources),
-        ]);
+        ];
+
+        if (app()->environment('local', 'testing')) {
+            $directives[] = 'script-src-elem '.implode(' ', $scriptSources);
+            $directives[] = 'style-src-elem '.implode(' ', $styleSources);
+        }
+
+        return implode('; ', $directives);
     }
 }

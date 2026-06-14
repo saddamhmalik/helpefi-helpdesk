@@ -33,11 +33,11 @@ class EnsureWorkspaceSetup
 
     private function allowsAccessDuringSetup(Request $request): bool
     {
-        if ($request->routeIs('setup', 'setup.*', 'welcome', 'logout', 'two-factor.challenge', 'two-factor.verify', 'subscription.required')) {
+        if ($request->routeIs('setup', 'setup.*', 'welcome', 'logout', 'two-factor.challenge', 'two-factor.verify', 'subscription.required', 'handbook.index')) {
             return true;
         }
 
-        if ($request->routeIs('settings*') || $request->is('settings', 'settings/*')) {
+        if ($request->routeIs('settings*') || $request->is('settings', 'settings/*', 'how-to')) {
             return true;
         }
 

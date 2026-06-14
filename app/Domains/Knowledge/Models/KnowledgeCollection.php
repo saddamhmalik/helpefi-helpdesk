@@ -15,12 +15,14 @@ class KnowledgeCollection extends Model
         'description',
         'sort_order',
         'is_public',
+        'is_system',
     ];
 
     protected function casts(): array
     {
         return [
             'is_public' => 'boolean',
+            'is_system' => 'boolean',
         ];
     }
 

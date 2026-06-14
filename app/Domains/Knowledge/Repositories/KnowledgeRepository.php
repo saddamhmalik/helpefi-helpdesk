@@ -6,6 +6,7 @@ use App\Domains\Knowledge\Models\KnowledgeArticle;
 use App\Domains\Knowledge\Models\KnowledgeCategory;
 use App\Domains\Knowledge\Models\KnowledgeCollection;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Str;
 
@@ -71,7 +72,7 @@ class KnowledgeRepository
     ): LengthAwarePaginator {
         return KnowledgeArticle::query()
             ->with(['category:id,name', 'collection:id,name,slug'])
-            ->where('is_published', true)
+            ->tap(fn (Builder $query) => $this->applyPortalVisibilityScope($query))
             ->when($locale, fn ($q) => $q->where('locale', $locale))
             ->when($collectionId, fn ($q) => $q->where('knowledge_collection_id', $collectionId))
             ->when($brandId, fn ($q) => $q->whereHas('collection', fn ($c) => $c->where('brand_id', $brandId)))
@@ -90,7 +91,7 @@ class KnowledgeRepository
         return KnowledgeArticle::query()
             ->with(['category:id,name', 'collection:id,name,slug'])
             ->where('slug', $slug)
-            ->where('is_published', true)
+            ->tap(fn (Builder $query) => $this->applyPortalVisibilityScope($query))
             ->when($locale, fn ($q) => $q->where('locale', $locale))
             ->when($brandId, fn ($query) => $query->whereIn(
                 'knowledge_collection_id',
@@ -103,7 +104,7 @@ class KnowledgeRepository
     {
         return KnowledgeArticle::query()
             ->with(['collection:id,name,slug'])
-            ->where('is_published', true)
+            ->tap(fn (Builder $query) => $this->applyPortalVisibilityScope($query))
             ->when($locale, fn ($q) => $q->where('locale', $locale))
             ->when($brandId, fn ($q) => $q->whereHas('collection', fn ($c) => $c->where('brand_id', $brandId)))
             ->orderByDesc('published_at')
@@ -150,5 +151,21 @@ class KnowledgeRepository
         }
 
         return $slug;
+    }
+
+    private function applyPortalVisibilityScope(Builder $query): void
+    {
+        $query
+            ->where('is_published', true)
+            ->where('is_public', true)
+            ->where(function (Builder $query) {
+                $query
+                    ->where(function (Builder $query) {
+                        $query
+                            ->where('is_system', false)
+                            ->whereHas('collection', fn (Builder $collection) => $collection->where('is_public', true));
+                    })
+                    ->orWhere('is_system', true);
+            });
     }
 }

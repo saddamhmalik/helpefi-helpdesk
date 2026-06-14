@@ -8,6 +8,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
+use InvalidArgumentException;
 
 class KnowledgeCollectionController extends Controller
 {
@@ -52,7 +53,11 @@ class KnowledgeCollectionController extends Controller
 
     public function destroy(int $collection): RedirectResponse
     {
-        $this->knowledgeService->deleteCollection($collection);
+        try {
+            $this->knowledgeService->deleteCollection($collection);
+        } catch (InvalidArgumentException $exception) {
+            return back()->withErrors(['collection' => $exception->getMessage()]);
+        }
 
         return back()->with('success', 'Collection deleted.');
     }

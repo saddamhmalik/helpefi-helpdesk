@@ -92,11 +92,19 @@ const destroy = (collection) => {
                 <h3 class="font-semibold agent-text">{{ collection.name }}</h3>
                 <p v-if="collection.description" class="mt-1 text-sm agent-text-muted">{{ collection.description }}</p>
                 <div class="mt-3 flex items-center justify-between text-sm agent-text-subtle">
-                    <span>{{ collection.articles_count }} articles · {{ collection.is_public ? 'Public' : 'Private' }}</span>
+                    <span>
+                        {{ collection.articles_count }} articles ·
+                        {{ collection.is_system ? $t('handbook.collection_agents_only') : (collection.is_public ? $t('handbook.visibility_public') : $t('handbook.visibility_agents_only')) }}
+                    </span>
                     <div class="flex gap-2">
                         <AppRowActions>
                             <AppEditAction :label="$t('knowledge.edit')" @click="startEdit(collection)" />
-                            <AppDeleteAction :label="$t('knowledge.delete')" @click="destroy(collection)" />
+                            <AppDeleteAction v-if="!collection.is_system" :label="$t('knowledge.delete')" @click="destroy(collection)" />
+                            <Link
+                                v-else-if="collection.slug === 'how-to-use-helpdesk'"
+                                href="/how-to"
+                                class="text-sm font-medium text-blue-600 hover:text-blue-700 dark:text-blue-300"
+                            >{{ $t('handbook.read_guide') }}</Link>
                         </AppRowActions>
                     </div>
                 </div>
@@ -135,7 +143,14 @@ const destroy = (collection) => {
                 <input v-model="editForm.name" type="text" required class="w-full rounded-lg border agent-border px-3 py-2 text-sm font-medium" />
                 <textarea v-model="editForm.description" rows="2" class="w-full rounded-lg border agent-border px-3 py-2 text-sm" />
                 <input v-model.number="editForm.sort_order" type="number" min="0" class="w-full rounded-lg border agent-border px-3 py-2 text-sm" />
-                <AppToggle v-model="editForm.is_public" :label="$t('knowledge.public_on_portal')" />
+                <AppToggle
+                    v-if="!editingCollection?.is_system"
+                    v-model="editForm.is_public"
+                    :label="$t('knowledge.public_on_portal')"
+                />
+                <p v-else class="rounded-lg border border-sky-200 bg-sky-50 px-3 py-2 text-xs text-sky-900 dark:border-sky-900/60 dark:bg-sky-950/40 dark:text-sky-200">
+                    {{ $t('handbook.collection_visibility_locked') }}
+                </p>
             </form>
 
             <template #footer>

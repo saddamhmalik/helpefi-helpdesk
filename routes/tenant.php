@@ -48,6 +48,7 @@ use App\Domains\Contacts\Controllers\OrganizationController;
 use App\Domains\Contacts\Controllers\OrganizationExportController;
 use App\Domains\Dashboard\Controllers\DashboardController;
 use App\Domains\Knowledge\Controllers\KnowledgeArticleController;
+use App\Domains\Knowledge\Controllers\PlatformHandbookController;
 use App\Domains\Knowledge\Controllers\KnowledgeCollectionController;
 use App\Domains\Knowledge\Controllers\KnowledgeSettingController;
 use App\Domains\Knowledge\Controllers\PortalController;
@@ -439,6 +440,7 @@ Route::middleware('auth')->group(function () {
         Route::delete('/ticket-views/{view}', [TicketViewController::class, 'destroy'])->name('ticket-views.destroy');
 
         Route::get('/knowledge', [KnowledgeArticleController::class, 'index'])->name('knowledge.index');
+        Route::get('/how-to', [PlatformHandbookController::class, 'index'])->name('handbook.index');
         Route::get('/knowledge/settings', [KnowledgeSettingController::class, 'edit'])->name('knowledge.settings');
         Route::put('/knowledge/settings', [KnowledgeSettingController::class, 'update'])->name('knowledge.settings.update');
         Route::get('/knowledge/collections', [KnowledgeCollectionController::class, 'index'])->name('knowledge.collections.index');

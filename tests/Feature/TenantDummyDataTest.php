@@ -303,7 +303,7 @@ class TenantDummyDataTest extends TenantTestCase
         $setting = app(HelpdeskSettingRepository::class)->current();
 
         $this->assertFalse($setting->dummy_data_active);
-        $this->assertNull($setting->dummy_data_manifest);
+        $this->assertSame(['bootstrap_demo_removed' => true], $setting->dummy_data_manifest);
         $this->assertFalse($service->publicState()['active']);
         $this->assertFalse($service->publicState()['has_any_demo']);
     }

@@ -378,7 +378,8 @@ const activeFilterLabels = computed(() => {
 <template>
     <Head :title="$t('tickets.tickets')" />
     <AgentLayout>
-        <PageHeader>
+        <div class="space-y-4">
+        <PageHeader class="!mb-0">
             <template #description>
                 {{ tickets.total }} ticket(s)
                 <span v-if="activeFilterCount"> with {{ activeFilterCount }} active filter(s)</span>
@@ -393,7 +394,7 @@ const activeFilterLabels = computed(() => {
             </template>
         </PageHeader>
 
-        <div v-if="personalViews.length || sharedViews.length" class="mb-4 flex flex-wrap items-center gap-2">
+        <div v-if="personalViews.length || sharedViews.length" class="flex flex-wrap items-center gap-2">
             <button
                 type="button"
                 class="rounded-lg px-3 py-1.5 text-sm font-medium transition"
@@ -455,7 +456,7 @@ const activeFilterLabels = computed(() => {
             </template>
         </div>
 
-        <div class="mb-4 overflow-hidden rounded-xl border agent-border agent-panel shadow-sm">
+        <div class="overflow-hidden rounded-xl border agent-border agent-panel shadow-sm">
             <form @submit.prevent="applyFilters" class="p-3">
                 <div class="flex flex-col gap-2 xl:flex-row xl:items-center">
                     <div class="relative min-w-0 flex-1 xl:max-w-xs">
@@ -563,7 +564,7 @@ const activeFilterLabels = computed(() => {
 
         <div
             v-if="selectedIds.length"
-            class="mb-4 flex flex-wrap items-center gap-2 rounded-xl border border-blue-200 dark:border-blue-900/60 bg-blue-50 dark:bg-blue-950/40 px-4 py-3"
+            class="flex flex-wrap items-center gap-2 rounded-xl border border-blue-200 dark:border-blue-900/60 bg-blue-50 dark:bg-blue-950/40 px-4 py-3"
         >
             <span class="text-sm font-medium text-blue-900">{{ selectedIds.length }} selected</span>
             <button type="button" class="rounded-lg agent-panel px-3 py-1.5 text-xs font-semibold text-slate-700 ring-1 agent-border dark:text-slate-300" @click="openBulkModal('assign')">{{ $t('tickets.assign') }}</button>
@@ -743,5 +744,6 @@ const activeFilterLabels = computed(() => {
                 </div>
             </template>
         </AppModal>
+        </div>
     </AgentLayout>
 </template>

@@ -1,0 +1,18 @@
+{
+    "handbook": {
+        "page_title": "How to use helpefi",
+        "page_description": "Step-by-step guides from first setup to daily agent work. Private by default — only agents see this handbook unless you mark a guide public.",
+        "agents_only_notice": "These guides are for agents and admins. Customers do not see them unless you turn on Public on portal for a specific guide.",
+        "visibility_agents_only": "Agents only",
+        "visibility_public": "Public",
+        "public_on_portal": "Public on portal",
+        "system_article_public_hint": "Private by default. Turn on only if customers should see this guide on the portal.",
+        "collection_visibility_locked": "The handbook collection stays agents-only. Use Public on portal on each guide in How to use helpefi to share with customers.",
+        "collection_agents_only": "Agents only (per-article visibility)",
+        "manage_knowledge_base": "Manage knowledge base",
+        "empty_state": "Handbook articles are being prepared. Run the platform handbook seeder or contact your administrator.",
+        "read_guide": "Read guide",
+        "back_to_handbook": "Back to handbook",
+        "system_guide_badge": "Platform guide"
+    }
+}

@@ -4,14 +4,13 @@ import { computed, nextTick, onMounted, ref, toRef, watch } from 'vue';
 import SettingsPage from '../../Components/SettingsPage.vue';
 import PlanFeatureBanner from '../../Components/PlanFeatureBanner.vue';
 import SettingsSectionNav from '../../Components/SettingsSectionNav.vue';
-import AppModal from '../../Components/AppModal.vue';
 import AppConfirmDialog from '../../Components/AppConfirmDialog.vue';
 import AppToggle from '../../Components/AppToggle.vue';
 import EmailInboxCard from '../../Components/Email/EmailInboxCard.vue';
-import MailOAuthSetupGuide from '../../Components/Email/MailOAuthSetupGuide.vue';
+import EmailProviderPicker from '../../Components/Email/EmailProviderPicker.vue';
+import EmailAddInboxPanel from '../../Components/Email/EmailAddInboxPanel.vue';
 import { useConfirmDialog } from '../../composables/useConfirmDialog.js';
 import { useSettingsSection } from '../../composables/useSettingsSection.js';
-import { useClipboard } from '../../composables/useClipboard.js';
 import { useI18n } from 'vue-i18n';
 
 const props = defineProps({
@@ -35,8 +34,6 @@ const highlightedInboxId = ref(null);
 const advancedDefaults = props.emailAdvanced ?? {};
 
 const { t } = useI18n();
-const { copy: copyRedirectUri } = useClipboard();
-const copiedOAuthRedirect = ref(null);
 
 const { activeSection } = useSettingsSection({
     defaultSection: 'incoming',
@@ -50,26 +47,9 @@ const sectionTabs = computed(() => [
 ]);
 
 const showAddInbox = ref(false);
+const selectedSetupProvider = ref(null);
 const { state: confirm, ask: askConfirm, close: closeConfirm, confirm: onConfirm } = useConfirmDialog();
 const smtpProvider = ref('gmail');
-
-const defaultBrandId = props.brands?.[0]?.id ?? null;
-
-const inboxForm = useForm({
-    name: '',
-    address: '',
-    brand_id: defaultBrandId,
-    inbound_method: 'webhook',
-    is_active: true,
-    mailbox_provider: null,
-    mailbox_protocol: 'imap',
-    mailbox_host: '',
-    mailbox_port: null,
-    mailbox_encryption: 'ssl',
-    mailbox_username: '',
-    mailbox_password: '',
-    mailbox_folder: 'INBOX',
-});
 
 const defaultInboxId = props.outbound.email_inbox_id
     ?? props.outbound.inbox_smtp_options?.[0]?.inbox_id
@@ -129,19 +109,108 @@ const inboxTestForm = useForm({
 
 const inboxSmtpOptions = computed(() => props.outbound.inbox_smtp_options ?? []);
 const oauthProviderList = computed(() => Object.values(props.oauthProviders ?? {}));
+const hasOAuthProviders = computed(() => oauthProviderList.value.length > 0);
 
-const copyOAuthRedirect = async (uri, providerKey) => {
-    const success = await copyRedirectUri(uri);
+const setupProviders = computed(() => {
+    const providers = [];
 
-    if (success) {
-        copiedOAuthRedirect.value = providerKey;
-        window.setTimeout(() => {
-            if (copiedOAuthRedirect.value === providerKey) {
-                copiedOAuthRedirect.value = null;
-            }
-        }, 2000);
+    if (hasOAuthProviders.value) {
+        if (props.oauthProviders?.google) {
+            providers.push({
+                key: 'google',
+                method: 'oauth',
+                oauth_provider: 'google',
+                label: t('settings_email.provider_google'),
+                description: t('settings_email.provider_google_desc'),
+                setupHint: t('settings_email.provider_google_setup_hint'),
+            });
+        }
+
+        if (props.oauthProviders?.microsoft) {
+            providers.push({
+                key: 'microsoft',
+                method: 'oauth',
+                oauth_provider: 'microsoft',
+                label: t('settings_email.provider_microsoft'),
+                description: t('settings_email.provider_microsoft_desc'),
+                setupHint: t('settings_email.provider_microsoft_setup_hint'),
+            });
+        }
+
+        if (props.oauthProviders?.zoho) {
+            providers.push({
+                key: 'zoho',
+                method: 'oauth',
+                oauth_provider: 'zoho',
+                label: t('settings_email.provider_zoho'),
+                description: t('settings_email.provider_zoho_desc'),
+                setupHint: t('settings_email.provider_zoho_setup_hint'),
+            });
+        }
     }
+
+    providers.push({
+        key: 'imap',
+        method: 'poll',
+        mailbox_provider: null,
+        label: t('settings_email.provider_imap'),
+        description: t('settings_email.provider_imap_desc'),
+        setupHint: t('settings_email.provider_imap_setup_hint'),
+    });
+
+    providers.push({
+        key: 'webhook',
+        method: 'webhook',
+        label: t('settings_email.provider_webhook'),
+        description: t('settings_email.provider_webhook_desc'),
+        setupHint: t('settings_email.provider_webhook_setup_hint'),
+    });
+
+    return providers;
+});
+
+const activeSetupProvider = computed(() =>
+    setupProviders.value.find((provider) => provider.key === selectedSetupProvider.value) ?? null,
+);
+
+const inboxNeedsSetup = (inbox) => {
+    if (!inbox?.is_active) {
+        return false;
+    }
+
+    if (inbox.inbound_method === 'oauth' && !inbox.oauth_connected) {
+        return true;
+    }
+
+    if (inbox.inbound_method === 'poll' && !inbox.has_mailbox_password) {
+        return true;
+    }
+
+    return false;
 };
+
+const expandedInboxIds = computed(() => {
+    const ids = new Set();
+
+    if (highlightedInboxId.value) {
+        ids.add(highlightedInboxId.value);
+    }
+
+    const firstIncomplete = inboxes.value?.find((inbox) => inboxNeedsSetup(inbox));
+    if (firstIncomplete) {
+        ids.add(firstIncomplete.id);
+    }
+
+    if (!inboxes.value?.length) {
+        return ids;
+    }
+
+    if (inboxes.value.length === 1) {
+        ids.add(inboxes.value[0].id);
+    }
+
+    return ids;
+});
 
 const selectedInboxSmtp = computed(() =>
     inboxSmtpOptions.value.find((option) => option.inbox_id === Number(outboundForm.email_inbox_id)) ?? null,
@@ -170,6 +239,10 @@ onMounted(() => {
         }
     }
 
+    if (!inboxes.value?.length && setupProviders.value.length) {
+        openAddInbox(setupProviders.value[0].key);
+    }
+
     const params = new URLSearchParams(window.location.search);
     const oauth = params.get('oauth');
     const oauthError = params.get('oauth_error');
@@ -195,60 +268,6 @@ onMounted(() => {
     }
 });
 
-const addInboxProviderOptions = () => Object.entries(props.mailboxProviders ?? {}).map(([key, provider]) => ({
-    key,
-    ...provider,
-}));
-
-const resetInboxForm = () => {
-    inboxForm.reset();
-    inboxForm.brand_id = defaultBrandId;
-    inboxForm.inbound_method = 'webhook';
-    inboxForm.is_active = true;
-    inboxForm.mailbox_provider = null;
-    inboxForm.mailbox_protocol = 'imap';
-    inboxForm.mailbox_host = '';
-    inboxForm.mailbox_port = null;
-    inboxForm.mailbox_encryption = 'ssl';
-    inboxForm.mailbox_username = '';
-    inboxForm.mailbox_password = '';
-    inboxForm.mailbox_folder = 'INBOX';
-};
-
-const applyAddInboxProvider = () => {
-    const provider = props.mailboxProviders?.[inboxForm.mailbox_provider];
-    if (!provider) return;
-    inboxForm.mailbox_protocol = provider.protocol ?? inboxForm.mailbox_protocol ?? 'imap';
-    inboxForm.mailbox_host = provider.host ?? inboxForm.mailbox_host;
-    inboxForm.mailbox_port = provider.port ?? inboxForm.mailbox_port;
-    inboxForm.mailbox_encryption = provider.encryption ?? inboxForm.mailbox_encryption ?? 'ssl';
-    inboxForm.mailbox_folder = provider.folder ?? inboxForm.mailbox_folder ?? 'INBOX';
-};
-
-const initPollDefaults = () => {
-    if (inboxForm.inbound_method !== 'poll') return;
-    inboxForm.mailbox_protocol = inboxForm.mailbox_protocol || 'imap';
-    inboxForm.mailbox_encryption = inboxForm.mailbox_encryption || 'ssl';
-    inboxForm.mailbox_username = inboxForm.mailbox_username || inboxForm.address;
-    inboxForm.mailbox_folder = inboxForm.mailbox_folder || 'INBOX';
-
-    if (!inboxForm.mailbox_provider && inboxForm.address?.includes('@gmail.com')) {
-        inboxForm.mailbox_provider = inboxForm.mailbox_protocol === 'pop3' ? 'gmail_pop3' : 'gmail';
-        applyAddInboxProvider();
-    }
-};
-
-watch(() => inboxForm.inbound_method, initPollDefaults);
-
-watch(() => inboxForm.address, () => {
-    if (inboxForm.inbound_method === 'poll') {
-        if (!inboxForm.mailbox_username) {
-            inboxForm.mailbox_username = inboxForm.address;
-        }
-        initPollDefaults();
-    }
-});
-
 const scrollToInbox = (inboxId) => {
     if (!inboxId) return;
     highlightedInboxId.value = Number(inboxId);
@@ -256,37 +275,6 @@ const scrollToInbox = (inboxId) => {
         document.getElementById(`inbox-${inboxId}`)?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     });
 };
-
-const addInbox = () => {
-    inboxForm.post('/settings/email/inboxes', {
-        preserveScroll: true,
-        onSuccess: () => {
-            resetInboxForm();
-            closeAddInbox();
-
-            const createdId = page.props.flash?.created_inbox_id;
-            if (createdId) {
-                scrollToInbox(createdId);
-            }
-        },
-        onError: () => {
-            showAddInbox.value = true;
-
-            if (inboxForm.errors.address) {
-                const address = inboxForm.address?.trim().toLowerCase();
-                const existing = (inboxes.value ?? []).find((inbox) => inbox.address?.toLowerCase() === address);
-
-                if (existing) {
-                    closeAddInbox();
-                    scrollToInbox(existing.id);
-                }
-            }
-        },
-    });
-};
-
-const inboxFormError = (field) => inboxForm.errors[field];
-const hasInboxFormErrors = computed(() => Object.keys(inboxForm.errors).length > 0);
 
 const removeInbox = (inbox) => {
     askConfirm({
@@ -297,13 +285,31 @@ const removeInbox = (inbox) => {
     });
 };
 
-const openAddInbox = () => {
-    resetInboxForm();
+const openAddInbox = (providerKey = null) => {
+    selectedSetupProvider.value = providerKey ?? setupProviders.value[0]?.key ?? null;
     showAddInbox.value = true;
 };
 
 const closeAddInbox = () => {
     showAddInbox.value = false;
+    selectedSetupProvider.value = null;
+};
+
+const onInboxCreated = ({ id }) => {
+    closeAddInbox();
+
+    if (id) {
+        scrollToInbox(id);
+    }
+};
+
+const quickEnableOutbound = () => {
+    outboundForm.enabled = true;
+    outboundForm.reply_enabled = true;
+    outboundForm.use_inbox_smtp = inboxSmtpOptions.value.length > 0;
+    outboundForm.email_inbox_id = defaultInboxId;
+    outboundForm.driver = 'smtp';
+    saveOutbound();
 };
 
 const saveOutbound = () => {
@@ -368,6 +374,10 @@ const syncSmtpProviderFromHost = () => {
     }
 };
 
+watch(smtpProvider, () => {
+    applySmtpProvider();
+});
+
 const onUseInboxSmtpChange = () => {
     if (outboundForm.use_inbox_smtp) {
         outboundForm.driver = 'smtp';
@@ -409,41 +419,62 @@ const onUseInboxSmtpChange = () => {
         </div>
 
         <div v-if="activeSection === 'incoming'">
+            <div class="space-y-6">
+                <div class="rounded-2xl border agent-border agent-panel shadow-sm">
+                    <div class="border-b agent-border-subtle px-6 py-5">
+                        <h2 class="text-lg font-semibold agent-text">{{ $t('settings_email.connect_an_inbox') }}</h2>
+                        <p class="mt-1 text-sm agent-text-muted">{{ $t('settings_email.connect_an_inbox_desc') }}</p>
+                    </div>
+                    <div class="space-y-5 px-6 py-5">
+                        <EmailProviderPicker
+                            :providers="setupProviders"
+                            :selected-key="selectedSetupProvider"
+                            @select="openAddInbox"
+                        />
+                        <EmailAddInboxPanel
+                            v-if="showAddInbox && activeSetupProvider"
+                            :provider="activeSetupProvider"
+                            :brands="brands"
+                            :mailbox-providers="mailboxProviders"
+                            :oauth-providers="oauthProviders"
+                            @cancel="closeAddInbox"
+                            @created="onInboxCreated"
+                        />
+                    </div>
+                </div>
 
-            <div class="rounded-2xl border agent-border agent-panel shadow-sm">
-                <div class="flex flex-wrap items-start justify-between gap-4 border-b agent-border-subtle px-6 py-5">
-                    <div>
+                <div class="rounded-2xl border agent-border agent-panel shadow-sm">
+                    <div class="border-b agent-border-subtle px-6 py-5">
                         <h2 class="text-lg font-semibold agent-text">{{ $t('settings.incoming_email') }}</h2>
                         <p class="mt-1 text-sm agent-text-muted">
                             {{ $t('settings_email.receive_tickets_via_webhook_forwarding_imap_pop3_polling_or_oauth_mail') }}
                         </p>
                     </div>
-                    <button type="button" class="shrink-0 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700" @click="openAddInbox">{{ $t('settings_email.add_inbox') }}</button>
-                </div>
 
-                <div class="px-6 py-5">
-                    <div v-if="!inboxes?.length" class="rounded-xl border border-dashed agent-border py-12 text-center">
-                        <p class="text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('settings_email.no_inboxes_yet') }}</p>
-                        <p class="mt-1 text-sm agent-text-subtle">{{ $t('settings_email.add_your_first_support_email_address_to_start_receiving_tickets') }}</p>
-                    </div>
+                    <div class="px-6 py-5">
+                        <div v-if="!inboxes?.length" class="rounded-xl border border-dashed agent-border py-10 text-center">
+                            <p class="text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('settings_email.no_inboxes_yet') }}</p>
+                            <p class="mt-1 text-sm agent-text-subtle">{{ $t('settings_email.pick_provider_above') }}</p>
+                        </div>
 
-                    <div class="space-y-6">
-                        <div
-                            v-for="inbox in inboxes"
-                            :id="`inbox-${inbox.id}`"
-                            :key="inbox.id"
-                            :class="highlightedInboxId === inbox.id ? 'rounded-xl ring-2 ring-blue-500 ring-offset-2' : ''"
-                        >
-                            <EmailInboxCard
-                                :inbox="inbox"
-                                :brands="brands"
-                                :departments="departments"
-                                :teams="teams"
-                                :mailbox-providers="mailboxProviders"
-                                :oauth-providers="oauthProviders"
-                                :expanded="highlightedInboxId === inbox.id"
-                                @remove="removeInbox"
-                            />
+                        <div v-else class="space-y-4">
+                            <div
+                                v-for="inbox in inboxes"
+                                :id="`inbox-${inbox.id}`"
+                                :key="inbox.id"
+                                :class="highlightedInboxId === inbox.id ? 'rounded-xl ring-2 ring-blue-500 ring-offset-2' : ''"
+                            >
+                                <EmailInboxCard
+                                    :inbox="inbox"
+                                    :brands="brands"
+                                    :departments="departments"
+                                    :teams="teams"
+                                    :mailbox-providers="mailboxProviders"
+                                    :oauth-providers="oauthProviders"
+                                    :expanded="expandedInboxIds.has(inbox.id)"
+                                    @remove="removeInbox"
+                                />
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -451,6 +482,19 @@ const onUseInboxSmtpChange = () => {
         </div>
 
         <div v-if="activeSection === 'outgoing'">
+            <div
+                v-if="inboxes?.length && (!outboundForm.enabled || !outboundForm.reply_enabled)"
+                class="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-4 dark:border-emerald-900/60 dark:bg-emerald-950/30"
+            >
+                <div>
+                    <p class="text-sm font-semibold text-emerald-900 dark:text-emerald-100">{{ $t('settings_email.quick_outbound_title') }}</p>
+                    <p class="mt-1 text-sm text-emerald-800 dark:text-emerald-200">{{ $t('settings_email.quick_outbound_desc') }}</p>
+                </div>
+                <button type="button" class="shrink-0 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700" @click="quickEnableOutbound">
+                    {{ $t('settings_email.enable_replies_now') }}
+                </button>
+            </div>
+
             <div class="rounded-2xl border agent-border agent-panel shadow-sm">
                 <div class="border-b agent-border-subtle px-6 py-5">
                     <h2 class="text-lg font-semibold agent-text">{{ $t('settings_email.outgoing_email_smtp') }}</h2>
@@ -568,12 +612,9 @@ const onUseInboxSmtpChange = () => {
                             </div>
                             <div v-if="outboundForm.driver === 'smtp'">
                                 <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('settings_email.provider_preset') }}</label>
-                                <div class="flex gap-2">
-                                    <select v-model="smtpProvider" class="w-full rounded-lg border agent-border px-3 py-2 text-sm">
-                                        <option v-for="provider in smtpProviderOptions()" :key="provider.key" :value="provider.key">{{ provider.label }}</option>
-                                    </select>
-                                    <button type="button" class="shrink-0 rounded-lg border agent-border px-3 py-2 text-sm text-slate-700 dark:text-slate-300 agent-hover-surface" @click="applySmtpProvider">{{ $t('settings_email.apply') }}</button>
-                                </div>
+                                <select v-model="smtpProvider" class="w-full rounded-lg border agent-border px-3 py-2 text-sm">
+                                    <option v-for="provider in smtpProviderOptions()" :key="provider.key" :value="provider.key">{{ provider.label }}</option>
+                                </select>
                             </div>
                             <div>
                                 <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('settings_email.from_name') }}</label>
@@ -699,142 +740,6 @@ const onUseInboxSmtpChange = () => {
                 <button type="submit" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700" :disabled="advancedForm.processing">{{ $t('settings_email.save_email_policies') }}</button>
             </form>
         </div>
-
-        <AppModal
-            :open="showAddInbox"
-            :title="$t('settings_email.add_inbox')"
-            :description="$t('settings_email.connect_a_support_email_address_to_receive_tickets')"
-            :size="inboxForm.inbound_method === 'webhook' ? 'md' : 'xl'"
-            @close="closeAddInbox"
-        >
-            <form id="add-inbox-form" class="space-y-4" @submit.prevent="addInbox">
-                <div v-if="hasInboxFormErrors" class="rounded-lg border border-red-200 dark:border-red-900/60 bg-red-50 dark:bg-red-950/40 px-4 py-3 text-sm text-red-800 dark:text-red-200">
-                    <p class="font-medium">{{ $t('settings_email.inbox_form_errors_title') }}</p>
-                    <ul class="mt-2 list-disc space-y-1 pl-5">
-                        <li v-for="(message, field) in inboxForm.errors" :key="field">{{ message }}</li>
-                    </ul>
-                </div>
-
-                <div>
-                    <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('settings_email.display_name') }}</label>
-                    <input v-model="inboxForm.name" type="text" required :placeholder="$t('nav.sections.support')" class="w-full rounded-lg border agent-border px-3 py-2 text-sm" :class="inboxFormError('name') ? 'border-red-400' : ''" />
-                    <p v-if="inboxFormError('name')" class="mt-1 text-xs text-red-600">{{ inboxFormError('name') }}</p>
-                </div>
-                <div>
-                    <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('settings_email.email_address') }}</label>
-                    <input v-model="inboxForm.address" type="email" required :placeholder="$t('settings_email.support_company_com')" class="w-full rounded-lg border agent-border px-3 py-2 text-sm" :class="inboxFormError('address') ? 'border-red-400' : ''" />
-                    <p v-if="inboxFormError('address')" class="mt-1 text-xs text-red-600">{{ inboxFormError('address') }}</p>
-                </div>
-                <div>
-                    <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('settings_email.brand') }}</label>
-                    <select v-model="inboxForm.brand_id" required class="w-full rounded-lg border agent-border px-3 py-2 text-sm" :class="inboxFormError('brand_id') ? 'border-red-400' : ''">
-                        <option v-for="brand in brands" :key="brand.id" :value="brand.id">{{ brand.name }}</option>
-                    </select>
-                    <p v-if="inboxFormError('brand_id')" class="mt-1 text-xs text-red-600">{{ inboxFormError('brand_id') }}</p>
-                    <p v-else-if="!brands.length" class="mt-1 text-xs text-amber-700 dark:text-amber-300">{{ $t('settings_email.create_a_brand_first') }}</p>
-                </div>
-                <div>
-                    <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('settings_email.inbound_method') }}</label>
-                    <select v-model="inboxForm.inbound_method" class="w-full rounded-lg border agent-border px-3 py-2 text-sm">
-                        <option value="webhook">{{ $t('settings_email.forward_webhook') }}</option>
-                        <option value="poll">{{ $t('settings_email.imap_pop3') }}</option>
-                        <option value="oauth">{{ $t('settings_email.oauth_google_microsoft_zoho') }}</option>
-                    </select>
-                </div>
-
-                <div v-if="inboxForm.inbound_method === 'poll'" class="space-y-4 rounded-xl border agent-border agent-panel-muted p-4">
-                    <div class="rounded-lg border agent-border agent-panel p-3">
-                        <p class="text-sm font-medium agent-text">{{ $t('components.mailbox_connection') }}</p>
-                        <p class="mt-1 text-xs leading-relaxed agent-text-muted">
-                            {{ $t('components.use_an_app_password_from_your_email_provider_replies_with_ticket_ids_i') }}
-                        </p>
-                    </div>
-
-                    <div>
-                        <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('components.email_provider') }}</label>
-                        <select v-model="inboxForm.mailbox_provider" class="w-full rounded-lg border agent-border agent-panel px-3 py-2 text-sm" @change="applyAddInboxProvider">
-                            <option :value="null">{{ $t('components.choose_your_provider_ellipsis') }}</option>
-                            <option v-for="provider in addInboxProviderOptions()" :key="provider.key" :value="provider.key">{{ provider.label }}</option>
-                        </select>
-                        <p v-if="mailboxProviders?.[inboxForm.mailbox_provider]?.help" class="mt-2 rounded-lg bg-amber-50 dark:bg-amber-950/40 px-3 py-2 text-xs text-amber-900 dark:text-amber-200">
-                            {{ mailboxProviders[inboxForm.mailbox_provider].help }}
-                        </p>
-                    </div>
-
-                    <div class="grid gap-4 sm:grid-cols-2">
-                        <div>
-                            <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('components.protocol') }}</label>
-                            <select v-model="inboxForm.mailbox_protocol" class="w-full rounded-lg border agent-border agent-panel px-3 py-2 text-sm">
-                                <option value="imap">{{ $t('components.imap') }}</option>
-                                <option value="pop3">{{ $t('components.pop3') }}</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('components.server_host') }}</label>
-                            <input v-model="inboxForm.mailbox_host" type="text" placeholder="pop.gmail.com" class="w-full rounded-lg border agent-border agent-panel px-3 py-2 text-sm" />
-                        </div>
-                        <div>
-                            <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('components.port') }}</label>
-                            <input v-model.number="inboxForm.mailbox_port" type="number" placeholder="995" class="w-full rounded-lg border agent-border agent-panel px-3 py-2 text-sm" />
-                        </div>
-                        <div>
-                            <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('components.encryption') }}</label>
-                            <select v-model="inboxForm.mailbox_encryption" class="w-full rounded-lg border agent-border agent-panel px-3 py-2 text-sm">
-                                <option value="ssl">{{ $t('components.ssl') }}</option>
-                                <option value="tls">{{ $t('components.tls_starttls') }}</option>
-                                <option value="none">{{ $t('components.none') }}</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('components.username') }}</label>
-                            <input v-model="inboxForm.mailbox_username" type="text" class="w-full rounded-lg border agent-border agent-panel px-3 py-2 text-sm" />
-                        </div>
-                        <div>
-                            <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('components.app_password') }}</label>
-                            <input v-model="inboxForm.mailbox_password" type="password" :placeholder="$t('components.app_password_enter')" class="w-full rounded-lg border agent-border agent-panel px-3 py-2 text-sm" />
-                        </div>
-                        <div v-if="inboxForm.mailbox_protocol === 'imap'">
-                            <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('components.folder') }}</label>
-                            <input v-model="inboxForm.mailbox_folder" type="text" class="w-full rounded-lg border agent-border agent-panel px-3 py-2 text-sm" />
-                        </div>
-                    </div>
-                </div>
-
-                <div v-else-if="inboxForm.inbound_method === 'oauth'" class="space-y-4 rounded-xl border agent-border agent-panel-muted p-4">
-                    <p class="text-sm agent-text">{{ $t('components.connect_google_microsoft_or_zoho_to_sync_mail_without_storing_password') }}</p>
-                    <p class="text-xs agent-text-muted">{{ $t('settings_email.create_inbox_then_connect_oauth') }}</p>
-                    <MailOAuthSetupGuide
-                        v-for="provider in oauthProviderList"
-                        :key="`oauth-setup-${provider.key}`"
-                        :provider="provider.key"
-                        :console-url="provider.setup_console_url || provider.gmail_api_enable_url"
-                    />
-                    <div class="space-y-3">
-                        <div v-for="provider in oauthProviderList" :key="provider.key" class="rounded-lg border agent-border agent-panel p-4">
-                            <p class="text-sm font-medium agent-text">{{ provider.label }}</p>
-                            <p v-if="!provider.configured" class="mt-1 text-xs text-amber-700 dark:text-amber-300">{{ $t('components.not_configured_on_server') }}</p>
-                            <p v-if="provider.help" class="mt-1 text-xs agent-text-subtle">{{ provider.help }}</p>
-                            <div v-if="provider.redirect_uri" class="mt-3 border-t agent-border-subtle pt-3">
-                                <label class="mb-1 block text-xs font-medium agent-text-muted">{{ $t('components.authorized_redirect_uri') }}</label>
-                                <div class="flex gap-2">
-                                    <input :value="provider.redirect_uri" type="text" readonly class="min-w-0 flex-1 rounded-lg border agent-border agent-panel px-3 py-2 font-mono text-[11px] agent-text-muted" />
-                                    <button type="button" class="shrink-0 rounded-lg border agent-border px-3 py-2 text-sm agent-hover-surface" @click="copyOAuthRedirect(provider.redirect_uri, provider.key)">
-                                        {{ copiedOAuthRedirect === provider.key ? $t('components.copied') : $t('components.copy') }}
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </form>
-
-            <template #footer>
-                <div class="flex justify-end gap-2">
-                    <button type="button" class="rounded-lg border agent-border px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 transition agent-hover-surface" @click="closeAddInbox">{{ $t('common.cancel') }}</button>
-                    <button type="submit" form="add-inbox-form" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700 disabled:opacity-60" :disabled="inboxForm.processing">{{ $t('settings_email.create_inbox') }}</button>
-                </div>
-            </template>
-        </AppModal>
 
         <AppConfirmDialog
             :open="confirm.open"
