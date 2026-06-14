@@ -1,6 +1,7 @@
 <?php
 
 use App\Domains\Ai\Controllers\Central\MarketingAiDemoController;
+use App\Domains\Channels\Controllers\Central\CentralMailOAuthController;
 use App\Domains\Billing\Controllers\RazorpayWebhookController;
 use App\Domains\Platform\Controllers\Central\AdminBlogPostController;
 use App\Domains\Platform\Controllers\Central\AdminTestimonialController;
@@ -34,6 +35,10 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
 Route::post('/razorpay/webhook', RazorpayWebhookController::class)->name('razorpay.webhook');
+
+Route::get('/oauth/mail/{provider}/callback', [CentralMailOAuthController::class, 'callback'])
+    ->where('provider', 'google|microsoft|zoho')
+    ->name('central.mail.oauth.callback');
 
 Route::get('/platform-notices/{notice}/image', PlatformNoticeImageController::class)
     ->middleware('signed')

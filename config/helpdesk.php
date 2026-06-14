@@ -109,9 +109,13 @@ return [
     ],
 
     'mail_oauth' => [
+        'callback_base_url' => rtrim((string) env('MAIL_OAUTH_CALLBACK_URL', env('MARKETING_SITE_URL', env('APP_URL', 'https://helpefi.com'))), '/'),
+
         'google' => [
             'label' => 'Google / Gmail',
-            'help' => 'Sign in with Google — no app password needed. Requires Google Cloud OAuth credentials.',
+            'help' => 'Sign in with Google — no app password needed. Requires Google Cloud OAuth credentials and the Gmail API enabled in the same project.',
+            'setup_console_url' => 'https://console.cloud.google.com/apis/library/gmail.googleapis.com',
+            'gmail_api_enable_url' => 'https://console.cloud.google.com/apis/library/gmail.googleapis.com',
             'client_id' => env('GOOGLE_MAIL_CLIENT_ID'),
             'client_secret' => env('GOOGLE_MAIL_CLIENT_SECRET'),
             'scopes' => [
@@ -123,6 +127,7 @@ return [
         'microsoft' => [
             'label' => 'Microsoft / Outlook',
             'help' => 'Sign in with Microsoft — works with Outlook.com and Microsoft 365.',
+            'setup_console_url' => 'https://portal.azure.com/#view/Microsoft_AAD_RegisteredApps/ApplicationsListBlade',
             'client_id' => env('MICROSOFT_MAIL_CLIENT_ID'),
             'client_secret' => env('MICROSOFT_MAIL_CLIENT_SECRET'),
             'tenant' => env('MICROSOFT_MAIL_TENANT', 'common'),
@@ -137,6 +142,7 @@ return [
         'zoho' => [
             'label' => 'Zoho Mail',
             'help' => 'Sign in with Zoho — for Zoho Mail business accounts.',
+            'setup_console_url' => 'https://api-console.zoho.com/',
             'client_id' => env('ZOHO_MAIL_CLIENT_ID'),
             'client_secret' => env('ZOHO_MAIL_CLIENT_SECRET'),
             'region' => env('ZOHO_MAIL_REGION', 'com'),

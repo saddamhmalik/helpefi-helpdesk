@@ -4,7 +4,6 @@ namespace App\Domains\Channels\Services\OAuth;
 
 use App\Domains\Channels\Models\EmailInbox;
 use App\Domains\Channels\Repositories\EmailInboxRepository;
-use App\Support\TenantCacheKey;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 use InvalidArgumentException;
@@ -19,7 +18,9 @@ class MailOAuthService
 
     public function redirectUri(string $provider): string
     {
-        return url('/settings/email/oauth/'.$provider.'/callback');
+        $base = rtrim((string) config('helpdesk.mail_oauth.callback_base_url'), '/');
+
+        return "{$base}/oauth/mail/{$provider}/callback";
     }
 
     public function beginConnect(int $inboxId, string $provider): string
@@ -33,6 +34,7 @@ class MailOAuthService
 
         $state = Str::random(48);
         Cache::put($this->stateKey($state), [
+            'tenant_id' => tenant('id'),
             'inbox_id' => $inbox->id,
             'provider' => $provider,
         ], now()->addMinutes(10));
@@ -40,11 +42,34 @@ class MailOAuthService
         return $providerInstance->authorizationUrl($state, $this->redirectUri($provider));
     }
 
-    public function handleCallback(string $provider, string $code, string $state): EmailInbox
+    public function peekState(string $state): ?array
+    {
+        $cached = Cache::get($this->stateKey($state));
+
+        return is_array($cached) ? $cached : null;
+    }
+
+    public function pullState(string $state): ?array
     {
         $cached = Cache::pull($this->stateKey($state));
 
-        if (! $cached || ($cached['provider'] ?? null) !== $provider) {
+        return is_array($cached) ? $cached : null;
+    }
+
+    public function handleCallback(string $provider, string $code, string $state): EmailInbox
+    {
+        $cached = $this->pullState($state);
+
+        if (! $cached) {
+            throw new InvalidArgumentException('OAuth session expired or invalid. Please try again.');
+        }
+
+        return $this->completeConnect($provider, $code, $cached);
+    }
+
+    public function completeConnect(string $provider, string $code, array $cached): EmailInbox
+    {
+        if (($cached['provider'] ?? null) !== $provider) {
             throw new InvalidArgumentException('OAuth session expired or invalid. Please try again.');
         }
 
@@ -137,6 +162,6 @@ class MailOAuthService
 
     private function stateKey(string $state): string
     {
-        return TenantCacheKey::scoped('mail_oauth:'.$state);
+        return 'central:mail_oauth:'.$state;
     }
 }

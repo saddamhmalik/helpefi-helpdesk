@@ -34,11 +34,6 @@ class TenantSetupService
         return $setting->setup_completed_at === null;
     }
 
-    public function hasIncompleteRequiredConfiguration(): bool
-    {
-        return $this->incompleteRequiredWarnings() !== [];
-    }
-
     public function incompleteRequiredWarnings(): array
     {
         if (! tenant('id')) {

@@ -308,6 +308,33 @@ class TenantDummyDataTest extends TenantTestCase
         $this->assertFalse($service->publicState()['has_any_demo']);
     }
 
+    public function test_bootstrap_removal_clears_cached_public_state(): void
+    {
+        $admin = $this->admin();
+        $service = app(TenantDummyDataService::class);
+
+        $this->assertTrue($service->cachedPublicState()['has_bootstrap_demo']);
+
+        $service->removeBootstrapDemo();
+
+        $this->assertFalse($service->cachedPublicState()['has_bootstrap_demo']);
+        $this->assertFalse($service->cachedPublicState()['has_any_demo']);
+    }
+
+    public function test_bootstrap_removal_is_idempotent(): void
+    {
+        $admin = $this->admin();
+        $service = app(TenantDummyDataService::class);
+
+        $service->removeBootstrapDemo();
+        $service->removeBootstrapDemo();
+
+        $this->assertFalse($service->hasBootstrapDemo());
+        $this->assertTrue(
+            ($service->publicState()['has_bootstrap_demo'] ?? true) === false
+        );
+    }
+
     private function assertDemoChannelAddressCleared(): void
     {
         $emailChannel = Channel::query()->where('slug', 'email')->first();

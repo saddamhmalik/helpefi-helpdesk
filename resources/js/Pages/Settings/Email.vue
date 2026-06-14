@@ -8,6 +8,7 @@ import AppModal from '../../Components/AppModal.vue';
 import AppConfirmDialog from '../../Components/AppConfirmDialog.vue';
 import AppToggle from '../../Components/AppToggle.vue';
 import EmailInboxCard from '../../Components/Email/EmailInboxCard.vue';
+import MailOAuthSetupGuide from '../../Components/Email/MailOAuthSetupGuide.vue';
 import { useConfirmDialog } from '../../composables/useConfirmDialog.js';
 import { useSettingsSection } from '../../composables/useSettingsSection.js';
 import { useClipboard } from '../../composables/useClipboard.js';
@@ -27,6 +28,8 @@ const props = defineProps({
 const page = usePage();
 const inboxes = toRef(props, 'inboxes');
 const flashSuccess = computed(() => page.props.flash?.success ?? null);
+const oauthFeedback = ref(null);
+const oauthFeedbackError = ref(null);
 const highlightedInboxId = ref(null);
 
 const advancedDefaults = props.emailAdvanced ?? {};
@@ -165,6 +168,30 @@ onMounted(() => {
         if (!outboundForm.host || outboundForm.host === 'gmail.com') {
             applySmtpProvider();
         }
+    }
+
+    const params = new URLSearchParams(window.location.search);
+    const oauth = params.get('oauth');
+    const oauthError = params.get('oauth_error');
+
+    if (oauth === 'connected') {
+        oauthFeedback.value = t('settings_email.oauth_connected_success', {
+            email: params.get('email') ?? '',
+            provider: params.get('provider') ?? 'OAuth',
+            fetched: Number(params.get('fetched') ?? 0),
+            created: Number(params.get('created') ?? 0),
+            reply: Number(params.get('reply') ?? 0),
+        });
+
+        scrollToInbox(params.get('inbox'));
+    } else if (oauthError) {
+        oauthFeedbackError.value = oauthError;
+    }
+
+    if (oauth || oauthError) {
+        const url = new URL(window.location.href);
+        url.search = '';
+        window.history.replaceState({}, '', `${url.pathname}${url.hash}`);
     }
 });
 
@@ -374,8 +401,11 @@ const onUseInboxSmtpChange = () => {
             </Link>
         </div>
 
-        <div v-if="flashSuccess" class="mb-4 rounded-lg border border-emerald-200 dark:border-emerald-900/60 bg-emerald-50 dark:bg-emerald-950/40 px-4 py-3 text-sm text-emerald-800 dark:text-emerald-200">
-            {{ flashSuccess }}
+        <div v-if="flashSuccess || oauthFeedback" class="mb-4 rounded-lg border border-emerald-200 dark:border-emerald-900/60 bg-emerald-50 dark:bg-emerald-950/40 px-4 py-3 text-sm text-emerald-800 dark:text-emerald-200">
+            {{ flashSuccess || oauthFeedback }}
+        </div>
+        <div v-if="oauthFeedbackError || page.props.errors?.oauth" class="mb-4 rounded-lg border border-red-200 dark:border-red-900/60 bg-red-50 dark:bg-red-950/40 px-4 py-3 text-sm text-red-800 dark:text-red-200">
+            {{ oauthFeedbackError || page.props.errors?.oauth }}
         </div>
 
         <div v-if="activeSection === 'incoming'">
@@ -773,6 +803,12 @@ const onUseInboxSmtpChange = () => {
                 <div v-else-if="inboxForm.inbound_method === 'oauth'" class="space-y-4 rounded-xl border agent-border agent-panel-muted p-4">
                     <p class="text-sm agent-text">{{ $t('components.connect_google_microsoft_or_zoho_to_sync_mail_without_storing_password') }}</p>
                     <p class="text-xs agent-text-muted">{{ $t('settings_email.create_inbox_then_connect_oauth') }}</p>
+                    <MailOAuthSetupGuide
+                        v-for="provider in oauthProviderList"
+                        :key="`oauth-setup-${provider.key}`"
+                        :provider="provider.key"
+                        :console-url="provider.setup_console_url || provider.gmail_api_enable_url"
+                    />
                     <div class="space-y-3">
                         <div v-for="provider in oauthProviderList" :key="provider.key" class="rounded-lg border agent-border agent-panel p-4">
                             <p class="text-sm font-medium agent-text">{{ provider.label }}</p>

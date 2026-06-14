@@ -109,11 +109,12 @@ class EmailSettingController extends Controller
         }
 
         return back()->with('success', sprintf(
-            'Polled mailbox: %d fetched, %d created, %d replies, %d duplicates.',
+            'Polled mailbox: %d fetched, %d created, %d replies, %d duplicates, %d failed.',
             $stats['fetched'],
             $stats['created'],
             $stats['reply'],
             $stats['duplicate'],
+            $stats['failed'],
         ));
     }
 

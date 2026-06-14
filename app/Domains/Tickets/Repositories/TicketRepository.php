@@ -169,9 +169,11 @@ class TicketRepository
 
     public function create(array $data): Ticket
     {
-        $data['number'] = $this->nextNumber($data['brand_id'] ?? null);
+        return DB::transaction(function () use ($data) {
+            $data['number'] = $this->nextNumber($data['brand_id'] ?? null);
 
-        return Ticket::query()->create($data);
+            return Ticket::query()->create($data);
+        });
     }
 
     public function update(Ticket $ticket, array $data): Ticket
@@ -359,17 +361,23 @@ class TicketRepository
     private function nextNumber(?int $brandId = null): string
     {
         $prefix = $this->resolvePrefix($brandId);
-        $query = Ticket::query()->when($brandId, fn ($q) => $q->where('brand_id', $brandId));
-        $latest = (clone $query)->orderByDesc('id')->value('number');
-        $sequence = 1;
 
-        if ($latest && str_starts_with(strtoupper($latest), strtoupper($prefix))) {
-            $sequence = ((int) Str::after($latest, $prefix)) + 1;
-        } elseif ($latest) {
-            $sequence = (clone $query)->count() + 1;
+        $numbers = Ticket::query()
+            ->where('number', 'like', $prefix.'%')
+            ->lockForUpdate()
+            ->pluck('number');
+
+        $sequence = 0;
+
+        foreach ($numbers as $number) {
+            if (! str_starts_with(strtoupper($number), strtoupper($prefix))) {
+                continue;
+            }
+
+            $sequence = max($sequence, (int) Str::after($number, $prefix));
         }
 
-        return $prefix.str_pad((string) $sequence, 5, '0', STR_PAD_LEFT);
+        return $prefix.str_pad((string) ($sequence + 1), 5, '0', STR_PAD_LEFT);
     }
 
     private function resolvePrefix(?int $brandId): string

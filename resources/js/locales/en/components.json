@@ -136,6 +136,7 @@
         "imap_pop3": "IMAP / POP3",
         "oauth": "OAuth",
         "google_workspace_use_oauth": "Google Workspace works best with OAuth instead of IMAP app passwords.",
+        "gmail_oauth_import_hint": "Connected to {email}. Only unread messages in the Gmail Inbox are imported. Send a test email from another address, then click Check for mail now.",
         "switch_to_oauth": "Switch to OAuth",
         "webhook": "Webhook",
         "test_connection": "Test connection",

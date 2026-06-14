@@ -3,7 +3,6 @@
 namespace App\Domains\Auth\Controllers;
 
 use App\Domains\Auth\Requests\LoginRequest;
-use App\Domains\Auth\Requests\RegisterRequest;
 use App\Domains\Auth\Services\AuthService;
 use App\Domains\Security\Exceptions\TwoFactorRequiredException;
 use App\Http\Controllers\Controller;
@@ -45,27 +44,6 @@ class AuthController extends Controller
             $request,
             $this->authService->resolvePostLoginRedirect($this->authService->homeRoute()),
         );
-    }
-
-    public function showRegister(): Response
-    {
-        return Inertia::render('Auth/Register');
-    }
-
-    public function register(RegisterRequest $request): HttpResponse|RedirectResponse
-    {
-        $this->authService->register(
-            $request->validated('name'),
-            $request->validated('email'),
-            $request->validated('password'),
-        );
-
-        $this->authService->attemptLogin(
-            $request->validated('email'),
-            $request->validated('password'),
-        );
-
-        return InertiaAuthRedirect::to($request, $this->authService->homeRoute());
     }
 
     public function logout(): RedirectResponse

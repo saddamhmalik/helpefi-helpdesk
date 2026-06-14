@@ -8,7 +8,6 @@ use App\Domains\Security\Services\TwoFactorService;
 use App\Domains\Tenancy\Services\TenantSetupService;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 
 class AuthService
@@ -100,19 +99,6 @@ class AuthService
         if (is_string($intendedHost) && $intendedHost !== '' && strcasecmp($intendedHost, request()->getHost()) !== 0) {
             session()->forget('url.intended');
         }
-    }
-
-    public function register(string $name, string $email, string $password): User
-    {
-        $user = User::query()->create([
-            'name' => $name,
-            'email' => $email,
-            'password' => Hash::make($password),
-        ]);
-
-        $user->assignRole(\Spatie\Permission\Models\Role::findOrCreate('agent'));
-
-        return $user;
     }
 
     public function logout(): void

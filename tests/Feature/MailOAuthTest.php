@@ -3,29 +3,51 @@
 namespace Tests\Feature;
 
 use App\Domains\Channels\Models\EmailInbox;
-use App\Domains\Channels\Services\OAuth\MailOAuthService;
 use App\Models\User;
 use Database\Seeders\EmailSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
+use Tests\Concerns\InitializesTenancy;
 use Tests\TestCase;
 
 class MailOAuthTest extends TestCase
 {
+    use InitializesTenancy;
     use RefreshDatabase;
 
-    public function test_oauth_callback_stores_google_tokens(): void
+    protected function tearDown(): void
     {
+        if (tenancy()->initialized) {
+            tenancy()->end();
+        }
+
+        if (isset($this->tenant)) {
+            $this->tenant->delete();
+        }
+
+        parent::tearDown();
+    }
+
+    public function test_central_oauth_callback_stores_google_tokens(): void
+    {
+        $this->provisionTenancy('mail-oauth');
+        tenancy()->initialize($this->tenant);
         $this->seed(EmailSeeder::class);
+
         config([
+            'helpdesk.mail_oauth.callback_base_url' => 'http://helpdesk.test',
             'helpdesk.mail_oauth.google.client_id' => 'google-client',
             'helpdesk.mail_oauth.google.client_secret' => 'google-secret',
         ]);
 
         $inbox = EmailInbox::query()->first();
         $state = 'test-state-token';
-        Cache::put('mail_oauth:'.$state, ['inbox_id' => $inbox->id, 'provider' => 'google'], now()->addMinutes(10));
+        Cache::put('central:mail_oauth:'.$state, [
+            'tenant_id' => $this->tenant->id,
+            'inbox_id' => $inbox->id,
+            'provider' => 'google',
+        ], now()->addMinutes(10));
 
         Http::fake([
             'oauth2.googleapis.com/token' => Http::response([
@@ -37,11 +59,15 @@ class MailOAuthTest extends TestCase
             'gmail.googleapis.com/gmail/v1/users/me/messages*' => Http::response(['messages' => []]),
         ]);
 
-        $admin = User::factory()->admin()->create();
+        $response = $this->get('http://helpdesk.test/oauth/mail/google/callback?code=abc&state='.$state);
 
-        $this->actingAs($admin)
-            ->get('/settings/email/oauth/google/callback?code=abc&state='.$state)
-            ->assertRedirect(route('settings.email'));
+        $response->assertRedirect();
+        $location = (string) $response->headers->get('Location');
+        $this->assertStringContainsString('mail-oauth.', $location);
+        $this->assertStringContainsString('/settings/email', $location);
+        $this->assertStringContainsString('oauth=connected', $location);
+
+        tenancy()->initialize($this->tenant);
 
         $inbox->refresh();
         $this->assertSame('oauth', $inbox->inbound_method);
@@ -50,8 +76,120 @@ class MailOAuthTest extends TestCase
         $this->assertTrue($inbox->isOAuthConnected());
     }
 
+    public function test_redirect_uri_uses_central_callback_url_for_all_providers(): void
+    {
+        config(['helpdesk.mail_oauth.callback_base_url' => 'https://helpefi.com']);
+
+        $oauth = app(\App\Domains\Channels\Services\OAuth\MailOAuthService::class);
+
+        $this->assertSame('https://helpefi.com/oauth/mail/google/callback', $oauth->redirectUri('google'));
+        $this->assertSame('https://helpefi.com/oauth/mail/microsoft/callback', $oauth->redirectUri('microsoft'));
+        $this->assertSame('https://helpefi.com/oauth/mail/zoho/callback', $oauth->redirectUri('zoho'));
+    }
+
+    public function test_central_oauth_callback_stores_microsoft_tokens(): void
+    {
+        $this->provisionTenancy('mail-oauth-microsoft');
+        tenancy()->initialize($this->tenant);
+        $this->seed(EmailSeeder::class);
+
+        config([
+            'helpdesk.mail_oauth.callback_base_url' => 'http://helpdesk.test',
+            'helpdesk.mail_oauth.microsoft.client_id' => 'microsoft-client',
+            'helpdesk.mail_oauth.microsoft.client_secret' => 'microsoft-secret',
+        ]);
+
+        $inbox = EmailInbox::query()->first();
+        $state = 'microsoft-state-token';
+        Cache::put('central:mail_oauth:'.$state, [
+            'tenant_id' => $this->tenant->id,
+            'inbox_id' => $inbox->id,
+            'provider' => 'microsoft',
+        ], now()->addMinutes(10));
+
+        Http::fake([
+            'login.microsoftonline.com/*' => Http::response([
+                'access_token' => 'microsoft-access',
+                'refresh_token' => 'microsoft-refresh',
+                'expires_in' => 3600,
+            ]),
+            'graph.microsoft.com/v1.0/me*' => Http::response([
+                'mail' => 'support@outlook.com',
+                'userPrincipalName' => 'support@outlook.com',
+            ]),
+            'graph.microsoft.com/v1.0/me/mailFolders/inbox/messages*' => Http::response(['value' => []]),
+        ]);
+
+        $response = $this->get('http://helpdesk.test/oauth/mail/microsoft/callback?code=abc&state='.$state);
+
+        $response->assertRedirect();
+        $this->assertStringContainsString('oauth=connected', (string) $response->headers->get('Location'));
+
+        tenancy()->initialize($this->tenant);
+
+        $inbox->refresh();
+        $this->assertSame('microsoft', $inbox->oauth_provider);
+        $this->assertSame('support@outlook.com', $inbox->oauth_connected_email);
+    }
+
+    public function test_central_oauth_callback_stores_zoho_tokens(): void
+    {
+        $this->provisionTenancy('mail-oauth-zoho');
+        tenancy()->initialize($this->tenant);
+        $this->seed(EmailSeeder::class);
+
+        config([
+            'helpdesk.mail_oauth.callback_base_url' => 'http://helpdesk.test',
+            'helpdesk.mail_oauth.zoho.client_id' => 'zoho-client',
+            'helpdesk.mail_oauth.zoho.client_secret' => 'zoho-secret',
+            'helpdesk.mail_oauth.zoho.region' => 'com',
+        ]);
+
+        $inbox = EmailInbox::query()->first();
+        $state = 'zoho-state-token';
+        Cache::put('central:mail_oauth:'.$state, [
+            'tenant_id' => $this->tenant->id,
+            'inbox_id' => $inbox->id,
+            'provider' => 'zoho',
+        ], now()->addMinutes(10));
+
+        Http::fake([
+            'accounts.zoho.com/oauth/v2/token' => Http::response([
+                'access_token' => 'zoho-access',
+                'refresh_token' => 'zoho-refresh',
+                'expires_in' => 3600,
+            ]),
+            'mail.zoho.com/api/accounts' => Http::response([
+                'data' => [[
+                    'accountId' => 'acct-1',
+                    'primaryEmailAddress' => 'support@company.com',
+                ]],
+            ]),
+            'mail.zoho.com/api/accounts/acct-1/folders' => Http::response([
+                'data' => [[
+                    'folderId' => 'folder-inbox',
+                    'folderName' => 'Inbox',
+                ]],
+            ]),
+            'mail.zoho.com/api/accounts/acct-1/messages/view*' => Http::response(['data' => []]),
+        ]);
+
+        $response = $this->get('http://helpdesk.test/oauth/mail/zoho/callback?code=abc&state='.$state);
+
+        $response->assertRedirect();
+        $this->assertStringContainsString('oauth=connected', (string) $response->headers->get('Location'));
+
+        tenancy()->initialize($this->tenant);
+
+        $inbox->refresh();
+        $this->assertSame('zoho', $inbox->oauth_provider);
+        $this->assertSame('support@company.com', $inbox->oauth_connected_email);
+    }
+
     public function test_webhook_rejected_for_oauth_inbox(): void
     {
+        $this->provisionTenancy('mail-oauth-webhook');
+        tenancy()->initialize($this->tenant);
         $this->seed([\Database\Seeders\TicketLookupSeeder::class, \Database\Seeders\ChannelSeeder::class, EmailSeeder::class]);
 
         $inbox = EmailInbox::query()->first();
@@ -64,7 +202,9 @@ class MailOAuthTest extends TestCase
             'oauth_token_expires_at' => now()->addHour(),
         ]);
 
-        $this->postJson('/api/v1/channels/inbound/email', [
+        $domain = $this->tenant->domains()->value('domain');
+
+        $this->postJson('http://'.$domain.'/api/v1/channels/inbound/email', [
             'from_email' => 'customer@example.com',
             'subject' => 'Should fail',
             'body' => 'Webhook on oauth inbox',
@@ -76,7 +216,10 @@ class MailOAuthTest extends TestCase
 
     public function test_admin_can_disconnect_oauth(): void
     {
+        $this->provisionTenancy('mail-oauth-disconnect');
+        tenancy()->initialize($this->tenant);
         $this->seed(EmailSeeder::class);
+
         $admin = User::factory()->admin()->create();
         $inbox = EmailInbox::query()->first();
         $inbox->update([
@@ -87,8 +230,10 @@ class MailOAuthTest extends TestCase
             'oauth_connected_email' => 'support@gmail.com',
         ]);
 
+        $domain = $this->tenant->domains()->value('domain');
+
         $this->actingAs($admin)
-            ->post("/settings/email/inboxes/{$inbox->id}/oauth/disconnect")
+            ->post("http://{$domain}/settings/email/inboxes/{$inbox->id}/oauth/disconnect")
             ->assertRedirect();
 
         $inbox->refresh();
