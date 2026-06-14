@@ -20,6 +20,7 @@ const mobileOpen = ref(false);
 const verticalPages = computed(() => page.props.verticalPages ?? []);
 const comparePages = computed(() => page.props.comparePages ?? []);
 const featurePages = computed(() => page.props.featurePages ?? []);
+const parentCompany = computed(() => page.props.parentCompany ?? null);
 
 const socialIcons = {
     x: 'M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z',
@@ -247,8 +248,17 @@ useBodyScrollLock(mobileOpen);
                         </ul>
                     </div>
                 </div>
-                <div class="mt-8 border-t border-white/10 pt-6 sm:mt-12 sm:pt-8">
+                <div class="mt-8 flex flex-col gap-2 border-t border-white/10 pt-6 sm:mt-12 sm:flex-row sm:items-center sm:justify-between sm:pt-8">
                     <p class="text-xs text-slate-500 dark:text-slate-400">© {{ new Date().getFullYear() }} {{ brand }}. {{ $t('layouts.central.footer_rights') }}</p>
+                    <p v-if="parentCompany" class="text-right text-xs text-slate-500 dark:text-slate-400 sm:text-right">
+                        {{ $t('layouts.central.footer_product_of') }}
+                        <a
+                            :href="parentCompany.url"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            class="font-medium text-slate-300 underline decoration-white/20 underline-offset-2 transition hover:text-white hover:decoration-white/40"
+                        >{{ parentCompany.name }}</a>
+                    </p>
                 </div>
             </div>
         </footer>

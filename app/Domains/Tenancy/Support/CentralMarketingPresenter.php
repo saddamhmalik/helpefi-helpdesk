@@ -19,6 +19,7 @@ class CentralMarketingPresenter
     {
         return array_merge(self::cachedBase(), [
             'currency' => app(RegionCurrencyResolver::class)->resolveMeta(request()),
+            'parentCompany' => self::parentCompany(),
         ]);
     }
 
@@ -77,6 +78,24 @@ class CentralMarketingPresenter
             'aiDemoEnabled' => app(CentralMarketingAiService::class)->isEnabled(),
             'testimonialsEnabled' => $testimonials->marketingEnabled(),
             'testimonials' => $testimonials->forMarketing(),
+        ];
+    }
+
+    public static function parentCompany(): ?array
+    {
+        $name = config('marketing_seo.organization.parent_company_name');
+        $url = config('marketing_seo.organization.parent_company_url');
+
+        if (! is_string($name) || $name === '' || ! is_string($url) || $url === '') {
+            return null;
+        }
+
+        $host = parse_url($url, PHP_URL_HOST);
+
+        return [
+            'name' => $name,
+            'url' => $url,
+            'label' => is_string($host) && $host !== '' ? $host : $name,
         ];
     }
 }
