@@ -10,6 +10,7 @@ use App\Domains\Security\Support\AuditRecorder;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
 class InvitationService
@@ -92,6 +93,39 @@ class InvitationService
     {
         $invitation = $this->findValid($token);
 
+        return $this->createUserFromInvitation($invitation, $name, $password);
+    }
+
+    public function acceptViaSso(Invitation $invitation, string $name, string $provider, string $subject): User
+    {
+        if (! $invitation->isPending()) {
+            throw ValidationException::withMessages([
+                'email' => 'This invitation is no longer valid.',
+            ]);
+        }
+
+        if (! in_array($invitation->role, ['admin', 'agent'], true)) {
+            throw ValidationException::withMessages([
+                'email' => 'SSO login is only available for agent accounts.',
+            ]);
+        }
+
+        $user = $this->createUserFromInvitation(
+            $invitation,
+            $name,
+            Str::random(32),
+        );
+
+        $user->update([
+            'sso_provider' => $provider,
+            'sso_subject' => $subject,
+        ]);
+
+        return $user->fresh();
+    }
+
+    private function createUserFromInvitation(Invitation $invitation, string $name, string $password): User
+    {
         if ($this->members->findByEmail($invitation->email)) {
             throw ValidationException::withMessages([
                 'email' => 'A user with this email already exists.',

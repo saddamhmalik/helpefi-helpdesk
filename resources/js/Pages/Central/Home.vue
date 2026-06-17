@@ -500,7 +500,7 @@ const featureGroups = computed(() => {
 
             <div class="relative mx-auto max-w-7xl px-4 pb-16 pt-10 sm:px-6 sm:pb-20 sm:pt-14 lg:px-8 lg:pb-28 lg:pt-20">
                 <div class="grid items-center gap-10 lg:grid-cols-2 lg:gap-16">
-                    <div class="max-w-xl lg:max-w-none">
+                    <div class="min-w-0 max-w-xl lg:max-w-none">
                         <div class="flex flex-wrap items-center gap-2">
                             <div class="inline-flex max-w-full flex-wrap items-center gap-2 rounded-full border border-emerald-400/30 bg-emerald-500/10 px-3 py-1.5 text-[11px] font-semibold text-emerald-300 backdrop-blur sm:px-4 sm:text-xs">
                                 <span class="relative flex h-2 w-2">
@@ -529,25 +529,25 @@ const featureGroups = computed(() => {
                             {{ $t('central.home.hero_subtitle') }}
                         </p>
 
-                        <div class="mt-6 overflow-hidden rounded-2xl border border-violet-500/25 bg-gradient-to-br from-violet-950/50 via-slate-900/80 to-indigo-950/50 p-4 ring-1 ring-violet-400/10 sm:mt-7 sm:p-5">
-                            <div class="flex items-center justify-between gap-3">
+                        <div class="mt-6 rounded-2xl border border-violet-500/25 bg-gradient-to-br from-violet-950/50 via-slate-900/80 to-indigo-950/50 p-4 ring-1 ring-violet-400/10 sm:mt-7 sm:p-5">
+                            <div class="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
                                 <p class="text-xs font-bold uppercase tracking-wider text-violet-300">{{ $t('central.home.hero_ai_heading') }}</p>
                                 <a href="#ai" class="shrink-0 text-[11px] font-semibold text-violet-300 underline-offset-2 hover:text-white hover:underline sm:text-xs">{{ $t('central.home.hero_ai_link') }}</a>
                             </div>
-                            <div class="mt-3 flex gap-2 overflow-x-auto pb-0.5 sm:flex-wrap sm:overflow-visible">
+                            <div class="mt-3 flex flex-wrap gap-2">
                                 <span
                                     v-for="pill in heroAiPills"
                                     :key="pill.label"
-                                    class="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-[11px] font-medium text-slate-200 sm:text-xs"
+                                    class="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-[11px] font-medium text-slate-200 sm:text-xs"
                                 >
                                     <svg class="h-3.5 w-3.5 shrink-0 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" :d="pill.icon" /></svg>
                                     {{ pill.label }}
                                 </span>
                             </div>
-                            <div class="mt-4 grid grid-cols-3 gap-2 border-t border-white/10 pt-4 sm:gap-3">
-                                <div v-for="stat in heroAiStats" :key="stat.label" class="text-center sm:text-start">
-                                    <p class="text-base font-extrabold text-white sm:text-lg" dir="ltr">{{ stat.value }}</p>
-                                    <p class="text-[10px] font-medium text-violet-200 sm:text-xs">{{ stat.label }}</p>
+                            <div class="mt-4 grid grid-cols-3 gap-1.5 border-t border-white/10 pt-4 sm:gap-3">
+                                <div v-for="stat in heroAiStats" :key="stat.label" class="min-w-0 px-0.5 text-center sm:px-0 sm:text-start">
+                                    <p class="text-sm font-extrabold text-white sm:text-lg" dir="ltr">{{ stat.value }}</p>
+                                    <p class="text-[10px] font-medium leading-tight text-violet-200 sm:text-xs">{{ stat.label }}</p>
                                     <p class="hidden text-[10px] text-slate-500 dark:text-slate-400 sm:block">{{ stat.detail }}</p>
                                 </div>
                             </div>
@@ -578,8 +578,8 @@ const featureGroups = computed(() => {
                             </span>
                         </div>
 
-                        <div class="mt-8 flex flex-col gap-4 border-t border-white/10 pt-6 sm:mt-10 sm:flex-row sm:items-center sm:pt-8">
-                            <div class="flex -space-x-2.5">
+                        <div class="mt-8 flex min-w-0 flex-col gap-4 border-t border-white/10 pt-6 sm:mt-10 sm:flex-row sm:items-center sm:pt-8">
+                            <div class="flex shrink-0 -space-x-2.5">
                                 <span
                                     v-for="t in heroAvatars"
                                     :key="t.initials"
@@ -589,13 +589,13 @@ const featureGroups = computed(() => {
                                     {{ t.initials }}
                                 </span>
                             </div>
-                            <div>
+                            <div class="min-w-0">
                                 <div class="flex items-center gap-0.5">
                                     <svg v-for="n in 5" :key="n" class="h-4 w-4 text-amber-400" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>
                                 </div>
-                                <p class="mt-0.5 text-sm text-slate-400 dark:text-slate-500">
+                                <p class="mt-0.5 text-sm leading-snug text-slate-400 dark:text-slate-500">
                                     <span class="font-semibold text-white">{{ $t('central.home.hero_trusted_emphasis') }}</span>
-                                    {{ $t('central.home.hero_trusted_suffix') }}
+                                    {{ ' ' }}{{ $t('central.home.hero_trusted_suffix') }}
                                 </p>
                             </div>
                         </div>

@@ -23,7 +23,7 @@ class InvitationRepository
     public function pendingForEmail(string $email): ?Invitation
     {
         return Invitation::query()
-            ->where('email', $email)
+            ->whereRaw('LOWER(email) = ?', [strtolower(trim($email))])
             ->whereNull('accepted_at')
             ->where('expires_at', '>', now())
             ->first();

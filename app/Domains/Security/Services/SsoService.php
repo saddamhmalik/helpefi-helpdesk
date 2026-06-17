@@ -2,16 +2,15 @@
 
 namespace App\Domains\Security\Services;
 
-use App\Domains\Auth\Services\AuthService;
+use App\Domains\Auth\Repositories\InvitationRepository;
+use App\Domains\Auth\Repositories\MemberRepository;
+use App\Domains\Auth\Services\InvitationService;
 use App\Domains\Billing\Services\BillingService;
 use App\Domains\Security\Exceptions\TwoFactorRequiredException;
 use App\Domains\Security\Repositories\SecuritySettingRepository;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
-use Spatie\Permission\Models\Role;
 
 class SsoService
 {
@@ -21,6 +20,9 @@ class SsoService
         private SamlAuthService $saml,
         private BillingService $billing,
         private AuditLogService $audit,
+        private MemberRepository $members,
+        private InvitationRepository $invitations,
+        private InvitationService $invitationService,
     ) {
     }
 
@@ -114,6 +116,8 @@ class SsoService
 
     public function completeLogin(array $identity): User
     {
+        $identity['email'] = strtolower(trim($identity['email']));
+
         $this->assertAllowedDomain($identity['email']);
 
         $user = User::query()
@@ -122,23 +126,18 @@ class SsoService
             ->first();
 
         if (! $user) {
-            $user = User::query()->where('email', $identity['email'])->first();
+            $user = $this->members->findByEmail($identity['email']);
         }
 
-        if (! $user) {
-            $user = $this->provisionUser($identity);
-        } else {
+        if ($user) {
+            $this->assertAgentOrAdmin($user);
             $user->update([
                 'sso_provider' => $identity['provider'],
                 'sso_subject' => $identity['subject'],
                 'name' => $user->name ?: $identity['name'],
             ]);
-        }
-
-        if ($user->hasRole('customer')) {
-            throw ValidationException::withMessages([
-                'email' => 'SSO login is only available for agent accounts.',
-            ]);
+        } else {
+            $user = $this->resolveUserFromInvitation($identity);
         }
 
         if ($user->hasTwoFactorEnabled()) {
@@ -155,30 +154,31 @@ class SsoService
         return $user;
     }
 
-    private function provisionUser(array $identity): User
+    private function resolveUserFromInvitation(array $identity): User
     {
-        $setting = $this->settings->current();
-        $config = $setting->sso_config ?? [];
+        $invitation = $this->invitations->pendingForEmail($identity['email']);
 
-        if (! ($config['auto_provision'] ?? true)) {
+        if (! $invitation) {
             throw ValidationException::withMessages([
-                'email' => 'No account exists for this SSO identity. Contact an administrator.',
+                'email' => __('messages.sso_no_agent_account'),
             ]);
         }
 
-        $role = $config['default_role'] ?? config('sso.default_role', 'agent');
+        return $this->invitationService->acceptViaSso(
+            $invitation,
+            $identity['name'],
+            $identity['provider'],
+            $identity['subject'],
+        );
+    }
 
-        $user = User::query()->create([
-            'name' => $identity['name'],
-            'email' => $identity['email'],
-            'password' => Hash::make(Str::random(32)),
-            'sso_provider' => $identity['provider'],
-            'sso_subject' => $identity['subject'],
-        ]);
-
-        $user->assignRole(Role::findOrCreate($role));
-
-        return $user;
+    private function assertAgentOrAdmin(User $user): void
+    {
+        if ($user->hasRole('customer') || ! $user->hasAnyRole(['admin', 'agent'])) {
+            throw ValidationException::withMessages([
+                'email' => __('messages.sso_agents_only'),
+            ]);
+        }
     }
 
     private function assertAllowedDomain(string $email): void
@@ -190,11 +190,11 @@ class SsoService
             return;
         }
 
-        $domain = Str::after($email, '@');
+        $domain = \Illuminate\Support\Str::after($email, '@');
 
         if (! in_array($domain, $domains, true)) {
             throw ValidationException::withMessages([
-                'email' => 'Your email domain is not allowed for SSO login.',
+                'email' => __('messages.sso_domain_not_allowed'),
             ]);
         }
     }
