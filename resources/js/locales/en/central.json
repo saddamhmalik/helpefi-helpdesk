@@ -1375,7 +1375,7 @@
                 "features": [
                     { "title": "Unified shared inbox", "body": "Every channel creates a ticket in one workspace with full conversation history." },
                     { "title": "SLA and escalation rules", "body": "Set response and resolution targets with business hours, tiers, and automated escalations." },
-                    { "title": "Collaboration built in", "body": "Private notes, @mentions, and linked incidents keep teams aligned on complex issues." }
+                    { "title": "Collaboration built in", "body": "Private notes, {'@'}mentions, and linked incidents keep teams aligned on complex issues." }
                 ],
                 "faq": [
                     { "q": "Which channels create tickets?", "a": "Email, live chat, SMS, and your customer portal all route into the same shared inbox." },
@@ -1483,10 +1483,38 @@
             "contact": {
                 "nav_label": "Contact",
                 "hero_title": "Contact Helpefi",
-                "hero_subtitle": "Questions about pricing, security, or enterprise plans? Email hello@helpefi.com — we typically respond within one business day.",
+                "hero_subtitle": "Questions about pricing, security, or enterprise plans? Send a message below or email {contactEmail} — we typically respond within one business day.",
+                "form_title": "Send us a message",
+                "form_subtitle": "Pick a topic, tell us what you need, and we'll route your request to the right team.",
+                "topic_group_label": "What can we help with?",
+                "topic_sales": "Sales & demo",
+                "topic_support": "Product support",
+                "topic_partnership": "Partnership",
+                "topic_enterprise": "Enterprise",
+                "topic_other": "Other",
+                "name_label": "Your name",
+                "email_label": "Work email",
+                "company_label": "Company (optional)",
+                "message_label": "How can we help?",
+                "message_placeholder": "Tell us about your team, use case, or question…",
+                "submit": "Send message",
+                "submitting": "Sending…",
+                "mailto_fallback": "Or email us directly",
+                "success_title": "Message sent",
+                "success_body": "Thanks — we'll reply to {email} within one business day.",
+                "sidebar_email_title": "Email us directly",
+                "sidebar_copy": "Copy",
+                "sidebar_copied": "Copied",
+                "sidebar_response_body": "We typically reply within one business day on weekdays.",
+                "sidebar_links_title": "Quick links",
+                "link_trial": "Start {days}-day free trial",
+                "link_pricing": "View pricing",
+                "link_login": "Sign in to your workspace",
+                "existing_customer_title": "Already a customer?",
+                "existing_customer_body": "Sign in to your workspace for product support. For billing questions, email {contactEmail} from your registered address.",
                 "sections": [
-                    { "title": "Sales and general inquiries", "body": "Email hello@helpefi.com for demos, partnership questions, or help choosing the right plan for your team." },
-                    { "title": "Existing customers", "body": "Sign in to your workspace for product support. For billing or account questions, email hello@helpefi.com from your registered address." }
+                    { "title": "Sales and general inquiries", "body": "Email {contactEmail} for demos, partnership questions, or help choosing the right plan for your team." },
+                    { "title": "Existing customers", "body": "Sign in to your workspace for product support. For billing or account questions, email {contactEmail} from your registered address." }
                 ],
                 "cta_title": "Ready to get started?",
                 "cta_body": "Skip the wait — launch your free trial and explore the platform immediately."
@@ -1609,7 +1637,7 @@
                         "body": "Depending on your location, you may have rights to access, correct, delete, restrict, or object to certain processing of your personal information, and to data portability or withdrawal of consent.",
                         "paragraphs": [
                             "Workspace end users should contact their organization first, because the organization typically controls data in the workspace.",
-                            "To exercise rights relating to your Helpefi account or this website, email hello@helpefi.com. We may need to verify your identity before responding.",
+                            "To exercise rights relating to your Helpefi account or this website, email hello{'@'}helpefi.com. We may need to verify your identity before responding.",
                             "You may also lodge a complaint with your local data protection authority."
                         ]
                     },
@@ -1622,7 +1650,7 @@
                     },
                     {
                         "title": "12. Children's privacy",
-                        "body": "Helpefi is not directed to children under 16, and we do not knowingly collect personal information from children. If you believe a child has provided us information, contact hello@helpefi.com and we will take appropriate steps."
+                        "body": "Helpefi is not directed to children under 16, and we do not knowingly collect personal information from children. If you believe a child has provided us information, contact hello{'@'}helpefi.com and we will take appropriate steps."
                     },
                     {
                         "title": "13. Changes to this Privacy Policy",
@@ -1630,7 +1658,7 @@
                     },
                     {
                         "title": "14. Contact us",
-                        "body": "For privacy questions, data subject requests, or security reports, contact us at hello@helpefi.com."
+                        "body": "For privacy questions, data subject requests, or security reports, contact us at hello{'@'}helpefi.com."
                     }
                 ],
                 "cta_title": "",
@@ -1663,7 +1691,7 @@
                             "You must be at least 18 years old and able to form a binding contract",
                             "Registration information must be accurate, current, and complete",
                             "You are responsible for all activity under your account and for maintaining the confidentiality of credentials",
-                            "You must promptly notify us of unauthorized access at hello@helpefi.com"
+                            "You must promptly notify us of unauthorized access at hello{'@'}helpefi.com"
                         ]
                     },
                     {
@@ -1776,7 +1804,7 @@
                     },
                     {
                         "title": "18. Contact",
-                        "body": "Questions about these Terms may be sent to hello@helpefi.com."
+                        "body": "Questions about these Terms may be sent to hello{'@'}helpefi.com."
                     }
                 ],
                 "cta_title": "",
@@ -1845,7 +1873,7 @@
             "static_about_title": "About {brand}",
             "static_about_description": "Learn about {brand} — modern AI helpdesk and ITSM software built for support and IT teams.",
             "static_contact_title": "Contact {brand}",
-            "static_contact_description": "Contact {brand} at hello@helpefi.com for sales, demos, and enterprise inquiries.",
+            "static_contact_description": "Contact {brand} at hello{'@'}helpefi.com for sales, demos, and enterprise inquiries.",
             "static_privacy_title": "Privacy Policy · {brand}",
             "static_privacy_description": "Read how {brand} collects, uses, shares, and protects personal information for website visitors, account holders, and workspace users.",
             "static_terms_title": "Terms of Service · {brand}",

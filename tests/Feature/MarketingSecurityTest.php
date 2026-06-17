@@ -43,6 +43,20 @@ class MarketingSecurityTest extends TestCase
         }
     }
 
+    public function test_marketing_csp_allows_turnstile_when_configured(): void
+    {
+        config(['marketing_seo.turnstile.secret_key' => 'test-secret']);
+
+        $response = $this->get($this->centralUrl('/contact'));
+
+        $response->assertOk();
+
+        $csp = (string) $response->headers->get('Content-Security-Policy');
+
+        $this->assertStringContainsString('https://challenges.cloudflare.com', $csp);
+        $this->assertStringContainsString('frame-src', $csp);
+    }
+
     public function test_platform_admin_routes_do_not_get_marketing_csp(): void
     {
         $this->seed([PlatformPermissionSeeder::class, PlatformUserSeeder::class]);
