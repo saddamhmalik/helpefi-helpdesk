@@ -69,11 +69,21 @@ class MarketingSecurityHeaders
             }
         }
 
+        $frameSources = ["'self'"];
+
+        if ($this->turnstileEnabled()) {
+            $turnstileOrigin = 'https://challenges.cloudflare.com';
+            $scriptSources[] = $turnstileOrigin;
+            $connectSources[] = $turnstileOrigin;
+            $frameSources[] = $turnstileOrigin;
+        }
+
         $directives = [
             "default-src 'self'",
             'base-uri \'self\'',
             "form-action 'self'",
             "frame-ancestors 'self'",
+            'frame-src '.implode(' ', $frameSources),
             'img-src \'self\' data: https: blob:',
             'font-src \'self\' data: https:',
             'object-src \'none\'',
@@ -88,5 +98,12 @@ class MarketingSecurityHeaders
         }
 
         return implode('; ', $directives);
+    }
+
+    private function turnstileEnabled(): bool
+    {
+        $secret = config('marketing_seo.turnstile.secret_key');
+
+        return is_string($secret) && $secret !== '';
     }
 }

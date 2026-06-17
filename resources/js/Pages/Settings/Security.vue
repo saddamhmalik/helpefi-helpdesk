@@ -75,7 +75,7 @@ const ssoForm = useForm({
         tenant_id: props.sso?.sso_config?.tenant_id ?? 'common',
         issuer: props.sso?.sso_config?.issuer ?? '',
         button_label: props.sso?.sso_config?.button_label ?? 'Sign in with SSO',
-        auto_provision: props.sso?.sso_config?.auto_provision ?? true,
+        auto_provision: props.sso?.sso_config?.auto_provision ?? false,
         allowed_domains: (props.sso?.sso_config?.allowed_domains ?? []).join('\n'),
         idp_entity_id: props.sso?.sso_config?.idp_entity_id ?? '',
         sso_url: props.sso?.sso_config?.sso_url ?? '',

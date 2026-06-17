@@ -53,7 +53,9 @@ class MemberRepository
 
     public function findByEmail(string $email): ?User
     {
-        return User::query()->where('email', $email)->first();
+        return User::query()
+            ->whereRaw('LOWER(email) = ?', [strtolower(trim($email))])
+            ->first();
     }
 
     public function createMember(string $name, string $email, string $password, string $role, array $customFields = []): User

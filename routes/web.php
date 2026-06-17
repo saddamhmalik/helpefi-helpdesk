@@ -29,6 +29,7 @@ use App\Domains\Tenancy\Controllers\Central\SitemapController;
 use App\Domains\Tenancy\Controllers\Central\BlogController;
 use App\Domains\Tenancy\Controllers\Central\CompareLandingController;
 use App\Domains\Tenancy\Controllers\Central\FeatureLandingController;
+use App\Domains\Tenancy\Controllers\Central\MarketingContactController;
 use App\Domains\Tenancy\Controllers\Central\MarketingStaticPageController;
 use App\Domains\Tenancy\Controllers\Central\VerticalLandingController;
 use Illuminate\Support\Facades\Auth;
@@ -58,7 +59,8 @@ Route::get('/vs/{competitor}', [CompareLandingController::class, 'show'])
     ->name('central.compare');
 Route::get('/pricing', fn () => app(MarketingStaticPageController::class)->show('pricing'))->name('central.static.pricing');
 Route::get('/about', fn () => app(MarketingStaticPageController::class)->show('about'))->name('central.static.about');
-Route::get('/contact', fn () => app(MarketingStaticPageController::class)->show('contact'))->name('central.static.contact');
+Route::get('/contact', [MarketingContactController::class, 'index'])->name('central.static.contact');
+Route::post('/contact', [MarketingContactController::class, 'store'])->name('central.contact.store');
 Route::get('/privacy', fn () => app(MarketingStaticPageController::class)->show('privacy'))->name('central.static.privacy');
 Route::get('/terms', fn () => app(MarketingStaticPageController::class)->show('terms'))->name('central.static.terms');
 Route::get('/blog', [BlogController::class, 'index'])->name('central.blog.index');

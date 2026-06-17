@@ -1,0 +1,60 @@
+<?php
+
+namespace App\Domains\Tenancy\Controllers\Central;
+
+use App\Domains\Tenancy\Services\MarketingContactBotGuard;
+use App\Domains\Tenancy\Services\MarketingContactRateLimiter;
+use App\Domains\Tenancy\Services\MarketingContactService;
+use App\Domains\Tenancy\Support\CentralMarketingPresenter;
+use App\Http\Controllers\Controller;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Inertia\Inertia;
+use Inertia\Response;
+
+class MarketingContactController extends Controller
+{
+    public function __construct(
+        private MarketingContactService $contacts,
+        private MarketingContactRateLimiter $rateLimiter,
+        private MarketingContactBotGuard $botGuard,
+    ) {
+    }
+
+    public function index(): Response
+    {
+        $this->botGuard->beginFormSession();
+
+        return Inertia::render('Central/Contact', [
+            ...CentralMarketingPresenter::shared(),
+            'turnstileSiteKey' => $this->botGuard->turnstileSiteKey(),
+        ]);
+    }
+
+    public function store(Request $request): RedirectResponse
+    {
+        if ($this->botGuard->isSilentBot($request)) {
+            return redirect()->route('central.static.contact');
+        }
+
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:120'],
+            'email' => ['required', 'email', 'max:255'],
+            'company' => ['nullable', 'string', 'max:120'],
+            'topic' => ['required', 'in:sales,support,partnership,enterprise,other'],
+            'message' => ['required', 'string', 'min:10', 'max:5000'],
+            'website' => ['nullable', 'string', 'max:0'],
+            'cf_turnstile_response' => ['nullable', 'string', 'max:2048'],
+        ]);
+
+        $this->botGuard->assertTurnstile($request);
+        $this->rateLimiter->assertWithinLimit($request);
+        $this->contacts->submit($validated);
+        $this->rateLimiter->recordAttempt($request);
+
+        return redirect()
+            ->route('central.static.contact')
+            ->with('contactSubmitted', true)
+            ->with('contactReplyEmail', $validated['email']);
+    }
+}

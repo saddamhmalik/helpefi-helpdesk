@@ -13,6 +13,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpFoundation\Response as HttpResponse;
 
 class SsoController extends Controller
@@ -35,6 +36,10 @@ class SsoController extends Controller
         try {
             $identity = $this->oidc->handleCallback();
             $this->sso->completeLogin($identity);
+        } catch (ValidationException $exception) {
+            return redirect()
+                ->route('login')
+                ->withErrors($exception->errors());
         } catch (TwoFactorRequiredException) {
             return redirect()->route('two-factor.challenge');
         }
@@ -50,6 +55,10 @@ class SsoController extends Controller
         try {
             $identity = $this->saml->handleAcs($request->all());
             $this->sso->completeLogin($identity);
+        } catch (ValidationException $exception) {
+            return redirect()
+                ->route('login')
+                ->withErrors($exception->errors());
         } catch (TwoFactorRequiredException) {
             return redirect()->route('two-factor.challenge');
         }

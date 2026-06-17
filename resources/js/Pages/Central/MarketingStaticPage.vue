@@ -41,9 +41,48 @@ const copy = computed(() => ({
     ctaBody: t(`${copyPrefix.value}.cta_body`),
 }));
 
+const subtitleParams = computed(() => {
+    const params = { days: props.trialDays };
+
+    if (props.contactEmail) {
+        params.contactEmail = props.contactEmail;
+    }
+
+    return params;
+});
+
+const interpolatePageCopy = (value) => {
+    if (typeof value !== 'string') {
+        return value;
+    }
+
+    let copy = value;
+
+    if (props.contactEmail) {
+        copy = copy.replaceAll('{contactEmail}', props.contactEmail);
+    }
+
+    return copy;
+};
+
 const sections = computed(() => {
     const value = tm(`${copyPrefix.value}.sections`);
-    return Array.isArray(value) ? value : [];
+
+    if (!Array.isArray(value)) {
+        return [];
+    }
+
+    return value.map((section) => ({
+        ...section,
+        title: interpolatePageCopy(section.title),
+        body: interpolatePageCopy(section.body),
+        paragraphs: Array.isArray(section.paragraphs)
+            ? section.paragraphs.map(interpolatePageCopy)
+            : section.paragraphs,
+        items: Array.isArray(section.items)
+            ? section.items.map(interpolatePageCopy)
+            : section.items,
+    }));
 });
 
 const selectedCurrencyCode = ref(props.currency?.code ?? props.baseCurrency.code);
@@ -79,12 +118,9 @@ const customPlans = computed(() => props.plans.filter((plan) => plan.custom_pric
 
                 <div class="max-w-3xl">
                     <h1 class="text-3xl font-extrabold tracking-tight sm:text-5xl">{{ copy.heroTitle }}</h1>
-                    <p class="mt-6 text-lg leading-relaxed text-slate-300">{{ $t(`${copyPrefix}.hero_subtitle`, { days: trialDays }) }}</p>
+                    <p class="mt-6 text-lg leading-relaxed text-slate-300">{{ $t(`${copyPrefix}.hero_subtitle`, subtitleParams) }}</p>
                     <p v-if="effectiveDate" class="mt-4 text-sm text-slate-400">{{ effectiveDate }}</p>
-                    <div v-if="page === 'contact'" class="mt-8">
-                        <a :href="`mailto:${contactEmail}`" class="inline-flex rounded-2xl bg-white px-8 py-4 text-sm font-bold text-slate-900">{{ contactEmail }}</a>
-                    </div>
-                    <div v-else-if="isPricing" class="mt-8 flex flex-col gap-3 sm:flex-row">
+                    <div v-if="isPricing" class="mt-8 flex flex-col gap-3 sm:flex-row">
                         <Link href="/register" class="inline-flex items-center justify-center rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 px-8 py-4 text-sm font-bold text-white">Start {{ trialDays }}-day free trial</Link>
                         <a href="/#features" class="inline-flex items-center justify-center rounded-2xl border border-white/20 px-8 py-4 text-sm font-semibold text-white transition hover:bg-white/10">Explore features</a>
                     </div>

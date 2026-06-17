@@ -12,6 +12,20 @@ return [
         'parent_company_url' => rtrim((string) env('MARKETING_PARENT_COMPANY_URL', 'https://codikal.com'), '/'),
     ],
 
+    'contact_form' => [
+        'ip_max_attempts' => (int) env('MARKETING_CONTACT_IP_MAX', 5),
+        'ip_decay_minutes' => (int) env('MARKETING_CONTACT_IP_DECAY', 1),
+        'email_max_attempts' => (int) env('MARKETING_CONTACT_EMAIL_MAX', 3),
+        'email_decay_minutes' => (int) env('MARKETING_CONTACT_EMAIL_DECAY', 60),
+        'min_seconds_on_page' => (int) env('MARKETING_CONTACT_MIN_SECONDS', 3),
+        'max_form_age_minutes' => (int) env('MARKETING_CONTACT_MAX_AGE', 120),
+    ],
+
+    'turnstile' => [
+        'site_key' => env('TURNSTILE_SITE_KEY'),
+        'secret_key' => env('TURNSTILE_SECRET_KEY'),
+    ],
+
     'analytics' => [
         'google_analytics_id' => env('GOOGLE_ANALYTICS_ID'),
         'google_site_verification' => env('GOOGLE_SITE_VERIFICATION'),

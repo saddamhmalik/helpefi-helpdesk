@@ -38,7 +38,17 @@ class MarketingSeoTest extends TestCase
 
     public function test_static_marketing_pages_render(): void
     {
+        config(['marketing_seo.organization.contact_email' => 'hello@helpefi.com']);
+
+        $this->get($this->centralUrl('/contact'))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page->component('Central/Contact'));
+
         foreach (MarketingStaticPageDefinition::slugs() as $slug) {
+            if ($slug === 'contact') {
+                continue;
+            }
+
             $this->get($this->centralUrl(MarketingStaticPageDefinition::path($slug)))
                 ->assertOk()
                 ->assertInertia(fn ($page) => $page
