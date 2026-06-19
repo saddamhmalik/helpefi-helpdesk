@@ -21,6 +21,8 @@ const props = defineProps({
     departments: Array,
     teams: Array,
     customFieldDefinitions: { type: Array, default: () => [] },
+    ticketTypes: { type: Array, default: () => [] },
+    defaultType: { type: String, default: null },
 });
 
 const { t } = useI18n();
@@ -38,6 +40,10 @@ const form = useForm({
     team_id: '',
     ticket_status_id: props.statuses.find((s) => s.slug === 'open')?.id ?? props.statuses[0]?.id,
     ticket_priority_id: props.priorities.find((p) => p.slug === 'normal')?.id ?? props.priorities[0]?.id,
+    type: props.defaultType
+        ?? props.ticketTypes.find((item) => item.value === 'incident')?.value
+        ?? props.ticketTypes[0]?.value
+        ?? '',
     custom_fields: {},
 });
 
@@ -45,8 +51,16 @@ const filteredTeams = computed(() =>
     props.teams.filter((team) => !form.department_id || team.department_id === Number(form.department_id)),
 );
 
+const hasRequester = () => Boolean(form.contact_id) || Boolean(form.requester_email?.trim());
+
 const submit = () => {
     if (ticketLimitReached.value) {
+        return;
+    }
+
+    if (!hasRequester()) {
+        form.setError('requester_email', t('tickets.requester_required'));
+
         return;
     }
 
@@ -85,6 +99,7 @@ const submit = () => {
                 <div class="space-y-5">
                     <FormField
                         :label="$t('tickets.requester')"
+                        required
                         :error="form.errors.contact_id || form.errors.requester_email"
                     >
                         <RequesterField
@@ -121,6 +136,20 @@ const submit = () => {
             </FormSection>
 
             <FormSection :title="$t('tickets.workflow')">
+                <FormField
+                    v-if="ticketTypes.length"
+                    :label="$t('tickets.ticket_type')"
+                    :error="form.errors.type"
+                >
+                    <select v-model="form.type" :class="formSelectClass" required>
+                        <option v-for="ticketType in ticketTypes" :key="ticketType.value" :value="ticketType.value">
+                            {{ ticketType.singular }}
+                        </option>
+                    </select>
+                    <p class="mt-1.5 text-xs text-slate-500 dark:text-slate-400">
+                        {{ ticketTypes.find((item) => item.value === form.type)?.description }}
+                    </p>
+                </FormField>
                 <div class="grid gap-5 sm:grid-cols-2">
                     <FormField :label="$t('tickets.status')" :error="form.errors.ticket_status_id">
                         <select v-model="form.ticket_status_id" :class="formSelectClass">

@@ -12,6 +12,7 @@ use App\Domains\ServiceDesk\Models\ApprovalRequestStep;
 use App\Domains\ServiceDesk\Repositories\ApprovalRequestRepository;
 use App\Domains\Tickets\Models\Ticket;
 use App\Domains\Tickets\Repositories\TicketRepository;
+use App\Domains\Security\Support\AuditRecorder;
 use App\Models\User;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Facades\DB;
@@ -25,6 +26,7 @@ class ApprovalService
         private BillingService $billing,
         private NotificationService $notifications,
         private ApprovalMailer $mailer,
+        private AuditRecorder $audit,
     ) {
     }
 
@@ -148,6 +150,17 @@ class ApprovalService
                     'current_step' => $request->current_step + 1,
                 ]);
 
+                $this->recordApprovalAudit(
+                    'service_desk.approval_step_approved',
+                    $request,
+                    $userId,
+                    [
+                        'approval_request_id' => $request->id,
+                        'approver_name' => User::query()->find($userId)?->name,
+                        'next_approver_name' => $nextStep->approver?->name,
+                    ],
+                );
+
                 $this->notifyCurrentApprover($request);
 
                 return $this->requests->find($request->id);
@@ -155,6 +168,17 @@ class ApprovalService
 
             $request = $this->finalize($request, ApprovalRequest::STATUS_APPROVED, $note);
             $ticket = $this->openApprovedTicket($request->ticket_id);
+
+            $this->recordApprovalAudit(
+                'service_desk.approval_approved',
+                $request,
+                $userId,
+                [
+                    'approval_request_id' => $request->id,
+                    'approver_name' => User::query()->find($userId)?->name,
+                    'note' => $note,
+                ],
+            );
 
             TicketAutomationTrigger::dispatch($ticket, AutomationRule::TRIGGER_APPROVAL_APPROVED, [
                 'approval_request_id' => $request->id,
@@ -182,6 +206,17 @@ class ApprovalService
 
             $request = $this->finalize($request, ApprovalRequest::STATUS_REJECTED, $note);
             $ticket = $this->closeRejectedTicket($request->ticket_id);
+
+            $this->recordApprovalAudit(
+                'service_desk.approval_rejected',
+                $request,
+                $userId,
+                [
+                    'approval_request_id' => $request->id,
+                    'approver_name' => User::query()->find($userId)?->name,
+                    'note' => $note,
+                ],
+            );
 
             TicketAutomationTrigger::dispatch($ticket, AutomationRule::TRIGGER_APPROVAL_REJECTED, [
                 'approval_request_id' => $request->id,
@@ -270,6 +305,12 @@ class ApprovalService
             'requester_contact_id' => $ticket->contact_id,
         ], $approverIds);
 
+        $this->audit->record('service_desk.approval_requested', $ticket, [
+            'approval_request_id' => $request->id,
+            'approver_names' => User::query()->whereIn('id', $approverIds)->orderBy('name')->pluck('name')->all(),
+            'subject' => $ticket->subject,
+        ], $requestedBy?->id);
+
         $this->notifyCurrentApprover($request);
 
         return $request;
@@ -337,6 +378,12 @@ class ApprovalService
 
         $reviewUrl = $this->mailer->signedReviewUrl($request, $step);
         $this->notifications->approvalPending($request, $step->approver, $reviewUrl);
+    }
+
+    private function recordApprovalAudit(string $event, ApprovalRequest $request, int $userId, array $properties): void
+    {
+        $ticket = $this->tickets->find($request->ticket_id);
+        $this->audit->record($event, $ticket, $properties, $userId);
     }
 
     private function toArray(ApprovalRequest $request): array

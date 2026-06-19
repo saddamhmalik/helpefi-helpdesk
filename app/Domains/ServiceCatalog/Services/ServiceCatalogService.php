@@ -141,7 +141,7 @@ class ServiceCatalogService
             ?? $this->tickets->priorities()->firstWhere('slug', 'normal')?->id
             ?? $this->tickets->priorities()->first()?->id;
 
-        $description = $this->buildDescription($item, $payload['fields'], $payload['details'] ?? null);
+        $description = $this->buildDescription($item, $payload['fields'] ?? [], $payload['details'] ?? null);
 
         $ticket = $this->tickets->create([
             'subject' => $item->name,

@@ -42,7 +42,7 @@ const isConstrainedHeightPage = computed(() => isFullHeightPage.value || isSetti
 
 const isSetupPage = computed(() => pageKey.value === '/setup');
 
-const isActive = (href) => {
+const isActive = (href, exact = false) => {
     const path = page.url.split('?')[0];
 
     if (href === '/workspace') {
@@ -57,18 +57,22 @@ const isActive = (href) => {
         return path === '/how-to';
     }
 
+    if (exact) {
+        return path === href;
+    }
+
     return path === href || path.startsWith(`${href}/`);
 };
 
-const navItemClass = (href) => {
-    if (isActive(href)) {
+const navItemClass = (href, exact = false) => {
+    if (isActive(href, exact)) {
         return 'bg-white/10 text-white';
     }
 
     return 'text-slate-400 hover:bg-white/5 hover:text-slate-100';
 };
 
-const iconWrapClass = (href) => isActive(href)
+const iconWrapClass = (href, exact = false) => isActive(href, exact)
     ? 'text-white'
     : 'text-slate-500 dark:text-slate-400 group-hover:text-slate-300';
 </script>
@@ -114,11 +118,11 @@ const iconWrapClass = (href) => isActive(href)
                             :title="isOpen ? undefined : item.label"
                             class="group flex items-center rounded-lg text-[13px] font-medium transition-ui"
                             :class="[
-                                navItemClass(item.href),
+                                navItemClass(item.href, item.exact),
                                 isOpen ? 'gap-2.5 px-2.5 py-2' : 'justify-center p-2.5',
                             ]"
                         >
-                            <svg class="h-[1.0625rem] w-[1.0625rem] shrink-0 transition-ui" :class="iconWrapClass(item.href)" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="h-[1.0625rem] w-[1.0625rem] shrink-0 transition-ui" :class="iconWrapClass(item.href, item.exact)" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" :d="item.icon" />
                             </svg>
                             <span
@@ -182,7 +186,7 @@ const iconWrapClass = (href) => isActive(href)
                     :key="item.href"
                     :href="item.href"
                     class="whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-ui"
-                    :class="isActive(item.href) ? 'bg-slate-900 text-white dark:bg-slate-100 dark:bg-slate-900 dark:text-slate-900 dark:text-slate-100' : 'agent-text-muted'"
+                    :class="isActive(item.href, item.exact) ? 'bg-slate-900 text-white dark:bg-slate-100 dark:bg-slate-900 dark:text-slate-900 dark:text-slate-100' : 'agent-text-muted'"
                 >
                     {{ item.label }}
                 </Link>

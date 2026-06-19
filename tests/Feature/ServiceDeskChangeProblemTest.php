@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Domains\Billing\Models\Subscription;
 use App\Domains\ServiceCatalog\Models\ServiceCatalogItem;
 use App\Domains\ServiceDesk\Models\ChangeRecord;
 use App\Domains\Tickets\Models\Ticket;
@@ -11,28 +10,18 @@ use App\Domains\Tickets\Models\TicketStatus;
 use App\Models\User;
 use Database\Seeders\TicketLookupSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\Concerns\PreparesServiceDeskTenant;
 use Tests\TenantTestCase;
 
 class ServiceDeskChangeProblemTest extends TenantTestCase
 {
+    use PreparesServiceDeskTenant;
     use RefreshDatabase;
-
-    private function setPlan(string $plan): void
-    {
-        Subscription::query()->updateOrCreate(
-            ['tenant_id' => tenant('id')],
-            [
-                'plan' => $plan,
-                'status' => Subscription::STATUS_ACTIVE,
-                'renews_at' => now()->addMonth(),
-            ],
-        );
-    }
 
     public function test_change_record_can_be_updated_on_change_ticket(): void
     {
         $this->seed(TicketLookupSeeder::class);
-        $this->setPlan('enterprise');
+        $this->prepareServiceDeskTenant();
 
         $admin = User::query()->where('email', 'admin@helpdesk.test')->first();
         $statusId = TicketStatus::query()->where('slug', 'open')->value('id');
@@ -66,7 +55,7 @@ class ServiceDeskChangeProblemTest extends TenantTestCase
     public function test_change_calendar_lists_scheduled_changes(): void
     {
         $this->seed(TicketLookupSeeder::class);
-        $this->setPlan('enterprise');
+        $this->prepareServiceDeskTenant();
 
         $admin = User::query()->where('email', 'admin@helpdesk.test')->first();
         $statusId = TicketStatus::query()->where('slug', 'open')->value('id');
@@ -97,7 +86,7 @@ class ServiceDeskChangeProblemTest extends TenantTestCase
     public function test_problem_ticket_can_link_and_unlink_incidents(): void
     {
         $this->seed(TicketLookupSeeder::class);
-        $this->setPlan('enterprise');
+        $this->prepareServiceDeskTenant();
 
         $admin = User::query()->where('email', 'admin@helpdesk.test')->first();
         $statusId = TicketStatus::query()->where('slug', 'open')->value('id');
@@ -145,7 +134,7 @@ class ServiceDeskChangeProblemTest extends TenantTestCase
     public function test_professional_plan_cannot_update_change_record(): void
     {
         $this->seed(TicketLookupSeeder::class);
-        $this->setPlan('professional');
+        $this->prepareServiceDeskTenant('professional', []);
 
         $admin = User::query()->where('email', 'admin@helpdesk.test')->first();
         $statusId = TicketStatus::query()->where('slug', 'open')->value('id');

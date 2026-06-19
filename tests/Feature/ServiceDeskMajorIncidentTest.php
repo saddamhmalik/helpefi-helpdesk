@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Domains\Billing\Models\Subscription;
 use App\Domains\ServiceCatalog\Models\ServiceCatalogItem;
 use App\Domains\ServiceDesk\Models\MajorIncidentRecord;
 use App\Domains\Tickets\Models\Ticket;
@@ -11,28 +10,18 @@ use App\Domains\Tickets\Models\TicketStatus;
 use App\Models\User;
 use Database\Seeders\TicketLookupSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\Concerns\PreparesServiceDeskTenant;
 use Tests\TenantTestCase;
 
 class ServiceDeskMajorIncidentTest extends TenantTestCase
 {
+    use PreparesServiceDeskTenant;
     use RefreshDatabase;
-
-    private function setPlan(string $plan): void
-    {
-        Subscription::query()->updateOrCreate(
-            ['tenant_id' => tenant('id')],
-            [
-                'plan' => $plan,
-                'status' => Subscription::STATUS_ACTIVE,
-                'renews_at' => now()->addMonth(),
-            ],
-        );
-    }
 
     public function test_incident_can_be_declared_major_and_open_war_room(): void
     {
         $this->seed(TicketLookupSeeder::class);
-        $this->setPlan('enterprise');
+        $this->prepareServiceDeskTenant();
 
         $admin = User::query()->where('email', 'admin@helpdesk.test')->first();
         $statusId = TicketStatus::query()->where('slug', 'open')->value('id');
@@ -64,10 +53,33 @@ class ServiceDeskMajorIncidentTest extends TenantTestCase
                 ->where('majorIncident.status', 'active'));
     }
 
+    public function test_war_room_without_major_incident_redirects_with_error(): void
+    {
+        $this->seed(TicketLookupSeeder::class);
+        $this->prepareServiceDeskTenant();
+
+        $admin = User::query()->where('email', 'admin@helpdesk.test')->first();
+        $statusId = TicketStatus::query()->where('slug', 'open')->value('id');
+        $priorityId = TicketPriority::query()->where('slug', 'urgent')->value('id');
+
+        $ticket = Ticket::query()->create([
+            'number' => 'HD-93005',
+            'subject' => 'Minor login delay',
+            'ticket_status_id' => $statusId,
+            'ticket_priority_id' => $priorityId,
+            'type' => ServiceCatalogItem::TYPE_INCIDENT,
+        ]);
+
+        $this->actingAs($admin)
+            ->tenantGet("/service-desk/major-incidents/{$ticket->id}/war-room")
+            ->assertRedirect('/service-desk/major-incidents')
+            ->assertSessionHas('error');
+    }
+
     public function test_major_incident_can_be_resolved_and_review_completed(): void
     {
         $this->seed(TicketLookupSeeder::class);
-        $this->setPlan('enterprise');
+        $this->prepareServiceDeskTenant();
 
         $admin = User::query()->where('email', 'admin@helpdesk.test')->first();
         $statusId = TicketStatus::query()->where('slug', 'open')->value('id');
@@ -114,7 +126,7 @@ class ServiceDeskMajorIncidentTest extends TenantTestCase
     public function test_major_incidents_index_lists_active_incidents(): void
     {
         $this->seed(TicketLookupSeeder::class);
-        $this->setPlan('enterprise');
+        $this->prepareServiceDeskTenant();
 
         $admin = User::query()->where('email', 'admin@helpdesk.test')->first();
         $statusId = TicketStatus::query()->where('slug', 'open')->value('id');
@@ -147,7 +159,7 @@ class ServiceDeskMajorIncidentTest extends TenantTestCase
     public function test_non_incident_cannot_be_declared_major(): void
     {
         $this->seed(TicketLookupSeeder::class);
-        $this->setPlan('enterprise');
+        $this->prepareServiceDeskTenant();
 
         $admin = User::query()->where('email', 'admin@helpdesk.test')->first();
         $statusId = TicketStatus::query()->where('slug', 'open')->value('id');

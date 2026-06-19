@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Domains\Automation\Models\AutomationRule;
 use App\Domains\Contacts\Models\Contact;
 use App\Domains\Notifications\Notifications\CustomerReplyNotification;
 use App\Domains\Notifications\Notifications\TicketAssignedNotification;
@@ -9,6 +10,7 @@ use App\Domains\Tickets\Models\Ticket;
 use App\Domains\Tickets\Models\TicketPriority;
 use App\Domains\Tickets\Models\TicketStatus;
 use App\Models\User;
+use Database\Seeders\EmailTemplateSeeder;
 use Database\Seeders\NotificationSeeder;
 use Database\Seeders\TicketLookupSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -71,14 +73,51 @@ class NotificationTest extends TestCase
         Notification::assertSentTo($assignee, CustomerReplyNotification::class);
     }
 
+    public function test_automation_assignment_notifies_assignee(): void
+    {
+        Notification::fake();
+        $this->seed([TicketLookupSeeder::class, NotificationSeeder::class]);
+
+        $assignee = User::factory()->create();
+        $status = TicketStatus::query()->where('slug', 'open')->first();
+        $priority = TicketPriority::query()->where('slug', 'normal')->first();
+
+        AutomationRule::query()->create([
+            'name' => 'Urgent assignment',
+            'trigger' => AutomationRule::TRIGGER_TICKET_CREATED,
+            'conditions' => [
+                ['field' => 'subject', 'operator' => 'contains', 'value' => 'urgent'],
+            ],
+            'actions' => [
+                ['type' => 'assign_to', 'value' => $assignee->id],
+            ],
+            'is_active' => true,
+        ]);
+
+        $this->actingAs(User::factory()->create())
+            ->post('/tickets', [
+                'subject' => 'URGENT billing issue',
+                'description' => 'Need help',
+                'ticket_status_id' => $status->id,
+                'ticket_priority_id' => $priority->id,
+            ])
+            ->assertRedirect();
+
+        Notification::assertSentTo($assignee, TicketAssignedNotification::class);
+    }
+
     public function test_admin_can_view_notification_settings(): void
     {
-        $this->seed(NotificationSeeder::class);
+        $this->seed([NotificationSeeder::class, EmailTemplateSeeder::class]);
         $admin = User::factory()->admin()->create();
 
         $this->actingAs($admin)
             ->get('/settings/notifications')
-            ->assertOk();
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('Settings/Notifications')
+                ->has('emailTemplates', 5)
+            );
     }
 
     public function test_agent_can_view_notifications_index(): void

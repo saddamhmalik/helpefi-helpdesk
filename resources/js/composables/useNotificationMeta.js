@@ -1,46 +1,46 @@
 const metaByType = {
     ticket_assigned: {
         labelKey: 'components.notification_types.ticket_assigned',
-        badgeClass: 'bg-blue-100 text-blue-700',
-        iconClass: 'text-blue-600',
+        badgeClass: 'bg-blue-100 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300',
+        iconClass: 'text-blue-600 dark:text-blue-400',
         icon: 'assignment',
     },
     customer_reply: {
         labelKey: 'components.notification_types.customer_reply',
-        badgeClass: 'bg-emerald-100 text-emerald-700',
-        iconClass: 'text-emerald-600',
+        badgeClass: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300',
+        iconClass: 'text-emerald-600 dark:text-emerald-400',
         icon: 'reply',
     },
     sla_breach: {
         labelKey: 'components.notification_types.sla_breach',
-        badgeClass: 'bg-red-100 text-red-700',
-        iconClass: 'text-red-600',
+        badgeClass: 'bg-red-100 text-red-700 dark:bg-red-950/60 dark:text-red-300',
+        iconClass: 'text-red-600 dark:text-red-400',
         icon: 'alert',
     },
     approval_pending: {
         labelKey: 'components.notification_types.approval_pending',
-        badgeClass: 'bg-amber-100 text-amber-800',
-        iconClass: 'text-amber-600',
+        badgeClass: 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300',
+        iconClass: 'text-amber-600 dark:text-amber-400',
         icon: 'approval',
     },
     approval_decided: {
         labelKey: 'components.notification_types.approval_decided',
-        badgeClass: 'bg-violet-100 text-violet-700',
-        iconClass: 'text-violet-600',
+        badgeClass: 'bg-violet-100 text-violet-700 dark:bg-violet-950/60 dark:text-violet-300',
+        iconClass: 'text-violet-600 dark:text-violet-400',
         icon: 'approval',
     },
     platform_notice: {
         labelKey: 'components.notification_types.platform_notice',
-        badgeClass: 'bg-slate-100 text-slate-700',
-        iconClass: 'text-slate-600',
+        badgeClass: 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300',
+        iconClass: 'text-slate-600 dark:text-slate-400',
         icon: 'notice',
     },
 };
 
 const fallbackMeta = {
     labelKey: 'components.notifications',
-    badgeClass: 'bg-slate-100 text-slate-700',
-    iconClass: 'text-slate-500',
+    badgeClass: 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300',
+    iconClass: 'text-slate-500 dark:text-slate-400',
     icon: 'bell',
 };
 

@@ -73,4 +73,23 @@ class EmailTemplateTest extends TenantTestCase
         $this->assertStringContainsString('Acme helpefi', $rendered['subject']);
         $this->assertStringContainsString('Jane Admin', $rendered['body_html']);
     }
+
+    public function test_admin_can_preview_email_template_draft(): void
+    {
+        app(EmailTemplateService::class)->ensureDefaults();
+
+        $template = EmailTemplate::query()->where('slug', EmailTemplate::SLUG_CUSTOMER_REPLY)->firstOrFail();
+
+        $response = $this->actingAs($this->admin())
+            ->tenantPostJson("/settings/email-templates/{$template->id}/preview", [
+                'subject' => 'Customer reply: {{ticket_number}}',
+                'body_html' => '<p>{{message_preview}}</p>',
+            ])
+            ->assertOk()
+            ->json();
+
+        $this->assertStringContainsString('HD-1042', $response['subject']);
+        $this->assertStringContainsString('Thanks for the update', $response['body_html']);
+        $this->assertStringContainsString('<html', $response['body_html']);
+    }
 }

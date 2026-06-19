@@ -6,6 +6,7 @@ use App\Domains\Billing\Services\BillingService;
 use App\Domains\ServiceCatalog\Models\ServiceCatalogItem;
 use App\Domains\ServiceDesk\Models\MajorIncidentRecord;
 use App\Domains\ServiceDesk\Repositories\MajorIncidentRepository;
+use App\Domains\Security\Support\AuditRecorder;
 use App\Domains\Tickets\Models\Ticket;
 use App\Domains\Tickets\Repositories\TicketRepository;
 use Illuminate\Support\Collection;
@@ -17,6 +18,7 @@ class MajorIncidentService
         private MajorIncidentRepository $records,
         private TicketRepository $tickets,
         private BillingService $billing,
+        private AuditRecorder $audit,
     ) {
     }
 
@@ -33,6 +35,21 @@ class MajorIncidentService
         }
 
         $record = $this->records->findForTicket($ticketId);
+
+        return $this->records->snapshot($record);
+    }
+
+    public function warRoomSnapshot(int $ticketId): ?array
+    {
+        if (! $this->billing->canUseFeature('service_desk')) {
+            return null;
+        }
+
+        $record = $this->records->findForTicket($ticketId);
+
+        if ($record === null) {
+            return null;
+        }
 
         return $this->records->snapshot($record);
     }
@@ -56,6 +73,8 @@ class MajorIncidentService
             'coordinator_user_ids' => [$userId],
         ]);
 
+        $this->audit->record('service_desk.major_incident_declared', $this->tickets->find($ticketId), [], $userId);
+
         return $this->records->snapshot($record);
     }
 
@@ -70,7 +89,15 @@ class MajorIncidentService
             ]);
         }
 
+        $before = $record->only(array_keys($data));
         $updated = $this->records->update($record, $data);
+
+        $this->audit->recordChanges(
+            'service_desk.major_incident_updated',
+            $this->tickets->find($ticketId),
+            $before,
+            $updated->only(array_keys($data)),
+        );
 
         return $this->records->snapshot($updated);
     }
@@ -92,6 +119,8 @@ class MajorIncidentService
             'resolved_at' => now(),
         ]);
 
+        $this->audit->record('service_desk.major_incident_resolved', $this->tickets->find($ticketId), [], $userId);
+
         return $this->records->snapshot($updated);
     }
 
@@ -111,6 +140,8 @@ class MajorIncidentService
             'review_completed_at' => now(),
             'review_completed_by_user_id' => $userId,
         ]));
+
+        $this->audit->record('service_desk.major_incident_review_completed', $this->tickets->find($ticketId), [], $userId);
 
         return $this->records->snapshot($updated);
     }

@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Domains\Billing\Models\Subscription;
 use App\Domains\ServiceCatalog\Models\ServiceCatalogItem;
 use App\Domains\Tickets\Models\Ticket;
 use App\Domains\Tickets\Models\TicketPriority;
@@ -10,28 +9,17 @@ use App\Domains\Tickets\Models\TicketStatus;
 use App\Models\User;
 use Database\Seeders\TicketLookupSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\Concerns\PreparesServiceDeskTenant;
 use Tests\TenantTestCase;
 
 class ServiceDeskTest extends TenantTestCase
 {
+    use PreparesServiceDeskTenant;
     use RefreshDatabase;
-
-    private function setPlan(string $plan, array $activeAddons = []): void
-    {
-        Subscription::query()->updateOrCreate(
-            ['tenant_id' => tenant('id')],
-            [
-                'plan' => $plan,
-                'status' => Subscription::STATUS_ACTIVE,
-                'renews_at' => now()->addMonth(),
-                'active_addons' => $activeAddons,
-            ],
-        );
-    }
 
     public function test_professional_plan_sees_service_desk_upgrade_page(): void
     {
-        $this->setPlan('professional');
+        $this->prepareServiceDeskTenant('professional', []);
 
         $admin = User::query()->where('email', 'admin@helpdesk.test')->first();
 
@@ -44,7 +32,7 @@ class ServiceDeskTest extends TenantTestCase
     public function test_enterprise_plan_can_view_service_desk_hub(): void
     {
         $this->seed(TicketLookupSeeder::class);
-        $this->setPlan('professional', ['service_desk']);
+        $this->prepareServiceDeskTenant();
 
         $admin = User::query()->where('email', 'admin@helpdesk.test')->first();
 
@@ -60,7 +48,7 @@ class ServiceDeskTest extends TenantTestCase
     public function test_enterprise_plan_can_view_type_queue(): void
     {
         $this->seed(TicketLookupSeeder::class);
-        $this->setPlan('professional', ['service_desk']);
+        $this->prepareServiceDeskTenant();
 
         $statusId = TicketStatus::query()->where('slug', 'open')->value('id');
         $priorityId = TicketPriority::query()->where('slug', 'normal')->value('id');
@@ -87,7 +75,7 @@ class ServiceDeskTest extends TenantTestCase
 
     public function test_professional_plan_cannot_access_type_queue(): void
     {
-        $this->setPlan('professional');
+        $this->prepareServiceDeskTenant('professional', []);
 
         $admin = User::query()->where('email', 'admin@helpdesk.test')->first();
 
@@ -98,7 +86,7 @@ class ServiceDeskTest extends TenantTestCase
 
     public function test_invalid_queue_type_returns_not_found(): void
     {
-        $this->setPlan('professional', ['service_desk']);
+        $this->prepareServiceDeskTenant();
 
         $admin = User::query()->where('email', 'admin@helpdesk.test')->first();
 
@@ -109,11 +97,11 @@ class ServiceDeskTest extends TenantTestCase
 
     public function test_billing_service_reports_service_desk_via_addon(): void
     {
-        $this->setPlan('professional');
+        $this->prepareServiceDeskTenant('professional', []);
         $billing = app(\App\Domains\Billing\Services\BillingService::class);
         $this->assertFalse($billing->canUseFeature('service_desk'));
 
-        $this->setPlan('professional', ['service_desk']);
+        $this->prepareServiceDeskTenant('professional', ['service_desk']);
         $billing = app(\App\Domains\Billing\Services\BillingService::class);
         $this->assertTrue($billing->canUseFeature('service_desk'));
     }

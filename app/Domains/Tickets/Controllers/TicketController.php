@@ -7,12 +7,9 @@ use App\Domains\Assets\Services\AssetService;
 use App\Domains\Csat\Services\CsatService;
 use App\Domains\Integrations\Services\TicketExternalIssueService;
 use App\Domains\SideConversations\Services\SideConversationService;
-use App\Domains\ServiceCatalog\Models\ServiceCatalogItem;
-use App\Domains\ServiceDesk\Services\ApprovalService;
-use App\Domains\ServiceDesk\Services\ChangeRecordService;
-use App\Domains\ServiceDesk\Services\MajorIncidentService;
-use App\Domains\ServiceDesk\Services\ProblemRecordService;
 use App\Domains\ServiceDesk\Services\ServiceDeskService;
+use App\Domains\ServiceDesk\Services\TicketItsmContextService;
+use App\Domains\ServiceDesk\Support\TicketTypes;
 use App\Domains\TimeTracking\Services\TimeTrackingService;
 use App\Domains\Sla\Services\SlaService;
 use App\Domains\Workforce\Services\WorkforceService;
@@ -46,10 +43,7 @@ class TicketController extends Controller
         private TimeTrackingService $timeTracking,
         private TicketExternalIssueService $externalIssues,
         private TicketReadService $ticketReads,
-        private ApprovalService $approvals,
-        private ChangeRecordService $changeRecords,
-        private ProblemRecordService $problemRecords,
-        private MajorIncidentService $majorIncidents,
+        private TicketItsmContextService $itsmContext,
         private ServiceDeskService $serviceDesk,
     ) {
     }
@@ -83,8 +77,11 @@ class TicketController extends Controller
         ]);
     }
 
-    public function create(): Response
+    public function create(Request $request): Response
     {
+        $requestedType = (string) $request->query('type', '');
+        $defaultType = TicketTypes::isValid($requestedType) ? $requestedType : null;
+
         return Inertia::render('Tickets/Create', [
             'statuses' => $this->ticketService->statuses(),
             'priorities' => $this->ticketService->priorities(),
@@ -92,6 +89,8 @@ class TicketController extends Controller
             'departments' => $this->workforceService->departmentOptions(),
             'teams' => $this->workforceService->teamOptions(),
             'customFieldDefinitions' => $this->ticketService->fieldDefinitions(),
+            'ticketTypes' => $this->serviceDesk->isAvailable() ? $this->serviceDesk->ticketTypes() : [],
+            'defaultType' => $defaultType,
         ]);
     }
 
@@ -100,7 +99,11 @@ class TicketController extends Controller
         $data = $request->validate(array_merge([
             'subject' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
-            'contact_id' => ['nullable', 'exists:contacts,id'],
+            'contact_id' => [
+                'nullable',
+                'exists:contacts,id',
+                Rule::requiredIf(fn () => blank($request->input('requester_email'))),
+            ],
             'assigned_to' => ['nullable', Rule::in($this->workforceService->assignableAgentIds())],
             'department_id' => ['nullable', 'exists:departments,id'],
             'team_id' => ['nullable', 'exists:teams,id'],
@@ -108,7 +111,7 @@ class TicketController extends Controller
             'ticket_priority_id' => ['required', 'exists:ticket_priorities,id'],
             'type' => ['nullable', 'string', 'in:incident,service_request,change,problem'],
             'custom_fields' => ['nullable', 'array'],
-        ], $this->peopleRules()));
+        ], $this->requesterRulesForCreate($request)));
 
         $ticket = $this->ticketService->create($data, $request->user()->id);
 
@@ -119,9 +122,8 @@ class TicketController extends Controller
     {
         $ticketModel = $this->ticketService->show($ticket);
         $this->ticketReads->markAsRead($request->user()->id, $ticketModel->id);
-        $majorIncident = $this->majorIncidents->snapshotForTicket($ticketModel->id);
 
-        return Inertia::render('Tickets/Show', [
+        return Inertia::render('Tickets/Show', array_merge([
             'ticket' => $ticketModel,
             'sla' => $this->slaService->snapshotForTicket($ticketModel),
             'statuses' => $this->ticketService->statuses(),
@@ -142,33 +144,7 @@ class TicketController extends Controller
             'timeTracking' => $this->timeTracking->snapshotForTicket($ticketModel->id),
             'externalIssues' => $this->externalIssues->refreshForTicket($ticketModel->id),
             'issueProviders' => $this->externalIssues->configuredIssueProviders(),
-            'approval' => $this->approvals->snapshotForTicket($ticketModel->id),
-            'canDecideApproval' => $this->canDecideApproval($ticketModel->id, $request->user()->id),
-            'changeRecord' => $this->changeRecords->snapshotForTicket($ticketModel->id),
-            'problemRecord' => $this->problemRecords->snapshotForTicket($ticketModel->id),
-            'incidentCandidates' => $ticketModel->type === ServiceCatalogItem::TYPE_PROBLEM
-                ? $this->problemRecords->incidentCandidates($ticketModel->id)->values()
-                : [],
-            'changeRiskOptions' => $this->changeRecords->riskOptions(),
-            'majorIncident' => $majorIncident,
-            'canDeclareMajorIncident' => $this->serviceDesk->isAvailable()
-                && $ticketModel->type === ServiceCatalogItem::TYPE_INCIDENT
-                && $majorIncident === null,
-        ]);
-    }
-
-    private function canDecideApproval(int $ticketId, int $userId): bool
-    {
-        $snapshot = $this->approvals->snapshotForTicket($ticketId);
-
-        if (! $snapshot || ($snapshot['status'] ?? '') !== 'pending') {
-            return false;
-        }
-
-        $currentStep = collect($snapshot['steps'] ?? [])->firstWhere('step_order', $snapshot['current_step'] ?? 0);
-
-        return (int) ($currentStep['approver']['id'] ?? 0) === $userId
-            && ($currentStep['status'] ?? '') === 'pending';
+        ], $this->itsmContext->forTicket($ticketModel, $request->user()->id)));
     }
 
     public function update(Request $request, int $ticket): RedirectResponse
@@ -251,9 +227,15 @@ class TicketController extends Controller
     {
         $data = $request->validate([
             'source_ticket_id' => ['required', 'exists:tickets,id'],
+            'import_conversation' => ['boolean'],
         ]);
 
-        $merged = $this->ticketService->merge($ticket, $data['source_ticket_id'], $request->user()->id);
+        $merged = $this->ticketService->merge(
+            $ticket,
+            $data['source_ticket_id'],
+            $request->user()->id,
+            $request->boolean('import_conversation', true),
+        );
 
         return redirect()->route('tickets.show', $merged)->with('success', 'Ticket merged.');
     }
@@ -279,6 +261,21 @@ class TicketController extends Controller
     {
         return [
             'requester_email' => ['nullable', 'email', 'max:255'],
+            'requester_name' => ['nullable', 'string', 'max:255'],
+            'cc_emails' => ['nullable', 'array', 'max:'.TicketCcService::MAX_CC],
+            'cc_emails.*' => ['email', 'max:255'],
+        ];
+    }
+
+    private function requesterRulesForCreate(Request $request): array
+    {
+        return [
+            'requester_email' => [
+                'nullable',
+                'email',
+                'max:255',
+                Rule::requiredIf(fn () => blank($request->input('contact_id'))),
+            ],
             'requester_name' => ['nullable', 'string', 'max:255'],
             'cc_emails' => ['nullable', 'array', 'max:'.TicketCcService::MAX_CC],
             'cc_emails.*' => ['email', 'max:255'],

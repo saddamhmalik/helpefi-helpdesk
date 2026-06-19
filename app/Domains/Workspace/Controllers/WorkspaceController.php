@@ -8,6 +8,7 @@ use App\Domains\Integrations\Services\TicketExternalIssueService;
 use App\Domains\SideConversations\Services\SideConversationService;
 use App\Domains\TimeTracking\Services\TimeTrackingService;
 use App\Domains\Sla\Services\SlaService;
+use App\Domains\ServiceDesk\Services\TicketItsmContextService;
 use App\Domains\Tickets\Services\TicketLifecycleService;
 use App\Domains\Tickets\Services\TicketService;
 use App\Domains\Tickets\Services\TicketViewService;
@@ -37,6 +38,7 @@ class WorkspaceController extends Controller
         private TimeTrackingService $timeTracking,
         private TicketExternalIssueService $externalIssues,
         private TicketSnoozeService $snoozeService,
+        private TicketItsmContextService $itsmContext,
     ) {
     }
 
@@ -62,6 +64,10 @@ class WorkspaceController extends Controller
             $draft = $this->workspaceService->draft($userId, $ticket);
             $this->workspaceService->markTicketRead($userId, $ticket);
         }
+
+        $itsm = $selectedTicket
+            ? $this->itsmContext->forTicket($selectedTicket, $userId)
+            : [];
 
         return Inertia::render('Workspace/Index', [
             'queue' => $this->workspaceService->queue($filters, $userId),
@@ -97,6 +103,7 @@ class WorkspaceController extends Controller
                 ? $this->externalIssues->refreshForTicket($selectedTicket->id)
                 : [],
             'issueProviders' => $this->externalIssues->configuredIssueProviders(),
+            ...$itsm,
         ]);
     }
 

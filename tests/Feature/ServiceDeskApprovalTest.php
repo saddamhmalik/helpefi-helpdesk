@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Domains\Billing\Models\Subscription;
 use App\Domains\ServiceCatalog\Models\ServiceCatalogItem;
 use App\Domains\ServiceCatalog\Models\ServiceCategory;
 use App\Domains\ServiceDesk\Models\ApprovalRequest;
@@ -10,31 +9,22 @@ use App\Domains\ServiceDesk\Models\ServiceDeskSetting;
 use App\Domains\Tickets\Models\Ticket;
 use App\Domains\Tickets\Models\TicketPriority;
 use App\Domains\Tickets\Models\TicketStatus;
+use App\Domains\Tickets\Services\TicketLifecycleService;
 use App\Models\User;
 use Database\Seeders\TicketLookupSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\Concerns\PreparesServiceDeskTenant;
 use Tests\TenantTestCase;
 
 class ServiceDeskApprovalTest extends TenantTestCase
 {
+    use PreparesServiceDeskTenant;
     use RefreshDatabase;
-
-    private function setPlan(string $plan): void
-    {
-        Subscription::query()->updateOrCreate(
-            ['tenant_id' => tenant('id')],
-            [
-                'plan' => $plan,
-                'status' => Subscription::STATUS_ACTIVE,
-                'renews_at' => now()->addMonth(),
-            ],
-        );
-    }
 
     public function test_catalog_submission_with_approval_creates_pending_request(): void
     {
         $this->seed(TicketLookupSeeder::class);
-        $this->setPlan('enterprise');
+        $this->prepareServiceDeskTenant();
 
         $admin = User::query()->where('email', 'admin@helpdesk.test')->first();
         $approver = User::factory()->create();
@@ -53,6 +43,7 @@ class ServiceDeskApprovalTest extends TenantTestCase
             'slug' => 'vpn-access',
             'ticket_type' => ServiceCatalogItem::TYPE_SERVICE_REQUEST,
             'ticket_priority_id' => $priorityId,
+            'fields' => [],
             'requires_approval' => true,
             'approver_user_ids' => [$approver->id],
             'is_public' => true,
@@ -60,9 +51,10 @@ class ServiceDeskApprovalTest extends TenantTestCase
         ]);
 
         $this->actingAs($admin)
-            ->tenantPost('/portal/services/vpn-access', [
+            ->tenantPost('/portal/default/services/vpn-access', [
                 'name' => 'Alex Agent',
                 'email' => 'alex@example.com',
+                'fields' => [],
                 'details' => 'Need VPN for travel.',
             ])
             ->assertRedirect();
@@ -82,7 +74,7 @@ class ServiceDeskApprovalTest extends TenantTestCase
     public function test_approver_can_approve_request_and_open_ticket(): void
     {
         $this->seed(TicketLookupSeeder::class);
-        $this->setPlan('enterprise');
+        $this->prepareServiceDeskTenant();
 
         $approver = User::factory()->create();
         $openStatusId = TicketStatus::query()->where('slug', 'open')->value('id');
@@ -129,7 +121,7 @@ class ServiceDeskApprovalTest extends TenantTestCase
     public function test_change_ticket_triggers_global_change_approval(): void
     {
         $this->seed(TicketLookupSeeder::class);
-        $this->setPlan('enterprise');
+        $this->prepareServiceDeskTenant();
 
         $approver = User::factory()->create();
         ServiceDeskSetting::query()->create([
@@ -154,5 +146,54 @@ class ServiceDeskApprovalTest extends TenantTestCase
         $this->assertDatabaseHas('approval_requests', [
             'status' => ApprovalRequest::STATUS_PENDING,
         ]);
+    }
+
+    public function test_service_desk_events_are_recorded_in_ticket_lifecycle(): void
+    {
+        $this->seed(TicketLookupSeeder::class);
+        $this->prepareServiceDeskTenant();
+
+        $approver = User::factory()->create();
+        ServiceDeskSetting::query()->create([
+            'change_requires_approval' => true,
+            'change_approver_user_ids' => [$approver->id],
+        ]);
+
+        $admin = User::query()->where('email', 'admin@helpdesk.test')->first();
+        $openStatusId = TicketStatus::query()->where('slug', 'open')->value('id');
+        $priorityId = TicketPriority::query()->where('slug', 'normal')->value('id');
+
+        $this->actingAs($admin)
+            ->tenantPost('/tickets', [
+                'subject' => 'Deploy patch',
+                'description' => 'Weekend maintenance',
+                'ticket_status_id' => $openStatusId,
+                'ticket_priority_id' => $priorityId,
+                'type' => ServiceCatalogItem::TYPE_CHANGE,
+                'contact_id' => \App\Domains\Contacts\Models\Contact::query()->create([
+                    'name' => 'Alex Agent',
+                    'email' => 'alex@example.com',
+                ])->id,
+            ])
+            ->assertRedirect();
+
+        $ticket = Ticket::query()->where('subject', 'Deploy patch')->firstOrFail();
+
+        $timeline = app(TicketLifecycleService::class)->timeline($ticket->id);
+        $events = collect($timeline)->pluck('event');
+
+        $this->assertContains('ticket.created', $events->all());
+        $this->assertContains('service_desk.approval_requested', $events->all());
+
+        $approval = ApprovalRequest::query()->where('ticket_id', $ticket->id)->firstOrFail();
+
+        $this->actingAs($approver)
+            ->tenantPost("/service-desk/approvals/{$approval->id}/approve", ['note' => 'Approved'])
+            ->assertRedirect();
+
+        $timeline = app(TicketLifecycleService::class)->timeline($ticket->id);
+        $events = collect($timeline)->pluck('event');
+
+        $this->assertContains('service_desk.approval_approved', $events->all());
     }
 }

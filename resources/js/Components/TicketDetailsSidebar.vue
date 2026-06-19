@@ -3,7 +3,6 @@ import { Link, router, useForm } from '@inertiajs/vue3';
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import AppConfirmDialog from './AppConfirmDialog.vue';
-import AppCollapse from './AppCollapse.vue';
 import AppAvatar from './AppAvatar.vue';
 import { useAssetDeleteConfirm } from '../composables/useAssetDeleteConfirm.js';
 import CcEmailField from './CcEmailField.vue';
@@ -19,6 +18,8 @@ import TicketApprovalPanel from './TicketApprovalPanel.vue';
 import TicketChangePanel from './TicketChangePanel.vue';
 import TicketProblemPanel from './TicketProblemPanel.vue';
 import TicketMajorIncidentPanel from './TicketMajorIncidentPanel.vue';
+import TicketSidebarSection from './TicketSidebarSection.vue';
+import { formInputClass, formSelectClass } from '../composables/useFormControls.js';
 
 const { t } = useI18n();
 
@@ -54,13 +55,12 @@ const props = defineProps({
 const PANEL_STORAGE_KEY = 'ticket-sidebar-panels';
 
 const defaultPanels = () => ({
-    edit: false,
     sla: false,
     assets: false,
     watchers: false,
     merge: false,
     split: false,
-    activity: false,
+    activity: true,
 });
 
 const openPanels = ref(defaultPanels());
@@ -240,24 +240,12 @@ onUnmounted(() => {
     clearTimeout(savedFadeTimer);
 });
 
-const mergeForm = useForm({ source_ticket_id: '' });
+const mergeForm = useForm({ source_ticket_id: '', import_conversation: true });
 const splitForm = useForm({ from_message_id: '', subject: '' });
 const assetForm = useForm({ asset_id: '' });
 
 const isWatching = computed(() =>
     (props.ticket.watchers ?? []).some((watcher) => watcher.id === props.currentUserId),
-);
-
-const assignee = computed(() =>
-    props.agents.find((agent) => agent.id === props.ticket.assigned_to) ?? props.ticket.assignee,
-);
-
-const departmentName = computed(() =>
-    props.departments.find((item) => item.id === props.ticket.department_id)?.name ?? t('components.none'),
-);
-
-const teamName = computed(() =>
-    props.teams.find((item) => item.id === props.ticket.team_id)?.name ?? t('components.none'),
 );
 
 const slaStatusLabel = (status) => {
@@ -286,14 +274,6 @@ const slaSummary = computed(() => {
 const hasMergeSection = computed(() => !props.ticket.merged_into_ticket_id && (props.mergeCandidates?.length ?? 0) > 0);
 const hasSplitSection = computed(() => (props.ticket.messages?.length ?? 0) > 0 && !props.ticket.merged_into_ticket_id);
 
-const ticketCustomFields = computed(() =>
-    (props.customFieldDefinitions ?? []).filter((field) => {
-        const value = props.ticket.custom_fields?.[field.name];
-
-        return value !== null && value !== undefined && value !== '';
-    }),
-);
-
 const toggleWatch = () => {
     if (isWatching.value) {
         router.delete(`/tickets/${props.ticket.id}/watchers/${props.currentUserId}`, { preserveScroll: true });
@@ -316,6 +296,23 @@ const unlinkAsset = (asset) => {
     });
 };
 
+const sidebarSelectClass = `${formSelectClass} py-2 text-xs`;
+
+const saveStatusLabel = computed(() => {
+    if (saveStatus.value === 'saving') return t('components.saving');
+    if (saveStatus.value === 'saved') return t('components.saved');
+    if (saveStatus.value === 'error') return t('components.save_failed');
+
+    return '';
+});
+
+const saveStatusClass = computed(() => {
+    if (saveStatus.value === 'saving') return 'text-slate-500 dark:text-slate-400';
+    if (saveStatus.value === 'saved') return 'text-emerald-600 dark:text-emerald-400';
+    if (saveStatus.value === 'error') return 'text-red-600 dark:text-red-400';
+
+    return '';
+});
 const statusBadgeClass = (name) => {
     const value = (name || '').toLowerCase();
 
@@ -348,22 +345,44 @@ const priorityBadgeClass = (name) => {
                 : 'overflow-hidden rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm'"
         >
             <div
-                class="shrink-0 border-b border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-2.5"
+                class="relative shrink-0 overflow-hidden border-b border-slate-100 bg-gradient-to-br from-slate-50 via-white to-blue-50/40 px-4 py-3.5 dark:border-slate-800 dark:from-slate-900 dark:via-slate-900 dark:to-blue-950/20"
                 :class="embedded ? 'sticky top-0 z-10' : ''"
             >
-                <h2 class="text-sm font-semibold text-slate-900 dark:text-slate-100">{{ $t('components.ticket_details') }}</h2>
+                <div class="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(59,130,246,0.08),transparent_55%)] dark:bg-[radial-gradient(circle_at_top_right,rgba(59,130,246,0.12),transparent_55%)]" />
+                <div class="relative flex items-start justify-between gap-3">
+                    <div class="min-w-0">
+                        <p class="text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400 dark:text-slate-500">{{ $t('components.ticket_details') }}</p>
+                        <h2 class="mt-0.5 truncate font-mono text-sm font-semibold text-slate-900 dark:text-slate-100">{{ ticket.number }}</h2>
+                    </div>
+                    <div class="flex shrink-0 items-center gap-2">
+                        <span
+                            v-if="saveStatus !== 'idle'"
+                            class="inline-flex items-center gap-1.5 rounded-full border border-slate-200/80 bg-white/90 px-2.5 py-1 text-[10px] font-semibold shadow-sm backdrop-blur dark:border-slate-700 dark:bg-slate-900/90"
+                            :class="saveStatusClass"
+                        >
+                            <span
+                                class="h-1.5 w-1.5 rounded-full"
+                                :class="{
+                                    'animate-pulse bg-slate-400': saveStatus === 'saving',
+                                    'bg-emerald-500': saveStatus === 'saved',
+                                    'bg-red-500': saveStatus === 'error',
+                                }"
+                            />
+                            {{ saveStatusLabel }}
+                        </span>
+                        <span
+                            class="rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide"
+                            :class="statusBadgeClass(ticket.status?.name)"
+                        >
+                            {{ ticket.status?.name || $t('components.em_dash') }}
+                        </span>
+                    </div>
+                </div>
             </div>
 
-            <div class="min-h-0 flex-1 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800">
+            <div class="min-h-0 flex-1 overflow-y-auto overflow-x-hidden">
                 <CustomerContextPanel v-if="ticket.contact" :ticket-id="ticket.id" />
                 <TicketApprovalPanel v-if="approval" :approval="approval" :can-decide="canDecideApproval" />
-                <div v-if="canDeclareMajorIncident || majorIncident" class="p-4">
-                    <TicketMajorIncidentPanel
-                        :ticket-id="ticket.id"
-                        :major-incident="majorIncident"
-                        :can-declare="canDeclareMajorIncident"
-                    />
-                </div>
                 <div v-if="changeRecord" class="p-4">
                     <TicketChangePanel
                         :ticket-id="ticket.id"
@@ -380,24 +399,131 @@ const priorityBadgeClass = (name) => {
                     />
                 </div>
 
-                <section v-if="ticket.contact" class="px-4 py-3">
-                    <p class="text-[11px] font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500">{{ $t('components.requester') }}</p>
-                    <div class="mt-2 flex items-center gap-2">
-                        <AppAvatar :name="ticket.contact.name" :email="ticket.contact.email" size="sm" />
-                        <div class="min-w-0">
-                            <p class="truncate text-sm font-medium text-slate-900 dark:text-slate-100">{{ ticket.contact.name || ticket.contact.email }}</p>
-                            <p v-if="ticket.contact.email" class="truncate text-xs text-slate-500 dark:text-slate-400">{{ ticket.contact.email }}</p>
+                <section class="border-b border-slate-100 p-4 dark:border-slate-800">
+                    <div class="rounded-2xl border border-slate-200/80 bg-gradient-to-br from-white to-slate-50/80 p-3.5 shadow-sm dark:border-slate-800 dark:from-slate-900 dark:to-slate-900/60">
+                        <p class="mb-3 text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400 dark:text-slate-500">{{ $t('components.requester') }}</p>
+                        <RequesterField
+                            v-model:contact-id="updateForm.contact_id"
+                            v-model:requester-email="updateForm.requester_email"
+                            v-model:requester-name="updateForm.requester_name"
+                            :initial-contact="ticket.contact"
+                            :error="updateForm.errors.contact_id || updateForm.errors.requester_email"
+                        />
+                    </div>
+                </section>
+
+                <section class="space-y-4 border-b border-slate-100 p-4 dark:border-slate-800">
+                    <CcEmailField v-model="updateForm.cc_emails" :error="updateForm.errors.cc_emails" />
+
+                    <div class="rounded-2xl border border-slate-200/80 bg-white p-3.5 shadow-sm dark:border-slate-800 dark:bg-slate-900/70">
+                        <p class="mb-3 text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400 dark:text-slate-500">{{ $t('components.routing') }}</p>
+                        <div class="grid gap-3">
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="mb-1.5 flex items-center justify-between gap-2 text-[11px] font-medium text-slate-500 dark:text-slate-400">
+                                        <span>{{ $t('components.status') }}</span>
+                                        <span class="rounded-full px-1.5 py-0.5 text-[10px] font-semibold" :class="statusBadgeClass(statuses.find((item) => item.id === updateForm.ticket_status_id)?.name)">
+                                            {{ statuses.find((item) => item.id === updateForm.ticket_status_id)?.name || $t('components.em_dash') }}
+                                        </span>
+                                    </label>
+                                    <select v-model="updateForm.ticket_status_id" :class="sidebarSelectClass">
+                                        <option v-for="status in statuses" :key="status.id" :value="status.id">{{ status.name }}</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="mb-1.5 flex items-center justify-between gap-2 text-[11px] font-medium text-slate-500 dark:text-slate-400">
+                                        <span>{{ $t('components.priority') }}</span>
+                                        <span class="rounded-full px-1.5 py-0.5 text-[10px] font-semibold" :class="priorityBadgeClass(priorities.find((item) => item.id === updateForm.ticket_priority_id)?.name)">
+                                            {{ priorities.find((item) => item.id === updateForm.ticket_priority_id)?.name || $t('components.em_dash') }}
+                                        </span>
+                                    </label>
+                                    <select v-model="updateForm.ticket_priority_id" :class="sidebarSelectClass">
+                                        <option v-for="priority in priorities" :key="priority.id" :value="priority.id">{{ priority.name }}</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="mb-1.5 block text-[11px] font-medium text-slate-500 dark:text-slate-400">{{ $t('components.department') }}</label>
+                                <select v-model="updateForm.department_id" :class="sidebarSelectClass">
+                                    <option value="">{{ $t('components.none') }}</option>
+                                    <option v-for="department in departments" :key="department.id" :value="department.id">{{ department.name }}</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="mb-1.5 block text-[11px] font-medium text-slate-500 dark:text-slate-400">{{ $t('components.team') }}</label>
+                                <select v-model="updateForm.team_id" :class="sidebarSelectClass">
+                                    <option value="">{{ $t('components.none') }}</option>
+                                    <option v-for="team in filteredTeams" :key="team.id" :value="team.id">{{ team.name }}</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="mb-1.5 block text-[11px] font-medium text-slate-500 dark:text-slate-400">{{ $t('components.assignee') }}</label>
+                                <div class="flex items-center gap-2">
+                                    <AppAvatar
+                                        v-if="agents.find((agent) => agent.id === updateForm.assigned_to)"
+                                        :name="agents.find((agent) => agent.id === updateForm.assigned_to)?.name"
+                                        :email="agents.find((agent) => agent.id === updateForm.assigned_to)?.email"
+                                        size="sm"
+                                    />
+                                    <select v-model="updateForm.assigned_to" :class="[sidebarSelectClass, 'min-w-0 flex-1']">
+                                        <option value="">{{ $t('components.unassigned') }}</option>
+                                        <option v-for="agent in agents" :key="agent.id" :value="agent.id">{{ agent.name }}</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <CustomFields
+                        v-if="customFieldDefinitions.length"
+                        v-model="updateForm.custom_fields"
+                        :definitions="customFieldDefinitions"
+                        :errors="updateForm.errors"
+                    />
+                </section>
+
+                <section v-if="slaSummary" class="border-b border-slate-100 px-4 py-3 dark:border-slate-800">
+                    <div class="grid grid-cols-2 gap-2">
+                        <div class="rounded-xl border border-slate-200/80 bg-slate-50/80 px-3 py-2.5 dark:border-slate-800 dark:bg-slate-900/60">
+                            <p class="text-[10px] font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500">{{ $t('components.first_response') }}</p>
+                            <p class="mt-1 text-xs font-semibold" :class="slaSummary.first === 'met' ? 'text-emerald-700 dark:text-emerald-300' : slaSummary.first === 'breached' ? 'text-red-600' : 'text-slate-800 dark:text-slate-200'">
+                                {{ slaStatusLabel(slaSummary.first) }}
+                            </p>
+                        </div>
+                        <div class="rounded-xl border border-slate-200/80 bg-slate-50/80 px-3 py-2.5 dark:border-slate-800 dark:bg-slate-900/60">
+                            <p class="text-[10px] font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500">{{ $t('components.resolution') }}</p>
+                            <p class="mt-1 text-xs font-semibold" :class="slaSummary.resolution === 'met' ? 'text-emerald-700 dark:text-emerald-300' : slaSummary.resolution === 'breached' ? 'text-red-600' : 'text-slate-800 dark:text-slate-200'">
+                                {{ slaStatusLabel(slaSummary.resolution) }}
+                            </p>
                         </div>
                     </div>
                 </section>
 
-                <section v-if="ticket.ccs?.length" class="px-4 py-3">
-                    <p class="text-[11px] font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500">{{ $t('components.cc') }}</p>
-                    <ul class="mt-2 space-y-1">
-                        <li v-for="cc in ticket.ccs" :key="cc.id" class="truncate text-xs text-slate-600 dark:text-slate-400">
-                            {{ cc.email }}
-                        </li>
-                    </ul>
+                <section class="border-b border-slate-100 px-4 py-3 dark:border-slate-800">
+                    <div class="flex items-center justify-between gap-3 rounded-2xl border border-slate-200/80 bg-gradient-to-r from-slate-50 to-white px-3.5 py-3 dark:border-slate-800 dark:from-slate-900 dark:to-slate-900/60">
+                        <div class="flex min-w-0 items-center gap-3">
+                            <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-violet-100 text-violet-600 dark:bg-violet-950/50 dark:text-violet-300">
+                                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                </svg>
+                            </span>
+                            <div>
+                                <p class="text-xs font-semibold text-slate-900 dark:text-slate-100">{{ $t('components.watchers') }}</p>
+                                <p class="text-[11px] text-slate-500 dark:text-slate-400">{{ ticket.watchers?.length || 0 }}</p>
+                            </div>
+                        </div>
+                        <button
+                            type="button"
+                            class="rounded-xl px-3 py-1.5 text-xs font-semibold transition"
+                            :class="isWatching
+                                ? 'bg-violet-600 text-white shadow-sm shadow-violet-600/20 hover:bg-violet-700'
+                                : 'border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800'"
+                            @click="toggleWatch"
+                        >
+                            {{ isWatching ? $t('components.unwatch') : $t('components.watch') }}
+                        </button>
+                    </div>
                 </section>
 
                 <TicketSideConversationsPanel
@@ -410,393 +536,197 @@ const priorityBadgeClass = (name) => {
                     :time-tracking="timeTracking"
                 />
 
+                <TicketMajorIncidentPanel
+                    v-if="canDeclareMajorIncident || majorIncident"
+                    :ticket-id="ticket.id"
+                    :major-incident="majorIncident"
+                    :can-declare="canDeclareMajorIncident"
+                />
+
                 <TicketExternalIssuesPanel
                     :ticket-id="ticket.id"
                     :issues="externalIssues"
                     :issue-providers="issueProviders"
                 />
 
-                <section class="px-4 py-3">
-                    <dl class="space-y-2.5">
-                        <div class="flex items-center justify-between gap-3">
-                            <dt class="text-xs text-slate-500 dark:text-slate-400">{{ $t('components.status') }}</dt>
-                            <dd>
-                                <span class="rounded-full px-2 py-0.5 text-xs font-medium" :class="statusBadgeClass(ticket.status?.name)">
-                                    {{ ticket.status?.name || $t('components.em_dash') }}
-                                </span>
-                            </dd>
+                <section v-if="csat?.submitted" class="border-b border-slate-100 px-4 py-3 dark:border-slate-800">
+                    <div class="rounded-2xl border border-amber-200/70 bg-gradient-to-br from-amber-50 to-white px-3.5 py-3 dark:border-amber-900/40 dark:from-amber-950/20 dark:to-slate-900/60">
+                        <p class="text-[10px] font-bold uppercase tracking-[0.14em] text-amber-700 dark:text-amber-300">{{ $t('components.csat') }}</p>
+                        <div class="mt-2 flex items-center gap-1">
+                            <span v-for="star in 5" :key="star" class="text-lg" :class="star <= csat.submitted.rating ? 'text-amber-400' : 'text-slate-300 dark:text-slate-600'">★</span>
+                            <span class="ml-1 text-sm font-semibold text-amber-800 dark:text-amber-200">{{ csat.submitted.rating }}/5</span>
                         </div>
-                        <div class="flex items-center justify-between gap-3">
-                            <dt class="text-xs text-slate-500 dark:text-slate-400">{{ $t('components.priority') }}</dt>
-                            <dd>
-                                <span class="rounded-full px-2 py-0.5 text-xs font-medium" :class="priorityBadgeClass(ticket.priority?.name)">
-                                    {{ ticket.priority?.name || $t('components.em_dash') }}
-                                </span>
-                            </dd>
-                        </div>
-                        <div class="flex items-center justify-between gap-3">
-                            <dt class="text-xs text-slate-500 dark:text-slate-400">{{ $t('components.department') }}</dt>
-                            <dd class="truncate text-xs font-medium text-slate-800 dark:text-slate-200">{{ departmentName }}</dd>
-                        </div>
-                        <div class="flex items-center justify-between gap-3">
-                            <dt class="text-xs text-slate-500 dark:text-slate-400">{{ $t('components.team') }}</dt>
-                            <dd class="truncate text-xs font-medium text-slate-800 dark:text-slate-200">{{ teamName }}</dd>
-                        </div>
-                        <div class="flex items-center justify-between gap-3">
-                            <dt class="text-xs text-slate-500 dark:text-slate-400">{{ $t('components.assignee') }}</dt>
-                            <dd class="flex min-w-0 items-center gap-1.5">
-                                <AppAvatar
-                                    v-if="assignee"
-                                    :name="assignee.name"
-                                    :email="assignee.email"
-                                    size="sm"
-                                />
-                                <span class="truncate text-xs font-medium text-slate-800 dark:text-slate-200">{{ assignee?.name || $t('components.unassigned') }}</span>
-                            </dd>
-                        </div>
-                    </dl>
-                </section>
-
-                <section v-if="ticketCustomFields.length" class="px-4 py-3">
-                    <p class="text-[11px] font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500">{{ $t('components.custom_fields') }}</p>
-                    <dl class="mt-2 space-y-1.5">
-                        <div v-for="field in ticketCustomFields" :key="field.name" class="flex items-start justify-between gap-3 text-xs">
-                            <dt class="text-slate-500 dark:text-slate-400">{{ field.label }}</dt>
-                            <dd class="max-w-[55%] text-right font-medium text-slate-800 dark:text-slate-200">{{ ticket.custom_fields[field.name] }}</dd>
-                        </div>
-                    </dl>
-                </section>
-
-                <section v-if="slaSummary" class="px-4 py-3">
-                    <p class="text-[11px] font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500">{{ $t('components.sla') }}</p>
-                    <dl class="mt-2 space-y-1.5">
-                        <div class="flex items-center justify-between gap-3 text-xs">
-                            <dt class="text-slate-500 dark:text-slate-400">{{ $t('components.first_response') }}</dt>
-                            <dd class="font-medium" :class="slaSummary.first === 'met' ? 'text-emerald-700 dark:text-emerald-300' : slaSummary.first === 'breached' ? 'text-red-600' : 'text-slate-800 dark:text-slate-200'">{{ slaStatusLabel(slaSummary.first) }}</dd>
-                        </div>
-                        <div class="flex items-center justify-between gap-3 text-xs">
-                            <dt class="text-slate-500 dark:text-slate-400">{{ $t('components.resolution') }}</dt>
-                            <dd class="font-medium" :class="slaSummary.resolution === 'met' ? 'text-emerald-700 dark:text-emerald-300' : slaSummary.resolution === 'breached' ? 'text-red-600' : 'text-slate-800 dark:text-slate-200'">{{ slaStatusLabel(slaSummary.resolution) }}</dd>
-                        </div>
-                    </dl>
-                </section>
-
-                <section class="flex items-center justify-between gap-3 px-4 py-3">
-                    <div class="min-w-0">
-                        <p class="text-xs text-slate-500 dark:text-slate-400">{{ $t('components.watchers') }}</p>
-                        <p class="text-sm font-medium text-slate-800 dark:text-slate-200">{{ ticket.watchers?.length || 0 }}</p>
-                    </div>
-                    <button
-                        type="button"
-                        class="rounded-md border border-slate-200 dark:border-slate-800 px-2.5 py-1 text-xs font-medium text-slate-700 dark:text-slate-300 transition hover:bg-slate-50 dark:bg-slate-950 dark:hover:bg-slate-800"
-                        @click="toggleWatch"
-                    >
-                        {{ isWatching ? $t('components.unwatch') : $t('components.watch') }}
-                    </button>
-                </section>
-
-                <section v-if="ticket.assets?.length" class="px-4 py-3">
-                    <p class="text-[11px] font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500">{{ $t('components.assets') }}</p>
-                    <ul class="mt-2 space-y-1">
-                        <li v-for="asset in ticket.assets.slice(0, 3)" :key="asset.id">
-                            <Link :href="`/assets/${asset.id}`" class="truncate text-xs text-blue-600 hover:text-blue-700 dark:hover:text-blue-300 dark:text-blue-300">{{ asset.asset_tag }}</Link>
-                        </li>
-                        <li v-if="ticket.assets.length > 3" class="text-xs text-slate-500 dark:text-slate-400">{{ $t('components.more_count', { count: ticket.assets.length - 3 }) }}</li>
-                    </ul>
-                </section>
-
-                <section v-if="csat?.submitted" class="px-4 py-3">
-                    <p class="text-[11px] font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500">{{ $t('components.csat') }}</p>
-                    <div class="mt-2 flex items-center gap-1">
-                        <span v-for="star in 5" :key="star" class="text-base" :class="star <= csat.submitted.rating ? 'text-amber-400' : 'text-slate-300'">★</span>
-                        <span class="ml-1 text-xs text-slate-600 dark:text-slate-400">{{ csat.submitted.rating }}/5</span>
                     </div>
                 </section>
 
-                <section>
-                    <button
-                        type="button"
-                        class="flex w-full items-center justify-between px-4 py-2.5 text-left transition hover:bg-slate-50 dark:bg-slate-950 dark:hover:bg-slate-800"
-                        @click="togglePanel('edit')"
-                    >
-                        <span class="text-sm font-medium text-slate-900 dark:text-slate-100">{{ $t('components.edit_details') }}</span>
-                        <svg
-                            class="h-4 w-4 shrink-0 text-slate-400 dark:text-slate-500 transition-transform duration-300 ease-out"
-                            :class="isPanelOpen('edit') ? 'rotate-180' : ''"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                            stroke-width="2"
-                        >
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                <TicketSidebarSection
+                    v-if="sla?.active"
+                    :title="$t('components.sla_details')"
+                    :open="isPanelOpen('sla')"
+                    tone="emerald"
+                    @toggle="togglePanel('sla')"
+                >
+                    <template #icon>
+                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
-                    </button>
-                    <AppCollapse :open="isPanelOpen('edit')">
-                        <div class="border-t border-slate-100 dark:border-slate-800 px-4 pb-4 pt-3">
-                        <div class="space-y-3">
-                            <div>
-                                <label class="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-400">{{ $t('components.requester') }}</label>
-                                <RequesterField
-                                    v-model:contact-id="updateForm.contact_id"
-                                    v-model:requester-email="updateForm.requester_email"
-                                    v-model:requester-name="updateForm.requester_name"
-                                    :initial-contact="ticket.contact"
-                                    :error="updateForm.errors.contact_id || updateForm.errors.requester_email"
-                                />
-                            </div>
-                            <div>
-                                <label class="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-400">{{ $t('components.cc') }}</label>
-                                <CcEmailField v-model="updateForm.cc_emails" :error="updateForm.errors.cc_emails" />
-                            </div>
-                            <div>
-                                <label class="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-400">{{ $t('components.status') }}</label>
-                                <select v-model="updateForm.ticket_status_id" class="w-full rounded-lg border border-slate-300 dark:border-slate-700 px-3 py-2 text-sm">
-                                    <option v-for="status in statuses" :key="status.id" :value="status.id">{{ status.name }}</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-400">{{ $t('components.priority') }}</label>
-                                <select v-model="updateForm.ticket_priority_id" class="w-full rounded-lg border border-slate-300 dark:border-slate-700 px-3 py-2 text-sm">
-                                    <option v-for="priority in priorities" :key="priority.id" :value="priority.id">{{ priority.name }}</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-400">{{ $t('components.department') }}</label>
-                                <select v-model="updateForm.department_id" class="w-full rounded-lg border border-slate-300 dark:border-slate-700 px-3 py-2 text-sm">
-                                    <option value="">{{ $t('components.none') }}</option>
-                                    <option v-for="department in departments" :key="department.id" :value="department.id">{{ department.name }}</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-400">{{ $t('components.team') }}</label>
-                                <select v-model="updateForm.team_id" class="w-full rounded-lg border border-slate-300 dark:border-slate-700 px-3 py-2 text-sm">
-                                    <option value="">{{ $t('components.none') }}</option>
-                                    <option v-for="team in filteredTeams" :key="team.id" :value="team.id">{{ team.name }}</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-400">{{ $t('components.assignee') }}</label>
-                                <select v-model="updateForm.assigned_to" class="w-full rounded-lg border border-slate-300 dark:border-slate-700 px-3 py-2 text-sm">
-                                    <option value="">{{ $t('components.unassigned') }}</option>
-                                    <option v-for="agent in agents" :key="agent.id" :value="agent.id">{{ agent.name }}</option>
-                                </select>
-                            </div>
-                            <CustomFields
-                                v-model="updateForm.custom_fields"
-                                :definitions="customFieldDefinitions"
-                                :errors="updateForm.errors"
-                            />
-                            <p
-                                v-if="saveStatus !== 'idle'"
-                                class="text-center text-xs"
-                                :class="{
-                                    'text-slate-500 dark:text-slate-400': saveStatus === 'saving',
-                                    'text-emerald-600 dark:text-emerald-400': saveStatus === 'saved',
-                                    'text-red-600 dark:text-red-400': saveStatus === 'error',
-                                }"
-                            >
-                                <span v-if="saveStatus === 'saving'">{{ $t('components.saving') }}</span>
-                                <span v-else-if="saveStatus === 'saved'">{{ $t('components.saved') }}</span>
-                                <span v-else>{{ $t('components.save_failed') }}</span>
-                            </p>
-                        </div>
-                        </div>
-                    </AppCollapse>
-                </section>
-
-                <section v-if="sla?.active">
-                    <button
-                        type="button"
-                        class="flex w-full items-center justify-between px-4 py-2.5 text-left transition hover:bg-slate-50 dark:bg-slate-950 dark:hover:bg-slate-800"
-                        @click="togglePanel('sla')"
-                    >
-                        <span class="text-sm font-medium text-slate-900 dark:text-slate-100">{{ $t('components.sla_details') }}</span>
-                        <svg
-                            class="h-4 w-4 shrink-0 text-slate-400 dark:text-slate-500 transition-transform duration-300 ease-out"
-                            :class="isPanelOpen('sla') ? 'rotate-180' : ''"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                            stroke-width="2"
-                        >
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
-                        </svg>
-                    </button>
-                    <AppCollapse :open="isPanelOpen('sla')">
-                        <div class="border-t border-slate-100 dark:border-slate-800 px-4 pb-4 pt-3">
+                    </template>
+                    <div class="border-t border-slate-100 px-4 pb-4 pt-3 dark:border-slate-800">
                         <TicketSlaPanel :sla="sla" />
-                        </div>
-                    </AppCollapse>
-                </section>
+                    </div>
+                </TicketSidebarSection>
 
-                <section>
-                    <button
-                        type="button"
-                        class="flex w-full items-center justify-between px-4 py-2.5 text-left transition hover:bg-slate-50 dark:bg-slate-950 dark:hover:bg-slate-800"
-                        @click="togglePanel('assets')"
-                    >
-                        <span class="text-sm font-medium text-slate-900 dark:text-slate-100">{{ $t('components.linked_assets') }}</span>
-                        <svg
-                            class="h-4 w-4 shrink-0 text-slate-400 dark:text-slate-500 transition-transform duration-300 ease-out"
-                            :class="isPanelOpen('assets') ? 'rotate-180' : ''"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                            stroke-width="2"
-                        >
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                <TicketSidebarSection
+                    :title="$t('components.linked_assets')"
+                    :open="isPanelOpen('assets')"
+                    :badge="ticket.assets?.length || 0"
+                    tone="amber"
+                    @toggle="togglePanel('assets')"
+                >
+                    <template #icon>
+                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
                         </svg>
-                    </button>
-                    <AppCollapse :open="isPanelOpen('assets')">
-                        <div class="border-t border-slate-100 dark:border-slate-800 px-4 pb-4 pt-3">
-                        <ul class="space-y-2 text-sm">
-                            <li v-for="asset in ticket.assets" :key="asset.id" class="flex items-center justify-between gap-2">
-                                <Link :href="`/assets/${asset.id}`" class="text-blue-600 hover:text-blue-700 dark:hover:text-blue-300 dark:text-blue-300">{{ asset.asset_tag }} — {{ asset.name }}</Link>
-                                <button type="button" class="text-xs text-red-600 hover:text-red-700 dark:text-red-300" @click="unlinkAsset(asset)">{{ $t('components.remove') }}</button>
+                    </template>
+                    <div class="border-t border-slate-100 px-4 pb-4 pt-3 dark:border-slate-800">
+                        <ul class="space-y-2">
+                            <li
+                                v-for="asset in ticket.assets"
+                                :key="asset.id"
+                                class="flex items-center justify-between gap-2 rounded-xl border border-slate-200/80 bg-slate-50/80 px-3 py-2.5 dark:border-slate-800 dark:bg-slate-900/60"
+                            >
+                                <Link :href="`/assets/${asset.id}`" class="min-w-0 truncate text-sm font-medium text-blue-600 hover:text-blue-700 dark:text-blue-300">{{ asset.asset_tag }} — {{ asset.name }}</Link>
+                                <button type="button" class="shrink-0 text-xs font-medium text-red-600 hover:text-red-700 dark:text-red-400" @click="unlinkAsset(asset)">{{ $t('components.remove') }}</button>
                             </li>
-                            <li v-if="!ticket.assets?.length" class="text-slate-500 dark:text-slate-400">{{ $t('components.no_linked_assets') }}</li>
+                            <li v-if="!ticket.assets?.length" class="rounded-xl border border-dashed border-slate-200 px-3 py-4 text-center text-xs text-slate-500 dark:border-slate-700 dark:text-slate-400">{{ $t('components.no_linked_assets') }}</li>
                         </ul>
                         <form class="mt-3 flex gap-2" @submit.prevent="linkAsset">
-                            <select v-model="assetForm.asset_id" required class="min-w-0 flex-1 rounded-lg border border-slate-300 dark:border-slate-700 px-3 py-2 text-sm">
+                            <select v-model="assetForm.asset_id" required :class="[sidebarSelectClass, 'min-w-0 flex-1']">
                                 <option value="">{{ $t('components.link_asset') }}</option>
                                 <option v-for="asset in assetOptions" :key="asset.id" :value="asset.id">{{ asset.asset_tag }} — {{ asset.name }}</option>
                             </select>
-                            <button type="submit" class="rounded-lg border border-slate-300 dark:border-slate-700 px-3 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:bg-slate-950 dark:hover:bg-slate-800" :disabled="assetForm.processing">{{ $t('components.link') }}</button>
+                            <button type="submit" class="rounded-xl bg-slate-900 px-3 py-2 text-xs font-semibold text-white transition hover:bg-slate-800 disabled:opacity-50 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white" :disabled="assetForm.processing">{{ $t('components.link') }}</button>
                         </form>
-                        </div>
-                    </AppCollapse>
-                </section>
+                    </div>
+                </TicketSidebarSection>
 
-                <section>
-                    <button
-                        type="button"
-                        class="flex w-full items-center justify-between px-4 py-2.5 text-left transition hover:bg-slate-50 dark:bg-slate-950 dark:hover:bg-slate-800"
-                        @click="togglePanel('watchers')"
-                    >
-                        <span class="text-sm font-medium text-slate-900 dark:text-slate-100">{{ $t('components.all_watchers') }}</span>
-                        <svg
-                            class="h-4 w-4 shrink-0 text-slate-400 dark:text-slate-500 transition-transform duration-300 ease-out"
-                            :class="isPanelOpen('watchers') ? 'rotate-180' : ''"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                            stroke-width="2"
-                        >
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                <TicketSidebarSection
+                    :title="$t('components.all_watchers')"
+                    :open="isPanelOpen('watchers')"
+                    :badge="ticket.watchers?.length || 0"
+                    tone="violet"
+                    @toggle="togglePanel('watchers')"
+                >
+                    <template #icon>
+                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
                         </svg>
-                    </button>
-                    <AppCollapse :open="isPanelOpen('watchers')">
-                        <div class="border-t border-slate-100 dark:border-slate-800 px-4 pb-4 pt-3">
-                        <ul class="space-y-1 text-sm text-slate-700 dark:text-slate-300">
-                            <li v-for="watcher in ticket.watchers" :key="watcher.id">{{ watcher.name }}</li>
-                            <li v-if="!ticket.watchers?.length" class="text-slate-500 dark:text-slate-400">{{ $t('components.no_watchers') }}</li>
+                    </template>
+                    <div class="border-t border-slate-100 px-4 pb-4 pt-3 dark:border-slate-800">
+                        <ul class="space-y-2">
+                            <li
+                                v-for="watcher in ticket.watchers"
+                                :key="watcher.id"
+                                class="flex items-center gap-2 rounded-xl border border-slate-200/80 bg-slate-50/80 px-3 py-2 dark:border-slate-800 dark:bg-slate-900/60"
+                            >
+                                <AppAvatar :name="watcher.name" :email="watcher.email" size="sm" />
+                                <span class="truncate text-sm text-slate-700 dark:text-slate-300">{{ watcher.name }}</span>
+                            </li>
+                            <li v-if="!ticket.watchers?.length" class="rounded-xl border border-dashed border-slate-200 px-3 py-4 text-center text-xs text-slate-500 dark:border-slate-700 dark:text-slate-400">{{ $t('components.no_watchers') }}</li>
                         </ul>
-                        </div>
-                    </AppCollapse>
-                </section>
+                    </div>
+                </TicketSidebarSection>
 
-                <section v-if="hasMergeSection">
-                    <button
-                        type="button"
-                        class="flex w-full items-center justify-between px-4 py-2.5 text-left transition hover:bg-slate-50 dark:bg-slate-950 dark:hover:bg-slate-800"
-                        @click="togglePanel('merge')"
-                    >
-                        <span class="text-sm font-medium text-slate-900 dark:text-slate-100">{{ $t('components.merge_ticket') }}</span>
-                        <svg
-                            class="h-4 w-4 shrink-0 text-slate-400 dark:text-slate-500 transition-transform duration-300 ease-out"
-                            :class="isPanelOpen('merge') ? 'rotate-180' : ''"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                            stroke-width="2"
-                        >
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                <TicketSidebarSection
+                    v-if="hasMergeSection"
+                    :title="$t('components.merge_ticket')"
+                    :open="isPanelOpen('merge')"
+                    tone="blue"
+                    @toggle="togglePanel('merge')"
+                >
+                    <template #icon>
+                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
                         </svg>
-                    </button>
-                    <AppCollapse :open="isPanelOpen('merge')">
-                        <div class="border-t border-slate-100 dark:border-slate-800 px-4 pb-4 pt-3">
-                        <form class="space-y-2" @submit.prevent="merge">
-                            <select v-model="mergeForm.source_ticket_id" required class="w-full rounded-lg border border-slate-300 dark:border-slate-700 px-3 py-2 text-sm">
+                    </template>
+                    <div class="border-t border-slate-100 px-4 pb-4 pt-3 dark:border-slate-800">
+                        <form class="space-y-3" @submit.prevent="merge">
+                            <select v-model="mergeForm.source_ticket_id" required :class="sidebarSelectClass">
                                 <option value="">{{ $t('components.select_ticket') }}</option>
                                 <option v-for="candidate in mergeCandidates" :key="candidate.id" :value="candidate.id">{{ candidate.number }} — {{ candidate.subject }}</option>
                             </select>
-                            <button type="submit" class="w-full rounded-lg border border-slate-300 dark:border-slate-700 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:bg-slate-950 dark:hover:bg-slate-800" :disabled="mergeForm.processing">{{ $t('components.merge') }}</button>
+                            <label class="flex items-start gap-2.5 rounded-xl border border-slate-200/80 bg-slate-50/80 px-3 py-2.5 dark:border-slate-800 dark:bg-slate-900/60">
+                                <input
+                                    v-model="mergeForm.import_conversation"
+                                    type="checkbox"
+                                    class="mt-0.5 rounded border-slate-300 text-blue-600 focus:ring-blue-500 dark:border-slate-600 dark:bg-slate-900"
+                                />
+                                <span class="min-w-0">
+                                    <span class="block text-xs font-semibold text-slate-800 dark:text-slate-200">{{ $t('components.import_merged_conversation') }}</span>
+                                    <span class="mt-0.5 block text-[11px] leading-snug text-slate-500 dark:text-slate-400">{{ $t('components.import_merged_conversation_help') }}</span>
+                                </span>
+                            </label>
+                            <button type="submit" class="w-full rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:opacity-50" :disabled="mergeForm.processing">{{ $t('components.merge') }}</button>
                         </form>
-                        </div>
-                    </AppCollapse>
-                </section>
+                    </div>
+                </TicketSidebarSection>
 
-                <section v-if="hasSplitSection">
-                    <button
-                        type="button"
-                        class="flex w-full items-center justify-between px-4 py-2.5 text-left transition hover:bg-slate-50 dark:bg-slate-950 dark:hover:bg-slate-800"
-                        @click="togglePanel('split')"
-                    >
-                        <span class="text-sm font-medium text-slate-900 dark:text-slate-100">{{ $t('components.split_ticket') }}</span>
-                        <svg
-                            class="h-4 w-4 shrink-0 text-slate-400 dark:text-slate-500 transition-transform duration-300 ease-out"
-                            :class="isPanelOpen('split') ? 'rotate-180' : ''"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                            stroke-width="2"
-                        >
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                <TicketSidebarSection
+                    v-if="hasSplitSection"
+                    :title="$t('components.split_ticket')"
+                    :open="isPanelOpen('split')"
+                    tone="rose"
+                    @toggle="togglePanel('split')"
+                >
+                    <template #icon>
+                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4M16 17H4m0 0l4 4m-4-4l4-4" />
                         </svg>
-                    </button>
-                    <AppCollapse :open="isPanelOpen('split')">
-                        <div class="border-t border-slate-100 dark:border-slate-800 px-4 pb-4 pt-3">
+                    </template>
+                    <div class="border-t border-slate-100 px-4 pb-4 pt-3 dark:border-slate-800">
                         <form class="space-y-2" @submit.prevent="split">
-                            <select v-model="splitForm.from_message_id" required class="w-full rounded-lg border border-slate-300 dark:border-slate-700 px-3 py-2 text-sm">
+                            <select v-model="splitForm.from_message_id" required :class="sidebarSelectClass">
                                 <option value="">{{ $t('components.from_message') }}</option>
                                 <option v-for="message in ticket.messages" :key="message.id" :value="message.id">
                                     {{ message.user?.name || $t('components.system') }} — {{ message.body.slice(0, 40) }}...
                                 </option>
                             </select>
-                            <input v-model="splitForm.subject" type="text" :placeholder="$t('components.new_ticket_subject_optional')" class="w-full rounded-lg border border-slate-300 dark:border-slate-700 px-3 py-2 text-sm" />
-                            <button type="submit" class="w-full rounded-lg border border-slate-300 dark:border-slate-700 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:bg-slate-950 dark:hover:bg-slate-800" :disabled="splitForm.processing">{{ $t('components.split') }}</button>
+                            <input v-model="splitForm.subject" type="text" :placeholder="$t('components.new_ticket_subject_optional')" :class="`${formInputClass} text-xs`" />
+                            <button type="submit" class="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:opacity-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800" :disabled="splitForm.processing">{{ $t('components.split') }}</button>
                         </form>
-                        </div>
-                    </AppCollapse>
-                </section>
+                    </div>
+                </TicketSidebarSection>
 
-                <section v-if="ticket.merged_tickets?.length" class="px-4 py-3">
-                    <p class="text-[11px] font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500">{{ $t('components.merged_tickets') }}</p>
-                    <ul class="mt-2 space-y-1 text-sm">
-                        <li v-for="merged in ticket.merged_tickets" :key="merged.id">
-                            <Link :href="`/tickets/${merged.id}`" class="text-blue-600 hover:text-blue-700 dark:hover:text-blue-300 dark:text-blue-300">{{ merged.number }}</Link>
-                            — {{ merged.subject }}
+                <section v-if="ticket.merged_tickets?.length" class="border-t border-slate-100 px-4 py-3 dark:border-slate-800">
+                    <p class="text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400 dark:text-slate-500">{{ $t('components.merged_tickets') }}</p>
+                    <ul class="mt-2 space-y-2">
+                        <li
+                            v-for="merged in ticket.merged_tickets"
+                            :key="merged.id"
+                            class="rounded-xl border border-slate-200/80 bg-slate-50/80 px-3 py-2 text-sm dark:border-slate-800 dark:bg-slate-900/60"
+                        >
+                            <Link :href="`/tickets/${merged.id}`" class="font-medium text-blue-600 hover:text-blue-700 dark:text-blue-300">{{ merged.number }}</Link>
+                            <span class="text-slate-500 dark:text-slate-400"> — {{ merged.subject }}</span>
                         </li>
                     </ul>
                 </section>
 
-                <section>
-                    <button
-                        type="button"
-                        class="flex w-full items-center justify-between px-4 py-2.5 text-left transition hover:bg-slate-50 dark:bg-slate-950 dark:hover:bg-slate-800"
-                        @click="togglePanel('activity')"
-                    >
-                        <span class="text-sm font-medium text-slate-900 dark:text-slate-100">{{ $t('components.activity') }}</span>
-                        <div class="flex items-center gap-2">
-                            <span v-if="lifecycle.length" class="text-[10px] text-slate-400 dark:text-slate-500">{{ lifecycle.length }}</span>
-                            <svg
-                                class="h-4 w-4 shrink-0 text-slate-400 dark:text-slate-500 transition-transform duration-300 ease-out"
-                                :class="isPanelOpen('activity') ? 'rotate-180' : ''"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                                stroke-width="2"
-                            >
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
-                            </svg>
-                        </div>
-                    </button>
-                    <AppCollapse :open="isPanelOpen('activity')">
-                        <div class="border-t border-slate-100 dark:border-slate-800 px-4 pb-4 pt-3">
+                <TicketSidebarSection
+                    :title="$t('components.activity')"
+                    :open="isPanelOpen('activity')"
+                    :badge="lifecycle.length || ''"
+                    tone="blue"
+                    @toggle="togglePanel('activity')"
+                >
+                    <template #icon>
+                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                        </svg>
+                    </template>
+                    <div class="border-t border-slate-100 px-4 pb-4 pt-3 dark:border-slate-800">
                         <TicketLifecycle compact :lifecycle="lifecycle" />
-                        </div>
-                    </AppCollapse>
-                </section>
+                    </div>
+                </TicketSidebarSection>
             </div>
         </div>
 

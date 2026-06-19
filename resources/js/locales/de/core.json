@@ -62,7 +62,8 @@
             "directory": "Verzeichnis",
             "content": "Inhalt",
             "insights": "Einblicke",
-            "manage": "Verwalten"
+            "manage": "Verwalten",
+            "service_desk": "Service Desk"
         },
         "dashboard": "Dashboard",
         "inbox": "Posteingang",
@@ -75,6 +76,14 @@
         "knowledge_base": "Wissensdatenbank",
         "reports": "Berichte",
         "service_desk": "Service Desk",
+        "service_desk_overview": "Overview",
+        "service_desk_approvals": "Approvals",
+        "service_desk_calendar": "Change calendar",
+        "service_desk_major_incidents": "Major incidents",
+        "service_desk_incidents": "Incidents",
+        "service_desk_requests": "Requests",
+        "service_desk_changes": "Changes",
+        "service_desk_problems": "Problems",
         "assets": "Assets",
         "descriptions": {
             "dashboard": "Metriken und Übersicht",
@@ -88,6 +97,14 @@
             "knowledge_base": "Hilfeartikel",
             "reports": "Analysen und Exporte",
             "service_desk": "ITSM-Warteschlangen und Workflows",
+            "service_desk_overview": "Service Desk dashboard and stats",
+            "service_desk_approvals": "Review and decide approval requests",
+            "service_desk_calendar": "Scheduled and planned changes",
+            "service_desk_major_incidents": "Active major incidents and war rooms",
+            "service_desk_incidents": "Incident ticket queue",
+            "service_desk_requests": "Service request queue",
+            "service_desk_changes": "Change request queue",
+            "service_desk_problems": "Problem management queue",
             "assets": "CMDB, Erkennung und Garantie"
         }
     },

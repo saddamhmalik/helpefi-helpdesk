@@ -19,6 +19,7 @@ const breadcrumb = computed(() => settingsBreadcrumbForUrl(currentUrl.value));
 const title = computed(() => settingsLayoutMeta.title);
 const description = computed(() => settingsLayoutMeta.description);
 const headTitle = computed(() => settingsLayoutMeta.headTitle || settingsLayoutMeta.title);
+const hidePageHeader = computed(() => settingsLayoutMeta.hidePageHeader);
 
 const contentRef = ref(null);
 
@@ -36,7 +37,7 @@ watch(currentUrl, () => {
             <div class="grid min-h-0 w-full flex-1 grid-cols-1 items-stretch overflow-hidden lg:grid-cols-[15rem_minmax(0,1fr)] lg:gap-x-6">
                 <SettingsSidebar />
 
-                <div ref="contentRef" class="min-h-0 min-w-0 overflow-y-auto overscroll-contain px-4 pb-8 sm:px-6 scrollbar-gutter-stable">
+                <div ref="contentRef" class="min-h-0 min-w-0 overflow-x-hidden overflow-y-auto overscroll-contain px-4 pb-8 sm:px-6 scrollbar-gutter-stable">
                     <SettingsMobileNav :breadcrumb="breadcrumb" />
 
                     <nav v-if="breadcrumb" class="mb-3 hidden flex-wrap items-center gap-1.5 text-sm agent-text-subtle lg:flex" aria-label="Breadcrumb">
@@ -47,7 +48,7 @@ watch(currentUrl, () => {
                         <span class="font-medium text-slate-800 dark:text-slate-200">{{ breadcrumb.page }}</span>
                     </nav>
 
-                    <div class="mb-6 flex flex-wrap items-start justify-between gap-4">
+                    <div v-if="!hidePageHeader" class="mb-6 flex flex-wrap items-start justify-between gap-4">
                         <div>
                             <h1 class="text-2xl font-semibold tracking-tight agent-text">{{ title }}</h1>
                             <p v-if="description" class="mt-1 text-sm agent-text-subtle" dir="auto">{{ description }}</p>

@@ -14,58 +14,56 @@ const declare = () => {
 };
 
 const statusClass = (status) => {
-    if (status === 'active') return 'bg-red-100 text-red-800 dark:text-red-200';
-    if (status === 'resolved') return 'bg-amber-100 text-amber-800';
-    if (status === 'closed') return 'bg-slate-100 dark:bg-slate-900 text-slate-700 dark:text-slate-300';
+    if (status === 'active') return 'bg-red-100 text-red-800 dark:bg-red-950/50 dark:text-red-200';
+    if (status === 'resolved') return 'bg-amber-100 text-amber-800 dark:bg-amber-950/50 dark:text-amber-200';
+    if (status === 'closed') return 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300';
 
-    return 'bg-slate-100 dark:bg-slate-900 text-slate-700 dark:text-slate-300';
+    return 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300';
 };
 </script>
 
 <template>
-    <section v-if="canDeclare || majorIncident" class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
-        <div class="border-b border-slate-100 dark:border-slate-800 px-4 py-3">
-            <h3 class="text-sm font-semibold text-slate-900 dark:text-slate-100">{{ $t('components.major_incident') }}</h3>
-            <p v-if="majorIncident" class="text-xs capitalize text-slate-500 dark:text-slate-400">{{ majorIncident.status }}</p>
-            <p v-else class="text-xs text-slate-500 dark:text-slate-400">{{ $t('components.escalate_critical_service_outages') }}</p>
-        </div>
+    <section v-if="canDeclare || majorIncident" class="px-4 py-3">
+        <div class="flex items-start justify-between gap-3">
+            <div class="min-w-0">
+                <p class="text-[11px] font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500">
+                    {{ $t('components.major_incident') }}
+                </p>
 
-        <div class="space-y-3 p-4">
-            <div v-if="majorIncident" class="space-y-3">
-                <span class="inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium capitalize" :class="statusClass(majorIncident.status)">
-                    {{ majorIncident.status }}
-                </span>
+                <div v-if="majorIncident" class="mt-1 flex flex-wrap items-center gap-1.5">
+                    <span class="inline-flex rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide capitalize" :class="statusClass(majorIncident.status)">
+                        {{ majorIncident.status }}
+                    </span>
+                    <span v-if="majorIncident.declared_by" class="text-xs text-slate-500 dark:text-slate-400">
+                        · {{ $t('components.declared') }} {{ majorIncident.declared_by }}
+                    </span>
+                    <span v-if="majorIncident.resolved_by" class="text-xs text-slate-500 dark:text-slate-400">
+                        · {{ majorIncident.resolved_by }}
+                    </span>
+                </div>
 
-                <dl class="grid grid-cols-2 gap-2 text-xs">
-                    <div>
-                        <dt class="text-slate-500 dark:text-slate-400">{{ $t('components.declared') }}</dt>
-                        <dd class="font-medium text-slate-900 dark:text-slate-100">{{ majorIncident.declared_by || $t('components.em_dash') }}</dd>
-                    </div>
-                    <div v-if="majorIncident.resolved_by">
-                        <dt class="text-slate-500 dark:text-slate-400">{{ $t('components.resolved_by') }}</dt>
-                        <dd class="font-medium text-slate-900 dark:text-slate-100">{{ majorIncident.resolved_by }}</dd>
-                    </div>
-                </dl>
-
-                <Link
-                    :href="majorIncident.war_room_url"
-                    class="inline-flex w-full items-center justify-center rounded-lg bg-red-600 px-3 py-2 text-xs font-medium text-white hover:bg-red-700"
-                >
-                    {{ $t('components.open_war_room') }}
-                </Link>
+                <p v-else class="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
+                    {{ $t('components.escalate_critical_service_outages') }}
+                </p>
             </div>
 
-            <div v-else-if="canDeclare">
-                <p class="text-sm text-slate-600 dark:text-slate-400">{{ $t('components.flag_this_incident_for_coordinated_response_and_post-incident_review') }}</p>
-                <button
-                    type="button"
-                    class="mt-3 w-full rounded-lg bg-red-600 px-3 py-2 text-xs font-medium text-white hover:bg-red-700 disabled:opacity-50"
-                    :disabled="declareForm.processing"
-                    @click="declare"
-                >
-                    {{ $t('components.declare_major_incident') }}
-                </button>
-            </div>
+            <Link
+                v-if="majorIncident"
+                :href="majorIncident.war_room_url"
+                class="shrink-0 rounded-md bg-red-600 px-2.5 py-1 text-xs font-medium text-white hover:bg-red-700"
+            >
+                {{ $t('components.open_war_room') }}
+            </Link>
+
+            <button
+                v-else-if="canDeclare"
+                type="button"
+                class="shrink-0 rounded-md bg-red-600 px-2.5 py-1 text-xs font-medium text-white hover:bg-red-700 disabled:opacity-50"
+                :disabled="declareForm.processing"
+                @click="declare"
+            >
+                {{ $t('components.declare_major_incident') }}
+            </button>
         </div>
     </section>
 </template>

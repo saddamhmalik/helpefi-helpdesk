@@ -269,6 +269,7 @@ Route::middleware('auth')->group(function () {
             Route::get('/settings/email-templates', [EmailTemplateController::class, 'index'])->name('settings.email-templates.index');
             Route::get('/settings/email-templates/{template}/edit', [EmailTemplateController::class, 'edit'])->name('settings.email-templates.edit');
             Route::put('/settings/email-templates/{template}', [EmailTemplateController::class, 'update'])->name('settings.email-templates.update');
+            Route::post('/settings/email-templates/{template}/preview', [EmailTemplateController::class, 'preview'])->name('settings.email-templates.preview');
             Route::post('/settings/email-templates/{template}/reset', [EmailTemplateController::class, 'reset'])->name('settings.email-templates.reset');
             Route::get('/settings/automation', [AutomationController::class, 'index'])->name('settings.automation');
             Route::post('/settings/automation', [AutomationController::class, 'store'])->name('settings.automation.store');

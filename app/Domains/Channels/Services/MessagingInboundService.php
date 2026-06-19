@@ -85,7 +85,6 @@ class MessagingInboundService
         return \App\Domains\Tickets\Models\Ticket::query()
             ->where('contact_id', $contactId)
             ->where('channel_id', $channelId)
-            ->whereHas('status', fn ($q) => $q->where('is_closed', false))
             ->latest('updated_at')
             ->first();
     }

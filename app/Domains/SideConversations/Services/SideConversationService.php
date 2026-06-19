@@ -71,9 +71,10 @@ class SideConversationService
 
         $this->outboundMail->sendSideConversation($conversation->fresh(['ticket']), $message, User::query()->findOrFail($userId));
 
-        $this->audit->record('side_conversation.created', $conversation, [
-            'ticket_id' => $ticket->id,
+        $this->audit->record('side_conversation.created', $ticket, [
+            'conversation_id' => $conversation->id,
             'recipient_email' => $recipientEmail,
+            'subject' => $subject,
         ], $userId);
 
         return $this->conversations->find($conversation->id);
@@ -101,8 +102,10 @@ class SideConversationService
 
         $this->outboundMail->sendSideConversation($conversation->fresh(['ticket']), $message, User::query()->findOrFail($userId));
 
-        $this->audit->record('side_conversation.replied', $conversation, [
+        $this->audit->record('side_conversation.replied', $conversation->ticket, [
+            'conversation_id' => $conversation->id,
             'message_id' => $message->id,
+            'subject' => $conversation->subject,
         ], $userId);
 
         return $message->load('user:id,name,email');
@@ -121,7 +124,10 @@ class SideConversationService
             'closed_at' => now(),
         ]);
 
-        $this->audit->record('side_conversation.closed', $updated, [], $userId);
+        $this->audit->record('side_conversation.closed', $conversation->ticket, [
+            'conversation_id' => $conversation->id,
+            'subject' => $conversation->subject,
+        ], $userId);
 
         return $updated;
     }
@@ -160,9 +166,13 @@ class SideConversationService
             'external_id' => $externalId,
         ]);
 
-        $this->audit->record('side_conversation.inbound', $conversation, [
+        $conversation->loadMissing('ticket');
+
+        $this->audit->record('side_conversation.inbound', $conversation->ticket, [
+            'conversation_id' => $conversation->id,
             'from_email' => strtolower(trim($fromEmail)),
             'message_id' => $message->id,
+            'subject' => $conversation->subject,
         ]);
 
         return $message;

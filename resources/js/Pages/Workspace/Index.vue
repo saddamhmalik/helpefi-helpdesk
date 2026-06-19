@@ -42,6 +42,14 @@ const props = defineProps({
     timeTracking: { type: Object, default: null },
     externalIssues: { type: Array, default: () => [] },
     issueProviders: { type: Array, default: () => [] },
+    approval: { type: Object, default: null },
+    canDecideApproval: { type: Boolean, default: false },
+    changeRecord: { type: Object, default: null },
+    problemRecord: { type: Object, default: null },
+    incidentCandidates: { type: Array, default: () => [] },
+    changeRiskOptions: { type: Array, default: () => [] },
+    majorIncident: { type: Object, default: null },
+    canDeclareMajorIncident: { type: Boolean, default: false },
 });
 
 const { formatDateTime, formatDate } = useDateTime();
@@ -739,7 +747,7 @@ onUnmounted(() => {
                     <p class="mt-1 max-w-xs text-sm agent-text-subtle">{{ $t('workspace.choose_a_conversation_from_the_queue_to_read_and_reply') }}</p>
                 </div>
 
-                <aside v-if="ticket" class="hidden min-h-0 w-72 shrink-0 flex-col overflow-hidden border-l agent-border agent-panel xl:flex">
+                <aside v-if="ticket" class="hidden min-h-0 w-80 shrink-0 flex-col overflow-hidden border-l agent-border agent-panel xl:flex">
                     <TicketDetailsSidebar
                         embedded
                         :ticket="ticket"
@@ -759,6 +767,14 @@ onUnmounted(() => {
                         :time-tracking="timeTracking ?? { total_minutes: 0, entries: [] }"
                         :external-issues="externalIssues"
                         :issue-providers="issueProviders"
+                        :approval="approval"
+                        :can-decide-approval="canDecideApproval"
+                        :change-record="changeRecord"
+                        :problem-record="problemRecord"
+                        :incident-candidates="incidentCandidates"
+                        :change-risk-options="changeRiskOptions"
+                        :major-incident="majorIncident"
+                        :can-declare-major-incident="canDeclareMajorIncident"
                     />
                 </aside>
             </div>

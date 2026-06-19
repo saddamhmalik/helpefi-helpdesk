@@ -132,6 +132,37 @@ class EmailTemplateService
         return '<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"></head><body style="font-family:system-ui,-apple-system,sans-serif;line-height:1.6;color:#1e293b;max-width:600px;margin:0 auto;padding:24px;">'.$body.'</body></html>';
     }
 
+    public function agentNotificationTemplates(): array
+    {
+        $definitions = [
+            EmailTemplate::SLUG_TICKET_ASSIGNED => 'ticket_assigned',
+            EmailTemplate::SLUG_CUSTOMER_REPLY => 'customer_reply',
+            EmailTemplate::SLUG_SLA_BREACH => 'sla_breach',
+            EmailTemplate::SLUG_APPROVAL_REQUESTED => 'approval_pending',
+            EmailTemplate::SLUG_APPROVAL_DECIDED => 'approval_pending',
+        ];
+
+        return collect($this->list())
+            ->filter(fn (array $template) => array_key_exists($template['slug'], $definitions))
+            ->map(fn (array $template) => [
+                ...$template,
+                'event_key' => $definitions[$template['slug']],
+                'edit_path' => '/settings/email-templates/'.$template['id'].'/edit',
+            ])
+            ->values()
+            ->all();
+    }
+
+    public function previewDraft(string $subject, string $bodyHtml, array $placeholderKeys): array
+    {
+        $variables = EmailPlaceholders::samplesFor($placeholderKeys);
+
+        return [
+            'subject' => EmailPlaceholders::render($subject, $variables),
+            'body_html' => $this->wrapHtml(EmailPlaceholders::render($bodyHtml, $variables)),
+        ];
+    }
+
     private function present(EmailTemplate $template, ?string $trigger): array
     {
         return [

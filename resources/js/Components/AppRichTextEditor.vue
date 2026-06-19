@@ -2,8 +2,9 @@
 import Placeholder from '@tiptap/extension-placeholder';
 import StarterKit from '@tiptap/starter-kit';
 import { EditorContent, useEditor } from '@tiptap/vue-3';
-import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue';
+import { computed, nextTick, onBeforeUnmount, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { useFixedPopover } from '../composables/useFixedPopover.js';
 
 const props = defineProps({
     modelValue: { type: String, default: '' },
@@ -132,26 +133,117 @@ const isActive = (name, attrs = {}) => {
     return editor.value?.isActive(name, attrs) ?? false;
 };
 
-const toggleLink = () => {
+const linkOpen = ref(false);
+const linkAnchorRef = ref(null);
+const linkUrl = ref('');
+const linkInputRef = ref(null);
+const linkPanelRef = ref(null);
+const { panelStyle, updatePosition } = useFixedPopover(linkOpen, linkAnchorRef, linkPanelRef);
+
+const linkDialogTitle = computed(() => {
+    toolbarTick.value;
+
+    return editor.value?.getAttributes('link').href
+        ? t('components.edit_link')
+        : t('components.insert_link');
+});
+
+const hasActiveLink = computed(() => {
+    toolbarTick.value;
+
+    return Boolean(editor.value?.getAttributes('link').href);
+});
+
+const normalizeUrl = (value) => {
+    const trimmed = value.trim();
+
+    if (!trimmed) {
+        return '';
+    }
+
+    if (/^(https?:|mailto:|tel:|#|\/)/i.test(trimmed)) {
+        return trimmed;
+    }
+
+    return `https://${trimmed}`;
+};
+
+const closeLinkPopover = () => {
+    linkOpen.value = false;
+};
+
+const openLinkPopover = (event) => {
     if (!editor.value) {
         return;
     }
 
-    const previous = editor.value.getAttributes('link').href;
-    const url = window.prompt(t('components.link_url_prompt'), previous || 'https://');
-
-    if (url === null) {
-        return;
-    }
-
-    if (url === '') {
-        run((instance) => instance.chain().focus().extendMarkRange('link').unsetLink());
+    if (linkOpen.value) {
+        closeLinkPopover();
 
         return;
     }
 
-    run((instance) => instance.chain().focus().extendMarkRange('link').setLink({ href: url }));
+    linkAnchorRef.value = event.currentTarget;
+    linkUrl.value = editor.value.getAttributes('link').href || 'https://';
+    linkOpen.value = true;
+
+    nextTick(() => {
+        updatePosition();
+        linkInputRef.value?.focus();
+        linkInputRef.value?.select();
+    });
 };
+
+const applyLink = () => {
+    if (!editor.value) {
+        return;
+    }
+
+    const url = normalizeUrl(linkUrl.value);
+
+    if (!url) {
+        run((instance) => instance.chain().focus().extendMarkRange('link').unsetLink());
+    } else {
+        run((instance) => instance.chain().focus().extendMarkRange('link').setLink({ href: url }));
+    }
+
+    closeLinkPopover();
+};
+
+const removeLink = () => {
+    run((instance) => instance.chain().focus().extendMarkRange('link').unsetLink());
+    closeLinkPopover();
+};
+
+const onLinkDocumentClick = (event) => {
+    const panel = document.getElementById('rich-text-link-popover');
+
+    if (
+        linkOpen.value
+        && linkAnchorRef.value
+        && !linkAnchorRef.value.contains(event.target)
+        && !panel?.contains(event.target)
+    ) {
+        closeLinkPopover();
+    }
+};
+
+const onLinkDocumentKeydown = (event) => {
+    if (linkOpen.value && event.key === 'Escape') {
+        event.preventDefault();
+        closeLinkPopover();
+    }
+};
+
+onMounted(() => {
+    document.addEventListener('mousedown', onLinkDocumentClick);
+    document.addEventListener('keydown', onLinkDocumentKeydown);
+});
+
+onUnmounted(() => {
+    document.removeEventListener('mousedown', onLinkDocumentClick);
+    document.removeEventListener('keydown', onLinkDocumentKeydown);
+});
 
 const buttonClass = (active, icon = false) => [
     'rounded transition',
@@ -188,7 +280,7 @@ const toolbarClass = computed(() => {
         <div v-if="editor" class="flex shrink-0 items-center gap-0.5 pl-1">
             <button type="button" :class="buttonClass(isActive('bold'), true)" :title="$t('components.bold')" @mousedown.prevent @click="run((instance) => instance.chain().focus().toggleBold())">B</button>
             <button type="button" :class="buttonClass(isActive('italic'), true)" :title="$t('components.italic')" @mousedown.prevent @click="run((instance) => instance.chain().focus().toggleItalic())"><span class="italic">I</span></button>
-            <button type="button" :class="buttonClass(isActive('link'), true)" :title="$t('components.link')" @mousedown.prevent @click="toggleLink">
+            <button type="button" :class="buttonClass(isActive('link'), true)" :title="$t('components.insert_link')" :aria-expanded="linkOpen" @mousedown.prevent @click="openLinkPopover">
                 <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
                 </svg>
@@ -209,11 +301,75 @@ const toolbarClass = computed(() => {
             <button type="button" :class="buttonClass(isActive('bulletList'))" :title="$t('components.bullet_list')" @mousedown.prevent @click="run((instance) => instance.chain().focus().toggleBulletList())">{{ $t('components.bullet_list_short') }}</button>
             <button type="button" :class="buttonClass(isActive('orderedList'))" :title="$t('components.numbered_list')" @mousedown.prevent @click="run((instance) => instance.chain().focus().toggleOrderedList())">{{ $t('components.numbered_list_short') }}</button>
             <span class="mx-1 h-4 w-px bg-slate-300" />
-            <button type="button" :class="buttonClass(isActive('link'))" :title="$t('components.insert_link')" @mousedown.prevent @click="toggleLink">{{ $t('components.link') }}</button>
+            <button type="button" :class="buttonClass(isActive('link'))" :title="$t('components.insert_link')" :aria-expanded="linkOpen" @mousedown.prevent @click="openLinkPopover">{{ $t('components.link') }}</button>
             <slot name="toolbar-extra" />
         </div>
         <EditorContent :editor="editor" />
     </div>
+
+    <Teleport to="body">
+        <Transition
+            enter-active-class="transition duration-150 ease-out"
+            enter-from-class="opacity-0 translate-y-1 scale-95"
+            enter-to-class="opacity-100 translate-y-0 scale-100"
+            leave-active-class="transition duration-100 ease-in"
+            leave-from-class="opacity-100 translate-y-0 scale-100"
+            leave-to-class="opacity-0 translate-y-1 scale-95"
+        >
+            <div
+                v-if="linkOpen"
+                id="rich-text-link-popover"
+                ref="linkPanelRef"
+                :style="panelStyle"
+                class="rounded-xl border border-slate-200 bg-white p-3 shadow-xl dark:border-slate-700 dark:bg-slate-900"
+                role="dialog"
+                :aria-label="linkDialogTitle"
+                @mousedown.stop
+            >
+                <p class="text-xs font-semibold text-slate-800 dark:text-slate-200">{{ linkDialogTitle }}</p>
+                <form class="mt-2 space-y-3" @submit.prevent="applyLink">
+                    <label class="block">
+                        <span class="mb-1 block text-[11px] font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">{{ $t('components.link_url') }}</span>
+                        <input
+                            ref="linkInputRef"
+                            v-model="linkUrl"
+                            type="text"
+                            inputmode="url"
+                            autocomplete="off"
+                            :placeholder="$t('components.link_url_placeholder')"
+                            class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 outline-none ring-blue-500/0 transition focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:focus:ring-blue-500/20"
+                        />
+                    </label>
+                    <div class="flex items-center justify-between gap-2">
+                        <button
+                            v-if="hasActiveLink"
+                            type="button"
+                            class="text-xs font-medium text-rose-600 transition hover:text-rose-700 dark:text-rose-400 dark:hover:text-rose-300"
+                            @click="removeLink"
+                        >
+                            {{ $t('components.remove_link') }}
+                        </button>
+                        <div v-else />
+                        <div class="flex items-center gap-2">
+                            <button
+                                type="button"
+                                class="rounded-lg px-3 py-1.5 text-xs font-medium text-slate-600 transition hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
+                                @click="closeLinkPopover"
+                            >
+                                {{ $t('components.cancel') }}
+                            </button>
+                            <button
+                                type="submit"
+                                class="rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-blue-700"
+                            >
+                                {{ $t('components.apply_link') }}
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </Transition>
+    </Teleport>
 </template>
 
 <style>

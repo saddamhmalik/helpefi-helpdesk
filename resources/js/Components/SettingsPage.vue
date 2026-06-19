@@ -8,12 +8,14 @@ const props = defineProps({
     description: { type: String, default: '' },
     headTitle: { type: String, default: '' },
     infoSection: { type: String, default: '' },
+    hidePageHeader: { type: Boolean, default: false },
 });
 
 useSettingsLayoutMeta(() => ({
     title: props.title,
     description: props.description,
     headTitle: props.headTitle,
+    hidePageHeader: props.hidePageHeader,
 }));
 </script>
 

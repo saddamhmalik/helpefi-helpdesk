@@ -14,6 +14,7 @@ class NotificationSeeder extends Seeder
             'notify_ticket_assigned' => true,
             'notify_customer_reply' => true,
             'notify_sla_breach' => true,
+            'notify_approval_pending' => true,
         ]);
     }
 }
