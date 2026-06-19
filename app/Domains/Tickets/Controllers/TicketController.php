@@ -19,6 +19,7 @@ use App\Domains\Tickets\Services\TicketService;
 use App\Domains\Tickets\Services\TicketViewService;
 use App\Domains\Tickets\Support\MessageBodySanitizer;
 use App\Domains\Tickets\Support\TicketFilters;
+use App\Domains\Tickets\Services\TicketCcService;
 use App\Domains\Tickets\Services\TicketFormReferenceService;
 use App\Domains\Tickets\Services\TicketShowPageService;
 use App\Http\Controllers\Controller;
