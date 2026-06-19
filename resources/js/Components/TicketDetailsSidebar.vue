@@ -1,6 +1,6 @@
 <script setup>
 import { Link, router, useForm } from '@inertiajs/vue3';
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import AppConfirmDialog from './AppConfirmDialog.vue';
 import AppCollapse from './AppCollapse.vue';
@@ -39,6 +39,7 @@ const props = defineProps({
     sideConversations: { type: Array, default: () => [] },
     timeTracking: { type: Object, default: () => ({ total_minutes: 0, entries: [] }) },
     externalIssues: { type: Array, default: () => [] },
+    issueProviders: { type: Array, default: () => [] },
     approval: { type: Object, default: null },
     canDecideApproval: { type: Boolean, default: false },
     changeRecord: { type: Object, default: null },
@@ -72,6 +73,9 @@ onMounted(() => {
     } catch {
         openPanels.value = defaultPanels();
     }
+
+    resetSaveBaseline();
+    autoSaveReady.value = true;
 });
 
 const togglePanel = (panelId) => {
@@ -98,13 +102,147 @@ const updateForm = useForm({
     custom_fields: { ...(props.ticket.custom_fields ?? {}) },
 });
 
-const mergeForm = useForm({ source_ticket_id: '' });
-const splitForm = useForm({ from_message_id: '', subject: '' });
-const assetForm = useForm({ asset_id: '' });
+updateForm.transform((data) => ({ ...data, _autosave: true }));
+
+const saveStatus = ref('idle');
+const autoSaveReady = ref(false);
+let autoSaveTimer = null;
+let savedFadeTimer = null;
+let pendingAutoSave = false;
+let savedBaseline = '';
+
+const buildSavePayload = () => ({
+    subject: updateForm.subject,
+    description: updateForm.description,
+    contact_id: updateForm.contact_id || '',
+    requester_email: updateForm.requester_email || '',
+    requester_name: updateForm.requester_name || '',
+    cc_emails: [...updateForm.cc_emails],
+    assigned_to: updateForm.assigned_to || '',
+    department_id: updateForm.department_id || '',
+    team_id: updateForm.team_id || '',
+    ticket_status_id: updateForm.ticket_status_id,
+    ticket_priority_id: updateForm.ticket_priority_id,
+    custom_fields: { ...updateForm.custom_fields },
+});
+
+const serializeSavePayload = (payload) => JSON.stringify(payload);
+
+const resetSaveBaseline = () => {
+    savedBaseline = serializeSavePayload(buildSavePayload());
+};
+
+const syncUpdateFormFromTicket = () => {
+    updateForm.subject = props.ticket.subject;
+    updateForm.description = props.ticket.description;
+    updateForm.contact_id = props.ticket.contact_id;
+    updateForm.requester_email = '';
+    updateForm.requester_name = '';
+    updateForm.cc_emails = (props.ticket.ccs ?? []).map((cc) => cc.email);
+    updateForm.assigned_to = props.agents.some((agent) => agent.id === props.ticket.assigned_to)
+        ? props.ticket.assigned_to
+        : '';
+    updateForm.department_id = props.ticket.department_id ?? '';
+    updateForm.team_id = props.ticket.team_id ?? '';
+    updateForm.ticket_status_id = props.ticket.ticket_status_id;
+    updateForm.ticket_priority_id = props.ticket.ticket_priority_id;
+    updateForm.custom_fields = { ...(props.ticket.custom_fields ?? {}) };
+    resetSaveBaseline();
+    saveStatus.value = 'idle';
+};
+
+const runAutoSave = () => {
+    const payload = serializeSavePayload(buildSavePayload());
+
+    if (!autoSaveReady.value || payload === savedBaseline) {
+        return;
+    }
+
+    if (updateForm.processing) {
+        pendingAutoSave = true;
+        return;
+    }
+
+    saveStatus.value = 'saving';
+
+    updateForm.put(`/tickets/${props.ticket.id}`, {
+        preserveScroll: true,
+        preserveState: true,
+        onSuccess: () => {
+            resetSaveBaseline();
+            saveStatus.value = 'saved';
+            clearTimeout(savedFadeTimer);
+            savedFadeTimer = setTimeout(() => {
+                if (saveStatus.value === 'saved') {
+                    saveStatus.value = 'idle';
+                }
+            }, 2000);
+        },
+        onError: () => {
+            saveStatus.value = 'error';
+        },
+        onFinish: () => {
+            if (pendingAutoSave) {
+                pendingAutoSave = false;
+                scheduleAutoSave();
+            }
+        },
+    });
+};
+
+const scheduleAutoSave = () => {
+    clearTimeout(autoSaveTimer);
+    autoSaveTimer = setTimeout(runAutoSave, 600);
+};
 
 const filteredTeams = computed(() =>
     props.teams.filter((team) => !updateForm.department_id || team.department_id === Number(updateForm.department_id)),
 );
+
+watch(
+    () => buildSavePayload(),
+    () => {
+        if (!autoSaveReady.value) {
+            return;
+        }
+
+        scheduleAutoSave();
+    },
+    { deep: true },
+);
+
+watch(
+    () => props.ticket.id,
+    () => {
+        clearTimeout(autoSaveTimer);
+        pendingAutoSave = false;
+        syncUpdateFormFromTicket();
+    },
+);
+
+watch(
+    () => updateForm.department_id,
+    () => {
+        if (!updateForm.team_id) {
+            return;
+        }
+
+        const teamStillValid = filteredTeams.value.some((team) => team.id === Number(updateForm.team_id));
+
+        if (!teamStillValid) {
+            updateForm.team_id = '';
+        }
+    },
+);
+
+onUnmounted(() => {
+    clearTimeout(autoSaveTimer);
+    clearTimeout(savedFadeTimer);
+});
+
+const mergeForm = useForm({ source_ticket_id: '' });
+const splitForm = useForm({ from_message_id: '', subject: '' });
+const assetForm = useForm({ asset_id: '' });
 
 const isWatching = computed(() =>
     (props.ticket.watchers ?? []).some((watcher) => watcher.id === props.currentUserId),
@@ -156,7 +294,6 @@ const ticketCustomFields = computed(() =>
     }),
 );
 
-const update = () => updateForm.put(`/tickets/${props.ticket.id}`);
 const toggleWatch = () => {
     if (isWatching.value) {
         router.delete(`/tickets/${props.ticket.id}/watchers/${props.currentUserId}`, { preserveScroll: true });
@@ -276,6 +413,7 @@ const priorityBadgeClass = (name) => {
                 <TicketExternalIssuesPanel
                     :ticket-id="ticket.id"
                     :issues="externalIssues"
+                    :issue-providers="issueProviders"
                 />
 
                 <section class="px-4 py-3">
@@ -395,7 +533,7 @@ const priorityBadgeClass = (name) => {
                     </button>
                     <AppCollapse :open="isPanelOpen('edit')">
                         <div class="border-t border-slate-100 dark:border-slate-800 px-4 pb-4 pt-3">
-                        <form class="space-y-3" @submit.prevent="update">
+                        <div class="space-y-3">
                             <div>
                                 <label class="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-400">{{ $t('components.requester') }}</label>
                                 <RequesterField
@@ -448,8 +586,20 @@ const priorityBadgeClass = (name) => {
                                 :definitions="customFieldDefinitions"
                                 :errors="updateForm.errors"
                             />
-                            <button type="submit" class="w-full rounded-lg border border-slate-300 dark:border-slate-700 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:bg-slate-950 dark:hover:bg-slate-800" :disabled="updateForm.processing">{{ $t('components.save_changes') }}</button>
-                        </form>
+                            <p
+                                v-if="saveStatus !== 'idle'"
+                                class="text-center text-xs"
+                                :class="{
+                                    'text-slate-500 dark:text-slate-400': saveStatus === 'saving',
+                                    'text-emerald-600 dark:text-emerald-400': saveStatus === 'saved',
+                                    'text-red-600 dark:text-red-400': saveStatus === 'error',
+                                }"
+                            >
+                                <span v-if="saveStatus === 'saving'">{{ $t('components.saving') }}</span>
+                                <span v-else-if="saveStatus === 'saved'">{{ $t('components.saved') }}</span>
+                                <span v-else>{{ $t('components.save_failed') }}</span>
+                            </p>
+                        </div>
                         </div>
                     </AppCollapse>
                 </section>

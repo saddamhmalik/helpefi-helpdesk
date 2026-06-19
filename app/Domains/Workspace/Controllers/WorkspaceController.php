@@ -94,8 +94,9 @@ class WorkspaceController extends Controller
                 ? $this->timeTracking->snapshotForTicket($selectedTicket->id)
                 : null,
             'externalIssues' => $selectedTicket
-                ? $this->externalIssues->listForTicket($selectedTicket->id)
+                ? $this->externalIssues->refreshForTicket($selectedTicket->id)
                 : [],
+            'issueProviders' => $this->externalIssues->configuredIssueProviders(),
         ]);
     }
 

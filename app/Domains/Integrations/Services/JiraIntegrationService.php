@@ -110,6 +110,17 @@ class JiraIntegrationService
         return $expected && hash_equals($expected, (string) $secret);
     }
 
+    public function isConfigured(): bool
+    {
+        try {
+            $this->config();
+
+            return true;
+        } catch (InvalidArgumentException) {
+            return false;
+        }
+    }
+
     private function config(): array
     {
         $connection = $this->connections->activeForProvider(IntegrationConnection::PROVIDER_JIRA);

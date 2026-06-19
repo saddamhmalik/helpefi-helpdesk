@@ -35,16 +35,17 @@ class LinearIntegrationService
             }
         ', [
             'input' => [
-                'teamId' => $config['team_id'],
+                'teamId' => $this->teamId($config),
                 'title' => "[{$ticket->number}] {$ticket->subject}",
                 'description' => $this->issueDescription($ticket),
             ],
         ]);
 
-        $issue = $response['data']['issueCreate']['issue'] ?? null;
+        $result = $response['data']['issueCreate'] ?? null;
+        $issue = $result['issue'] ?? null;
 
-        if (! $issue) {
-            throw new InvalidArgumentException('Linear did not return a created issue.');
+        if (! ($result['success'] ?? false) || ! $issue) {
+            throw new InvalidArgumentException('Linear could not create the issue. Verify the team ID and API key permissions.');
         }
 
         return [
@@ -85,7 +86,7 @@ class LinearIntegrationService
                     }
                 }
             ', [
-                'teamId' => $config['team_id'],
+                'teamId' => $this->teamId($config),
                 'number' => (float) preg_replace('/\D+/', '', $identifier),
             ]);
 
@@ -119,7 +120,7 @@ class LinearIntegrationService
                     nodes { id name type }
                 }
             }
-        ', ['teamId' => $config['team_id']]);
+        ', ['teamId' => $this->teamId($config)]);
 
         $state = collect($states['data']['workflowStates']['nodes'] ?? [])
             ->first(fn (array $item) => strcasecmp($item['name'], $target) === 0);
@@ -154,6 +155,32 @@ class LinearIntegrationService
         return hash_equals($expected, $signature);
     }
 
+    public function isConfigured(): bool
+    {
+        try {
+            $this->config();
+
+            return true;
+        } catch (InvalidArgumentException) {
+            return false;
+        }
+    }
+
+    public static function normalizeTeamReference(string $teamId): string
+    {
+        $teamId = trim($teamId);
+
+        if (preg_match('~linear\.app/(?:[^/]+/)?(?:settings/teams|team)/([^/?#]+)~i', $teamId, $matches)) {
+            return $matches[1];
+        }
+
+        if (preg_match('~/teams/([^/?#]+)/?$~i', $teamId, $matches)) {
+            return $matches[1];
+        }
+
+        return $teamId;
+    }
+
     private function config(): array
     {
         $connection = $this->connections->activeForProvider(IntegrationConnection::PROVIDER_LINEAR);
@@ -176,14 +203,125 @@ class LinearIntegrationService
 
     private function graphql(array $config, string $query, array $variables = []): array
     {
-        return Http::withToken($config['api_key'])
-            ->acceptJson()
-            ->post('https://api.linear.app/graphql', [
-                'query' => $query,
-                'variables' => $variables,
+        $payload = ['query' => $query];
+
+        if ($variables !== []) {
+            $payload['variables'] = $variables;
+        }
+
+        $body = Http::withHeaders([
+                'Authorization' => $this->normalizeApiKey($config['api_key']),
             ])
+            ->acceptJson()
+            ->post('https://api.linear.app/graphql', $payload)
             ->throw()
             ->json();
+
+        if (! empty($body['errors'])) {
+            throw new InvalidArgumentException($this->formatGraphqlErrors($body['errors']));
+        }
+
+        return $body;
+    }
+
+    private function teamId(array $config): string
+    {
+        $reference = self::normalizeTeamReference((string) $config['team_id']);
+
+        if ($this->looksLikeUuid($reference)) {
+            return $reference;
+        }
+
+        if ($teamId = $this->findTeamById($config, $reference)) {
+            return $teamId;
+        }
+
+        return $this->findTeamByReference($config, $reference);
+    }
+
+    private function findTeamById(array $config, string $reference): ?string
+    {
+        $response = $this->graphql($config, '
+            query Team($id: String!) {
+                team(id: $id) {
+                    id
+                }
+            }
+        ', ['id' => $reference]);
+
+        $id = $response['data']['team']['id'] ?? null;
+
+        return $id ? (string) $id : null;
+    }
+
+    private function findTeamByReference(array $config, string $reference): string
+    {
+        $response = $this->graphql($config, '
+            query Teams {
+                teams {
+                    nodes {
+                        id
+                        key
+                        name
+                    }
+                }
+            }
+        ');
+
+        $needle = strtolower($reference);
+
+        $team = collect($response['data']['teams']['nodes'] ?? [])
+            ->first(function (array $team) use ($needle) {
+                return in_array($needle, [
+                    strtolower((string) ($team['key'] ?? '')),
+                    strtolower((string) ($team['name'] ?? '')),
+                ], true);
+            });
+
+        if (! $team) {
+            $available = collect($response['data']['teams']['nodes'] ?? [])
+                ->map(fn (array $team) => (string) ($team['key'] ?? ''))
+                ->filter()
+                ->unique()
+                ->sort()
+                ->values()
+                ->implode(', ');
+
+            $suffix = $available !== ''
+                ? " Available teams: {$available}."
+                : ' Check that your API key can access the workspace teams.';
+
+            throw new InvalidArgumentException(
+                "Linear team \"{$reference}\" was not found. Paste the team URL, team key, or UUID from Linear settings.{$suffix}"
+            );
+        }
+
+        return (string) $team['id'];
+    }
+
+    private function looksLikeUuid(string $value): bool
+    {
+        return (bool) preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i', $value);
+    }
+
+    private function formatGraphqlErrors(array $errors): string
+    {
+        $messages = collect($errors)
+            ->map(fn (array $error) => trim((string) ($error['message'] ?? '')))
+            ->filter()
+            ->unique()
+            ->values();
+
+        if ($messages->isEmpty()) {
+            return 'Linear API request failed.';
+        }
+
+        return $messages->implode(' ');
+    }
+
+    private function normalizeApiKey(string $apiKey): string
+    {
+        return preg_replace('/^Bearer\s+/i', '', trim($apiKey));
     }
 
     private function issueDescription(Ticket $ticket): string

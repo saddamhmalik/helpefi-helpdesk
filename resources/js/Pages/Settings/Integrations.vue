@@ -358,6 +358,7 @@ const inputClass = 'w-full rounded-lg border agent-border px-3 py-2 text-sm focu
                         <div class="md:col-span-2">
                             <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('settings_integrations.team_id') }}</label>
                             <input v-model="linearForm.team_id" type="text" :class="inputClass" />
+                            <p class="mt-1 text-xs agent-text-subtle">{{ $t('settings_integrations.linear_team_id_hint') }}</p>
                         </div>
                         <div>
                             <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('settings_integrations.done_state') }}</label>

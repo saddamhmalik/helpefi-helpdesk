@@ -432,6 +432,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/tickets/{ticket}/time-entries', [TicketTimeEntryController::class, 'store'])->name('tickets.time-entries.store');
         Route::delete('/tickets/{ticket}/time-entries/{entry}', [TicketTimeEntryController::class, 'destroy'])->name('tickets.time-entries.destroy');
         Route::post('/tickets/{ticket}/external-issues', [TicketExternalIssueController::class, 'store'])->name('tickets.external-issues.store');
+        Route::post('/tickets/{ticket}/external-issues/sync', [TicketExternalIssueController::class, 'sync'])->name('tickets.external-issues.sync');
         Route::delete('/tickets/{ticket}/external-issues/{issue}', [TicketExternalIssueController::class, 'destroy'])->name('tickets.external-issues.destroy');
         Route::get('/tickets/{ticket}/export/pdf', [TicketExportController::class, 'pdf'])->name('tickets.export.pdf');
         Route::post('/tickets/{ticket}/export/email', [TicketExportController::class, 'email'])->name('tickets.export.email');

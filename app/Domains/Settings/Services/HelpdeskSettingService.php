@@ -47,6 +47,7 @@ class HelpdeskSettingService
             'auto_first_response_body' => ['nullable', 'string', 'max:10000'],
             'email_blocklist' => ['nullable', 'array'],
             'email_blocklist.*' => ['string', 'max:255'],
+            'sync_ticket_status_from_external_issues' => ['boolean'],
         ];
     }
 
@@ -62,6 +63,7 @@ class HelpdeskSettingService
             'auto_first_response_enabled' => (bool) $setting->auto_first_response_enabled,
             'auto_first_response_body' => $setting->auto_first_response_body ?? self::DEFAULT_AUTO_FIRST_RESPONSE_BODY,
             'email_blocklist' => $setting->email_blocklist ?? [],
+            'sync_ticket_status_from_external_issues' => (bool) ($setting->sync_ticket_status_from_external_issues ?? false),
         ];
     }
 
@@ -77,6 +79,7 @@ class HelpdeskSettingService
             'user_field_count' => count($setting->user_fields ?? []),
             'auto_first_response_enabled' => (bool) $setting->auto_first_response_enabled,
             'email_blocklist_count' => count($setting->email_blocklist ?? []),
+            'sync_ticket_status_from_external_issues' => (bool) ($setting->sync_ticket_status_from_external_issues ?? false),
         ]);
 
         return $this->snapshot();
@@ -150,6 +153,11 @@ class HelpdeskSettingService
     public function emailBlocklist(): array
     {
         return $this->settings->current()->email_blocklist ?? [];
+    }
+
+    public function syncTicketStatusFromExternalIssues(): bool
+    {
+        return (bool) ($this->settings->current()->sync_ticket_status_from_external_issues ?? false);
     }
 
     public function isEmailBlocked(string $email): bool
@@ -399,6 +407,7 @@ class HelpdeskSettingService
             'auto_first_response_enabled' => (bool) ($data['auto_first_response_enabled'] ?? false),
             'auto_first_response_body' => $this->normalizeAutoFirstResponseBody($data['auto_first_response_body'] ?? null),
             'email_blocklist' => $this->normalizeEmailBlocklist($data['email_blocklist'] ?? []),
+            'sync_ticket_status_from_external_issues' => (bool) ($data['sync_ticket_status_from_external_issues'] ?? false),
         ];
     }
 

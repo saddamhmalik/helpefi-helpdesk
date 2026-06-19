@@ -409,6 +409,7 @@
         "reopen_transition": "Reopen transition",
         "api_key": "API key",
         "team_id": "Team ID",
+        "linear_team_id_hint": "Paste the team URL, team key (e.g. HEL), or team UUID from Linear settings.",
         "done_state": "Done state",
         "open_state": "Open state",
         "name": "Name",
@@ -416,9 +417,9 @@
         "webhook_signing_secret_copy_now": "Webhook signing secret (copy now)",
         "inbound_webhook_secret_copy_now": "Inbound webhook secret (copy now)",
         "post_ticket_events_to_a_slack_channel_using_an_incoming_webhook": "Post ticket events to a Slack channel using an incoming webhook.",
-        "create_and_link_jira_issues_from_tickets_status_changes_sync_both_ways": "Create and link Jira issues from tickets. Status changes sync both ways.",
+        "create_and_link_jira_issues_from_tickets_status_changes_sync_both_ways": "Create and link Jira issues from tickets. Closing a ticket updates the linked Jira issue. Optional ticket status sync is configured in Ticket settings.",
         "inbound_webhook_url": "Inbound webhook URL",
-        "create_and_link_linear_issues_from_tickets_status_changes_sync_both_wa": "Create and link Linear issues from tickets. Status changes sync both ways.",
+        "create_and_link_linear_issues_from_tickets_status_changes_sync_both_wa": "Create and link Linear issues from tickets. Closing a ticket updates the linked Linear issue. Optional ticket status sync is configured in Ticket settings.",
         "connect_your_shopify_store_using_the_official_shopify_api_client": "Connect your Shopify store using the official Shopify API client.",
         "enrich_tickets_with_hubspot_contact_data_via_hubspot_api-client": "Enrich tickets with HubSpot contact data via hubspot/api-client.",
         "connect_salesforce_using_omniphx_forrest_for_contact_lookup": "Connect Salesforce using omniphx/forrest for contact lookup.",
@@ -772,7 +773,11 @@
         "set_the_prefix_used_for_new_ticket_numbers_e_g_hd-00004": "Set the prefix used for new ticket numbers (e.g. HD-00004).",
         "email_auto-reply": "Email auto-reply",
         "automatic_first_response_and_inbound_email_blocklist": "Automatic first response and inbound email blocklist.",
-        "agent_fields": "Agent fields"
+        "agent_fields": "Agent fields",
+        "external_issues": "External issues",
+        "sync_ticket_status_from_external_issues": "Sync ticket status from Jira/Linear",
+        "sync_ticket_status_from_external_issues_help": "When enabled, moving a linked Jira or Linear issue to Done, Closed, or Resolved will close the ticket. Reopening the external issue will reopen the ticket.",
+        "external_issues_description": "Control how linked Jira and Linear issues affect ticket status."
     },
     "settings_workforce": {
         "departments_teams": "Departments & teams",
