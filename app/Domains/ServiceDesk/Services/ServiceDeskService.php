@@ -29,6 +29,7 @@ class ServiceDeskService
         $this->assertAvailable();
 
         $summaries = $this->repository->typeSummaries();
+        $recentGrouped = $this->repository->recentGroupedByType();
 
         return [
             'summaries' => $summaries,
@@ -38,7 +39,7 @@ class ServiceDeskService
             ],
             'recent' => collect(TicketTypes::values())
                 ->mapWithKeys(fn (string $type) => [
-                    $type => $this->repository->recentByType($type),
+                    $type => $recentGrouped->get($type, collect())->values(),
                 ])
                 ->all(),
         ];

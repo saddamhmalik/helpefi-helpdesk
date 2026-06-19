@@ -18,28 +18,39 @@ class TicketItsmContextService
 
     public function forTicket(Ticket $ticket, int $userId): array
     {
-        $majorIncident = $this->majorIncidents->snapshotForTicket($ticket->id);
+        $type = $ticket->type;
+        $majorIncident = $type === ServiceCatalogItem::TYPE_INCIDENT
+            ? $this->majorIncidents->snapshotForTicket($ticket)
+            : null;
+        $approval = in_array($type, [ServiceCatalogItem::TYPE_SERVICE_REQUEST, ServiceCatalogItem::TYPE_CHANGE], true)
+            ? $this->approvals->snapshotForTicket($ticket->id)
+            : null;
 
         return [
-            'approval' => $this->approvals->snapshotForTicket($ticket->id),
-            'canDecideApproval' => $this->canDecideApproval($ticket->id, $userId),
-            'changeRecord' => $this->changeRecords->snapshotForTicket($ticket->id),
-            'problemRecord' => $this->problemRecords->snapshotForTicket($ticket->id),
-            'incidentCandidates' => $ticket->type === ServiceCatalogItem::TYPE_PROBLEM
-                ? $this->problemRecords->incidentCandidates($ticket->id)->values()
+            'approval' => $approval,
+            'canDecideApproval' => $this->canDecideApproval($approval, $userId),
+            'changeRecord' => $type === ServiceCatalogItem::TYPE_CHANGE
+                ? $this->changeRecords->snapshotForTicket($ticket)
+                : null,
+            'problemRecord' => $type === ServiceCatalogItem::TYPE_PROBLEM
+                ? $this->problemRecords->snapshotForTicket($ticket)
+                : null,
+            'incidentCandidates' => $this->serviceDesk->isAvailable()
+                && $type === ServiceCatalogItem::TYPE_PROBLEM
+                ? $this->problemRecords->incidentCandidates($ticket)->values()
                 : [],
-            'changeRiskOptions' => $this->changeRecords->riskOptions(),
+            'changeRiskOptions' => $type === ServiceCatalogItem::TYPE_CHANGE
+                ? $this->changeRecords->riskOptions()
+                : [],
             'majorIncident' => $majorIncident,
             'canDeclareMajorIncident' => $this->serviceDesk->isAvailable()
-                && $ticket->type === ServiceCatalogItem::TYPE_INCIDENT
+                && $type === ServiceCatalogItem::TYPE_INCIDENT
                 && $majorIncident === null,
         ];
     }
 
-    private function canDecideApproval(int $ticketId, int $userId): bool
+    private function canDecideApproval(?array $snapshot, int $userId): bool
     {
-        $snapshot = $this->approvals->snapshotForTicket($ticketId);
-
         if (! $snapshot || ($snapshot['status'] ?? '') !== 'pending') {
             return false;
         }

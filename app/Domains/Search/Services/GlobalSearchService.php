@@ -22,8 +22,9 @@ class GlobalSearchService
         }
 
         $groups = [];
+        $remaining = $limit;
 
-        $tickets = $this->repository->tickets($query, $limit);
+        $tickets = $this->repository->tickets($query, $remaining);
 
         if ($tickets->isNotEmpty()) {
             $groups[] = [
@@ -37,9 +38,17 @@ class GlobalSearchService
                     'href' => "/tickets/{$ticket->id}",
                 ])->values()->all(),
             ];
+            $remaining = max(0, $limit - $tickets->count());
         }
 
-        $contacts = $this->repository->contacts($query, $limit);
+        if ($remaining === 0) {
+            return [
+                'query' => $query,
+                'groups' => $groups,
+            ];
+        }
+
+        $contacts = $this->repository->contacts($query, $remaining);
 
         if ($contacts->isNotEmpty()) {
             $groups[] = [
@@ -52,9 +61,17 @@ class GlobalSearchService
                     'href' => "/contacts/{$contact->id}",
                 ])->values()->all(),
             ];
+            $remaining = max(0, $remaining - $contacts->count());
         }
 
-        $organizations = $this->repository->organizations($query, $limit);
+        if ($remaining === 0) {
+            return [
+                'query' => $query,
+                'groups' => $groups,
+            ];
+        }
+
+        $organizations = $this->repository->organizations($query, $remaining);
 
         if ($organizations->isNotEmpty()) {
             $groups[] = [

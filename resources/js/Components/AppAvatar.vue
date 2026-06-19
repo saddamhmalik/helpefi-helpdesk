@@ -42,6 +42,8 @@ watch(
             :src="imageUrl"
             :alt="name || email"
             class="h-full w-full object-cover"
+            loading="lazy"
+            decoding="async"
             @error="onImageError"
         />
         <span

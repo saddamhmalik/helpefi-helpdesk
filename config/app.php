@@ -15,6 +15,8 @@ return [
 
     'name' => env('APP_NAME', 'helpefi'),
 
+    'version' => env('APP_VERSION', ''),
+
     'central_domain' => env('CENTRAL_DOMAIN', 'helpdesk.test'),
 
     /*

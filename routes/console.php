@@ -19,3 +19,4 @@ Schedule::command('platform:check-tenant-infrastructure')->hourly()->withoutOver
 Schedule::command('platform:run-tenant-infrastructure-backups')->everyMinute()->withoutOverlapping();
 Schedule::command('platform:check-pending-tenant-migrations')->daily()->withoutOverlapping();
 Schedule::command('telescope:prune')->daily();
+Schedule::command('logs:clear')->dailyAt('03:00')->withoutOverlapping();

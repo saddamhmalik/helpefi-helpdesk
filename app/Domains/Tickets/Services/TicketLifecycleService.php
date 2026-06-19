@@ -3,6 +3,8 @@
 namespace App\Domains\Tickets\Services;
 
 use App\Domains\Contacts\Models\Contact;
+use App\Domains\Tickets\Models\TicketPriority;
+use App\Domains\Tickets\Models\TicketStatus;
 use App\Domains\Security\Models\AuditLog;
 use App\Domains\Security\Repositories\AuditLogRepository;
 use App\Domains\Tickets\Repositories\TicketRepository;
@@ -26,10 +28,16 @@ class TicketLifecycleService
 
     public function timeline(int $ticketId): array
     {
+        static $cache = [];
+
+        if (isset($cache[$ticketId])) {
+            return $cache[$ticketId];
+        }
+
         $logs = $this->auditLogs->forTicket($ticketId, self::EXCLUDED_EVENTS);
         $lookups = $this->buildLookups($logs);
 
-        return $logs
+        return $cache[$ticketId] = $logs
             ->map(fn (AuditLog $log) => $this->formatEntry($log, $lookups))
             ->values()
             ->all();
@@ -76,8 +84,12 @@ class TicketLifecycleService
         $contactIds = array_filter(array_unique($contactIds));
 
         return [
-            'statuses' => $this->tickets->statuses()->keyBy('id'),
-            'priorities' => $this->tickets->priorities()->keyBy('id'),
+            'statuses' => $statusIds !== []
+                ? TicketStatus::query()->whereIn('id', $statusIds)->get(['id', 'name'])->keyBy('id')
+                : collect(),
+            'priorities' => $priorityIds !== []
+                ? TicketPriority::query()->whereIn('id', $priorityIds)->get(['id', 'name'])->keyBy('id')
+                : collect(),
             'users' => $userIds !== []
                 ? User::query()->whereIn('id', $userIds)->get(['id', 'name'])->keyBy('id')
                 : collect(),

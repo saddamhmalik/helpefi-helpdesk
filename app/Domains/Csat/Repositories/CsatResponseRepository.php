@@ -44,25 +44,36 @@ class CsatResponseRepository
             ->when($filters['date_from'] ?? null, fn ($q, $date) => $q->whereDate('created_at', '>=', $date))
             ->when($filters['date_to'] ?? null, fn ($q, $date) => $q->whereDate('created_at', '<=', $date));
 
-        $total = (clone $query)->count();
-        $average = $total > 0 ? round((clone $query)->avg('rating'), 2) : null;
+        $row = (clone $query)
+            ->selectRaw('COUNT(*) as total_responses')
+            ->selectRaw('AVG(rating) as average_rating')
+            ->selectRaw('SUM(CASE WHEN rating = 1 THEN 1 ELSE 0 END) as rating_1')
+            ->selectRaw('SUM(CASE WHEN rating = 2 THEN 1 ELSE 0 END) as rating_2')
+            ->selectRaw('SUM(CASE WHEN rating = 3 THEN 1 ELSE 0 END) as rating_3')
+            ->selectRaw('SUM(CASE WHEN rating = 4 THEN 1 ELSE 0 END) as rating_4')
+            ->selectRaw('SUM(CASE WHEN rating = 5 THEN 1 ELSE 0 END) as rating_5')
+            ->first();
 
-        $breakdown = (clone $query)
-            ->selectRaw('rating, COUNT(*) as total')
-            ->groupBy('rating')
-            ->orderBy('rating')
-            ->pluck('total', 'rating')
-            ->all();
+        $total = (int) ($row->total_responses ?? 0);
 
-        $byChannel = (clone $query)
-            ->selectRaw('channel, COUNT(*) as total')
-            ->groupBy('channel')
-            ->pluck('total', 'channel')
-            ->all();
+        $breakdown = $total > 0
+            ? collect(range(1, 5))
+                ->mapWithKeys(fn (int $rating) => [$rating => (int) ($row->{'rating_'.$rating} ?? 0)])
+                ->filter(fn (int $count) => $count > 0)
+                ->all()
+            : [];
+
+        $byChannel = $total > 0
+            ? (clone $query)
+                ->selectRaw('channel, COUNT(*) as total')
+                ->groupBy('channel')
+                ->pluck('total', 'channel')
+                ->all()
+            : [];
 
         return [
             'total_responses' => $total,
-            'average_rating' => $average,
+            'average_rating' => $total > 0 ? round((float) $row->average_rating, 2) : null,
             'breakdown' => $breakdown,
             'by_channel' => $byChannel,
         ];

@@ -23,6 +23,10 @@ return [
 
     'connection_timeout_seconds' => (int) env('TENANT_BYO_CONNECTION_TIMEOUT', 10),
 
+    'persistent_connections' => (bool) env('TENANT_BYO_DB_PERSISTENT', false),
+
+    'compress_connections' => (bool) env('TENANT_BYO_DB_COMPRESS', true),
+
     'mysql_client_binary_path' => env('TENANT_BYO_MYSQL_CLIENT_BINARY_PATH'),
 
     'database_migration_timeout_seconds' => (int) env('TENANT_BYO_DATABASE_MIGRATION_TIMEOUT', 3600),

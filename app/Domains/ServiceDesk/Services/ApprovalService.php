@@ -150,6 +150,8 @@ class ApprovalService
                     'current_step' => $request->current_step + 1,
                 ]);
 
+                $this->notifyCurrentApprover($request);
+
                 $this->recordApprovalAudit(
                     'service_desk.approval_step_approved',
                     $request,
@@ -161,13 +163,17 @@ class ApprovalService
                     ],
                 );
 
-                $this->notifyCurrentApprover($request);
-
                 return $this->requests->find($request->id);
             }
 
             $request = $this->finalize($request, ApprovalRequest::STATUS_APPROVED, $note);
             $ticket = $this->openApprovedTicket($request->ticket_id);
+
+            TicketAutomationTrigger::dispatch($ticket, AutomationRule::TRIGGER_APPROVAL_APPROVED, [
+                'approval_request_id' => $request->id,
+            ]);
+
+            $this->notifications->approvalDecided($request, true);
 
             $this->recordApprovalAudit(
                 'service_desk.approval_approved',
@@ -179,12 +185,6 @@ class ApprovalService
                     'note' => $note,
                 ],
             );
-
-            TicketAutomationTrigger::dispatch($ticket, AutomationRule::TRIGGER_APPROVAL_APPROVED, [
-                'approval_request_id' => $request->id,
-            ]);
-
-            $this->notifications->approvalDecided($request, true);
 
             return $this->requests->find($request->id);
         });
@@ -207,6 +207,12 @@ class ApprovalService
             $request = $this->finalize($request, ApprovalRequest::STATUS_REJECTED, $note);
             $ticket = $this->closeRejectedTicket($request->ticket_id);
 
+            TicketAutomationTrigger::dispatch($ticket, AutomationRule::TRIGGER_APPROVAL_REJECTED, [
+                'approval_request_id' => $request->id,
+            ]);
+
+            $this->notifications->approvalDecided($request, false);
+
             $this->recordApprovalAudit(
                 'service_desk.approval_rejected',
                 $request,
@@ -217,12 +223,6 @@ class ApprovalService
                     'note' => $note,
                 ],
             );
-
-            TicketAutomationTrigger::dispatch($ticket, AutomationRule::TRIGGER_APPROVAL_REJECTED, [
-                'approval_request_id' => $request->id,
-            ]);
-
-            $this->notifications->approvalDecided($request, false);
 
             return $this->requests->find($request->id);
         });
@@ -256,7 +256,7 @@ class ApprovalService
             return 0;
         }
 
-        return $this->requests->pendingCountForApprover($userId);
+        return $this->requests->pendingCounts($userId)['pending_mine'];
     }
 
     public function pendingCount(): int
@@ -265,7 +265,16 @@ class ApprovalService
             return 0;
         }
 
-        return $this->requests->pendingCount();
+        return $this->pendingCounts(0)['pending'];
+    }
+
+    public function pendingCounts(int $userId): array
+    {
+        if (! $this->billing->canUseFeature('service_desk')) {
+            return ['pending' => 0, 'pending_mine' => 0];
+        }
+
+        return $this->requests->pendingCounts($userId);
     }
 
     public function canUserDecide(ApprovalRequest $request, int $userId): bool
@@ -382,8 +391,12 @@ class ApprovalService
 
     private function recordApprovalAudit(string $event, ApprovalRequest $request, int $userId, array $properties): void
     {
-        $ticket = $this->tickets->find($request->ticket_id);
-        $this->audit->record($event, $ticket, $properties, $userId);
+        $this->audit->record(
+            $event,
+            Ticket::query()->findOrFail($request->ticket_id),
+            $properties,
+            $userId,
+        );
     }
 
     private function toArray(ApprovalRequest $request): array

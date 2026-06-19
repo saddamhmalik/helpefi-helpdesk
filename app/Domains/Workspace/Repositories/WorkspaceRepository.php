@@ -6,11 +6,12 @@ use App\Domains\Tickets\Models\Ticket;
 use App\Domains\Tickets\Models\TicketMessage;
 use App\Domains\Workspace\Models\TicketComposerDraft;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Contracts\Pagination\Paginator;
 use Illuminate\Support\Carbon;
 
 class WorkspaceRepository
 {
-    public function queue(array $filters, int $perPage = 30, ?int $watchingUserId = null): LengthAwarePaginator
+    public function queue(array $filters, int $perPage = 30, ?int $watchingUserId = null): Paginator
     {
         $query = Ticket::query()
             ->with(['contact:id,name,email', 'status:id,name,slug,color', 'priority:id,name,slug', 'assignee:id,name'])
@@ -42,7 +43,7 @@ class WorkspaceRepository
             $query->whereHas('watchers', fn ($q) => $q->where('user_id', $watchingUserId));
         }
 
-        return $query->paginate($perPage)->withQueryString();
+        return $query->simplePaginate($perPage)->withQueryString();
     }
 
     public function queueChangesSince(Carbon $since, int $limit = 20): array

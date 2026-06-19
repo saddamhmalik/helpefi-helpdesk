@@ -50,8 +50,13 @@ class ContactRepository
 
     public function stats(): array
     {
-        $total = Contact::query()->count();
-        $portal = Contact::query()->whereHas('portalUser')->count();
+        $row = Contact::query()
+            ->selectRaw('COUNT(*) as total')
+            ->selectRaw('SUM(CASE WHEN EXISTS (SELECT 1 FROM users WHERE users.contact_id = contacts.id) THEN 1 ELSE 0 END) as portal')
+            ->first();
+
+        $total = (int) ($row->total ?? 0);
+        $portal = (int) ($row->portal ?? 0);
 
         return [
             'total' => $total,
@@ -89,13 +94,17 @@ class ContactRepository
     public function find(int $id): Contact
     {
         return Contact::query()
+            ->withCount(['tickets' => fn ($query) => $query->whereNull('merged_into_ticket_id')])
             ->with([
                 'organization.domains',
                 'tags',
                 'notes.user:id,name',
                 'activities.user:id,name',
-                'tickets.status',
-                'tickets.priority',
+                'tickets' => fn ($query) => $query
+                    ->whereNull('merged_into_ticket_id')
+                    ->with('status:id,name')
+                    ->orderByDesc('created_at')
+                    ->limit(50),
                 'assets.type:id,name,slug',
                 'portalUser:id,contact_id,name,email,created_at',
             ])

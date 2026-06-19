@@ -13,6 +13,7 @@ use App\Domains\Settings\Services\HelpdeskSettingService;
 use App\Domains\Tickets\Models\Ticket;
 use App\Domains\SideConversations\Services\SideConversationService;
 use App\Domains\Tickets\Services\TicketCcService;
+use App\Domains\Tickets\Support\TicketFormReferenceCache;
 use App\Domains\Tickets\Services\TicketService;
 use App\Domains\Tenancy\Services\TenantRouteRegistryService;
 use App\Domains\Workspace\Services\TicketPresenceService;
@@ -79,6 +80,8 @@ class ChannelService
                 $this->tenantRoutes->registerWidgetKey(tenant('id'), $nextWidgetKey);
             }
         }
+
+        TicketFormReferenceCache::forget();
 
         return $channel;
     }
@@ -216,7 +219,8 @@ class ChannelService
             $this->presence->pulse($ticket->id);
 
             return [
-                'action' => $reopened ? 'reopened' : 'reply',
+                'action' => 'reply',
+                'reopened' => $reopened,
                 'ticket' => $this->tickets->show($ticket->id),
                 'message' => $message,
                 'inbox_id' => $inbox->id,

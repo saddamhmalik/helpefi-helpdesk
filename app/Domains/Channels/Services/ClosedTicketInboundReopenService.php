@@ -75,10 +75,20 @@ class ClosedTicketInboundReopenService
 
         $beforeStatusId = $ticket->ticket_status_id;
 
-        $ticket = $this->tickets->update($ticket, [
-            'ticket_status_id' => $openStatus->id,
-            'closed_at' => null,
-        ]);
+        $updated = Ticket::query()
+            ->whereKey($ticket->id)
+            ->whereHas('status', fn ($query) => $query->where('is_closed', true))
+            ->update([
+                'ticket_status_id' => $openStatus->id,
+                'closed_at' => null,
+                'updated_at' => now(),
+            ]);
+
+        if ($updated === 0) {
+            return false;
+        }
+
+        $ticket = Ticket::query()->findOrFail($ticket->id);
 
         $this->audit->record($auditEvent, $ticket, array_merge([
             'number' => $ticket->number,

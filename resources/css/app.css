@@ -186,6 +186,7 @@
 
     .agent-page-bg {
         @apply bg-slate-50 dark:bg-slate-950;
+        --agent-status-bar-height: 1.75rem;
     }
 
     .agent-panel {

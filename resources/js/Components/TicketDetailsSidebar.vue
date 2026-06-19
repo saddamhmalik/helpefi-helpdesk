@@ -78,10 +78,52 @@ onMounted(() => {
     autoSaveReady.value = true;
 });
 
-const togglePanel = (panelId) => {
+const togglePanel = async (panelId) => {
+    const opening = !openPanels.value[panelId];
+
+    if (opening && panelId === 'merge') {
+        await loadMergeCandidates();
+    }
+
     openPanels.value[panelId] = !openPanels.value[panelId];
     localStorage.setItem(PANEL_STORAGE_KEY, JSON.stringify(openPanels.value));
 };
+
+const mergeCandidates = ref([...(props.mergeCandidates ?? [])]);
+const mergeCandidatesLoading = ref(false);
+const mergeCandidatesLoaded = ref((props.mergeCandidates?.length ?? 0) > 0);
+
+const resetMergeCandidates = () => {
+    mergeCandidates.value = [...(props.mergeCandidates ?? [])];
+    mergeCandidatesLoaded.value = (props.mergeCandidates?.length ?? 0) > 0;
+    mergeCandidatesLoading.value = false;
+};
+
+const loadMergeCandidates = async () => {
+    if (mergeCandidatesLoaded.value || mergeCandidatesLoading.value || props.ticket.merged_into_ticket_id) {
+        return;
+    }
+
+    mergeCandidatesLoading.value = true;
+
+    try {
+        const response = await fetch(`/tickets/${props.ticket.id}/merge-candidates`, {
+            headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+        });
+
+        if (!response.ok) {
+            return;
+        }
+
+        const data = await response.json();
+        mergeCandidates.value = data.mergeCandidates ?? [];
+        mergeCandidatesLoaded.value = true;
+    } finally {
+        mergeCandidatesLoading.value = false;
+    }
+};
+
+watch(() => props.ticket.id, resetMergeCandidates);
 
 const isPanelOpen = (panelId) => openPanels.value[panelId] ?? false;
 
@@ -271,7 +313,9 @@ const slaSummary = computed(() => {
     };
 });
 
-const hasMergeSection = computed(() => !props.ticket.merged_into_ticket_id && (props.mergeCandidates?.length ?? 0) > 0);
+const hasMergeSection = computed(() => !props.ticket.merged_into_ticket_id && (
+    !mergeCandidatesLoaded.value || mergeCandidates.value.length > 0
+));
 const hasSplitSection = computed(() => (props.ticket.messages?.length ?? 0) > 0 && !props.ticket.merged_into_ticket_id);
 
 const toggleWatch = () => {
@@ -651,8 +695,8 @@ const priorityBadgeClass = (name) => {
                     </template>
                     <div class="border-t border-slate-100 px-4 pb-4 pt-3 dark:border-slate-800">
                         <form class="space-y-3" @submit.prevent="merge">
-                            <select v-model="mergeForm.source_ticket_id" required :class="sidebarSelectClass">
-                                <option value="">{{ $t('components.select_ticket') }}</option>
+                            <select v-model="mergeForm.source_ticket_id" required :class="sidebarSelectClass" :disabled="mergeCandidatesLoading">
+                                <option value="">{{ mergeCandidatesLoading ? $t('common.loading') : $t('components.select_ticket') }}</option>
                                 <option v-for="candidate in mergeCandidates" :key="candidate.id" :value="candidate.id">{{ candidate.number }} — {{ candidate.subject }}</option>
                             </select>
                             <label class="flex items-start gap-2.5 rounded-xl border border-slate-200/80 bg-slate-50/80 px-3 py-2.5 dark:border-slate-800 dark:bg-slate-900/60">

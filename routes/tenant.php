@@ -444,6 +444,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/tickets/{ticket}/problem-incidents', [ProblemController::class, 'linkIncident'])->name('tickets.problem-incidents.store');
         Route::delete('/tickets/{ticket}/problem-incidents/{incident}', [ProblemController::class, 'unlinkIncident'])->name('tickets.problem-incidents.destroy');
         Route::get('/service-desk/queues/{type}', [ServiceDeskController::class, 'queue'])->name('service-desk.queue');
+        Route::get('/tickets/{ticket}/merge-candidates', [TicketController::class, 'mergeCandidates'])->name('tickets.merge-candidates');
         Route::resource('tickets', TicketController::class)->except(['edit', 'destroy']);
         Route::post('/tickets/{ticket}/reply', [TicketController::class, 'reply'])->name('tickets.reply');
         Route::post('/tickets/{ticket}/attachments', [TicketController::class, 'storeAttachment'])->name('tickets.attachments.store');

@@ -3,7 +3,7 @@
 namespace App\Domains\Brands\Controllers;
 
 use App\Domains\Brands\Services\BrandService;
-use App\Domains\Tickets\Services\TicketService;
+use App\Domains\Tickets\Services\TicketFormReferenceService;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -15,19 +15,18 @@ class BrandController extends Controller
 {
     public function __construct(
         private BrandService $brands,
-        private TicketService $tickets,
+        private TicketFormReferenceService $ticketReferenceData,
     ) {
     }
 
     public function index(): Response
     {
-        return Inertia::render('Settings/Brands', [
+        return Inertia::render('Settings/Brands', array_merge([
             'brands' => $this->brands->listForSettings(),
-            'priorities' => $this->tickets->priorities(),
             'collections' => \App\Domains\Knowledge\Models\KnowledgeCollection::query()
                 ->orderBy('name')
                 ->get(['id', 'name', 'slug', 'brand_id']),
-        ]);
+        ], $this->ticketReferenceData->only(['priorities'])));
     }
 
     public function store(Request $request): RedirectResponse

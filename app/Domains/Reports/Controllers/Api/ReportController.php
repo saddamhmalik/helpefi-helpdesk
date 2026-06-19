@@ -4,9 +4,8 @@ namespace App\Domains\Reports\Controllers\Api;
 
 use App\Domains\Reports\Models\SavedReport;
 use App\Domains\Reports\Services\ReportService;
-use App\Domains\Tickets\Services\TicketService;
+use App\Domains\Tickets\Services\TicketFormReferenceService;
 use App\Http\Controllers\Controller;
-use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -15,18 +14,16 @@ class ReportController extends Controller
 {
     public function __construct(
         private ReportService $reportService,
-        private TicketService $ticketService,
+        private TicketFormReferenceService $ticketReferenceData,
     ) {
     }
 
     public function meta(): JsonResponse
     {
-        return response()->json([
-            'types' => $this->reportService->types(),
-            'statuses' => $this->ticketService->statuses(),
-            'priorities' => $this->ticketService->priorities(),
-            'agents' => User::query()->orderBy('name')->get(['id', 'name']),
-        ]);
+        return response()->json(array_merge(
+            ['types' => $this->reportService->types()],
+            $this->ticketReferenceData->only(['statuses', 'priorities', 'agents']),
+        ));
     }
 
     public function dashboard(): JsonResponse

@@ -21,6 +21,7 @@ use App\Domains\Ai\Listeners\TriageTicketOnCreate;
 use Illuminate\Notifications\Events\NotificationSent;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
+use App\Support\SlowQueryLogger;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\URL;
@@ -38,6 +39,8 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        SlowQueryLogger::register();
+
         Event::listen(TicketAutomationTrigger::class, RunAutomationRules::class);
         Event::listen(TicketAutomationTrigger::class, DispatchWebhooks::class);
         Event::listen(TicketAutomationTrigger::class, DispatchSlackNotifications::class);

@@ -22,21 +22,26 @@ class MajorIncidentService
     ) {
     }
 
-    public function snapshotForTicket(int $ticketId): ?array
+    public function snapshotForTicket(Ticket|int $ticketOrId): ?array
     {
         if (! $this->billing->canUseFeature('service_desk')) {
             return null;
         }
 
-        $ticket = $this->tickets->find($ticketId);
+        $ticket = $this->resolveTicket($ticketOrId);
 
         if ($ticket->type !== ServiceCatalogItem::TYPE_INCIDENT) {
             return null;
         }
 
-        $record = $this->records->findForTicket($ticketId);
+        $record = $this->records->findForTicket($ticket->id);
 
         return $this->records->snapshot($record);
+    }
+
+    private function resolveTicket(Ticket|int $ticketOrId): Ticket
+    {
+        return $ticketOrId instanceof Ticket ? $ticketOrId : $this->tickets->find($ticketOrId);
     }
 
     public function warRoomSnapshot(int $ticketId): ?array
@@ -73,7 +78,7 @@ class MajorIncidentService
             'coordinator_user_ids' => [$userId],
         ]);
 
-        $this->audit->record('service_desk.major_incident_declared', $this->tickets->find($ticketId), [], $userId);
+        $this->audit->record('service_desk.major_incident_declared', $this->auditTicket($ticketId), [], $userId);
 
         return $this->records->snapshot($record);
     }
@@ -94,7 +99,7 @@ class MajorIncidentService
 
         $this->audit->recordChanges(
             'service_desk.major_incident_updated',
-            $this->tickets->find($ticketId),
+            $this->auditTicket($ticketId),
             $before,
             $updated->only(array_keys($data)),
         );
@@ -119,7 +124,7 @@ class MajorIncidentService
             'resolved_at' => now(),
         ]);
 
-        $this->audit->record('service_desk.major_incident_resolved', $this->tickets->find($ticketId), [], $userId);
+        $this->audit->record('service_desk.major_incident_resolved', $this->auditTicket($ticketId), [], $userId);
 
         return $this->records->snapshot($updated);
     }
@@ -141,7 +146,7 @@ class MajorIncidentService
             'review_completed_by_user_id' => $userId,
         ]));
 
-        $this->audit->record('service_desk.major_incident_review_completed', $this->tickets->find($ticketId), [], $userId);
+        $this->audit->record('service_desk.major_incident_review_completed', $this->auditTicket($ticketId), [], $userId);
 
         return $this->records->snapshot($updated);
     }
@@ -152,7 +157,7 @@ class MajorIncidentService
             return 0;
         }
 
-        return $this->records->activeCount();
+        return $this->records->dashboardCounts()['active'];
     }
 
     public function pendingReviewCount(): int
@@ -161,7 +166,16 @@ class MajorIncidentService
             return 0;
         }
 
-        return $this->records->pendingReviewCount();
+        return $this->records->dashboardCounts()['pending_review'];
+    }
+
+    public function dashboardCounts(): array
+    {
+        if (! $this->billing->canUseFeature('service_desk')) {
+            return ['active' => 0, 'pending_review' => 0];
+        }
+
+        return $this->records->dashboardCounts();
     }
 
     public function index(): array
@@ -173,10 +187,12 @@ class MajorIncidentService
             ->values()
             ->all();
 
+        $counts = $this->records->dashboardCounts();
+
         return [
             'entries' => $entries,
-            'active_count' => $this->records->activeCount(),
-            'pending_review_count' => $this->records->pendingReviewCount(),
+            'active_count' => $counts['active'],
+            'pending_review_count' => $counts['pending_review'],
         ];
     }
 
@@ -213,5 +229,10 @@ class MajorIncidentService
         }
 
         return $ticket;
+    }
+
+    private function auditTicket(int $ticketId): Ticket
+    {
+        return Ticket::query()->findOrFail($ticketId);
     }
 }

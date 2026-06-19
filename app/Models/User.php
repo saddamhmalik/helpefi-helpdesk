@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Domains\Auth\Services\PasswordResetMailService;
 use App\Domains\Contacts\Models\Contact;
+use App\Support\AvatarSupport;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
@@ -19,6 +20,8 @@ use Spatie\Permission\Traits\HasRoles;
 class User extends Authenticatable
 {
     use HasFactory, HasRoles, Notifiable;
+
+    protected $appends = ['avatar_url'];
 
     protected function casts(): array
     {
@@ -55,5 +58,10 @@ class User extends Authenticatable
     public function sendPasswordResetNotification($token): void
     {
         app(PasswordResetMailService::class)->send($this, $token);
+    }
+
+    public function getAvatarUrlAttribute(): ?string
+    {
+        return AvatarSupport::url($this);
     }
 }

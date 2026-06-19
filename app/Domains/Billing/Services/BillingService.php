@@ -18,6 +18,8 @@ use Illuminate\Validation\ValidationException;
 
 class BillingService
 {
+    private array $featureAccess = [];
+
     public function __construct(
         private SubscriptionRepository $subscriptions,
         private PlanRepository $plans,
@@ -165,18 +167,23 @@ class BillingService
 
     public function canUseFeature(string $feature): bool
     {
-        if (! $this->subscriptions->current()->isAccessible()) {
-            return false;
+        if (array_key_exists($feature, $this->featureAccess)) {
+            return $this->featureAccess[$feature];
         }
 
         $subscription = $this->subscriptions->current();
+
+        if (! $subscription->isAccessible()) {
+            return $this->featureAccess[$feature] = false;
+        }
+
         $plan = $this->currentPlan($subscription);
 
         if (in_array($feature, $plan['features'], true)) {
-            return true;
+            return $this->featureAccess[$feature] = true;
         }
 
-        return $this->hasActiveAddonFeature($subscription, $feature);
+        return $this->featureAccess[$feature] = $this->hasActiveAddonFeature($subscription, $feature);
     }
 
     public function hasAddon(string $addonKey): bool

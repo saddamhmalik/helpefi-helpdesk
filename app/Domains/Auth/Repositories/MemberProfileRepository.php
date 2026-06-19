@@ -123,6 +123,67 @@ class MemberProfileRepository
             ->count();
     }
 
+    public function ticketStatsBundle(int $userId, array $teamIds, array $departmentIds): array
+    {
+        $selects = [
+            'SUM(CASE WHEN assigned_to = ? THEN 1 ELSE 0 END) as assigned_total',
+            'SUM(CASE WHEN assigned_to = ? AND closed_at IS NULL THEN 1 ELSE 0 END) as assigned_open',
+            'SUM(CASE WHEN assigned_to = ? AND closed_at IS NOT NULL THEN 1 ELSE 0 END) as assigned_closed',
+        ];
+        $bindings = [$userId, $userId, $userId];
+
+        if ($teamIds === []) {
+            $selects[] = '0 as team_total';
+            $selects[] = '0 as team_open';
+            $selects[] = '0 as team_closed';
+        } else {
+            $teamPlaceholders = implode(',', array_fill(0, count($teamIds), '?'));
+            $selects[] = "SUM(CASE WHEN team_id IN ({$teamPlaceholders}) THEN 1 ELSE 0 END) as team_total";
+            $selects[] = "SUM(CASE WHEN team_id IN ({$teamPlaceholders}) AND closed_at IS NULL THEN 1 ELSE 0 END) as team_open";
+            $selects[] = "SUM(CASE WHEN team_id IN ({$teamPlaceholders}) AND closed_at IS NOT NULL THEN 1 ELSE 0 END) as team_closed";
+            $bindings = array_merge($bindings, $teamIds, $teamIds, $teamIds);
+        }
+
+        if ($departmentIds === []) {
+            $selects[] = '0 as department_total';
+            $selects[] = '0 as department_open';
+            $selects[] = '0 as department_closed';
+        } else {
+            $departmentPlaceholders = implode(',', array_fill(0, count($departmentIds), '?'));
+            $selects[] = "SUM(CASE WHEN department_id IN ({$departmentPlaceholders}) THEN 1 ELSE 0 END) as department_total";
+            $selects[] = "SUM(CASE WHEN department_id IN ({$departmentPlaceholders}) AND closed_at IS NULL THEN 1 ELSE 0 END) as department_open";
+            $selects[] = "SUM(CASE WHEN department_id IN ({$departmentPlaceholders}) AND closed_at IS NOT NULL THEN 1 ELSE 0 END) as department_closed";
+            $bindings = array_merge($bindings, $departmentIds, $departmentIds, $departmentIds);
+        }
+
+        $selects[] = '(SELECT COUNT(*) FROM tickets INNER JOIN ticket_watchers ON ticket_watchers.ticket_id = tickets.id WHERE tickets.merged_into_ticket_id IS NULL AND ticket_watchers.user_id = ?) as watching';
+        $bindings[] = $userId;
+
+        $row = Ticket::query()
+            ->whereNull('merged_into_ticket_id')
+            ->selectRaw(implode(', ', $selects), $bindings)
+            ->first();
+
+        return [
+            'assigned' => [
+                'total' => (int) ($row->assigned_total ?? 0),
+                'open' => (int) ($row->assigned_open ?? 0),
+                'closed' => (int) ($row->assigned_closed ?? 0),
+            ],
+            'team' => [
+                'total' => (int) ($row->team_total ?? 0),
+                'open' => (int) ($row->team_open ?? 0),
+                'closed' => (int) ($row->team_closed ?? 0),
+            ],
+            'department' => [
+                'total' => (int) ($row->department_total ?? 0),
+                'open' => (int) ($row->department_open ?? 0),
+                'closed' => (int) ($row->department_closed ?? 0),
+            ],
+            'watching' => (int) ($row->watching ?? 0),
+        ];
+    }
+
     private function ticketListQuery()
     {
         return Ticket::query()

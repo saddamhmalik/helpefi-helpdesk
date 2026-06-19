@@ -11,9 +11,11 @@ use App\Domains\Sla\Services\SlaService;
 use App\Domains\ServiceDesk\Services\TicketItsmContextService;
 use App\Domains\Tickets\Services\TicketLifecycleService;
 use App\Domains\Tickets\Services\TicketService;
+use App\Domains\Tickets\Services\TicketSnoozeService;
 use App\Domains\Tickets\Services\TicketViewService;
 use App\Domains\Workforce\Services\WorkforceService;
-use App\Domains\Tickets\Services\TicketSnoozeService;
+use App\Domains\Tickets\Services\TicketFormReferenceService;
+use App\Domains\Tickets\Services\TicketShowPageService;
 use App\Domains\Workspace\Services\WorkspaceService;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
@@ -39,6 +41,8 @@ class WorkspaceController extends Controller
         private TicketExternalIssueService $externalIssues,
         private TicketSnoozeService $snoozeService,
         private TicketItsmContextService $itsmContext,
+        private TicketShowPageService $ticketShowPage,
+        private TicketFormReferenceService $ticketReferenceData,
     ) {
     }
 
@@ -66,45 +70,21 @@ class WorkspaceController extends Controller
         }
 
         $itsm = $selectedTicket
-            ? $this->itsmContext->forTicket($selectedTicket, $userId)
+            ? $this->ticketShowPage->workspaceTicketContext($selectedTicket, $userId)
             : [];
 
-        return Inertia::render('Workspace/Index', [
+        $reference = $this->ticketReferenceData->payload();
+
+        return Inertia::render('Workspace/Index', array_merge([
             'queue' => $this->workspaceService->queue($filters, $userId),
             'selectedTicket' => $selectedTicket,
             'draft' => $draft,
             'ticketViews' => $this->ticketViewService->forUser($userId),
-            'statuses' => $this->ticketService->statuses(),
-            'priorities' => $this->ticketService->priorities(),
-            'agents' => $this->workforceService->agentOptions(),
-            'departments' => $this->workforceService->departmentOptions(),
-            'teams' => $this->workforceService->teamOptions(),
             'filters' => $filters,
             'activeViewId' => $request->integer('view_id') ?: null,
             'currentUserId' => $userId,
-            'sla' => $selectedTicket ? $this->slaService->snapshotForTicket($selectedTicket) : null,
-            'lifecycle' => $selectedTicket ? $this->lifecycleService->timeline($selectedTicket->id) : [],
-            'mergeCandidates' => $selectedTicket
-                ? $this->ticketService->listFiltered([], $userId, 50)
-                    ->getCollection()
-                    ->where('id', '!=', $selectedTicket->id)
-                    ->values()
-                : [],
-            'assetOptions' => $this->assetService->options(),
-            'csat' => $selectedTicket ? $this->csatService->promptForTicket($selectedTicket) : null,
-            'customFieldDefinitions' => $this->ticketService->fieldDefinitions(),
-            'sideConversations' => $selectedTicket
-                ? $this->sideConversationService->listForTicket($selectedTicket->id)
-                : [],
-            'timeTracking' => $selectedTicket
-                ? $this->timeTracking->snapshotForTicket($selectedTicket->id)
-                : null,
-            'externalIssues' => $selectedTicket
-                ? $this->externalIssues->refreshForTicket($selectedTicket->id)
-                : [],
-            'issueProviders' => $this->externalIssues->configuredIssueProviders(),
-            ...$itsm,
-        ]);
+            ...$reference,
+        ], $itsm));
     }
 
     public function pollTicket(Request $request, int $ticket): JsonResponse

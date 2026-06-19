@@ -45,17 +45,31 @@ class MajorIncidentRepository
 
     public function activeCount(): int
     {
-        return MajorIncidentRecord::query()
-            ->where('status', MajorIncidentRecord::STATUS_ACTIVE)
-            ->whereHas('ticket', fn ($query) => $query->where('type', ServiceCatalogItem::TYPE_INCIDENT))
-            ->count();
+        return $this->dashboardCounts()['active'];
     }
 
     public function pendingReviewCount(): int
     {
-        return MajorIncidentRecord::query()
-            ->where('status', MajorIncidentRecord::STATUS_RESOLVED)
-            ->count();
+        return $this->dashboardCounts()['pending_review'];
+    }
+
+    public function dashboardCounts(): array
+    {
+        $row = MajorIncidentRecord::query()
+            ->leftJoin('tickets', 'tickets.id', '=', 'major_incident_records.ticket_id')
+            ->selectRaw('SUM(CASE WHEN major_incident_records.status = ? AND tickets.type = ? THEN 1 ELSE 0 END) as active', [
+                MajorIncidentRecord::STATUS_ACTIVE,
+                ServiceCatalogItem::TYPE_INCIDENT,
+            ])
+            ->selectRaw('SUM(CASE WHEN major_incident_records.status = ? THEN 1 ELSE 0 END) as pending_review', [
+                MajorIncidentRecord::STATUS_RESOLVED,
+            ])
+            ->first();
+
+        return [
+            'active' => (int) ($row->active ?? 0),
+            'pending_review' => (int) ($row->pending_review ?? 0),
+        ];
     }
 
     public function listIndex(int $limit = 100): Collection

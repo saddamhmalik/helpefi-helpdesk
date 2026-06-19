@@ -3,6 +3,7 @@
 namespace Tests\Unit;
 
 use App\Domains\Tenancy\Bootstrappers\TenantDatabaseTenancyBootstrapper;
+use App\Domains\Tenancy\Services\ExternalTenantDatabaseService;
 use App\Models\Tenant;
 use ReflectionMethod;
 use Tests\TestCase;
@@ -19,6 +20,7 @@ class TenantDatabaseTenancyBootstrapperTest extends TestCase
 
         $bootstrapper = new TenantDatabaseTenancyBootstrapper(
             $this->createMock(\Stancl\Tenancy\Database\DatabaseManager::class),
+            app(ExternalTenantDatabaseService::class),
         );
 
         $this->assertTrue($method->invoke($bootstrapper, $tenant));
@@ -39,8 +41,28 @@ class TenantDatabaseTenancyBootstrapperTest extends TestCase
 
         $bootstrapper = new TenantDatabaseTenancyBootstrapper(
             $this->createMock(\Stancl\Tenancy\Database\DatabaseManager::class),
+            app(ExternalTenantDatabaseService::class),
         );
 
         $this->assertTrue($method->invoke($bootstrapper, $tenant));
+    }
+
+    public function test_external_connection_config_enables_compression_by_default(): void
+    {
+        config(['tenant_infrastructure.compress_connections' => true]);
+
+        $connection = app(ExternalTenantDatabaseService::class)->enhanceConnectionConfig([
+            'driver' => 'mysql',
+            'host' => 'db.example.com',
+            'database' => 'helpdesk',
+            'username' => 'app',
+            'password' => 'secret',
+        ]);
+
+        if (defined('PDO::MYSQL_ATTR_COMPRESS')) {
+            $this->assertSame(true, $connection['options'][constant('PDO::MYSQL_ATTR_COMPRESS')]);
+        } else {
+            $this->assertArrayNotHasKey('compress', $connection);
+        }
     }
 }

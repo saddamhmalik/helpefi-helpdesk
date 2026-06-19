@@ -88,8 +88,9 @@ class TicketService
 
         if (! $ticket->slaTimer) {
             $this->sla->applyToTicket($ticket);
-
-            return $this->tickets->find($id);
+            $ticket->load([
+                'slaTimer.policy.businessHours',
+            ]);
         }
 
         return $ticket;

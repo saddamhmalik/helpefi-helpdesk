@@ -2,6 +2,7 @@
 
 namespace App\Domains\Tenancy\Bootstrappers;
 
+use App\Domains\Tenancy\Services\ExternalTenantDatabaseService;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Stancl\Tenancy\Contracts\TenancyBootstrapper;
@@ -14,12 +15,18 @@ class TenantDatabaseTenancyBootstrapper implements TenancyBootstrapper
 {
     public function __construct(
         private DatabaseManager $database,
+        private ExternalTenantDatabaseService $externalDatabase,
     ) {
     }
 
     public function bootstrap(Tenant $tenant): void
     {
         /** @var TenantWithDatabase $tenant */
+        if ($this->usesExternalDatabaseHost($tenant)) {
+            $this->connectExternalTenant($tenant);
+
+            return;
+        }
 
         if (app()->environment('local')) {
             $this->assertDatabaseExists($tenant);
@@ -33,15 +40,23 @@ class TenantDatabaseTenancyBootstrapper implements TenancyBootstrapper
         $this->database->reconnectToCentral();
     }
 
+    private function connectExternalTenant(TenantWithDatabase $tenant): void
+    {
+        $this->database->purgeTenantConnection();
+
+        $connection = $this->externalDatabase->enhanceConnectionConfig(
+            $tenant->database()->connection()
+        );
+
+        Config::set('database.connections.tenant', $connection);
+        $this->database->setDefaultConnection('tenant');
+        DB::purge('tenant');
+        DB::connection('tenant');
+    }
+
     private function assertDatabaseExists(TenantWithDatabase $tenant): void
     {
         $database = $tenant->database()->getName();
-
-        if ($this->usesExternalDatabaseHost($tenant)) {
-            $this->assertExternalDatabaseExists($tenant, $database);
-
-            return;
-        }
 
         if (! $tenant->database()->manager()->databaseExists($database)) {
             throw new TenantDatabaseDoesNotExistException($database);
@@ -63,28 +78,5 @@ class TenantDatabaseTenancyBootstrapper implements TenancyBootstrapper
         $centralHost = config('database.connections.'.config('tenancy.database.central_connection').'.host');
 
         return (string) $tenantHost !== (string) $centralHost;
-    }
-
-    private function assertExternalDatabaseExists(TenantWithDatabase $tenant, string $database): void
-    {
-        $connectionName = 'tenant_bootstrap_check';
-
-        Config::set("database.connections.{$connectionName}", $tenant->database()->connection());
-
-        try {
-            DB::purge($connectionName);
-
-            $exists = DB::connection($connectionName)->select(
-                'SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = ?',
-                [$database],
-            );
-
-            if ($exists === []) {
-                throw new TenantDatabaseDoesNotExistException($database);
-            }
-        } finally {
-            DB::purge($connectionName);
-            Config::offsetUnset("database.connections.{$connectionName}");
-        }
     }
 }

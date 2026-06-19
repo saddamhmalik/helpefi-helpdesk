@@ -11,7 +11,10 @@ class RealtimeMessagePayload
 {
     public static function fromMessage(TicketMessage $message): array
     {
-        $message->loadMissing(['user:id,name,email,avatar_type,avatar_path', 'contact:id,name,email']);
+        $message->loadMissing([
+            'user:'.implode(',', AvatarSupport::USER_COLUMNS),
+            'contact:id,name,email',
+        ]);
 
         return [
             'id' => $message->id,

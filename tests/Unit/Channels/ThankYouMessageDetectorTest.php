@@ -35,6 +35,9 @@ class ThankYouMessageDetectorTest extends TestCase
             ['That worked, thanks'],
             ['Perfect'],
             ['All good'],
+            ["Thank you so much for your help.\n\nWe really appreciate it."],
+            ["Thank you for resolving this.\n\nBest regards,\nJane Doe"],
+            ["Thanks!\n\nSent from my iPhone"],
         ];
     }
 
@@ -48,9 +51,11 @@ class ThankYouMessageDetectorTest extends TestCase
     {
         return [
             ['Thanks, but the issue is still happening. Can you help?'],
+            ['Thanks?'],
             ['I still cannot log in. Please fix this.'],
             ['Thank you for the update. When will this be resolved?'],
-            [str_repeat('a', 300)],
+            ['Thank you for your help. The printer is still not working.'],
+            [str_repeat('a', 600)],
         ];
     }
 }

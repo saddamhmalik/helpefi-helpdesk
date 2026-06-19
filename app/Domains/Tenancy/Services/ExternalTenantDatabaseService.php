@@ -151,6 +151,18 @@ class ExternalTenantDatabaseService
             'password' => $config['password'] ?? '',
         ]);
 
+        if (($config['ssl'] ?? false) === true) {
+            $connection['options'] = $this->mergePdoOptions($connection['options'] ?? [], [
+                \PDO::MYSQL_ATTR_SSL_CA => $config['ssl_ca'] ?? '',
+                \PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT => false,
+            ]);
+        }
+
+        return $this->enhanceConnectionConfig($connection);
+    }
+
+    public function enhanceConnectionConfig(array $connection): array
+    {
         $timeout = max(1, (int) config('tenant_infrastructure.connection_timeout_seconds', 10));
 
         $options = [
@@ -161,14 +173,15 @@ class ExternalTenantDatabaseService
             $options[constant('PDO::MYSQL_ATTR_CONNECT_TIMEOUT')] = $timeout;
         }
 
-        $connection['options'] = $this->mergePdoOptions($connection['options'] ?? [], $options);
-
-        if (($config['ssl'] ?? false) === true) {
-            $connection['options'] = $this->mergePdoOptions($connection['options'] ?? [], [
-                \PDO::MYSQL_ATTR_SSL_CA => $config['ssl_ca'] ?? '',
-                \PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT => false,
-            ]);
+        if (config('tenant_infrastructure.persistent_connections')) {
+            $options[\PDO::ATTR_PERSISTENT] = true;
         }
+
+        if (config('tenant_infrastructure.compress_connections') && defined('PDO::MYSQL_ATTR_COMPRESS')) {
+            $options[constant('PDO::MYSQL_ATTR_COMPRESS')] = true;
+        }
+
+        $connection['options'] = $this->mergePdoOptions($connection['options'] ?? [], $options);
 
         return $connection;
     }

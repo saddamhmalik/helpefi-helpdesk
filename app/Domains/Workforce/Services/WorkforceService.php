@@ -3,6 +3,7 @@
 namespace App\Domains\Workforce\Services;
 
 use App\Domains\Security\Support\AuditRecorder;
+use App\Domains\Tickets\Support\TicketFormReferenceCache;
 use App\Domains\Workforce\Models\Team;
 use App\Domains\Workforce\Repositories\DepartmentRepository;
 use App\Domains\Workforce\Repositories\TeamRepository;
@@ -65,6 +66,8 @@ class WorkforceService
             'name' => $department->name,
         ]);
 
+        TicketFormReferenceCache::forget();
+
         return $this->catalog();
     }
 
@@ -79,6 +82,8 @@ class WorkforceService
             'name' => $department->name,
         ]);
 
+        TicketFormReferenceCache::forget();
+
         return $this->catalog();
     }
 
@@ -90,6 +95,8 @@ class WorkforceService
         $this->audit->record('workforce.department_deleted', null, [
             'name' => $department->name,
         ]);
+
+        TicketFormReferenceCache::forget();
 
         return $this->catalog();
     }
@@ -107,6 +114,8 @@ class WorkforceService
             'department_id' => $team->department_id,
         ]);
 
+        TicketFormReferenceCache::forget();
+
         return $this->catalog();
     }
 
@@ -123,6 +132,8 @@ class WorkforceService
             'name' => $team->name,
         ]);
 
+        TicketFormReferenceCache::forget();
+
         return $this->catalog();
     }
 
@@ -134,6 +145,8 @@ class WorkforceService
         $this->audit->record('workforce.team_deleted', null, [
             'name' => $team->name,
         ]);
+
+        TicketFormReferenceCache::forget();
 
         return $this->catalog();
     }

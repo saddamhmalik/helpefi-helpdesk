@@ -5,7 +5,7 @@ namespace App\Domains\Sla\Controllers;
 use App\Domains\Sla\Services\BusinessHoursService;
 use App\Domains\Sla\Services\SlaEscalationService;
 use App\Domains\Sla\Services\SlaService;
-use App\Domains\Workforce\Services\WorkforceService;
+use App\Domains\Tickets\Services\TicketFormReferenceService;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -18,23 +18,22 @@ class SlaPolicyController extends Controller
         private SlaService $slaService,
         private SlaEscalationService $escalations,
         private BusinessHoursService $businessHours,
-        private WorkforceService $workforce,
+        private TicketFormReferenceService $ticketReferenceData,
     ) {
     }
 
     public function index(): Response
     {
-        return Inertia::render('Settings/Sla', [
+        return Inertia::render('Settings/Sla', array_merge([
             'policies' => $this->slaService->policies(),
             'breachedCount' => $this->slaService->breachedCount(),
             'escalationRules' => $this->escalations->rulesForPolicies(),
             'escalationMeta' => $this->escalations->meta(),
             'slaMeta' => $this->slaService->meta(),
-            'teams' => $this->workforce->teamOptions(),
             'businessHours' => $this->businessHours->optionalSnapshot(),
             'timezoneOptions' => $this->businessHours->timezoneOptions(),
             'weekdays' => $this->businessHours->weekdayMeta(),
-        ]);
+        ], $this->ticketReferenceData->only(['teams'])));
     }
 
     public function updateBusinessHours(Request $request, int $businessHours): RedirectResponse

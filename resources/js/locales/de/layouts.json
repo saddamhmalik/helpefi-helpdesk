@@ -67,7 +67,10 @@
             "why_us": "Warum wir"
         },
         "app": {
-            "helpdesk": "helpefi"
+            "helpdesk": "helpefi",
+            "footer_copyright": "© {year}",
+            "live": "Live",
+            "reconnecting": "Wiederverbindung"
         }
     }
 }

@@ -35,21 +35,21 @@ class ProblemRecordService
         return $this->records->findOrCreateForTicket($ticket->id);
     }
 
-    public function snapshotForTicket(int $ticketId): ?array
+    public function snapshotForTicket(Ticket|int $ticketOrId): ?array
     {
         if (! $this->billing->canUseFeature('service_desk')) {
             return null;
         }
 
-        $ticket = $this->tickets->find($ticketId);
+        $ticket = $this->resolveTicket($ticketOrId);
 
         if ($ticket->type !== ServiceCatalogItem::TYPE_PROBLEM) {
             return null;
         }
 
-        $record = $this->records->findOrCreateForTicket($ticketId);
+        $record = $this->records->findForTicket($ticket->id);
 
-        return $this->records->snapshot($record, $ticketId);
+        return $record ? $this->records->snapshot($record, $ticket->id) : null;
     }
 
     public function update(int $ticketId, array $data): array
@@ -108,16 +108,15 @@ class ProblemRecordService
     public function unlinkIncident(int $problemTicketId, int $incidentTicketId): array
     {
         $this->billing->assertFeature('service_desk');
-        $this->assertProblemTicket($problemTicketId);
-
-        $problemTicket = $this->tickets->find($problemTicketId);
-        $incident = $this->tickets->find($incidentTicketId);
+        $problemTicket = $this->assertProblemTicket($problemTicketId);
 
         if (! $this->records->deleteLink($problemTicketId, $incidentTicketId)) {
             throw ValidationException::withMessages([
                 'incident_ticket_id' => 'Incident link not found.',
             ]);
         }
+
+        $incident = $this->tickets->find($incidentTicketId);
 
         $this->audit->record('service_desk.problem_incident_unlinked', $problemTicket, [
             'incident_ticket_id' => $incidentTicketId,
@@ -132,12 +131,23 @@ class ProblemRecordService
         return $this->snapshotForTicket($problemTicketId);
     }
 
-    public function incidentCandidates(int $problemTicketId): Collection
+    public function incidentCandidates(Ticket|int $ticketOrId): Collection
     {
         $this->billing->assertFeature('service_desk');
-        $this->assertProblemTicket($problemTicketId);
+        $ticket = $this->resolveTicket($ticketOrId);
 
-        return $this->records->incidentCandidates($problemTicketId);
+        if ($ticket->type !== ServiceCatalogItem::TYPE_PROBLEM) {
+            throw ValidationException::withMessages([
+                'ticket' => 'Problem details are only available on problem tickets.',
+            ]);
+        }
+
+        return $this->records->incidentCandidates($ticket->id);
+    }
+
+    private function resolveTicket(Ticket|int $ticketOrId): Ticket
+    {
+        return $ticketOrId instanceof Ticket ? $ticketOrId : $this->tickets->find($ticketOrId);
     }
 
     private function assertProblemTicket(int $ticketId): Ticket

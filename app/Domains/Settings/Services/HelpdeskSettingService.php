@@ -2,8 +2,11 @@
 
 namespace App\Domains\Settings\Services;
 
+use App\Domains\Channels\Support\EmailSettingsPageCache;
+use App\Domains\Contacts\Support\ContactFormReferenceCache;
 use App\Domains\Security\Support\AuditRecorder;
 use App\Domains\Settings\Repositories\HelpdeskSettingRepository;
+use App\Domains\Tickets\Support\TicketFormReferenceCache;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use InvalidArgumentException;
@@ -85,6 +88,9 @@ class HelpdeskSettingService
             'email_blocklist_count' => count($setting->email_blocklist ?? []),
             'sync_ticket_status_from_external_issues' => (bool) ($setting->sync_ticket_status_from_external_issues ?? false),
         ]);
+
+        TicketFormReferenceCache::forget();
+        ContactFormReferenceCache::forget();
 
         return $this->snapshot();
     }
@@ -394,6 +400,8 @@ class HelpdeskSettingService
             'email_allow_agent_initiated' => $validated['email_allow_agent_initiated'],
             'email_use_agent_name_in_from' => $validated['email_use_agent_name_in_from'],
         ]);
+
+        EmailSettingsPageCache::forget();
 
         return $this->emailAdvancedSnapshot();
     }

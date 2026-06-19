@@ -50,13 +50,15 @@ class CsatService
     public function promptForTicket(Ticket $ticket): array
     {
         $ticket->loadMissing(['status', 'csatResponse']);
-
+        $setting = $this->settings->current();
         $existing = $ticket->csatResponse;
 
         return [
-            'enabled' => $this->isEnabled(),
-            'eligible' => $this->isEligible($ticket),
-            'comment_required' => $this->settings->current()->comment_required,
+            'enabled' => $setting->enabled,
+            'eligible' => $setting->enabled
+                && $ticket->status?->is_closed
+                && ! $ticket->merged_into_ticket_id,
+            'comment_required' => $setting->comment_required,
             'submitted' => $existing ? [
                 'rating' => $existing->rating,
                 'comment' => $existing->comment,

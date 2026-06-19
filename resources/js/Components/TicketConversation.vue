@@ -201,6 +201,13 @@ const relativeTime = (value) => formatRelativeTime(value);
                         alignment(message) === 'center' ? 'items-center text-center' : '',
                     ]"
                 >
+                    <AppAvatar
+                        v-if="alignment(message) === 'center'"
+                        v-bind="messageAvatar(message)"
+                        size="md"
+                        class="mb-1 shrink-0"
+                    />
+
                     <div
                         class="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-slate-500 dark:text-slate-400"
                         :class="[

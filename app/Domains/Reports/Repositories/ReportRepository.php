@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection as SupportCollection;
+use Illuminate\Support\Facades\DB;
 
 class ReportRepository
 {
@@ -116,98 +117,200 @@ class ReportRepository
 
     public function openTicketCount(): int
     {
-        return Ticket::query()
-            ->whereNull('merged_into_ticket_id')
-            ->whereHas('status', fn ($q) => $q->where('is_closed', false))
-            ->count();
+        return (int) ($this->dashboardTicketCounts(now()->startOfWeek())['open_tickets'] ?? 0);
     }
 
     public function ticketsCreatedSince(Carbon $since): int
     {
-        return Ticket::query()
-            ->whereNull('merged_into_ticket_id')
-            ->where('created_at', '>=', $since)
-            ->count();
+        return (int) ($this->dashboardTicketCounts($since)['created_since'] ?? 0);
     }
 
     public function ticketsResolvedSince(Carbon $since): int
     {
-        return Ticket::query()
-            ->whereNull('merged_into_ticket_id')
-            ->whereNotNull('closed_at')
-            ->where('closed_at', '>=', $since)
-            ->count();
+        return (int) ($this->dashboardTicketCounts($since)['resolved_since'] ?? 0);
+    }
+
+    public function dashboardSnapshot(Carbon $weekStart, int $trendDays = 7): array
+    {
+        $rollup = $this->dashboardTicketRollup($weekStart, $trendDays);
+        $distribution = $this->ticketDistributionCounts();
+
+        return array_merge($rollup, [
+            'ticket_statuses' => $this->hydrateStatusCounts($distribution['status']),
+            'ticket_priorities' => $this->hydratePriorityCounts($distribution['priority']),
+            'top_agents' => $this->topAgentsByOpenTickets(),
+            'sla_breaches' => $this->activeSlaBreachCount(),
+        ]);
+    }
+
+    public function dashboardMetaCounts(): array
+    {
+        $row = DB::selectOne('
+            SELECT
+                (SELECT COUNT(*) FROM contacts) AS contacts,
+                (SELECT COUNT(*) FROM knowledge_articles WHERE is_published = 1) AS published_articles
+        ');
+
+        return [
+            'contacts' => (int) ($row->contacts ?? 0),
+            'published_articles' => (int) ($row->published_articles ?? 0),
+        ];
+    }
+
+    public function dashboardTicketCounts(Carbon $since): array
+    {
+        $rollup = $this->dashboardTicketRollup($since, 0);
+
+        return [
+            'open_tickets' => $rollup['open_tickets'],
+            'created_since' => $rollup['created_since'],
+            'resolved_since' => $rollup['resolved_since'],
+        ];
+    }
+
+    private function dashboardTicketRollup(Carbon $weekStart, int $trendDays = 7): array
+    {
+        $selects = [
+            'SUM(CASE WHEN ticket_statuses.is_closed = 0 THEN 1 ELSE 0 END) as open_tickets',
+            'SUM(CASE WHEN tickets.created_at >= ? THEN 1 ELSE 0 END) as created_since',
+            'SUM(CASE WHEN tickets.closed_at IS NOT NULL AND tickets.closed_at >= ? THEN 1 ELSE 0 END) as resolved_since',
+        ];
+        $bindings = [$weekStart, $weekStart];
+
+        for ($i = $trendDays - 1; $i >= 0; $i--) {
+            $selects[] = 'SUM(CASE WHEN DATE(tickets.created_at) = ? THEN 1 ELSE 0 END) as trend_'.$i;
+            $bindings[] = now()->subDays($i)->startOfDay()->toDateString();
+        }
+
+        $row = Ticket::query()
+            ->whereNull('tickets.merged_into_ticket_id')
+            ->leftJoin('ticket_statuses', 'ticket_statuses.id', '=', 'tickets.ticket_status_id')
+            ->selectRaw(implode(', ', $selects), $bindings)
+            ->first();
+
+        $volumeTrend = [];
+
+        if ($trendDays > 0) {
+            for ($i = $trendDays - 1; $i >= 0; $i--) {
+                $date = now()->subDays($i)->startOfDay();
+                $volumeTrend[] = [
+                    'date' => $date->toDateString(),
+                    'label' => $date->format('D'),
+                    'count' => (int) ($row->{'trend_'.$i} ?? 0),
+                ];
+            }
+        }
+
+        return [
+            'open_tickets' => (int) ($row->open_tickets ?? 0),
+            'created_since' => (int) ($row->created_since ?? 0),
+            'resolved_since' => (int) ($row->resolved_since ?? 0),
+            'volume_trend' => $volumeTrend,
+        ];
+    }
+
+    private function ticketDistributionCounts(): array
+    {
+        $rows = DB::select("
+            SELECT 'status' AS kind, ticket_status_id AS ref_id, COUNT(*) AS aggregate
+            FROM tickets
+            WHERE merged_into_ticket_id IS NULL
+            GROUP BY ticket_status_id
+            UNION ALL
+            SELECT 'priority', ticket_priority_id, COUNT(*)
+            FROM tickets
+            WHERE merged_into_ticket_id IS NULL AND closed_at IS NULL
+            GROUP BY ticket_priority_id
+        ");
+
+        $status = [];
+        $priority = [];
+
+        foreach ($rows as $row) {
+            if ($row->ref_id === null) {
+                continue;
+            }
+
+            if ($row->kind === 'status') {
+                $status[(int) $row->ref_id] = (int) $row->aggregate;
+            } else {
+                $priority[(int) $row->ref_id] = (int) $row->aggregate;
+            }
+        }
+
+        return [
+            'status' => $status,
+            'priority' => $priority,
+        ];
+    }
+
+    private function hydrateStatusCounts(array $counts): Collection
+    {
+        return TicketStatus::query()
+            ->orderBy('sort_order')
+            ->get(['id', 'name', 'slug', 'color'])
+            ->each(fn (TicketStatus $status) => $status->setAttribute(
+                'tickets_count',
+                (int) ($counts[$status->id] ?? 0),
+            ));
+    }
+
+    private function hydratePriorityCounts(array $counts): Collection
+    {
+        return TicketPriority::query()
+            ->orderBy('sort_order')
+            ->get(['id', 'name', 'slug'])
+            ->each(fn (TicketPriority $priority) => $priority->setAttribute(
+                'tickets_count',
+                (int) ($counts[$priority->id] ?? 0),
+            ));
     }
 
     public function activeSlaBreachCount(): int
     {
         return TicketSlaTimer::query()
-            ->where(function ($q) {
-                $q->where('first_response_breached', true)
-                    ->orWhere('resolution_breached', true);
-            })
-            ->whereHas('ticket', function ($q) {
-                $q->whereNull('merged_into_ticket_id')
-                    ->whereNull('closed_at');
+            ->join('tickets', 'tickets.id', '=', 'ticket_sla_timers.ticket_id')
+            ->whereNull('tickets.merged_into_ticket_id')
+            ->whereNull('tickets.closed_at')
+            ->where(function ($query) {
+                $query->where('ticket_sla_timers.first_response_breached', true)
+                    ->orWhere('ticket_sla_timers.resolution_breached', true);
             })
             ->count();
     }
 
     public function countByStatus(): Collection
     {
-        return TicketStatus::query()
-            ->withCount(['tickets' => fn ($q) => $q->whereNull('merged_into_ticket_id')])
-            ->orderBy('sort_order')
-            ->get(['id', 'name', 'slug', 'color']);
+        return $this->hydrateStatusCounts($this->ticketDistributionCounts()['status']);
     }
 
     public function countByPriority(): Collection
     {
-        return TicketPriority::query()
-            ->withCount(['tickets' => fn ($q) => $q->whereNull('merged_into_ticket_id')->whereNull('closed_at')])
-            ->orderBy('sort_order')
-            ->get(['id', 'name', 'slug']);
+        return $this->hydratePriorityCounts($this->ticketDistributionCounts()['priority']);
     }
 
     public function topAgentsByOpenTickets(int $limit = 5): SupportCollection
     {
         return Ticket::query()
-            ->whereNull('merged_into_ticket_id')
-            ->whereNull('closed_at')
-            ->whereNotNull('assigned_to')
-            ->selectRaw('assigned_to, COUNT(*) as open_count')
-            ->groupBy('assigned_to')
+            ->whereNull('tickets.merged_into_ticket_id')
+            ->whereNull('tickets.closed_at')
+            ->whereNotNull('tickets.assigned_to')
+            ->join('users', 'users.id', '=', 'tickets.assigned_to')
+            ->selectRaw('users.id as agent_id, users.name as agent_name, COUNT(*) as open_count')
+            ->groupBy('users.id', 'users.name')
             ->orderByDesc('open_count')
             ->limit($limit)
             ->get()
-            ->map(function ($row) {
-                $agent = User::query()->find($row->assigned_to, ['id', 'name']);
-
-                return [
-                    'agent_id' => $row->assigned_to,
-                    'agent_name' => $agent?->name ?? 'Unknown',
-                    'open_count' => (int) $row->open_count,
-                ];
-            });
+            ->map(fn ($row) => [
+                'agent_id' => $row->agent_id,
+                'agent_name' => $row->agent_name,
+                'open_count' => (int) $row->open_count,
+            ]);
     }
 
     public function ticketVolumeTrend(int $days = 7): array
     {
-        $trend = [];
-
-        for ($i = $days - 1; $i >= 0; $i--) {
-            $date = now()->subDays($i)->startOfDay();
-            $trend[] = [
-                'date' => $date->toDateString(),
-                'label' => $date->format('D'),
-                'count' => Ticket::query()
-                    ->whereNull('merged_into_ticket_id')
-                    ->whereDate('created_at', $date)
-                    ->count(),
-            ];
-        }
-
-        return $trend;
+        return $this->dashboardTicketRollup(now()->startOfWeek(), $days)['volume_trend'];
     }
 
     private function ticketQuery(array $filters): Builder

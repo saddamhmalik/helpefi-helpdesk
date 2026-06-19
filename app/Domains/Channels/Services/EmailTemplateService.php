@@ -139,7 +139,7 @@ class EmailTemplateService
             EmailTemplate::SLUG_CUSTOMER_REPLY => 'customer_reply',
             EmailTemplate::SLUG_SLA_BREACH => 'sla_breach',
             EmailTemplate::SLUG_APPROVAL_REQUESTED => 'approval_pending',
-            EmailTemplate::SLUG_APPROVAL_DECIDED => 'approval_pending',
+            EmailTemplate::SLUG_APPROVAL_DECIDED => 'approval_decided',
         ];
 
         return collect($this->list())

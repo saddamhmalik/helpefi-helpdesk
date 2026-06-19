@@ -5,6 +5,8 @@ namespace App\Domains\Performance\Repositories;
 use App\Domains\Performance\Models\AgentPerformanceEvent;
 use App\Models\User;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\DB;
 
 class PerformanceRepository
 {
@@ -25,6 +27,23 @@ class PerformanceRepository
         ]);
     }
 
+    public function incrementScore(int $userId, float $delta): void
+    {
+        User::query()->whereKey($userId)->update([
+            'performance_score' => DB::raw('GREATEST(0, LEAST(100, ROUND(performance_score + '.((float) $delta).', 2)))'),
+        ]);
+    }
+
+    public function recentForUser(int $userId, int $limit = 10): Collection
+    {
+        return AgentPerformanceEvent::query()
+            ->with('ticket:id,number,subject')
+            ->where('user_id', $userId)
+            ->orderByDesc('created_at')
+            ->limit($limit)
+            ->get();
+    }
+
     public function paginateForUser(int $userId, int $perPage = 25): LengthAwarePaginator
     {
         return AgentPerformanceEvent::query()
@@ -38,16 +57,20 @@ class PerformanceRepository
     {
         $since = now()->subDays($days);
 
-        $events = AgentPerformanceEvent::query()
+        $row = AgentPerformanceEvent::query()
             ->where('user_id', $userId)
             ->where('created_at', '>=', $since)
-            ->get(['event_type', 'points']);
+            ->selectRaw('COALESCE(SUM(points), 0) as total_points')
+            ->selectRaw('SUM(CASE WHEN points > 0 THEN 1 ELSE 0 END) as positive_events')
+            ->selectRaw('SUM(CASE WHEN points < 0 THEN 1 ELSE 0 END) as negative_events')
+            ->selectRaw("SUM(CASE WHEN event_type LIKE '%breach%' THEN 1 ELSE 0 END) as violations")
+            ->first();
 
         return [
-            'total_points' => (int) $events->sum('points'),
-            'positive_events' => $events->where('points', '>', 0)->count(),
-            'negative_events' => $events->where('points', '<', 0)->count(),
-            'violations' => $events->filter(fn ($event) => str_contains($event->event_type, 'breach'))->count(),
+            'total_points' => (int) ($row->total_points ?? 0),
+            'positive_events' => (int) ($row->positive_events ?? 0),
+            'negative_events' => (int) ($row->negative_events ?? 0),
+            'violations' => (int) ($row->violations ?? 0),
         ];
     }
 }
