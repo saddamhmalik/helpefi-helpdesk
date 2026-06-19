@@ -2,8 +2,8 @@
 
 namespace App\Support;
 
+use App\Domains\Tenancy\Services\TenantStorageResolver;
 use App\Models\User;
-use Illuminate\Support\Facades\Storage;
 
 class AvatarSupport
 {
@@ -11,7 +11,7 @@ class AvatarSupport
 
     public const DEFAULT = 'initials';
 
-    public const USER_COLUMNS = ['id', 'name', 'email', 'avatar_type', 'avatar_path'];
+    public const USER_COLUMNS = ['id', 'name', 'email', 'avatar_type', 'avatar_path', 'avatar_disk'];
 
     public static function resolveType(?string $type): string
     {
@@ -36,7 +36,7 @@ class AvatarSupport
         }
 
         if ($type === 'upload' && filled($user->avatar_path)) {
-            return Storage::disk('public')->url($user->avatar_path);
+            return app(TenantStorageResolver::class)->url($user->avatar_path, $user->avatar_disk);
         }
 
         return null;

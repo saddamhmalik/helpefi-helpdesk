@@ -3,7 +3,6 @@ import { Link, router, useForm, usePage } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 import SettingsPage from '../../Components/SettingsPage.vue';
 import PlanLimitBanner from '../../Components/PlanLimitBanner.vue';
-import SettingsSectionNav from '../../Components/SettingsSectionNav.vue';
 import { usePlanLimit } from '../../composables/usePlanFeature.js';
 import AppModal from '../../Components/AppModal.vue';
 import AppConfirmDialog from '../../Components/AppConfirmDialog.vue';
@@ -36,10 +35,16 @@ const { activeSection } = useSettingsSection({
     sections: ['members', 'invitations'],
 });
 
-const sectionTabs = computed(() => [
-    { id: 'members', label: t('settings.agents') },
-    { id: 'invitations', label: t('settings.invitations') },
-]);
+const pageMeta = computed(() => {
+    const key = activeSection.value === 'invitations' ? 'invitations' : 'agents';
+
+    return {
+        title: t(`settings.${key}`),
+        description: t(`settings.descriptions.${key}`),
+    };
+});
+
+const infoSection = computed(() => (activeSection.value === 'invitations' ? 'invitations' : 'agents'));
 
 const inviteForm = useForm({
     email: '',
@@ -101,7 +106,7 @@ const removeMember = (member) => {
 </script>
 
 <template>
-    <SettingsPage :title="$t('settings_members.team_members')" :description="$t('settings_members.invite_members_description')">
+    <SettingsPage :title="pageMeta.title" :description="pageMeta.description" :info-section="infoSection">
         <template #actions>
             <a href="/settings/members/export" class="rounded-lg border agent-border agent-panel px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 transition agent-hover-surface">{{ $t('settings_members.export_csv') }}</a>
             <Link href="/settings/profile" class="text-sm text-blue-600 transition hover:text-blue-700 dark:hover:text-blue-300 dark:text-blue-300">{{ $t('settings.profile') }}</Link>
@@ -114,13 +119,6 @@ const removeMember = (member) => {
         </template>
 
         <PlanLimitBanner limit-key="agents" />
-
-        <SettingsSectionNav
-            path="/settings/members"
-            default-section="members"
-            :sections="sectionTabs"
-            :active-section="activeSection"
-        />
 
         <div
             v-if="page.props.flash?.invite_url"

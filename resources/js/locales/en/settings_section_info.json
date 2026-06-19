@@ -1,0 +1,500 @@
+{
+    "settings": {
+        "section_info": {
+            "overview": {
+                "title": "Settings overview",
+                "body": "Find every workspace setting from one place. Use search to jump to billing, channels, team, tickets, or security.",
+                "tips": [
+                    "Only admins can change workspace-wide settings.",
+                    "Your role determines which pages you can open."
+                ]
+            },
+            "custom_domain": {
+                "title": "Custom domain",
+                "body": "Serve your customer portal and help center on your own domain instead of the default workspace subdomain.",
+                "tips": [
+                    "Add the DNS records shown here before verifying the domain.",
+                    "SSL is provisioned automatically once DNS is correct.",
+                    "Each brand can use the same custom domain with separate portal paths."
+                ]
+            },
+            "data_residency": {
+                "title": "Data residency",
+                "body": "Move workspace data to your own MySQL database and file storage. helpefi migrates existing tickets, users, attachments, and avatars when you connect external infrastructure.",
+                "tips": [
+                    "Purchase the Bring Your Own Database or Storage add-on from billing first.",
+                    "Allow helpefi egress IPs on your database firewall before verifying.",
+                    "Confirm the migration checkbox when switching from managed to external."
+                ]
+            },
+            "brands": {
+                "title": "About brands",
+                "body": "Brands let you run separate customer portals, mailboxes, and knowledge bases from one workspace. Use them for different companies, product lines, or white-label clients.",
+                "tips": [
+                    "Each brand can have its own portal URL, ticket prefix, colors, and default priority.",
+                    "Assign email inboxes and knowledge collections per brand to keep content isolated.",
+                    "Agents work from one workspace — routing and inboxes determine which brand receives each ticket."
+                ]
+            },
+            "usage_billing": {
+                "title": "Usage & billing",
+                "body": "See your current plan, seat usage, ticket volume this month, and when your subscription renews.",
+                "tips": [
+                    "Agent seats count toward your plan limit; customer accounts do not.",
+                    "Trial workspaces show remaining trial time here.",
+                    "Open Payment history for past charges and receipts."
+                ]
+            },
+            "change_plan": {
+                "title": "Change plan",
+                "body": "Upgrade or switch your workspace subscription. Plan limits for agents, tickets, and features update when the new plan is active.",
+                "tips": [
+                    "You cannot downgrade to a paid plan while the free trial is still running.",
+                    "Checkout is completed through Razorpay when billing is enabled.",
+                    "Compare Plan features to see what each tier includes."
+                ]
+            },
+            "addons": {
+                "title": "Add-ons",
+                "body": "Enable optional capabilities such as Service Desk, AI Copilot, or Integrations on top of your base plan.",
+                "tips": [
+                    "Add-ons require an active paid subscription.",
+                    "Some features are already included on Enterprise — check before purchasing.",
+                    "Cancelled add-ons stay active until the end of the billing period."
+                ]
+            },
+            "payment_history": {
+                "title": "Payment history",
+                "body": "View charges and receipts for this workspace, including plan subscriptions and add-on payments.",
+                "tips": [
+                    "Payments appear after checkout completes or when a subscription renews.",
+                    "Download or share receipts using the invoice details when available.",
+                    "Contact your workspace admin if a payment is missing."
+                ]
+            },
+            "plan_features": {
+                "title": "Plan features",
+                "body": "See which capabilities your workspace has today based on the current plan and active add-ons.",
+                "tips": [
+                    "Locked features show which plan or add-on unlocks them.",
+                    "Usage limits apply per billing period for tickets and seats.",
+                    "Upgrade from Change plan if you need more capacity."
+                ]
+            },
+            "platform_feedback": {
+                "title": "Feedback",
+                "body": "Share suggestions, report problems, or request improvements for your workspace. Submissions go to the product team and are not visible to customers.",
+                "tips": [
+                    "Include steps to reproduce when reporting a bug.",
+                    "Feature requests help us prioritize what to build next.",
+                    "You will not receive a direct reply for every submission."
+                ]
+            },
+            "profile": {
+                "title": "Your profile",
+                "body": "Update how you appear in the workspace: name, email, avatar, language, timezone, and light or dark appearance.",
+                "tips": [
+                    "Timezone affects how dates and times are shown to you.",
+                    "Language changes apply to your account only.",
+                    "Avatar choices apply across tickets, the sidebar, and team views."
+                ]
+            },
+            "password": {
+                "title": "Password",
+                "body": "Change the password you use to sign in to this workspace.",
+                "tips": [
+                    "Use a strong, unique password.",
+                    "If SSO is required, password login may be disabled by your admin.",
+                    "Enable two-factor authentication for extra protection."
+                ]
+            },
+            "two_factor": {
+                "title": "Two-factor authentication",
+                "body": "Protect your account with a code from an authenticator app in addition to your password.",
+                "tips": [
+                    "Save recovery codes in a secure place when you enable 2FA.",
+                    "Your admin may require 2FA for all agents.",
+                    "Use Google Authenticator, Authy, 1Password, or any TOTP app."
+                ]
+            },
+            "notifications": {
+                "title": "Notifications",
+                "body": "Choose which email and in-app alerts you receive as an agent in this workspace.",
+                "tips": [
+                    "Ticket assigned and customer reply are the most common alerts.",
+                    "SLA breach alerts help you act before deadlines pass.",
+                    "These settings apply to your account, not the whole team."
+                ]
+            },
+            "customer_fields": {
+                "title": "Customer fields",
+                "body": "Add custom fields to contact profiles so agents capture the data your team needs.",
+                "tips": [
+                    "Fields can be text, dropdown, checkbox, or date types.",
+                    "Required fields apply when creating or editing customers.",
+                    "Use clear labels so agents know what to collect."
+                ]
+            },
+            "ticket_numbering": {
+                "title": "Ticket numbering",
+                "body": "Set the prefix used for new ticket IDs in this workspace, for example HD-00042.",
+                "tips": [
+                    "A hyphen is added automatically if you omit one.",
+                    "Existing ticket numbers are not changed when you update the prefix.",
+                    "Brands can override the prefix per brand in Brand settings."
+                ]
+            },
+            "ticket_statuses": {
+                "title": "Ticket statuses",
+                "body": "Customize the statuses tickets move through from open to resolved and closed.",
+                "tips": [
+                    "System statuses such as Open and Closed cannot be removed.",
+                    "Status order affects how tickets appear in views and reports.",
+                    "Automation rules can trigger on status changes."
+                ]
+            },
+            "sla_business_hours": {
+                "title": "SLA & business hours",
+                "body": "Define response and resolution targets and the hours when SLA clocks run for your team.",
+                "tips": [
+                    "Business hours pause SLA timers outside working time.",
+                    "Assign SLA policies to priorities or ticket types as needed.",
+                    "Breached tickets appear in reports and can trigger notifications."
+                ]
+            },
+            "auto_assignment": {
+                "title": "Auto-assignment",
+                "body": "Automatically assign new unassigned tickets to agents using round-robin, load-based, or skill-aware rules.",
+                "tips": [
+                    "Define agent skills under Team → Skills for skill-based routing.",
+                    "Round-robin spreads work evenly across eligible agents.",
+                    "Rules apply to new tickets that match your conditions."
+                ]
+            },
+            "csat_surveys": {
+                "title": "CSAT surveys",
+                "body": "Send a short satisfaction survey to customers after tickets are resolved.",
+                "tips": [
+                    "Surveys are typically sent by email after resolution.",
+                    "Results appear in reports for quality tracking.",
+                    "Keep surveys brief to improve response rates."
+                ]
+            },
+            "macros": {
+                "title": "Macros",
+                "body": "Create reusable reply snippets agents can insert into ticket responses with one click.",
+                "tips": [
+                    "Macros can include placeholders for customer or ticket data.",
+                    "Personal macros are visible only to you; shared macros need admin setup.",
+                    "Use macros for common answers to save time."
+                ]
+            },
+            "automation_rules": {
+                "title": "Automation rules",
+                "body": "Run actions automatically when tickets are created or updated — assign, tag, change status, or notify.",
+                "tips": [
+                    "Rules are evaluated in order; place specific rules before general ones.",
+                    "Test with a narrow condition before rolling out widely.",
+                    "Available on plans that include automation."
+                ]
+            },
+            "ticket_fields": {
+                "title": "Ticket fields",
+                "body": "Add custom fields to tickets so agents record structured information on every request.",
+                "tips": [
+                    "Fields can appear on the agent ticket form and optionally the portal.",
+                    "Dropdown fields need options defined before use.",
+                    "Use fields in automation conditions where supported."
+                ]
+            },
+            "external_issues": {
+                "title": "External issues",
+                "body": "Control whether ticket status syncs from linked Jira or Linear issues when engineers update them externally.",
+                "tips": [
+                    "Inbound sync is off by default — enable only if you want helpefi to follow the external tool.",
+                    "Link issues from the ticket sidebar after connecting Jira or Linear.",
+                    "Outbound updates from helpefi to Jira/Linear still work when integrations are connected."
+                ]
+            },
+            "jira": {
+                "title": "Jira",
+                "body": "Connect Jira Cloud so agents link tickets to issues and keep engineering work in sync.",
+                "tips": [
+                    "Use a Jira API token with access to the projects you need.",
+                    "Linked issues appear on the ticket sidebar for quick context.",
+                    "Configure external issue sync under Ticket settings if needed."
+                ]
+            },
+            "linear": {
+                "title": "Linear",
+                "body": "Connect Linear so agents can link tickets to issues and track engineering work alongside support.",
+                "tips": [
+                    "Generate a Linear API key with issue read and write access.",
+                    "Link issues from the ticket view after connecting.",
+                    "Status sync options are under External issues in Ticket settings."
+                ]
+            },
+            "incoming_email": {
+                "title": "Incoming email",
+                "body": "Connect mailboxes that create tickets when customers send email to your support addresses.",
+                "tips": [
+                    "Each inbox can be tied to a brand and default routing rules.",
+                    "OAuth providers simplify setup for Gmail and Microsoft 365.",
+                    "IMAP is available for other providers."
+                ]
+            },
+            "outgoing_email": {
+                "title": "Outgoing email",
+                "body": "Configure SMTP so agent replies to customers are sent from your support addresses.",
+                "tips": [
+                    "Match the From address to the inbox customers originally emailed.",
+                    "Test SMTP after saving to confirm delivery.",
+                    "Use Advanced email for SPF and DKIM guidance."
+                ]
+            },
+            "advanced_email": {
+                "title": "Advanced email",
+                "body": "Improve deliverability with SPF, DKIM, and policies for how your workspace handles inbound and outbound mail.",
+                "tips": [
+                    "Publish DNS records exactly as shown to avoid spam folders.",
+                    "Blocklist addresses you do not want creating tickets.",
+                    "Changes may take up to 48 hours to propagate in DNS."
+                ]
+            },
+            "email_auto_reply": {
+                "title": "Email auto-reply",
+                "body": "Send an automatic first response when a new ticket arrives by email, and manage inbound blocklists.",
+                "tips": [
+                    "Keep auto-replies short and set expectations on response time.",
+                    "Block spam or internal addresses that should not create tickets.",
+                    "Auto-reply applies to new conversations, not every message."
+                ]
+            },
+            "email_templates": {
+                "title": "Email templates",
+                "body": "Customize subject lines and HTML bodies for automated emails your workspace sends to customers and agents.",
+                "tips": [
+                    "Templates cover notifications such as ticket created or password reset.",
+                    "Use variables documented in each template for dynamic content.",
+                    "Preview before saving wide-reaching changes."
+                ]
+            },
+            "ticket_sources": {
+                "title": "Ticket sources",
+                "body": "Manage how customers reach you beyond email: web widget, portal forms, API, and other intake channels.",
+                "tips": [
+                    "Each source can create tickets with different default fields or routing.",
+                    "Disable sources you are not using to reduce noise.",
+                    "Embed the chat widget on your site for live conversations."
+                ]
+            },
+            "whatsapp_sms": {
+                "title": "WhatsApp & SMS",
+                "body": "Connect Twilio to receive and reply to WhatsApp and SMS messages as tickets in this workspace.",
+                "tips": [
+                    "You need a Twilio account with a WhatsApp-enabled number or SMS sender.",
+                    "Messages appear in the inbox like other channel conversations.",
+                    "Configure webhooks in Twilio using the values shown here."
+                ]
+            },
+            "webhooks": {
+                "title": "Webhooks",
+                "body": "Send real-time HTTP notifications to your systems when ticket events occur in this workspace.",
+                "tips": [
+                    "Subscribe only to the events your integration needs.",
+                    "Store the signing secret securely to verify payloads.",
+                    "Failed deliveries are retried according to your endpoint reliability."
+                ]
+            },
+            "slack": {
+                "title": "Slack",
+                "body": "Post ticket notifications to Slack channels and let agents reply from threads where configured.",
+                "tips": [
+                    "Install the app to the Slack workspace your team uses daily.",
+                    "Choose channels per brand or team as needed.",
+                    "Requires the integrations feature on your plan."
+                ]
+            },
+            "shopify": {
+                "title": "Shopify",
+                "body": "Show Shopify order and customer context on tickets for your ecommerce support team.",
+                "tips": [
+                    "Connect the Shopify store your customers buy from.",
+                    "Order details appear when the customer email matches a Shopify account.",
+                    "Useful for refunds, shipping, and order status questions."
+                ]
+            },
+            "hubspot": {
+                "title": "HubSpot",
+                "body": "Enrich tickets with HubSpot contact and company data for your sales and support handoffs.",
+                "tips": [
+                    "Match customers by email address on the ticket.",
+                    "Requires a HubSpot private app token with contact read access.",
+                    "Data is read-only in helpefi unless you build automations via webhooks."
+                ]
+            },
+            "salesforce": {
+                "title": "Salesforce",
+                "body": "Pull Salesforce account and contact context into tickets for B2B support teams.",
+                "tips": [
+                    "Use a connected app with API access to the objects you need.",
+                    "Linking works best when customer emails match Salesforce contacts.",
+                    "Sensitive CRM data follows your Salesforce permissions."
+                ]
+            },
+            "microsoft_teams": {
+                "title": "Microsoft Teams",
+                "body": "Send ticket notifications to Teams channels so your team stays informed without leaving Microsoft 365.",
+                "tips": [
+                    "Connect the Teams tenant your company uses.",
+                    "Map channels to brands or queues as needed.",
+                    "Notifications include links back to the ticket in helpefi."
+                ]
+            },
+            "zapier": {
+                "title": "Zapier",
+                "body": "Connect helpefi to thousands of apps using Zapier triggers and actions for this workspace.",
+                "tips": [
+                    "Common zaps: create tickets from forms, sync to spreadsheets, or notify chat tools.",
+                    "Use your workspace API key in Zapier authentication.",
+                    "Test zaps with a single ticket before enabling for all traffic."
+                ]
+            },
+            "agents": {
+                "title": "Agents",
+                "body": "Manage who can access this workspace, their roles, and team membership.",
+                "tips": [
+                    "Admins can change all settings; agents handle tickets within their permissions.",
+                    "Seat limits depend on your subscription plan.",
+                    "Deactivate users instead of deleting to preserve ticket history attribution."
+                ]
+            },
+            "invitations": {
+                "title": "Invitations",
+                "body": "Invite new agents or admins by email. They receive a link to join this workspace.",
+                "tips": [
+                    "Pending invites count toward seat limits on some plans.",
+                    "Resend or revoke invites from this list.",
+                    "Choose the role at invite time — change it later under Roles if needed."
+                ]
+            },
+            "teams_departments": {
+                "title": "Teams & departments",
+                "body": "Organize agents into departments and teams for routing, reporting, and ownership.",
+                "tips": [
+                    "Assign a team lead or department head for escalations.",
+                    "Auto-assignment rules can target specific teams.",
+                    "Agents can belong to multiple teams."
+                ]
+            },
+            "skills": {
+                "title": "Skills",
+                "body": "Tag agents with skills such as language or product area so assignment rules route tickets to the right people.",
+                "tips": [
+                    "Skills are used by auto-assignment when skill-based routing is enabled.",
+                    "Keep the skill list short and meaningful.",
+                    "Update skills when team responsibilities change."
+                ]
+            },
+            "roles_permissions": {
+                "title": "Roles & permissions",
+                "body": "Control what each role can view and change across tickets, settings, and reports in this workspace.",
+                "tips": [
+                    "Built-in roles cover most teams; customize only when necessary.",
+                    "Restrict settings access to admins for security.",
+                    "Permission changes apply immediately to all users with that role."
+                ]
+            },
+            "agent_fields": {
+                "title": "Agent fields",
+                "body": "Add custom fields to agent profiles for internal metadata such as region, shift, or employee ID.",
+                "tips": [
+                    "Agent fields are visible to admins, not to customers.",
+                    "Useful for workforce planning and routing.",
+                    "Fields appear when editing team members."
+                ]
+            },
+            "security_overview": {
+                "title": "Security overview",
+                "body": "Review security recommendations and the current posture of this workspace.",
+                "tips": [
+                    "Address high-priority items such as MFA and SSO first.",
+                    "Only workspace admins can change security policy.",
+                    "Audit logs complement this view for forensic review."
+                ]
+            },
+            "security_policy": {
+                "title": "Security policy",
+                "body": "Set password rules, session timeouts, and whether agents must use two-factor authentication.",
+                "tips": [
+                    "Stricter policies improve security but may require user onboarding.",
+                    "Session length affects how often agents must sign in again.",
+                    "Changes apply to new sessions after saving."
+                ]
+            },
+            "single_sign_on": {
+                "title": "Single sign-on",
+                "body": "Let agents sign in with your company identity provider using SAML or OIDC.",
+                "tips": [
+                    "Collect IdP metadata from your IT team before configuring.",
+                    "Test with one admin account before enforcing for all agents.",
+                    "SSO is typically available on Enterprise plans."
+                ]
+            },
+            "data_retention": {
+                "title": "Data retention",
+                "body": "Define how long tickets, attachments, and audit data are kept in this workspace.",
+                "tips": [
+                    "Longer retention helps compliance but uses more storage.",
+                    "Some regions require minimum retention periods — check with legal.",
+                    "Deletion is permanent after the retention period ends."
+                ]
+            },
+            "audit_logs": {
+                "title": "Audit logs",
+                "body": "View a tamper-evident history of important changes made in this workspace and who made them.",
+                "tips": [
+                    "Filter by user, action, or date range to investigate incidents.",
+                    "Export logs for compliance reviews when needed.",
+                    "Access requires the audit.view permission."
+                ]
+            },
+            "ai_assistant": {
+                "title": "AI assistant",
+                "body": "Configure AI features such as suggested replies, triage, and knowledge search for agents in this workspace.",
+                "tips": [
+                    "AI uses your knowledge base and ticket context — keep articles up to date.",
+                    "Review suggestions before sending to customers when quality matters.",
+                    "Requires the AI feature or AI Copilot add-on on your plan."
+                ]
+            },
+            "service_catalog": {
+                "title": "Service catalog",
+                "body": "Build categories and requestable items customers can order from the portal, such as hardware or access requests.",
+                "tips": [
+                    "Each item can have its own form fields and approval flow.",
+                    "Publish only items your team is ready to fulfill.",
+                    "Catalog requests create tickets for tracking."
+                ]
+            },
+            "change_approvals": {
+                "title": "Change approvals",
+                "body": "Define who must approve change requests before work proceeds in Service Desk.",
+                "tips": [
+                    "Approvers receive notifications when their sign-off is needed.",
+                    "Use approval groups for CAB-style reviews.",
+                    "Requires the Service Desk add-on."
+                ]
+            },
+            "api_docs": {
+                "title": "API docs",
+                "body": "Explore the REST API for this workspace to create tickets, manage customers, and build integrations programmatically.",
+                "tips": [
+                    "Authenticate with an API token from your agent profile or admin settings.",
+                    "Rate limits apply per workspace — batch requests when possible.",
+                    "Use webhooks for real-time events instead of polling when you can."
+                ]
+            }
+        }
+    }
+}

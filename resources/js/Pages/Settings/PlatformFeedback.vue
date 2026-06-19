@@ -34,6 +34,7 @@ const submit = () => {
     <SettingsPage
         :title="$t('settings.platform_feedback')"
         :description="$t('settings.descriptions.platform_feedback')"
+        info-section="platform_feedback"
     >
         <div class="max-w-2xl agent-card">
             <div v-if="flashSuccess" class="mb-4 rounded-lg border border-emerald-200 dark:border-emerald-900/60 bg-emerald-50 dark:bg-emerald-950/40 px-4 py-3 text-sm text-emerald-800 dark:text-emerald-200">

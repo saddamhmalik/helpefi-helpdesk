@@ -33,6 +33,7 @@ FROM php:8.4-fpm-bookworm AS app
 RUN apt-get update && apt-get install -y --no-install-recommends \
     git \
     unzip \
+    default-mysql-client \
     libzip-dev \
     libpng-dev \
     libjpeg62-turbo-dev \

@@ -7,10 +7,12 @@ use App\Domains\Platform\Models\PlatformBackup;
 use App\Domains\Platform\Repositories\PlatformBackupRepository;
 use App\Domains\Platform\Repositories\PlatformTenantRepository;
 use App\Domains\Platform\Support\PlatformAuditRecorder;
+use App\Domains\Tenancy\Services\TenantInfrastructureService;
 use App\Models\PlatformUser;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class PlatformBackupService
@@ -19,6 +21,7 @@ class PlatformBackupService
         private PlatformBackupRepository $backups,
         private PlatformTenantRepository $tenants,
         private PlatformAuditRecorder $audit,
+        private TenantInfrastructureService $infrastructure,
     ) {
     }
 
@@ -39,7 +42,13 @@ class PlatformBackupService
 
     public function queueTenant(string $tenantId, PlatformUser $actor): PlatformBackup
     {
-        $this->tenants->find($tenantId);
+        $tenant = $this->tenants->find($tenantId);
+
+        if ($this->infrastructure->usesExternalDatabase($tenant)) {
+            throw ValidationException::withMessages([
+                'tenant' => 'Central backups are not available for workspaces with an external database.',
+            ]);
+        }
 
         return $this->queue(PlatformBackup::SCOPE_TENANT, $tenantId, $actor);
     }
@@ -47,14 +56,22 @@ class PlatformBackupService
     public function queueAllTenants(PlatformUser $actor): array
     {
         $queued = [];
+        $skipped = 0;
 
         foreach ($this->tenants->allForSelect() as $tenant) {
+            if ($this->infrastructure->usesExternalDatabase($tenant)) {
+                $skipped++;
+
+                continue;
+            }
+
             $queued[] = $this->queue(PlatformBackup::SCOPE_TENANT, $tenant->id, $actor);
         }
 
         $this->audit->record('platform.backup.created', properties: [
             'scope' => PlatformBackup::SCOPE_ALL_TENANTS,
             'count' => count($queued),
+            'skipped_external_database' => $skipped,
         ]);
 
         return $queued;

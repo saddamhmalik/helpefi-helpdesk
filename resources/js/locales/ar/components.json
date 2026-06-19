@@ -380,6 +380,8 @@
         "service_desk_sections": "Service desk sections",
         "back_to_app": "العودة للتطبيق",
         "saving": "جارٍ الحفظ…",
+        "saved": "تم الحفظ",
+        "save_failed": "تعذر حفظ التغييرات",
         "new_customer": "عميل جديد",
         "new_organization": "منظمة جديدة",
         "new_asset": "أصل جديد",

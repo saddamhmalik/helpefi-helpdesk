@@ -380,6 +380,8 @@
         "service_desk_sections": "Service desk sections",
         "back_to_app": "Zurück zur App",
         "saving": "Wird gespeichert…",
+        "saved": "Gespeichert",
+        "save_failed": "Änderungen konnten nicht gespeichert werden",
         "new_customer": "Neuer Kunde",
         "new_organization": "New organization",
         "new_asset": "New asset",

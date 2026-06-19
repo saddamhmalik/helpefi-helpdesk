@@ -113,7 +113,9 @@
         "tickets_this_month": "التذاكر هذا الشهر",
         "free_trial": "تجربة مجانية",
         "current": "الحالي",
-        "new_workspaces": "مساحات عمل جديدة"
+        "new_workspaces": "مساحات عمل جديدة",
+        "plan": "الخطة",
+        "no_payments_yet": "لا توجد مدفوعات بعد. ستظهر الرسوم هنا بعد أول عملية دفع ناجحة."
     },
     "settings_brands": {
         "brands": "العلامات",

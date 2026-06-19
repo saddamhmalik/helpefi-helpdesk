@@ -2,8 +2,8 @@
 import { useForm } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import SettingsPage from '../../Components/SettingsPage.vue';
-import SettingsSectionNav from '../../Components/SettingsSectionNav.vue';
 import CustomFieldEditor from '../../Components/CustomFieldEditor.vue';
+import AppToggle from '../../Components/AppToggle.vue';
 import { useSettingsSection } from '../../composables/useSettingsSection.js';
 import { useI18n } from 'vue-i18n';
 
@@ -15,7 +15,7 @@ const { t } = useI18n();
 
 const { activeSection } = useSettingsSection({
     defaultSection: 'general',
-    sections: ['general', 'email', 'contact_fields', 'ticket_fields', 'user_fields'],
+    sections: ['general', 'email', 'external_issues', 'contact_fields', 'ticket_fields', 'user_fields'],
 });
 
 const pageTitles = {
@@ -26,6 +26,10 @@ const pageTitles = {
     email: {
         title: t('settings.email_auto_reply'),
         description: t('settings_tickets.automatic_first_response_and_inbound_email_blocklist'),
+    },
+    external_issues: {
+        title: t('settings_tickets.external_issues'),
+        description: t('settings_tickets.external_issues_description'),
     },
     contact_fields: {
         title: t('settings.customer_fields'),
@@ -43,13 +47,16 @@ const pageTitles = {
 
 const pageMeta = computed(() => pageTitles[activeSection.value] ?? pageTitles.general);
 
-const sectionTabs = computed(() => [
-    { id: 'general', label: t('settings.ticket_numbering') },
-    { id: 'email', label: t('settings.email_auto_reply') },
-    { id: 'contact_fields', label: t('settings.customer_fields') },
-    { id: 'ticket_fields', label: t('settings.ticket_fields') },
-    { id: 'user_fields', label: t('settings.agent_fields') },
-]);
+const ticketSectionKeys = {
+    general: 'ticket_numbering',
+    email: 'email_auto_reply',
+    external_issues: 'external_issues',
+    contact_fields: 'customer_fields',
+    ticket_fields: 'ticket_fields',
+    user_fields: 'agent_fields',
+};
+
+const infoSection = computed(() => ticketSectionKeys[activeSection.value] ?? 'ticket_numbering');
 
 const cloneFields = (fields) => (fields ? JSON.parse(JSON.stringify(fields)) : []);
 
@@ -61,6 +68,7 @@ const form = useForm({
     auto_first_response_enabled: props.settings.auto_first_response_enabled ?? false,
     auto_first_response_body: props.settings.auto_first_response_body ?? '',
     email_blocklist: [...(props.settings.email_blocklist ?? [])],
+    sync_ticket_status_from_external_issues: props.settings.sync_ticket_status_from_external_issues ?? false,
 });
 
 const blocklistText = computed({
@@ -88,16 +96,10 @@ const save = () => {
 
 <template>
     <SettingsPage
-        :title="$t('settings.ticket_settings')"
+        :title="pageMeta.title"
         :description="pageMeta.description"
+        :info-section="infoSection"
     >
-        <SettingsSectionNav
-            path="/settings/tickets"
-            default-section="general"
-            :sections="sectionTabs"
-            :active-section="activeSection"
-        />
-
         <form @submit.prevent="save">
             <div v-show="activeSection === 'general'" class="max-w-2xl agent-card">
                         <h2 class="text-lg font-semibold agent-text">{{ $t('settings.ticket_numbering') }}</h2>
@@ -167,6 +169,19 @@ const save = () => {
                             </div>
                         </div>
                     </div>
+
+            <div v-show="activeSection === 'external_issues'" class="max-w-3xl agent-card">
+                <div class="flex items-start justify-between gap-4">
+                    <div>
+                        <h2 class="text-lg font-semibold agent-text">{{ $t('settings_tickets.external_issues') }}</h2>
+                        <p class="mt-1 text-sm agent-text-subtle">{{ $t('settings_tickets.sync_ticket_status_from_external_issues_help') }}</p>
+                    </div>
+                    <AppToggle
+                        v-model="form.sync_ticket_status_from_external_issues"
+                        :label="$t('settings_tickets.sync_ticket_status_from_external_issues')"
+                    />
+                </div>
+            </div>
 
             <CustomFieldEditor
                 v-show="activeSection === 'contact_fields'"

@@ -23,9 +23,13 @@ class BillingController extends Controller
 
     public function index(): Response
     {
+        $tenantId = (string) tenant('id');
+
+        $this->billingService->syncPaymentHistory($tenantId);
+
         return Inertia::render('Settings/Billing', [
             'billing' => $this->billingService->snapshot(),
-            'payments' => $this->payments->historyForTenant((string) tenant('id')),
+            'payments' => $this->payments->historyForTenant($tenantId),
         ]);
     }
 

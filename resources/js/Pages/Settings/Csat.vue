@@ -22,8 +22,9 @@ const save = () => {
 
 <template>
     <SettingsPage
-        :title="$t('settings_csat.customer_satisfaction')"
-        :description="$t('settings_csat.configure_post-resolution_surveys_on_the_customer_portal_and_by_email')"
+        :title="$t('settings.csat_surveys')"
+        :description="$t('settings.descriptions.csat_surveys')"
+        info-section="csat_surveys"
     >
         <div class="max-w-2xl agent-card">
             <form class="space-y-4" @submit.prevent="save">

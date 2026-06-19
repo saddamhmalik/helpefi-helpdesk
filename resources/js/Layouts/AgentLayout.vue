@@ -196,8 +196,11 @@ const iconWrapClass = (href) => isActive(href)
                 </div>
                 <PlatformNoticeModal />
                 <div
-                    class="flex min-h-0 flex-1 flex-col overflow-x-hidden px-4 pb-4 pt-3 sm:px-6 sm:pb-6 sm:pt-4"
-                    :class="isConstrainedHeightPage ? 'overflow-hidden' : 'overflow-y-auto'"
+                    class="flex min-h-0 flex-1 flex-col overflow-x-hidden pb-4 pt-3 sm:pb-6 sm:pt-4"
+                    :class="[
+                        isConstrainedHeightPage ? 'overflow-hidden' : 'overflow-y-auto',
+                        isSettingsPage ? 'px-0' : 'px-4 sm:px-6',
+                    ]"
                 >
                     <Transition name="page" mode="out-in">
                         <div

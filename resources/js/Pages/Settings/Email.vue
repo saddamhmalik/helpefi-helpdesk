@@ -3,7 +3,6 @@ import { router, useForm, Link, usePage } from '@inertiajs/vue3';
 import { computed, nextTick, onMounted, ref, toRef, watch } from 'vue';
 import SettingsPage from '../../Components/SettingsPage.vue';
 import PlanFeatureBanner from '../../Components/PlanFeatureBanner.vue';
-import SettingsSectionNav from '../../Components/SettingsSectionNav.vue';
 import AppConfirmDialog from '../../Components/AppConfirmDialog.vue';
 import AppToggle from '../../Components/AppToggle.vue';
 import EmailInboxCard from '../../Components/Email/EmailInboxCard.vue';
@@ -40,11 +39,22 @@ const { activeSection } = useSettingsSection({
     sections: ['incoming', 'outgoing', 'advanced'],
 });
 
-const sectionTabs = computed(() => [
-    { id: 'incoming', label: t('settings.incoming_email') },
-    { id: 'outgoing', label: t('settings.outgoing_email') },
-    { id: 'advanced', label: t('settings.advanced_email') },
-]);
+const emailSectionKeys = {
+    incoming: 'incoming_email',
+    outgoing: 'outgoing_email',
+    advanced: 'advanced_email',
+};
+
+const pageMeta = computed(() => {
+    const key = emailSectionKeys[activeSection.value] ?? 'incoming_email';
+
+    return {
+        title: t(`settings.${key}`),
+        description: t(`settings.descriptions.${key}`),
+    };
+});
+
+const infoSection = computed(() => emailSectionKeys[activeSection.value] ?? 'incoming_email');
 
 const showAddInbox = ref(false);
 const selectedSetupProvider = ref(null);
@@ -390,17 +400,11 @@ const onUseInboxSmtpChange = () => {
 
 <template>
     <SettingsPage
-        :title="$t('settings_email.email_settings')"
-        :description="$t('settings_email.connect_support_inboxes_configure_smtp_delivery_and_manage_inbound_ema')"
+        :title="pageMeta.title"
+        :description="pageMeta.description"
+        :info-section="infoSection"
     >
         <PlanFeatureBanner v-if="activeSection === 'incoming'" feature="channels" />
-
-        <SettingsSectionNav
-            path="/settings/email"
-            default-section="incoming"
-            :sections="sectionTabs"
-            :active-section="activeSection"
-        />
 
         <div class="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border agent-border agent-panel-muted px-4 py-3">
             <p class="text-sm agent-text-muted">

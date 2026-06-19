@@ -41,6 +41,7 @@ const props = defineProps({
     sideConversations: { type: Array, default: () => [] },
     timeTracking: { type: Object, default: null },
     externalIssues: { type: Array, default: () => [] },
+    issueProviders: { type: Array, default: () => [] },
 });
 
 const { formatDateTime, formatDate } = useDateTime();
@@ -757,6 +758,7 @@ onUnmounted(() => {
                         :side-conversations="sideConversations"
                         :time-tracking="timeTracking ?? { total_minutes: 0, entries: [] }"
                         :external-issues="externalIssues"
+                        :issue-providers="issueProviders"
                     />
                 </aside>
             </div>

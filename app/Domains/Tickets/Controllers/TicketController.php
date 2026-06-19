@@ -140,7 +140,8 @@ class TicketController extends Controller
             'customFieldDefinitions' => $this->ticketService->fieldDefinitions(),
             'sideConversations' => $this->sideConversationService->listForTicket($ticketModel->id),
             'timeTracking' => $this->timeTracking->snapshotForTicket($ticketModel->id),
-            'externalIssues' => $this->externalIssues->listForTicket($ticketModel->id),
+            'externalIssues' => $this->externalIssues->refreshForTicket($ticketModel->id),
+            'issueProviders' => $this->externalIssues->configuredIssueProviders(),
             'approval' => $this->approvals->snapshotForTicket($ticketModel->id),
             'canDecideApproval' => $this->canDecideApproval($ticketModel->id, $request->user()->id),
             'changeRecord' => $this->changeRecords->snapshotForTicket($ticketModel->id),
@@ -172,6 +173,8 @@ class TicketController extends Controller
 
     public function update(Request $request, int $ticket): RedirectResponse
     {
+        $autosave = $request->boolean('_autosave');
+
         $data = $request->validate(array_merge([
             'subject' => ['sometimes', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
@@ -186,7 +189,7 @@ class TicketController extends Controller
 
         $this->ticketService->update($ticket, $data, $request->user()->id);
 
-        return back()->with('success', 'Ticket updated.');
+        return $autosave ? back() : back()->with('success', 'Ticket updated.');
     }
 
     public function reply(Request $request, int $ticket): RedirectResponse

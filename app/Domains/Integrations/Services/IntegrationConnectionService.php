@@ -234,9 +234,13 @@ class IntegrationConnectionService
         $this->billing->assertFeature('integrations');
 
         $existing = $this->connections->findByProvider(IntegrationConnection::PROVIDER_LINEAR);
+        $apiKey = isset($data['api_key']) ? preg_replace('/^Bearer\s+/i', '', trim((string) $data['api_key'])) : null;
+        $teamId = isset($data['team_id'])
+            ? LinearIntegrationService::normalizeTeamReference((string) $data['team_id'])
+            : null;
         $config = $this->mergeSecrets($existing?->config ?? [], [
-            'api_key' => $data['api_key'] ?? null,
-            'team_id' => $data['team_id'] ?? null,
+            'api_key' => $apiKey,
+            'team_id' => $teamId,
             'done_state' => $data['done_state'] ?? 'Done',
             'open_state' => $data['open_state'] ?? 'Todo',
             'webhook_secret' => $data['webhook_secret'] ?? ($existing?->config['webhook_secret'] ?? Str::random(32)),

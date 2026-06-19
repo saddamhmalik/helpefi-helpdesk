@@ -22,6 +22,7 @@ class AdminAuditLogController extends Controller
     {
         $filters = $request->validate([
             'event' => ['nullable', 'string', 'max:255'],
+            'category' => ['nullable', 'string', 'in:infrastructure'],
             'search' => ['nullable', 'string', 'max:255'],
             'tenant_id' => ['nullable', 'string', 'max:255'],
         ]);
@@ -38,6 +39,7 @@ class AdminAuditLogController extends Controller
     {
         $filters = $request->validate([
             'event' => ['nullable', 'string', 'max:255'],
+            'category' => ['nullable', 'string', 'in:infrastructure'],
             'search' => ['nullable', 'string', 'max:255'],
             'tenant_id' => ['nullable', 'string', 'max:255'],
         ]);

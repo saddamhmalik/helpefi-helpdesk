@@ -13,6 +13,7 @@ class Tenant extends BaseTenant implements TenantWithDatabase
 
     protected $casts = [
         'is_blocked' => 'boolean',
+        'byo_allowed' => 'boolean',
         'custom_domain_redirect' => 'boolean',
     ];
 
@@ -23,6 +24,7 @@ class Tenant extends BaseTenant implements TenantWithDatabase
             'name',
             'slug',
             'is_blocked',
+            'byo_allowed',
             'custom_domain_redirect',
             'razorpay_customer_id',
             'pm_type',
@@ -35,5 +37,10 @@ class Tenant extends BaseTenant implements TenantWithDatabase
     public function subscription(): \Illuminate\Database\Eloquent\Relations\HasOne
     {
         return $this->hasOne(\App\Domains\Billing\Models\Subscription::class, 'tenant_id', 'id');
+    }
+
+    public function infrastructure(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(\App\Domains\Tenancy\Models\TenantInfrastructure::class, 'tenant_id', 'id');
     }
 }

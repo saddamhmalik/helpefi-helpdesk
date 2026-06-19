@@ -7,8 +7,10 @@ use App\Domains\Billing\Repositories\PlanRepository;
 use App\Domains\Platform\Repositories\PlatformTenantRepository;
 use App\Domains\Platform\Support\PlatformAuditRecorder;
 use App\Domains\Tenancy\Services\CentralSettingsService;
+use App\Domains\Tenancy\Services\TenantByoEligibilityService;
 use App\Domains\Tenancy\Services\TenantDomainService;
 use App\Domains\Tenancy\Support\PlanCatalogDefinition;
+use App\Domains\Tenancy\Support\TenantInfrastructurePresenter;
 use App\Models\Tenant;
 use Carbon\CarbonInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -22,6 +24,7 @@ class PlatformTenantService
         private PlatformTenantAdminResolver $admins,
         private PlatformAuditRecorder $audit,
         private CentralSettingsService $centralSettings,
+        private TenantByoEligibilityService $byoEligibility,
     ) {}
 
     public function list(int $perPage = 20, ?string $search = null, ?string $status = null): LengthAwarePaginator
@@ -45,6 +48,7 @@ class PlatformTenantService
     {
         $tenant = $this->tenants->find($tenantId);
         $beforeBlocked = (bool) $tenant->is_blocked;
+        $beforeByoAllowed = (bool) $tenant->byo_allowed;
         $beforePlan = $tenant->subscription?->plan;
         $beforeInterval = $tenant->subscription?->billing_interval;
         $beforeRenewsAt = $tenant->subscription?->renews_at;
@@ -58,6 +62,20 @@ class PlatformTenantService
             if ($beforeBlocked !== (bool) $tenant->is_blocked) {
                 $this->audit->record(
                     $tenant->is_blocked ? 'platform.tenant.blocked' : 'platform.tenant.unblocked',
+                    $tenant,
+                    tenantId: $tenant->id,
+                );
+            }
+        }
+
+        if (array_key_exists('byo_allowed', $data)) {
+            $tenant = $this->tenants->update($tenant, [
+                'byo_allowed' => (bool) $data['byo_allowed'],
+            ]);
+
+            if ($beforeByoAllowed !== (bool) $tenant->byo_allowed) {
+                $this->audit->record(
+                    $tenant->byo_allowed ? 'platform.tenant.byo_allowed' : 'platform.tenant.byo_disallowed',
                     $tenant,
                     tenantId: $tenant->id,
                 );
@@ -187,8 +205,11 @@ class PlatformTenantService
             'custom_domain' => $customDomain,
             'url' => $domainService->primaryUrl($tenant),
             'is_blocked' => (bool) $tenant->is_blocked,
+            'byo_allowed' => (bool) $tenant->byo_allowed,
+            'byo_eligible' => $this->byoEligibility->isEligible($tenant),
             'created_at' => $tenant->created_at?->toIso8601String(),
             'razorpay_customer' => (bool) $tenant->razorpay_customer_id,
+            'infrastructure' => TenantInfrastructurePresenter::summary($tenant->infrastructure),
             'subscription' => $subscription ? [
                 'plan' => $planSlug,
                 'plan_name' => $plan['name'] ?? ($planSlug ? ucfirst($planSlug) : null),

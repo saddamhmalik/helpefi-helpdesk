@@ -40,11 +40,12 @@ return [
      * To configure their behavior, see the config keys below.
      */
     'bootstrappers' => array_values(array_filter([
-        Stancl\Tenancy\Bootstrappers\DatabaseTenancyBootstrapper::class,
+        App\Domains\Tenancy\Bootstrappers\TenantDatabaseTenancyBootstrapper::class,
         in_array(env('CACHE_STORE', 'database'), ['redis', 'memcached', 'dynamodb'], true)
             ? Stancl\Tenancy\Bootstrappers\CacheTenancyBootstrapper::class
             : null,
         Stancl\Tenancy\Bootstrappers\FilesystemTenancyBootstrapper::class,
+        App\Domains\Tenancy\Bootstrappers\TenantExternalStorageBootstrapper::class,
         Stancl\Tenancy\Bootstrappers\QueueTenancyBootstrapper::class,
         // Stancl\Tenancy\Bootstrappers\RedisTenancyBootstrapper::class, // Note: phpredis is needed
     ])),

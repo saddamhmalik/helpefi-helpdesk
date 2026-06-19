@@ -170,7 +170,7 @@ const destroyItem = (item) => {
 </script>
 
 <template>
-    <SettingsPage :title="$t('settings.service_catalog')" :description="$t('settings_service_catalog.itsm_service_categories_and_requestable_items_for_the_customer_portal')">
+    <SettingsPage :title="$t('settings.service_catalog')" :description="$t('settings.descriptions.service_catalog')" info-section="service_catalog">
         <PlanFeatureBanner feature="service_catalog" />
 
         <template #actions>

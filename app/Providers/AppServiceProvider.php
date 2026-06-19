@@ -18,7 +18,10 @@ use App\Domains\Integrations\Listeners\EnrichTicketFromCrm;
 use App\Domains\Integrations\Listeners\SyncExternalIssues;
 use App\Domains\Ai\Listeners\TriageTicketOnCreate;
 use Illuminate\Notifications\Events\NotificationSent;
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\ServiceProvider;
@@ -44,6 +47,16 @@ class AppServiceProvider extends ServiceProvider
 
         Ticket::observe(TicketCsatObserver::class);
 
+        RateLimiter::for('tenant-infrastructure-verify', function (Request $request) {
+            $limit = max(1, (int) config('tenant_infrastructure.verify_rate_limit_per_minute', 5));
+
+            return Limit::perMinute($limit)->by((string) (
+                $request->route('tenant')
+                ?? tenant()?->getTenantKey()
+                ?? $request->ip()
+            ));
+        });
+
         Vite::createAssetPathsUsing(
             fn (string $path, ?bool $secure = null) => '/'.ltrim($path, '/'),
         );
@@ -59,6 +72,15 @@ class AppServiceProvider extends ServiceProvider
                 app(\App\Domains\Channels\Services\OutboundMailService::class)->applyGlobalConfig();
             }
         } catch (\Throwable) {
+        }
+
+        if (! $this->app->runningUnitTests() && config('deployment.mode') === 'self_hosted') {
+            $license = app(\App\Domains\Platform\Services\HelpefiLicenseService::class);
+            $error = $license->resolveValidationError();
+
+            if ($error !== null) {
+                report(new \RuntimeException($error));
+            }
         }
     }
 

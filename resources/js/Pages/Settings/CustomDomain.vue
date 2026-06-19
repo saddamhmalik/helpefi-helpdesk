@@ -107,7 +107,8 @@ const cnameHost = () => {
 <template>
     <SettingsPage
         :title="$t('settings.custom_domain')"
-        :description="$t('settings_custom_domain.use_your_own_hostname_for_example_support_anytrip_com_alongside_your_d')"
+        :description="$t('settings.descriptions.custom_domain')"
+        info-section="custom_domain"
     >
         <div
             v-if="page.props.flash?.success"

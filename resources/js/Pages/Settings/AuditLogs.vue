@@ -70,7 +70,8 @@ const formatProperties = (properties) => {
 <template>
     <SettingsPage
         :title="$t('settings.audit_logs')"
-        :description="$t('settings_audit_logs.track_sign-ins_ticket_changes_settings_updates_and_other_activity_acro')"
+        :description="$t('settings.descriptions.audit_logs')"
+        info-section="audit_logs"
     >
         <div class="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <div

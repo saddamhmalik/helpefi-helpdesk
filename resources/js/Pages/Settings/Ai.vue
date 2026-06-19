@@ -39,8 +39,9 @@ const save = () => {
 
 <template>
     <SettingsPage
-        :title="$t('settings_ai.ai_assistance')"
-        :description="$t('settings_ai.agent_assist_tools_and_customer-facing_ai_deflection_on_the_portal_and')"
+        :title="$t('settings.ai_assistant')"
+        :description="$t('settings.descriptions.ai_assistant')"
+        info-section="ai_assistant"
     >
         <PlanFeatureBanner feature="ai" />
 

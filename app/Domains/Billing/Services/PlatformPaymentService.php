@@ -6,6 +6,7 @@ use App\Domains\Billing\Models\PlatformPayment;
 use App\Domains\Billing\Models\Subscription;
 use App\Domains\Billing\Repositories\PlanRepository;
 use App\Domains\Billing\Repositories\PlatformPaymentRepository;
+use App\Domains\Tenancy\Services\CentralSettingsService;
 use App\Domains\Tenancy\Services\TenantDomainService;
 use App\Models\Tenant;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -16,6 +17,7 @@ class PlatformPaymentService
     public function __construct(
         private PlatformPaymentRepository $payments,
         private PlanRepository $plans,
+        private CentralSettingsService $centralSettings,
     ) {}
 
     public function list(int $perPage = 20, ?string $search = null, ?string $status = null): LengthAwarePaginator
@@ -216,6 +218,12 @@ class PlatformPaymentService
         }
 
         $notes = $subscription['notes'] ?? [];
+
+        if (! empty($notes['addon_key'])) {
+            $addon = $this->centralSettings->findAddon((string) $notes['addon_key']);
+
+            return ($addon['name'] ?? ucfirst(str_replace('_', ' ', (string) $notes['addon_key']))).' add-on';
+        }
 
         if (! empty($notes['plan'])) {
             return ucfirst((string) $notes['plan']).' subscription';

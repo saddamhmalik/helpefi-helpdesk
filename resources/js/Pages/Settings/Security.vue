@@ -2,7 +2,6 @@
 import { Link, router, useForm } from '@inertiajs/vue3';
 import SettingsPage from '../../Components/SettingsPage.vue';
 import PlanFeatureBanner from '../../Components/PlanFeatureBanner.vue';
-import SettingsSectionNav from '../../Components/SettingsSectionNav.vue';
 import AppConfirmDialog from '../../Components/AppConfirmDialog.vue';
 import { useConfirmDialog } from '../../composables/useConfirmDialog.js';
 import { useClipboard } from '../../composables/useClipboard.js';
@@ -22,12 +21,23 @@ const { activeSection } = useSettingsSection({
     sections: ['overview', 'policy', 'sso', 'audit'],
 });
 
-const sectionTabs = computed(() => [
-    { id: 'overview', label: t('settings.security_overview') },
-    { id: 'policy', label: t('settings.security_policy') },
-    { id: 'sso', label: t('settings.single_sign_on') },
-    { id: 'audit', label: t('settings.data_retention') },
-]);
+const securitySectionKeys = {
+    overview: 'security_overview',
+    policy: 'security_policy',
+    sso: 'single_sign_on',
+    audit: 'data_retention',
+};
+
+const pageMeta = computed(() => {
+    const key = securitySectionKeys[activeSection.value] ?? 'security_overview';
+
+    return {
+        title: t(`settings.${key}`),
+        description: t(`settings.descriptions.${key}`),
+    };
+});
+
+const infoSection = computed(() => securitySectionKeys[activeSection.value] ?? 'security_overview');
 
 const { state: confirm, ask: askConfirm, close: closeConfirm, confirm: onConfirm } = useConfirmDialog();
 const { copied: callbackCopied, copy: copyCallback } = useClipboard();
@@ -100,16 +110,10 @@ const saveSso = () => {
 
 <template>
     <SettingsPage
-        :title="$t('settings.security')"
-        :description="$t('settings_security.mfa_policy_data_retention_and_audit_trail')"
+        :title="pageMeta.title"
+        :description="pageMeta.description"
+        :info-section="infoSection"
     >
-        <SettingsSectionNav
-            path="/settings/security"
-            default-section="overview"
-            :sections="sectionTabs"
-            :active-section="activeSection"
-        />
-
         <div v-show="activeSection === 'overview'" class="space-y-6">
                     <div class="grid gap-4 sm:grid-cols-3">
                         <div class="rounded-xl border agent-border agent-panel p-4 shadow-sm">

@@ -22,16 +22,15 @@ const props = defineProps({
     indiaCurrency: { type: Object, default: () => ({}) },
 });
 
-const { t, tm } = useI18n();
+const { t, tm, te } = useI18n();
 const copyPrefix = computed(() => `central.static_pages.${props.page}`);
 const platformName = computed(() => t('app.name'));
 const isPricing = computed(() => props.page === 'pricing');
 const isLegalPage = computed(() => ['privacy', 'terms'].includes(props.page));
 
-const effectiveDate = computed(() => {
-    const value = t(`${copyPrefix.value}.effective_date`);
-    return value !== `${copyPrefix.value}.effective_date` ? value : '';
-});
+const effectiveDate = computed(() => (
+    te(`${copyPrefix.value}.effective_date`) ? t(`${copyPrefix.value}.effective_date`) : ''
+));
 
 const copy = computed(() => ({
     navLabel: t(`${copyPrefix.value}.nav_label`),
@@ -97,11 +96,58 @@ const isIndia = computed(() => (
     props.indiaEnabled && selectedCurrencyCode.value === props.indiaCurrency.code
 ));
 
+const setCurrency = (code) => {
+    selectedCurrencyCode.value = code;
+    document.cookie = `pricing_currency=${code};path=/;max-age=${60 * 60 * 24 * 365};samesite=lax`;
+};
+
+const contactHref = computed(() => (props.contactEmail ? `mailto:${props.contactEmail}` : '/register'));
+
 const { formatPrice } = useCurrency(() => activeCurrency.value);
-const { billingInterval, setBillingInterval, planPrice } = useBillingInterval();
+const { billingInterval, intervalSuffix, planPrice, yearlySavingsPercent } = useBillingInterval();
+
+const planTaglines = computed(() => {
+    const value = tm('central.home.plan_taglines');
+    return value && typeof value === 'object' ? value : {};
+});
+
+const featureLabels = computed(() => {
+    const value = tm('central.home.feature_labels');
+    return value && typeof value === 'object' ? value : {};
+});
+
+const formatLimit = (value) => (
+    value === null || value === 'unlimited'
+        ? t('central.home.plan_limits.unlimited')
+        : value
+);
+
+const planHighlights = (plan) => {
+    const labels = featureLabels.value;
+    const agents = formatLimit(plan.limits?.agents);
+    const tickets = formatLimit(plan.limits?.tickets_monthly);
+    const items = [
+        t('central.home.plan_limits.team_members', { count: agents }),
+        t('central.home.plan_limits.tickets_per_month', { count: tickets }),
+    ];
+
+    (plan.features ?? []).forEach((key) => {
+        if (labels[key]) {
+            items.push(labels[key]);
+        }
+    });
+
+    return items;
+};
 
 const pricedPlans = computed(() => props.plans.filter((plan) => !plan.custom_pricing));
 const customPlans = computed(() => props.plans.filter((plan) => plan.custom_pricing));
+
+const addonPrice = (addon) => (
+    isIndia.value
+        ? (addon.price_monthly_india ?? addon.price_monthly ?? 0)
+        : (addon.price_monthly ?? 0)
+);
 </script>
 
 <template>
@@ -130,19 +176,140 @@ const customPlans = computed(() => props.plans.filter((plan) => plan.custom_pric
 
         <section v-if="isPricing && pricedPlans.length" class="bg-slate-950 pb-16 text-white">
             <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-                <div class="mb-8 flex justify-center">
-                    <div class="inline-flex rounded-xl border border-white/10 bg-white/5 p-1">
-                        <button type="button" class="rounded-lg px-4 py-2 text-sm font-semibold transition" :class="billingInterval === 'month' ? 'bg-white text-slate-900' : 'text-slate-300'" @click="setBillingInterval('month')">Monthly</button>
-                        <button type="button" class="rounded-lg px-4 py-2 text-sm font-semibold transition" :class="billingInterval === 'year' ? 'bg-white text-slate-900' : 'text-slate-300'" @click="setBillingInterval('year')">Yearly</button>
+                <div class="mb-8 flex flex-col items-center">
+                    <div class="inline-flex rounded-xl border border-white/10 bg-white/5 p-1 backdrop-blur">
+                        <button
+                            type="button"
+                            class="rounded-lg px-5 py-2.5 text-sm font-semibold transition"
+                            :class="billingInterval === 'month' ? 'bg-white text-slate-900 shadow-lg' : 'text-slate-300 hover:text-white'"
+                            @click="billingInterval = 'month'"
+                        >{{ $t('central.monthly') }}</button>
+                        <button
+                            type="button"
+                            class="rounded-lg px-5 py-2.5 text-sm font-semibold transition"
+                            :class="billingInterval === 'year' ? 'bg-white text-slate-900 shadow-lg' : 'text-slate-300 hover:text-white'"
+                            @click="billingInterval = 'year'"
+                        >{{ $t('central.yearly') }}</button>
+                    </div>
+                    <p v-if="billingInterval === 'year'" class="mt-3 text-sm font-semibold text-emerald-400">{{ $t('central.save_up_to_2_months_with_annual_billing') }}</p>
+                    <div v-if="indiaEnabled" class="mt-4 flex items-center justify-center gap-2 text-sm text-slate-400">
+                        <svg class="h-4 w-4 text-slate-500" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24">
+                            <circle cx="12" cy="12" r="9" />
+                            <path stroke-linecap="round" d="M3 12h18M12 3c2.5 2.7 2.5 15.3 0 18M12 3c-2.5 2.7-2.5 15.3 0 18" />
+                        </svg>
+                        <span>{{ $t('central.show_prices_in') }}</span>
+                        <div class="inline-flex overflow-hidden rounded-lg border border-white/10">
+                            <button
+                                type="button"
+                                class="px-3 py-1 text-xs font-semibold transition"
+                                :class="selectedCurrencyCode === baseCurrency.code ? 'bg-white text-slate-900' : 'text-slate-300 hover:text-white'"
+                                @click="setCurrency(baseCurrency.code)"
+                            >{{ baseCurrency.symbol }} {{ baseCurrency.code }}</button>
+                            <button
+                                type="button"
+                                class="px-3 py-1 text-xs font-semibold transition"
+                                :class="selectedCurrencyCode === indiaCurrency.code ? 'bg-white text-slate-900' : 'text-slate-300 hover:text-white'"
+                                @click="setCurrency(indiaCurrency.code)"
+                            >{{ indiaCurrency.symbol }} {{ indiaCurrency.code }}</button>
+                        </div>
                     </div>
                 </div>
-                <div class="grid gap-6 lg:grid-cols-3">
-                    <article v-for="plan in pricedPlans" :key="plan.slug" class="rounded-2xl border border-white/10 bg-white/5 p-6">
-                        <h2 class="text-xl font-bold">{{ plan.name }}</h2>
-                        <p class="mt-2 text-sm text-slate-400">{{ plan.description }}</p>
-                        <p class="mt-6 text-3xl font-extrabold">{{ formatPrice(planPrice(plan, isIndia)) }}</p>
-                        <Link href="/register" class="mt-6 inline-flex w-full items-center justify-center rounded-xl bg-blue-600 px-4 py-3 text-sm font-bold text-white">Start trial</Link>
+
+                <div class="flex flex-wrap justify-center gap-8">
+                    <article
+                        v-for="plan in pricedPlans"
+                        :key="plan.slug"
+                        class="relative flex w-full flex-col rounded-3xl border p-6 sm:w-80 sm:p-8 transition"
+                        :class="plan.slug === 'professional'
+                            ? 'border-blue-500/50 bg-gradient-to-b from-blue-600/20 to-slate-900/80 shadow-2xl shadow-blue-600/20 ring-2 ring-blue-500/40 lg:scale-105'
+                            : 'border-white/10 bg-white/5 backdrop-blur hover:border-white/20'"
+                    >
+                        <span v-if="plan.slug === 'professional'" class="absolute -top-3.5 left-1/2 -translate-x-1/2 rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 px-4 py-1 text-xs font-bold text-white shadow-lg">{{ $t('central.most_popular') }}</span>
+                        <h2 class="text-xl font-bold text-white">{{ plan.name }}</h2>
+                        <p v-if="planTaglines[plan.slug]" class="mt-1 text-sm text-slate-400">{{ planTaglines[plan.slug] }}</p>
+                        <p class="mt-5 flex items-baseline gap-1">
+                            <span class="text-4xl font-extrabold tracking-tight text-white sm:text-5xl">{{ formatPrice(planPrice(plan, isIndia)) }}</span>
+                            <span class="text-slate-400">{{ intervalSuffix }}</span>
+                        </p>
+                        <p v-if="billingInterval === 'year' && yearlySavingsPercent(plan, isIndia) > 0" class="mt-2 text-sm font-semibold text-emerald-400">
+                            {{ $t('central.home.pricing_section.save_vs_monthly', { percent: yearlySavingsPercent(plan, isIndia) }) }}
+                        </p>
+                        <ul class="mt-8 flex-1 space-y-3">
+                            <li v-for="item in planHighlights(plan)" :key="item" class="flex items-start gap-2.5 text-sm text-slate-300">
+                                <svg class="mt-0.5 h-4 w-4 shrink-0 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+                                {{ item }}
+                            </li>
+                        </ul>
+                        <Link
+                            href="/register"
+                            class="mt-8 block rounded-2xl py-3.5 text-center text-sm font-bold transition"
+                            :class="plan.slug === 'professional'
+                                ? 'bg-white text-slate-900 shadow-xl hover:bg-slate-100'
+                                : 'border border-white/20 text-white hover:bg-white/10'"
+                        >
+                            {{ $t('central.home.pricing_section.start_trial', { days: trialDays }) }}
+                        </Link>
+                        <p class="mt-3 text-center text-xs text-slate-500">{{ $t('central.no_credit_card_required') }}</p>
                     </article>
+                </div>
+
+                <div
+                    v-for="plan in customPlans"
+                    :key="plan.slug"
+                    class="mx-auto mt-8 max-w-5xl overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-white/10 to-white/5 p-6 backdrop-blur sm:p-8"
+                >
+                    <div class="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+                        <div class="lg:max-w-2xl">
+                            <div class="flex flex-wrap items-center gap-3">
+                                <h3 class="text-2xl font-bold text-white">{{ plan.name }}</h3>
+                                <span class="rounded-full border border-white/20 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-slate-200">{{ $t('central.custom_pricing_price') }}</span>
+                            </div>
+                            <p v-if="planTaglines[plan.slug]" class="mt-2 text-sm text-slate-400">{{ planTaglines[plan.slug] }}</p>
+                            <ul class="mt-5 grid gap-x-6 gap-y-2 sm:grid-cols-2">
+                                <li v-for="item in planHighlights(plan)" :key="item" class="flex items-start gap-2.5 text-sm text-slate-300">
+                                    <svg class="mt-0.5 h-4 w-4 shrink-0 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+                                    {{ item }}
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="shrink-0 text-center lg:text-right">
+                            <a
+                                :href="contactHref"
+                                class="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-white px-8 py-3.5 text-sm font-bold text-slate-900 shadow-xl transition hover:bg-slate-100 sm:w-auto"
+                            >
+                                {{ $t('central.contact_us') }}
+                                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
+                            </a>
+                            <p class="mt-3 text-xs text-slate-400">{{ $t('central.custom_pricing_cta_hint') }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div v-if="addons.length" class="mx-auto mt-16 max-w-5xl">
+                    <div class="text-center">
+                        <p class="text-sm font-semibold uppercase tracking-wider text-violet-400">{{ $t('central.pricing_addons_label') }}</p>
+                        <h3 class="mt-2 text-2xl font-bold text-white sm:text-3xl">{{ $t('central.pricing_addons_title') }}</h3>
+                        <p class="mx-auto mt-3 max-w-2xl text-sm text-slate-400">{{ $t('central.pricing_addons_subtitle') }}</p>
+                    </div>
+                    <div class="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                        <article
+                            v-for="addon in addons"
+                            :key="addon.key"
+                            class="flex flex-col rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur transition hover:border-white/20"
+                        >
+                            <h4 class="text-lg font-bold text-white">{{ addon.name }}</h4>
+                            <p class="mt-2 flex-1 text-sm leading-relaxed text-slate-400">{{ addon.description }}</p>
+                            <p class="mt-5 text-2xl font-extrabold text-white">
+                                {{ formatPrice(addonPrice(addon)) }}
+                                <span class="text-sm font-medium text-slate-400">{{ $t('central.pricing_addon_per_month') }}</span>
+                            </p>
+                        </article>
+                    </div>
+                    <p class="mt-8 text-center text-sm text-slate-400">
+                        <Link href="/features/data-residency" class="font-semibold text-sky-300 transition hover:text-sky-200">
+                            {{ $t('central.feature_pages.data-residency.nav_label') }} →
+                        </Link>
+                    </p>
                 </div>
             </div>
         </section>

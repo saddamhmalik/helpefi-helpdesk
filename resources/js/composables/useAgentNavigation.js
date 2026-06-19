@@ -1,8 +1,9 @@
 import { computed } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 import { useI18n } from 'vue-i18n';
-import { settingsNavHref } from './useSettingsSection.js';
+import { settingsNavHref, isSettingsNavActive } from './useSettingsSection.js';
 import { settingsNavIcon } from './settingsNavIcons.js';
+import { SETTINGS_NAV_TREE } from './settingsNavigationTree.js';
 
 export function useAgentNavigation() {
     const { t } = useI18n();
@@ -21,11 +22,13 @@ export function useAgentNavigation() {
 
     const hasFeature = (feature) => billing.value?.features?.includes(feature) ?? true;
 
-    const settingsItem = (key, options = {}) => ({
-        label: t(`settings.${key}`),
-        description: t(`settings.descriptions.${key}`),
-        ...options,
-    });
+    const resolveItemHref = (item) => {
+        if (item.href) {
+            return item.href;
+        }
+
+        return settingsNavHref(item.path, item.section, item.defaultSection);
+    };
 
     const prepareSettingsItems = (items) => items
         .filter((item) => {
@@ -47,12 +50,29 @@ export function useAgentNavigation() {
 
             return true;
         })
-        .map((item) => ({
-            ...item,
-            icon: settingsNavIcon(item.href),
-            locked: Boolean(item.feature && !hasFeature(item.feature)),
-            lockedLabel: item.lockedLabel ?? t('common.enterprise'),
-        }));
+        .map((item) => {
+            const href = resolveItemHref(item);
+
+            return {
+                ...item,
+                href,
+                label: t(`settings.${item.key}`),
+                description: t(`settings.descriptions.${item.key}`),
+                icon: settingsNavIcon(href),
+                locked: Boolean(item.feature && !hasFeature(item.feature)),
+                lockedLabel: item.lockedLabel ?? t('common.enterprise'),
+            };
+        });
+
+    const settingsNavGroups = computed(() => SETTINGS_NAV_TREE
+        .map((group) => ({
+            id: group.id,
+            label: t(group.labelKey),
+            items: prepareSettingsItems(group.items),
+        }))
+        .filter((group) => group.items.length > 0));
+
+    const flatSettingsNavItems = computed(() => settingsNavGroups.value.flatMap((group) => group.items));
 
     const filterItems = (items) => items.filter((item) => {
         if (item.admin && !isAdmin.value) {
@@ -73,89 +93,6 @@ export function useAgentNavigation() {
 
         return true;
     });
-
-    const settingsNavGroups = computed(() => [
-        {
-            id: 'settings-workspace',
-            label: t('settings.groups.workspace'),
-            items: prepareSettingsItems([
-                settingsItem('overview', { href: '/settings', admin: true }),
-                settingsItem('api_docs', { href: '/api/docs', admin: true }),
-                settingsItem('custom_domain', { href: '/settings/custom-domain', admin: true, feature: 'custom_domain', showWhenLocked: true }),
-                settingsItem('brands', { href: '/settings/brands', admin: true }),
-                settingsItem('billing', { href: '/settings/billing', admin: true }),
-                settingsItem('platform_feedback', { href: '/settings/platform-feedback', admin: true }),
-            ]),
-        },
-        {
-            id: 'settings-personal',
-            label: t('settings.groups.personal'),
-            items: prepareSettingsItems([
-                settingsItem('profile', { href: '/settings/profile' }),
-                settingsItem('macros', { href: '/settings/macros' }),
-                settingsItem('notifications', { href: '/settings/notifications', admin: true }),
-            ]),
-        },
-        {
-            id: 'settings-team',
-            label: t('settings.groups.team'),
-            items: prepareSettingsItems([
-                settingsItem('agents', { href: '/settings/members', admin: true }),
-                settingsItem('teams_departments', { href: '/settings/workforce', admin: true }),
-                settingsItem('skills', { href: '/settings/skills', admin: true }),
-                settingsItem('roles_permissions', { href: '/settings/roles', admin: true }),
-            ]),
-        },
-        {
-            id: 'settings-tickets',
-            label: t('settings.groups.tickets_sla'),
-            items: prepareSettingsItems([
-                settingsItem('sla_business_hours', { href: '/settings/sla', admin: true }),
-                settingsItem('ticket_statuses', { href: '/settings/ticket-statuses', admin: true }),
-                settingsItem('auto_assignment', { href: '/settings/assignment', admin: true }),
-                settingsItem('csat_surveys', { href: '/settings/csat', admin: true }),
-                settingsItem('ticket_settings', { href: '/settings/tickets', admin: true }),
-            ]),
-        },
-        {
-            id: 'settings-channels',
-            label: t('settings.groups.channels'),
-            items: prepareSettingsItems([
-                settingsItem('email', { href: '/settings/email', admin: true, feature: 'channels' }),
-                settingsItem('email_templates', { href: '/settings/email-templates', admin: true, feature: 'channels' }),
-                settingsItem('ticket_sources', { href: '/settings/channels', admin: true, feature: 'channels' }),
-                settingsItem('whatsapp_sms', { href: '/settings/messaging', admin: true, feature: 'channels' }),
-            ]),
-        },
-        {
-            id: 'settings-workflow',
-            label: t('settings.groups.workflow'),
-            items: prepareSettingsItems([
-                settingsItem('automation_rules', { href: '/settings/automation', admin: true, feature: 'automation' }),
-                settingsItem('integrations', { href: '/settings/integrations', admin: true, feature: 'integrations' }),
-            ]),
-        },
-        {
-            id: 'settings-security',
-            label: t('settings.groups.security'),
-            items: prepareSettingsItems([
-                settingsItem('security', { href: '/settings/security', admin: true }),
-                settingsItem('audit_logs', { href: '/settings/audit-logs', permission: 'audit.view' }),
-            ]),
-        },
-        {
-            id: 'settings-product',
-            label: t('settings.groups.product'),
-            items: prepareSettingsItems([
-                settingsItem('ai_assistant', { href: '/settings/ai', admin: true, feature: 'ai' }),
-                settingsItem('service_catalog', { href: '/settings/service-catalog', admin: true, feature: 'service_catalog' }),
-                settingsItem('service_desk', { href: '/service-desk', admin: true, feature: 'service_desk', showWhenLocked: true }),
-                settingsItem('change_approvals', { href: '/settings/service-desk/approvals', admin: true, feature: 'service_desk' }),
-            ]),
-        },
-    ].filter((group) => group.items.length > 0));
-
-    const flatSettingsNavItems = computed(() => settingsNavGroups.value.flatMap((group) => group.items));
 
     const navSections = computed(() => {
         const sections = [
@@ -256,6 +193,21 @@ export function useAgentNavigation() {
         return null;
     };
 
+    const settingsBreadcrumbForUrl = (url) => {
+        for (const group of settingsNavGroups.value) {
+            const item = group.items.find((entry) => isSettingsNavActive(entry.href, url));
+
+            if (item) {
+                return {
+                    group: group.label,
+                    page: item.label,
+                };
+            }
+        }
+
+        return null;
+    };
+
     return {
         user,
         isAdmin,
@@ -269,5 +221,6 @@ export function useAgentNavigation() {
         homeHref,
         settingsHref,
         settingsLabelForHref,
+        settingsBreadcrumbForUrl,
     };
 }

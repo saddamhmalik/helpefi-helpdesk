@@ -150,7 +150,7 @@ const isProtected = (role) => props.protectedRoles.includes(role.name);
 </script>
 
 <template>
-    <SettingsPage :title="$t('settings.roles_permissions')" :description="$t('settings_roles.create_roles_and_control_what_each_role_can_access')">
+    <SettingsPage :title="$t('settings.roles_permissions')" :description="$t('settings.descriptions.roles_permissions')" info-section="roles_permissions">
         <template #actions>
             <button type="button" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700" @click="showCreate = true">{{ $t('settings_roles.create_role') }}</button>
         </template>

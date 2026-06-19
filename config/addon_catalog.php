@@ -22,4 +22,18 @@ return [
         'price_monthly' => 29,
         'price_monthly_india' => 1499,
     ],
+    'byo_database' => [
+        'name' => 'Bring Your Own Database',
+        'feature' => 'byo_database',
+        'description' => 'Store workspace data in your own MySQL (RDS, Aurora, or self-hosted). Includes automatic migration from helpefi-managed databases.',
+        'price_monthly' => 49,
+        'price_monthly_india' => 2499,
+    ],
+    'byo_storage' => [
+        'name' => 'Bring Your Own Storage',
+        'feature' => 'byo_storage',
+        'description' => 'Store attachments and avatars in your own AWS S3 or Cloudflare R2 bucket. Includes automatic file migration.',
+        'price_monthly' => 19,
+        'price_monthly_india' => 999,
+    ],
 ];

@@ -74,6 +74,32 @@ class TicketSettingTest extends TestCase
                 ->where('settings.user_fields.0.name', 'employee_id'));
     }
 
+    public function test_admin_can_update_sync_ticket_status_from_external_issues(): void
+    {
+        $admin = User::factory()->admin()->create();
+
+        $this->actingAs($admin)
+            ->put('/settings/tickets', [
+                'ticket_number_prefix' => 'HD',
+                'sync_ticket_status_from_external_issues' => true,
+                'contact_fields' => [],
+                'ticket_fields' => [],
+                'user_fields' => [],
+            ])
+            ->assertRedirect();
+
+        $this->assertDatabaseHas('helpdesk_settings', [
+            'sync_ticket_status_from_external_issues' => true,
+        ]);
+
+        $this->actingAs($admin)
+            ->get('/settings/tickets')
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('Settings/Tickets')
+                ->where('settings.sync_ticket_status_from_external_issues', true));
+    }
+
     public function test_new_tickets_use_configured_prefix(): void
     {
         HelpdeskSetting::query()->create([

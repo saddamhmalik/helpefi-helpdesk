@@ -10,4 +10,6 @@ return [
     'sso_no_agent_account' => 'No agent account exists for this email. Ask your administrator to invite you.',
     'sso_agents_only' => 'SSO login is only available for agent and admin accounts.',
     'sso_domain_not_allowed' => 'Your email domain is not allowed for SSO login.',
+    'integration_not_configured' => ':provider is not set up. Ask an admin to configure it in Settings → Integrations.',
+    'integration_request_failed' => ':provider could not complete the request. Check the integration settings and try again.',
 ];

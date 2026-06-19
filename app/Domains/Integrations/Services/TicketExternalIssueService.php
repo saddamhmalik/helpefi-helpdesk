@@ -6,10 +6,12 @@ use App\Domains\Billing\Services\BillingService;
 use App\Domains\Integrations\Models\IntegrationConnection;
 use App\Domains\Integrations\Models\TicketExternalIssue;
 use App\Domains\Integrations\Repositories\TicketExternalIssueRepository;
+use App\Domains\Settings\Services\HelpdeskSettingService;
 use App\Domains\Tickets\Models\Ticket;
 use App\Domains\Tickets\Models\TicketStatus;
 use App\Domains\Tickets\Repositories\TicketRepository;
 use App\Domains\Tickets\Services\TicketService;
+use Illuminate\Http\Client\RequestException;
 use InvalidArgumentException;
 
 class TicketExternalIssueService
@@ -21,6 +23,7 @@ class TicketExternalIssueService
         private JiraIntegrationService $jira,
         private LinearIntegrationService $linear,
         private BillingService $billing,
+        private HelpdeskSettingService $helpdeskSettings,
     ) {
     }
 
@@ -30,6 +33,87 @@ class TicketExternalIssueService
             ->map(fn (TicketExternalIssue $issue) => $this->serialize($issue))
             ->values()
             ->all();
+    }
+
+    public function refreshForTicket(int $ticketId): array
+    {
+        foreach ($this->issues->forTicket($ticketId) as $issue) {
+            try {
+                $payload = match ($issue->provider) {
+                    IntegrationConnection::PROVIDER_JIRA => $this->jira->fetchIssue($issue->external_key),
+                    IntegrationConnection::PROVIDER_LINEAR => $this->linear->fetchIssue($issue->external_id ?: $issue->external_key),
+                    default => null,
+                };
+
+                if (! $payload) {
+                    continue;
+                }
+
+                $previousStatus = (string) ($issue->status ?? '');
+
+                $this->issues->update($issue, [
+                    'status' => $payload['status'],
+                    'external_url' => $payload['external_url'] ?? $issue->external_url,
+                    'last_synced_at' => now(),
+                ]);
+
+                if ($payload['status'] !== '' && $payload['status'] !== $previousStatus) {
+                    $this->syncTicketFromExternalStatus($ticketId, $payload['status']);
+                }
+            } catch (\Throwable) {
+            }
+        }
+
+        return $this->listForTicket($ticketId);
+    }
+
+    public function configuredIssueProviders(): array
+    {
+        return collect([
+            IntegrationConnection::PROVIDER_JIRA => $this->jira->isConfigured(),
+            IntegrationConnection::PROVIDER_LINEAR => $this->linear->isConfigured(),
+        ])
+            ->filter()
+            ->keys()
+            ->values()
+            ->all();
+    }
+
+    public function integrationErrorMessage(string $provider, InvalidArgumentException $exception): string
+    {
+        $message = $exception->getMessage();
+
+        if (str_contains($message, 'is not configured') || str_contains($message, 'setting missing')) {
+            return __('messages.integration_not_configured', [
+                'provider' => ucfirst($provider),
+            ]);
+        }
+
+        if ($provider === IntegrationConnection::PROVIDER_LINEAR) {
+            return 'Linear: '.$message;
+        }
+
+        if ($provider === IntegrationConnection::PROVIDER_JIRA) {
+            return 'Jira: '.$message;
+        }
+
+        return $message;
+    }
+
+    public function integrationApiErrorMessage(string $provider, RequestException $exception): string
+    {
+        $body = $exception->response?->json();
+        $message = data_get($body, 'errors.0.message')
+            ?? data_get($body, 'errorMessages.0.message')
+            ?? data_get($body, 'message');
+
+        if (is_string($message) && $message !== '') {
+            return ucfirst($provider).': '.$message;
+        }
+
+        return __('messages.integration_request_failed', [
+            'provider' => ucfirst($provider),
+        ]);
     }
 
     public function createIssue(int $ticketId, string $provider, int $userId): array
@@ -148,7 +232,8 @@ class TicketExternalIssueService
             return;
         }
 
-        $issue = $this->issues->findByExternal(IntegrationConnection::PROVIDER_LINEAR, $issueId);
+        $issue = $this->issues->findByExternal(IntegrationConnection::PROVIDER_LINEAR, $issueId)
+            ?? $this->issues->findByKey(IntegrationConnection::PROVIDER_LINEAR, (string) data_get($payload, 'data.identifier', ''));
 
         if (! $issue) {
             return;
@@ -165,6 +250,10 @@ class TicketExternalIssueService
 
     private function syncTicketFromExternalStatus(int $ticketId, string $status): void
     {
+        if (! $this->helpdeskSettings->syncTicketStatusFromExternalIssues()) {
+            return;
+        }
+
         $closedNames = config('integrations.closed_status_names', []);
         $isClosed = in_array(strtolower($status), $closedNames, true);
 

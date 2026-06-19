@@ -7,28 +7,14 @@ import SettingsSidebar from '../Components/SettingsSidebar.vue';
 import SettingsMobileNav from '../Components/SettingsMobileNav.vue';
 import { useAgentNavigation } from '../composables/useAgentNavigation.js';
 import { settingsLayoutMeta } from '../composables/useSettingsLayoutMeta.js';
-import { isSettingsNavActive } from '../composables/useSettingsSection.js';
 
 const { t } = useI18n();
 
 const page = usePage();
-const { settingsNavGroups } = useAgentNavigation();
+const { settingsBreadcrumbForUrl } = useAgentNavigation();
 const currentUrl = computed(() => page.url.split('#')[0]);
 
-const breadcrumb = computed(() => {
-    for (const group of settingsNavGroups.value) {
-        const item = group.items.find((entry) => isSettingsNavActive(entry.href, currentUrl.value));
-
-        if (item) {
-            return {
-                group: group.label,
-                page: item.label,
-            };
-        }
-    }
-
-    return null;
-});
+const breadcrumb = computed(() => settingsBreadcrumbForUrl(currentUrl.value));
 
 const title = computed(() => settingsLayoutMeta.title);
 const description = computed(() => settingsLayoutMeta.description);
@@ -47,10 +33,10 @@ watch(currentUrl, () => {
     <Head :title="headTitle" />
     <AgentLayout>
         <div class="flex min-h-0 flex-1 flex-col lg:overflow-hidden">
-            <div class="mx-auto grid min-h-0 w-full max-w-7xl flex-1 grid-cols-1 items-stretch overflow-hidden lg:grid-cols-[15rem_minmax(0,1fr)] lg:gap-x-10">
+            <div class="grid min-h-0 w-full flex-1 grid-cols-1 items-stretch overflow-hidden lg:grid-cols-[15rem_minmax(0,1fr)] lg:gap-x-6">
                 <SettingsSidebar />
 
-                <div ref="contentRef" class="min-h-0 min-w-0 overflow-y-auto overscroll-contain pb-8 scrollbar-gutter-stable">
+                <div ref="contentRef" class="min-h-0 min-w-0 overflow-y-auto overscroll-contain px-4 pb-8 sm:px-6 scrollbar-gutter-stable">
                     <SettingsMobileNav :breadcrumb="breadcrumb" />
 
                     <nav v-if="breadcrumb" class="mb-3 hidden flex-wrap items-center gap-1.5 text-sm agent-text-subtle lg:flex" aria-label="Breadcrumb">
@@ -64,7 +50,7 @@ watch(currentUrl, () => {
                     <div class="mb-6 flex flex-wrap items-start justify-between gap-4">
                         <div>
                             <h1 class="text-2xl font-semibold tracking-tight agent-text">{{ title }}</h1>
-                            <p v-if="description" class="mt-1 text-sm agent-text-subtle">{{ description }}</p>
+                            <p v-if="description" class="mt-1 text-sm agent-text-subtle" dir="auto">{{ description }}</p>
                         </div>
                         <div id="settings-page-actions" class="flex flex-wrap items-center gap-2" />
                     </div>

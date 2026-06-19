@@ -2,7 +2,6 @@
 import { computed, onMounted, ref, watch } from 'vue';
 import { router, useForm, usePage } from '@inertiajs/vue3';
 import SettingsPage from '../../Components/SettingsPage.vue';
-import SettingsSectionNav from '../../Components/SettingsSectionNav.vue';
 import { useSettingsSection } from '../../composables/useSettingsSection.js';
 import { useCurrency } from '../../composables/useCurrency.js';
 import { useBillingInterval } from '../../composables/useBillingInterval.js';
@@ -20,7 +19,7 @@ const { open: openRazorpayCheckout } = useRazorpayCheckout();
 
 const { formatDateTime, formatDate } = useDateTime();
 
-const { t } = useI18n();
+const { t, te } = useI18n();
 
 const billingSections = computed(() => ['usage', 'plans', 'addons', 'payments', 'features']);
 
@@ -29,13 +28,24 @@ const { activeSection } = useSettingsSection({
     sections: billingSections.value,
 });
 
-const sectionTabs = computed(() => [
-    { id: 'usage', label: t('settings.usage_billing') },
-    { id: 'plans', label: t('settings.change_plan') },
-    { id: 'addons', label: t('settings.addons') },
-    { id: 'payments', label: t('settings.payment_history', 'Payment history') },
-    { id: 'features', label: t('settings.plan_features') },
-]);
+const billingSectionKeys = {
+    usage: 'usage_billing',
+    plans: 'change_plan',
+    addons: 'addons',
+    payments: 'payment_history',
+    features: 'plan_features',
+};
+
+const pageMeta = computed(() => {
+    const key = billingSectionKeys[activeSection.value] ?? 'usage_billing';
+
+    return {
+        title: t(`settings.${key}`),
+        description: t(`settings.descriptions.${key}`),
+    };
+});
+
+const infoSection = computed(() => billingSectionKeys[activeSection.value] ?? 'usage_billing');
 
 const formatMoney = (amount, currencyCode) => {
     const value = (amount ?? 0) / 100;
@@ -57,6 +67,12 @@ const paymentStatusClass = (status) => ({
     failed: 'bg-red-50 text-red-700 ring-red-200 dark:bg-red-950/50 dark:text-red-300 dark:ring-red-900/60',
     refunded: 'bg-amber-50 text-amber-700 ring-amber-200 dark:bg-amber-950/50 dark:text-amber-300 dark:ring-amber-900/60',
 }[status] ?? 'bg-slate-50 text-slate-600 ring-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:ring-slate-700');
+
+const paymentStatusLabel = (status) => {
+    const key = `central.${status}`;
+
+    return te(key) ? t(key) : status;
+};
 
 const form = useForm({
     plan: props.billing.plan?.slug ?? props.billing.available_plans[0]?.slug ?? 'starter',
@@ -241,16 +257,10 @@ const formatLimit = (limit) => (limit === 'unlimited' ? t('settings_billing.unli
 
 <template>
     <SettingsPage
-        :title="$t('settings.billing')"
-        :description="$t('settings_billing.manage_your_workspace_subscription_billing_is_handled_on_the_central_p')"
+        :title="pageMeta.title"
+        :description="pageMeta.description"
+        :info-section="infoSection"
     >
-        <SettingsSectionNav
-            path="/settings/billing"
-            default-section="usage"
-            :sections="sectionTabs"
-            :active-section="activeSection"
-        />
-
         <div v-if="checkoutSuccess" class="mb-4 rounded-xl border border-emerald-200 dark:border-emerald-900/60 bg-emerald-50 dark:bg-emerald-950/40 px-4 py-3 text-sm text-emerald-800 dark:text-emerald-200">
             Payment received. Your plan will update shortly once Razorpay confirms the subscription.
         </div>
@@ -471,19 +481,21 @@ const formatLimit = (limit) => (limit === 'unlimited' ? t('settings_billing.unli
                         ? 'border-emerald-200 bg-emerald-50 dark:border-emerald-900/60 dark:bg-emerald-950/40'
                         : 'agent-border agent-panel'"
                 >
-                    <div class="flex flex-wrap items-start justify-between gap-4">
-                        <div>
+                    <div class="flex items-start justify-between gap-4">
+                        <div class="min-w-0 flex-1">
                             <p class="font-medium agent-text">{{ addon.name }}</p>
                             <p class="mt-1 text-sm agent-text-muted">{{ addon.description }}</p>
                             <p class="mt-2 text-sm font-semibold agent-text">{{ formatAddonPrice(addon.price_monthly) }}/mo</p>
                         </div>
-                        <div class="flex items-center gap-2">
+                        <div class="flex shrink-0 flex-col items-end gap-2 sm:flex-row sm:items-center">
                             <span
                                 v-if="addon.active"
                                 class="rounded-full px-2.5 py-1 text-xs font-semibold"
                                 :class="addon.trial_access
                                     ? 'bg-blue-100 text-blue-800 dark:bg-blue-950/50 dark:text-blue-200'
-                                    : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-200'"
+                                    : addon.included_in_plan
+                                        ? 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200'
+                                        : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-200'"
                             >
                                 {{ addonStatusLabel(addon) }}
                             </span>
@@ -496,7 +508,7 @@ const formatLimit = (limit) => (limit === 'unlimited' ? t('settings_billing.unli
                                 {{ $t('settings_billing.cancel_addon') }}
                             </button>
                             <button
-                                v-else
+                                v-else-if="!addon.included_in_plan"
                                 type="button"
                                 class="rounded-lg bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
                                 :disabled="addonPurchaseDisabled(addon)"
@@ -518,27 +530,27 @@ const formatLimit = (limit) => (limit === 'unlimited' ? t('settings_billing.unli
         </div>
 
         <div v-show="activeSection === 'payments'" class="agent-card">
-            <h2 class="text-lg font-medium agent-text">{{ $t('settings.payment_history', 'Payment history') }}</h2>
-            <p class="mt-1 text-sm agent-text-subtle">{{ $t('settings_billing.payment_history_description', 'Charges and receipts for this workspace.') }}</p>
+            <h2 class="text-lg font-medium agent-text">{{ $t('settings.payment_history') }}</h2>
+            <p class="mt-1 text-sm agent-text-subtle" dir="auto">{{ $t('settings.descriptions.payment_history') }}</p>
 
             <div v-if="payments.length" class="mt-4 overflow-x-auto">
                 <table class="min-w-full text-sm">
                     <thead>
-                        <tr class="border-b agent-border text-left agent-text-subtle">
-                            <th class="px-4 py-3 font-semibold">{{ $t('central.date', 'Date') }}</th>
-                            <th class="px-4 py-3 font-semibold">{{ $t('central.amount', 'Amount') }}</th>
-                            <th class="px-4 py-3 font-semibold">{{ $t('settings.change_plan') }}</th>
-                            <th class="px-4 py-3 font-semibold">{{ $t('central.status', 'Status') }}</th>
-                            <th class="px-4 py-3 font-semibold">{{ $t('central.invoice', 'Invoice') }}</th>
+                        <tr class="border-b agent-border text-start agent-text-subtle">
+                            <th class="px-4 py-3 font-semibold">{{ $t('central.date') }}</th>
+                            <th class="px-4 py-3 font-semibold">{{ $t('central.amount') }}</th>
+                            <th class="px-4 py-3 font-semibold">{{ $t('settings_billing.plan') }}</th>
+                            <th class="px-4 py-3 font-semibold">{{ $t('central.status') }}</th>
+                            <th class="px-4 py-3 font-semibold">{{ $t('central.invoice') }}</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr v-for="payment in payments" :key="payment.id" class="border-b agent-border last:border-0">
-                            <td class="whitespace-nowrap px-4 py-3 agent-text">{{ formatDate(payment.paid_at ?? payment.created_at) }}</td>
-                            <td class="whitespace-nowrap px-4 py-3 font-medium agent-text">{{ formatMoney(payment.amount, payment.currency) }}</td>
+                            <td class="whitespace-nowrap px-4 py-3 agent-text" dir="ltr">{{ formatDate(payment.paid_at ?? payment.created_at) }}</td>
+                            <td class="whitespace-nowrap px-4 py-3 font-medium agent-text" dir="ltr">{{ formatMoney(payment.amount, payment.currency) }}</td>
                             <td class="whitespace-nowrap px-4 py-3 agent-text">{{ payment.plan_name ?? '—' }}</td>
                             <td class="whitespace-nowrap px-4 py-3">
-                                <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium capitalize ring-1 ring-inset" :class="paymentStatusClass(payment.status)">{{ payment.status }}</span>
+                                <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ring-1 ring-inset" :class="paymentStatusClass(payment.status)">{{ paymentStatusLabel(payment.status) }}</span>
                             </td>
                             <td class="whitespace-nowrap px-4 py-3">
                                 <a
@@ -548,9 +560,9 @@ const formatLimit = (limit) => (limit === 'unlimited' ? t('settings_billing.unli
                                     rel="noopener noreferrer"
                                     class="font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
                                 >
-                                    {{ payment.invoice_number ?? $t('central.view', 'View') }}
+                                    {{ payment.invoice_number ?? $t('central.view') }}
                                 </a>
-                                <span v-else class="agent-text-subtle">{{ payment.invoice_number ?? '—' }}</span>
+                                <span v-else class="agent-text-subtle" dir="ltr">{{ payment.invoice_number ?? '—' }}</span>
                             </td>
                         </tr>
                     </tbody>
@@ -558,7 +570,7 @@ const formatLimit = (limit) => (limit === 'unlimited' ? t('settings_billing.unli
             </div>
 
             <p v-else class="mt-4 rounded-lg border agent-border agent-panel-muted px-4 py-6 text-center text-sm agent-text-subtle">
-                {{ $t('settings_billing.no_payments_yet', 'No payments yet. Charges will appear here after your first successful payment.') }}
+                {{ $t('settings_billing.no_payments_yet') }}
             </p>
         </div>
 

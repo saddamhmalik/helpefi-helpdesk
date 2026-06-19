@@ -44,7 +44,7 @@ const updateOrigins = (channel, value) => {
 </script>
 
 <template>
-    <SettingsPage :title="$t('settings.groups.channels')" :description="$t('settings_channels.manage_omnichannel_sources_for_incoming_conversations')">
+    <SettingsPage :title="$t('settings.ticket_sources')" :description="$t('settings.descriptions.ticket_sources')" info-section="ticket_sources">
         <PlanFeatureBanner feature="channels" />
 
         <p class="-mt-4 mb-6 text-sm agent-text-muted">

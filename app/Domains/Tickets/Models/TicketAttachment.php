@@ -2,10 +2,10 @@
 
 namespace App\Domains\Tickets\Models;
 
+use App\Domains\Tenancy\Services\TenantStorageResolver;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Support\Facades\Storage;
 
 class TicketAttachment extends Model
 {
@@ -17,6 +17,7 @@ class TicketAttachment extends Model
         'user_id',
         'filename',
         'path',
+        'storage_disk',
         'mime_type',
         'size',
     ];
@@ -38,6 +39,6 @@ class TicketAttachment extends Model
 
     public function getUrlAttribute(): string
     {
-        return Storage::disk('public')->url($this->path);
+        return app(TenantStorageResolver::class)->url($this->path, $this->storage_disk);
     }
 }

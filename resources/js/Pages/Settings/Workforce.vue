@@ -161,7 +161,7 @@ const destroyTeam = (team) => {
 </script>
 
 <template>
-    <SettingsPage :title="$t('settings_workforce.departments_teams')" :description="$t('settings_workforce.organize_agents_into_departments_with_team_leads_and_department_heads')">
+    <SettingsPage :title="$t('settings.teams_departments')" :description="$t('settings.descriptions.teams_departments')" info-section="teams_departments">
         <template #actions>
             <button type="button" class="rounded-lg border agent-border px-4 py-2 text-sm text-slate-700 dark:text-slate-300 transition agent-hover-surface" @click="openCreateDepartment">{{ $t('settings_workforce.add_department') }}</button>
             <button type="button" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700" @click="openCreateTeam()">{{ $t('settings_workforce.add_team') }}</button>

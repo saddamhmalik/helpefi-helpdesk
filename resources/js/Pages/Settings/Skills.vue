@@ -62,7 +62,7 @@ const destroySkill = (skill) => {
 </script>
 
 <template>
-    <SettingsPage :title="$t('settings_skills.agent_skills')" :description="$t('settings_skills.tag_agents_with_skills_for_priority-aware_auto-assignment')">
+    <SettingsPage :title="$t('settings.skills')" :description="$t('settings.descriptions.skills')" info-section="skills">
         <template #actions>
             <button type="button" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700" @click="openCreate">{{ $t('settings_skills.add_skill') }}</button>
         </template>

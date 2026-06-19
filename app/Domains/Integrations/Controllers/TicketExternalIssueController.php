@@ -4,8 +4,11 @@ namespace App\Domains\Integrations\Controllers;
 
 use App\Domains\Integrations\Services\TicketExternalIssueService;
 use App\Http\Controllers\Controller;
+use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Http\Client\RequestException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use InvalidArgumentException;
 
 class TicketExternalIssueController extends Controller
 {
@@ -20,10 +23,18 @@ class TicketExternalIssueController extends Controller
             'reference' => ['nullable', 'string', 'max:100'],
         ]);
 
-        if (! empty($data['reference'])) {
-            $this->issues->linkIssue($ticket, $data['provider'], $data['reference']);
-        } else {
-            $this->issues->createIssue($ticket, $data['provider'], $request->user()->id);
+        try {
+            if (! empty($data['reference'])) {
+                $this->issues->linkIssue($ticket, $data['provider'], $data['reference']);
+            } else {
+                $this->issues->createIssue($ticket, $data['provider'], $request->user()->id);
+            }
+        } catch (InvalidArgumentException $exception) {
+            return back()->with('error', $this->issues->integrationErrorMessage($data['provider'], $exception));
+        } catch (RequestException $exception) {
+            return back()->with('error', $this->issues->integrationApiErrorMessage($data['provider'], $exception));
+        } catch (AuthorizationException $exception) {
+            return back()->with('error', $exception->getMessage());
         }
 
         return back()->with('success', 'External issue linked.');
@@ -34,5 +45,12 @@ class TicketExternalIssueController extends Controller
         $this->issues->unlinkIssue($ticket, $issue);
 
         return back()->with('success', 'External issue unlinked.');
+    }
+
+    public function sync(int $ticket): RedirectResponse
+    {
+        $this->issues->refreshForTicket($ticket);
+
+        return back();
     }
 }

@@ -23,7 +23,7 @@ const save = () => form.put('/settings/messaging', { preserveScroll: true });
 </script>
 
 <template>
-    <SettingsPage :title="$t('settings.whatsapp_sms')" :description="$t('settings_messaging.twilio_messaging_for_whatsapp_and_sms_channels')">
+    <SettingsPage :title="$t('settings.whatsapp_sms')" :description="$t('settings.descriptions.whatsapp_sms')" info-section="whatsapp_sms">
         <PlanFeatureBanner feature="channels" />
 
         <p class="-mt-4 mb-6 text-sm agent-text-muted">

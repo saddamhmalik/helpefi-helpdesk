@@ -190,44 +190,79 @@ class RazorpayBillingService
         }
 
         if ($addonKey !== null && $addonKey !== '') {
-            return $this->confirmAddonSubscriptionPayment($subscription, $subscriptionId, $addonKey);
+            $result = $this->confirmAddonSubscriptionPayment($subscription, $subscriptionId, $addonKey);
+        } elseif (is_array($pendingPlanCheckout = session('razorpay_plan_checkout'))
+            && ($pendingPlanCheckout['subscription_id'] ?? null) === $subscriptionId) {
+            $result = $this->confirmPlanChangeCheckout($subscription, $subscriptionId, $pendingPlanCheckout);
+        } else {
+            if (! $subscription->razorpay_subscription_id) {
+                throw ValidationException::withMessages([
+                    'razorpay' => 'No pending checkout session was found for this workspace. Please start checkout again.',
+                ]);
+            }
+
+            if ($subscription->razorpay_subscription_id !== $subscriptionId) {
+                throw ValidationException::withMessages([
+                    'razorpay' => 'This checkout session does not match your workspace subscription.',
+                ]);
+            }
+
+            try {
+                $entity = $this->fetchedSubscription($subscriptionId)->toArray();
+            } catch (Error $exception) {
+                Log::warning('Razorpay subscription fetch failed after payment verification', [
+                    'subscription_id' => $subscriptionId,
+                    'message' => $exception->getMessage(),
+                ]);
+
+                throw ValidationException::withMessages([
+                    'razorpay' => 'Payment was received but the subscription could not be confirmed yet. Please refresh billing in a moment.',
+                ]);
+            }
+
+            $result = $this->lifecycle->applyRazorpaySubscription(
+                $subscription,
+                $this->normalizeSubscriptionPayload($entity),
+            );
         }
 
-        $pendingPlanCheckout = session('razorpay_plan_checkout');
+        $this->recordVerifiedPayment($paymentId, $subscriptionId);
 
-        if (is_array($pendingPlanCheckout) && ($pendingPlanCheckout['subscription_id'] ?? null) === $subscriptionId) {
-            return $this->confirmPlanChangeCheckout($subscription, $subscriptionId, $pendingPlanCheckout);
+        return $result;
+    }
+
+    public function syncTenantPaymentHistory(string $tenantId): void
+    {
+        if (! $this->isEnabled()) {
+            return;
         }
 
-        if (! $subscription->razorpay_subscription_id) {
-            throw ValidationException::withMessages([
-                'razorpay' => 'No pending checkout session was found for this workspace. Please start checkout again.',
-            ]);
+        $subscription = Subscription::query()->where('tenant_id', $tenantId)->first();
+
+        if (! $subscription) {
+            return;
         }
 
-        if ($subscription->razorpay_subscription_id !== $subscriptionId) {
-            throw ValidationException::withMessages([
-                'razorpay' => 'This checkout session does not match your workspace subscription.',
-            ]);
+        $subscriptionEntities = $this->subscriptionEntitiesForTenant($subscription, $tenantId);
+        $syncedPaymentIds = [];
+
+        foreach ($subscriptionEntities as $subscriptionId => $subscriptionEntity) {
+            $syncedPaymentIds = array_merge(
+                $syncedPaymentIds,
+                $this->syncPaymentsFromSubscriptionInvoices($subscriptionId, $subscriptionEntity, $tenantId),
+            );
         }
 
-        try {
-            $entity = $this->fetchedSubscription($subscriptionId)->toArray();
-        } catch (Error $exception) {
-            Log::warning('Razorpay subscription fetch failed after payment verification', [
-                'subscription_id' => $subscriptionId,
-                'message' => $exception->getMessage(),
-            ]);
+        $tenant = Tenant::query()->find($tenantId);
 
-            throw ValidationException::withMessages([
-                'razorpay' => 'Payment was received but the subscription could not be confirmed yet. Please refresh billing in a moment.',
-            ]);
+        if ($tenant?->razorpay_customer_id) {
+            $this->syncPaymentsFromCustomer(
+                $tenant->razorpay_customer_id,
+                $tenantId,
+                $subscriptionEntities,
+                $syncedPaymentIds,
+            );
         }
-
-        return $this->lifecycle->applyRazorpaySubscription(
-            $subscription,
-            $this->normalizeSubscriptionPayload($entity),
-        );
     }
 
     /** @return array<string, mixed>|Subscription */
@@ -240,17 +275,6 @@ class RazorpayBillingService
         if (! ($addon['enabled'] ?? true)) {
             throw ValidationException::withMessages([
                 'addon' => 'This add-on is not available.',
-            ]);
-        }
-
-        $planId = AddonCatalogDefinition::razorpayPlanIdForRegion(
-            $addon,
-            $this->isIndiaCurrency((string) ($subscription->currency ?: $this->centralSettings->currency())),
-        );
-
-        if (! $planId) {
-            throw ValidationException::withMessages([
-                'addon' => 'This add-on is not configured for Razorpay billing yet.',
             ]);
         }
 
@@ -270,6 +294,17 @@ class RazorpayBillingService
 
         if (in_array($addonKey, $subscription->active_addons ?? [], true)) {
             return $subscription;
+        }
+
+        $planId = AddonCatalogDefinition::razorpayPlanIdForRegion(
+            $addon,
+            $this->isIndiaCurrency((string) ($subscription->currency ?: $this->centralSettings->currency())),
+        );
+
+        if (! $planId) {
+            throw ValidationException::withMessages([
+                'addon' => 'This add-on is not configured for Razorpay billing yet.',
+            ]);
         }
 
         $tenant = Tenant::query()->findOrFail(tenant('id'));
@@ -1269,6 +1304,217 @@ class RazorpayBillingService
             'razorpay_subscription_id' => null,
             'razorpay_plan_id' => null,
         ]);
+    }
+
+    private function recordVerifiedPayment(string $paymentId, string $subscriptionId): void
+    {
+        try {
+            $payment = $this->client()->payment->fetch($paymentId)->toArray();
+        } catch (Error $exception) {
+            Log::warning('Razorpay payment fetch failed after checkout verification', [
+                'payment_id' => $paymentId,
+                'subscription_id' => $subscriptionId,
+                'tenant_id' => tenant('id'),
+                'message' => $exception->getMessage(),
+            ]);
+
+            return;
+        }
+
+        if (! in_array($payment['status'] ?? '', ['captured', 'authorized'], true)) {
+            return;
+        }
+
+        try {
+            $subscriptionEntity = $this->fetchedSubscription($subscriptionId)->toArray();
+        } catch (Error $exception) {
+            $subscriptionEntity = [
+                'id' => $subscriptionId,
+                'notes' => ['tenant_id' => (string) tenant('id')],
+            ];
+        }
+
+        if (empty($subscriptionEntity['notes']['tenant_id'])) {
+            $subscriptionEntity['notes']['tenant_id'] = (string) tenant('id');
+        }
+
+        $this->payments->recordFromRazorpayPayment($payment, $subscriptionEntity);
+    }
+
+    private function subscriptionEntitiesForTenant(?Subscription $subscription, string $tenantId): array
+    {
+        if (! $subscription) {
+            return [];
+        }
+
+        $subscriptionIds = array_values(array_filter(array_unique(array_merge(
+            $subscription->razorpay_subscription_id ? [(string) $subscription->razorpay_subscription_id] : [],
+            array_map('strval', array_values($subscription->razorpay_addon_items ?? [])),
+        ))));
+
+        $entities = [];
+
+        foreach ($subscriptionIds as $subscriptionId) {
+            $entity = $this->fetchSubscriptionEntityForSync($subscriptionId, $tenantId);
+
+            if ($entity !== null) {
+                $entities[$subscriptionId] = $entity;
+            }
+        }
+
+        return $entities;
+    }
+
+    private function fetchSubscriptionEntityForSync(string $subscriptionId, string $tenantId): ?array
+    {
+        try {
+            $entity = $this->fetchedSubscription($subscriptionId)->toArray();
+        } catch (Error $exception) {
+            Log::warning('Razorpay subscription fetch failed during payment sync', [
+                'subscription_id' => $subscriptionId,
+                'tenant_id' => $tenantId,
+                'message' => $exception->getMessage(),
+            ]);
+
+            return null;
+        }
+
+        if (empty($entity['notes']['tenant_id'])) {
+            $entity['notes']['tenant_id'] = $tenantId;
+        }
+
+        return $entity;
+    }
+
+    private function syncPaymentsFromSubscriptionInvoices(string $subscriptionId, array $subscriptionEntity, string $tenantId): array
+    {
+        try {
+            $response = $this->client()->invoice->all([
+                'subscription_id' => $subscriptionId,
+                'count' => 100,
+            ])->toArray();
+        } catch (Error $exception) {
+            Log::warning('Razorpay invoice list failed during payment sync', [
+                'subscription_id' => $subscriptionId,
+                'tenant_id' => $tenantId,
+                'message' => $exception->getMessage(),
+            ]);
+
+            return [];
+        }
+
+        $syncedPaymentIds = [];
+
+        foreach ($response['items'] ?? [] as $invoice) {
+            if (! is_array($invoice)) {
+                continue;
+            }
+
+            $paymentId = $this->paymentIdFromInvoice($invoice);
+
+            if ($paymentId === null || in_array($paymentId, $syncedPaymentIds, true)) {
+                continue;
+            }
+
+            if ($this->recordSyncedPayment($paymentId, $subscriptionEntity, $tenantId)) {
+                $syncedPaymentIds[] = $paymentId;
+            }
+        }
+
+        return $syncedPaymentIds;
+    }
+
+    private function syncPaymentsFromCustomer(
+        string $customerId,
+        string $tenantId,
+        array $subscriptionEntities,
+        array $syncedPaymentIds,
+    ): void {
+        try {
+            $response = $this->client()->invoice->all([
+                'customer_id' => $customerId,
+                'count' => 100,
+            ])->toArray();
+        } catch (Error $exception) {
+            Log::warning('Razorpay customer invoice list failed during payment sync', [
+                'tenant_id' => $tenantId,
+                'customer_id' => $customerId,
+                'message' => $exception->getMessage(),
+            ]);
+
+            return;
+        }
+
+        $this->recordPaymentsFromInvoices(
+            $response['items'] ?? [],
+            $subscriptionEntities,
+            $tenantId,
+            $syncedPaymentIds,
+        );
+    }
+
+    private function recordPaymentsFromInvoices(
+        array $invoices,
+        array $subscriptionEntities,
+        string $tenantId,
+        array $syncedPaymentIds,
+    ): void {
+        foreach ($invoices as $invoice) {
+            if (! is_array($invoice)) {
+                continue;
+            }
+
+            $paymentId = $this->paymentIdFromInvoice($invoice);
+
+            if ($paymentId === null || in_array($paymentId, $syncedPaymentIds, true)) {
+                continue;
+            }
+
+            $subscriptionId = (string) ($invoice['subscription_id'] ?? '');
+            $subscriptionEntity = $subscriptionId !== ''
+                ? ($subscriptionEntities[$subscriptionId] ?? $this->fetchSubscriptionEntityForSync($subscriptionId, $tenantId))
+                : ['notes' => ['tenant_id' => $tenantId]];
+
+            if ($subscriptionEntity === null) {
+                $subscriptionEntity = ['notes' => ['tenant_id' => $tenantId]];
+            }
+
+            $this->recordSyncedPayment($paymentId, $subscriptionEntity, $tenantId);
+        }
+    }
+
+    private function paymentIdFromInvoice(array $invoice): ?string
+    {
+        if (($invoice['status'] ?? '') !== 'paid') {
+            return null;
+        }
+
+        $paymentId = (string) ($invoice['payment_id'] ?? '');
+
+        return $paymentId !== '' ? $paymentId : null;
+    }
+
+    private function recordSyncedPayment(string $paymentId, array $subscriptionEntity, string $tenantId): bool
+    {
+        try {
+            $payment = $this->client()->payment->fetch($paymentId)->toArray();
+        } catch (Error $exception) {
+            Log::warning('Razorpay payment fetch failed during payment sync', [
+                'payment_id' => $paymentId,
+                'tenant_id' => $tenantId,
+                'message' => $exception->getMessage(),
+            ]);
+
+            return false;
+        }
+
+        if (! in_array($payment['status'] ?? '', ['captured', 'authorized'], true)) {
+            return false;
+        }
+
+        $this->payments->recordFromRazorpayPayment($payment, $subscriptionEntity);
+
+        return true;
     }
 
     private function client(): Api

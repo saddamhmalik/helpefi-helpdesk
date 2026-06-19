@@ -40,6 +40,7 @@ const startingTrial = ref(false);
 const deleteTenant = ref(null);
 const deleteConfirmSlug = ref('');
 const deleting = ref(false);
+const savingByoAllowed = ref(false);
 
 const statusFilters = [
     { value: 'all', label: t('central.all') },
@@ -111,6 +112,24 @@ const statusClass = (tenant) => {
     }
 
     return 'bg-emerald-100 text-emerald-700 dark:text-emerald-300 ring-emerald-200';
+};
+
+const infrastructureBadgeClass = (tenant) => {
+    const status = tenant.infrastructure?.status;
+
+    if (status === 'failed') {
+        return 'bg-red-100 text-red-700 ring-red-200';
+    }
+
+    if (status === 'pending') {
+        return 'bg-amber-100 text-amber-800 ring-amber-200';
+    }
+
+    if ((tenant.infrastructure?.health_failure_count ?? 0) > 0) {
+        return 'bg-orange-100 text-orange-800 ring-orange-200';
+    }
+
+    return 'bg-violet-100 text-violet-700 ring-violet-200';
 };
 
 const planLabel = (tenant) => {
@@ -245,6 +264,31 @@ const startTrial = () => {
     });
 };
 
+const toggleByoAllowed = (tenant) => {
+    savingByoAllowed.value = true;
+
+    router.put(`/admin/tenants/${tenant.id}`, {
+        byo_allowed: !tenant.byo_allowed,
+    }, {
+        preserveScroll: true,
+        onSuccess: (page) => {
+            const updated = page.props.tenants?.data?.find((item) => item.id === tenant.id);
+
+            if (updated && manageTenant.value?.id === tenant.id) {
+                manageTenant.value = updated;
+            }
+        },
+        onFinish: () => {
+            savingByoAllowed.value = false;
+        },
+    });
+};
+
+const showInfrastructureLink = (tenant) => tenant.byo_allowed
+    || tenant.byo_eligible
+    || tenant.infrastructure?.database_mode === 'external'
+    || tenant.infrastructure?.storage_mode === 'external';
+
 const hasFilters = computed(() => Boolean(props.filters.q) || (props.filters.status && props.filters.status !== 'all'));
 </script>
 
@@ -313,6 +357,14 @@ const hasFilters = computed(() => Boolean(props.filters.q) || (props.filters.sta
                                         <div class="min-w-0">
                                             <p class="font-medium text-slate-900 dark:text-slate-100">{{ tenant.name }}</p>
                                             <p class="font-mono text-xs text-slate-500 dark:text-slate-400">{{ tenant.slug }}</p>
+                                            <p
+                                                v-if="tenant.infrastructure?.label && tenant.infrastructure.label !== 'Managed'"
+                                                class="mt-1 inline-flex rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ring-1 ring-inset"
+                                                :class="infrastructureBadgeClass(tenant)"
+                                                :title="tenant.infrastructure.status_message || tenant.infrastructure.label"
+                                            >
+                                                {{ tenant.infrastructure.label }}
+                                            </p>
                                             <p v-if="tenant.database" class="mt-0.5 font-mono text-[11px] text-slate-400 dark:text-slate-500">{{ tenant.database }}</p>
                                             <a
                                                 v-if="tenant.url"
@@ -359,6 +411,11 @@ const hasFilters = computed(() => Boolean(props.filters.q) || (props.filters.sta
                                 </td>
                                 <td class="px-5 py-4 text-right">
                                     <div class="flex justify-end gap-2">
+                                        <Link
+                                            v-if="canManage && showInfrastructureLink(tenant)"
+                                            :href="`/admin/tenants/${tenant.id}/infrastructure`"
+                                            class="rounded-lg px-3 py-1.5 text-xs font-medium text-slate-700 dark:text-slate-300 ring-1 ring-slate-200 dark:ring-slate-700 hover:bg-slate-50 dark:bg-slate-950 dark:hover:bg-slate-800"
+                                        >Infrastructure</Link>
                                         <button
                                             v-if="canManage"
                                             type="button"
@@ -514,6 +571,28 @@ const hasFilters = computed(() => Boolean(props.filters.q) || (props.filters.sta
                     >
                         {{ savingPlan ? $t('central.saving') : $t('central.update_plan') }}
                     </button>
+                </div>
+
+                <div v-if="canManage" class="border-t border-slate-200 dark:border-slate-800 pt-4">
+                    <div class="flex items-start justify-between gap-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 p-4">
+                        <div>
+                            <p class="text-sm font-medium text-slate-900 dark:text-slate-100">Bring-your-own infrastructure</p>
+                            <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">
+                                Allow this workspace to use customer-owned RDS and S3/R2 buckets. Requires an active enterprise plan and no trial.
+                            </p>
+                            <p v-if="manageTenant.byo_eligible" class="mt-2 text-xs font-medium text-emerald-700 dark:text-emerald-300">Eligible for BYO configuration.</p>
+                            <p v-else-if="manageTenant.byo_allowed && manageTenant.subscription?.on_trial" class="mt-2 text-xs font-medium text-amber-700 dark:text-amber-300">Allowlisted, but trial must end before BYO can be configured.</p>
+                        </div>
+                        <button
+                            type="button"
+                            class="shrink-0 rounded-xl px-4 py-2 text-sm font-semibold transition"
+                            :class="manageTenant.byo_allowed ? 'bg-violet-600 text-white hover:bg-violet-700' : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 ring-1 ring-slate-200 dark:ring-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800'"
+                            :disabled="savingByoAllowed"
+                            @click="toggleByoAllowed(manageTenant)"
+                        >
+                            {{ savingByoAllowed ? 'Saving…' : manageTenant.byo_allowed ? 'BYO allowed' : 'Allow BYO' }}
+                        </button>
+                    </div>
                 </div>
 
                 <div class="border-t border-slate-200 dark:border-slate-800 pt-4">

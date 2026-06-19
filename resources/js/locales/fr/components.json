@@ -380,6 +380,8 @@
         "service_desk_sections": "Service desk sections",
         "back_to_app": "Retour à l'app",
         "saving": "Enregistrement…",
+        "saved": "Enregistré",
+        "save_failed": "Impossible d'enregistrer les modifications",
         "new_customer": "Nouveau client",
         "new_organization": "New organization",
         "new_asset": "New asset",

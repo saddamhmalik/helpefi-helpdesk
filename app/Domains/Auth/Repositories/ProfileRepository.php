@@ -2,14 +2,18 @@
 
 namespace App\Domains\Auth\Repositories;
 
+use App\Domains\Tenancy\Services\TenantStorageResolver;
 use App\Models\User;
 use App\Support\AvatarSupport;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class ProfileRepository
 {
+    public function __construct(private TenantStorageResolver $storage)
+    {
+    }
+
     public function update(User $user, array $data): User
     {
         $user->update($data);
@@ -21,16 +25,18 @@ class ProfileRepository
     {
         $this->deleteStoredAvatar($user);
 
+        $diskName = $this->storage->diskName();
         $extension = $this->extensionForMime((string) $file->getMimeType());
         $path = $file->storeAs(
             'user-avatars/'.$user->id,
             Str::uuid().'.'.$extension,
-            'public',
+            $diskName,
         );
 
         $user->update([
             'avatar_type' => 'upload',
             'avatar_path' => $path,
+            'avatar_disk' => $diskName,
         ]);
 
         return $user->fresh();
@@ -43,6 +49,7 @@ class ProfileRepository
         $user->update([
             'avatar_type' => AvatarSupport::resolveType($avatarType),
             'avatar_path' => null,
+            'avatar_disk' => null,
         ]);
 
         return $user->fresh();
@@ -54,7 +61,7 @@ class ProfileRepository
             return;
         }
 
-        Storage::disk('public')->delete($user->avatar_path);
+        $this->storage->delete($user->avatar_path, $user->avatar_disk);
     }
 
     private function extensionForMime(string $mime): string
