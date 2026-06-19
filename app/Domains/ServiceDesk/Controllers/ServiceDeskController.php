@@ -2,13 +2,12 @@
 
 namespace App\Domains\ServiceDesk\Controllers;
 
-use App\Domains\Channels\Services\ChannelService;
 use App\Domains\ServiceDesk\Services\ApprovalService;
 use App\Domains\ServiceDesk\Services\MajorIncidentService;
 use App\Domains\ServiceDesk\Services\ServiceDeskService;
+use App\Domains\Tickets\Services\TicketFormReferenceService;
 use App\Domains\Tickets\Services\TicketService;
 use App\Domains\Tickets\Support\TicketFilters;
-use App\Domains\Workforce\Services\WorkforceService;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -21,8 +20,7 @@ class ServiceDeskController extends Controller
         private ApprovalService $approvals,
         private MajorIncidentService $majorIncidents,
         private TicketService $ticketService,
-        private ChannelService $channelService,
-        private WorkforceService $workforceService,
+        private TicketFormReferenceService $ticketReferenceData,
     ) {
     }
 
@@ -34,18 +32,20 @@ class ServiceDeskController extends Controller
 
         $overview = $this->serviceDesk->overview();
         $user = $request->user();
+        $approvalStats = $this->approvals->pendingCounts($user->id);
+        $majorIncidentStats = $this->majorIncidents->dashboardCounts();
 
         return Inertia::render('ServiceDesk/Index', [
             'summaries' => $overview['summaries'],
             'totals' => $overview['totals'],
             'recent' => $overview['recent'],
             'approvalStats' => [
-                'pending' => $this->approvals->pendingCount(),
-                'pending_mine' => $this->approvals->pendingCountForUser($user->id),
+                'pending' => $approvalStats['pending'],
+                'pending_mine' => $approvalStats['pending_mine'],
             ],
             'majorIncidentStats' => [
-                'active' => $this->majorIncidents->activeCount(),
-                'pending_review' => $this->majorIncidents->pendingReviewCount(),
+                'active' => $majorIncidentStats['active'],
+                'pending_review' => $majorIncidentStats['pending_review'],
             ],
         ]);
     }
@@ -62,16 +62,10 @@ class ServiceDeskController extends Controller
 
         $user = $request->user();
 
-        return Inertia::render('ServiceDesk/Queue', [
+        return Inertia::render('ServiceDesk/Queue', array_merge([
             'type' => $typeDefinition,
             'tickets' => $this->ticketService->listFiltered($filters, $user->id),
-            'statuses' => $this->ticketService->statuses(),
-            'priorities' => $this->ticketService->priorities(),
-            'agents' => $this->workforceService->agentOptions(),
-            'channels' => $this->channelService->all(),
-            'departments' => $this->workforceService->departmentOptions(),
-            'teams' => $this->workforceService->teamOptions(),
             'filters' => $filters,
-        ]);
+        ], $this->ticketReferenceData->payload()));
     }
 }

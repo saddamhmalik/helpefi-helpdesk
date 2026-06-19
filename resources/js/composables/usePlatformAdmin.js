@@ -148,6 +148,12 @@ export function usePlatformAdmin() {
 
         if (can('observability.view')) {
             platformItems.push({
+                label: t('layouts.admin.nav_slow_queries'),
+                href: '/admin/slow-queries',
+                permission: 'observability.view',
+                match: (url) => url.startsWith('/admin/slow-queries'),
+            });
+            platformItems.push({
                 label: t('layouts.admin.nav_observability'),
                 href: '/admin/observability',
                 permission: 'observability.view',

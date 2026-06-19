@@ -2,12 +2,12 @@
 
 namespace App\Domains\Channels\Controllers;
 
-use App\Domains\Brands\Services\BrandService;
 use App\Domains\Channels\Services\EmailInboxService;
+use App\Domains\Channels\Services\EmailSettingsPageService;
 use App\Domains\Channels\Services\InboundMailboxPollService;
 use App\Domains\Channels\Services\OutboundMailService;
 use App\Domains\Settings\Services\HelpdeskSettingService;
-use App\Domains\Workforce\Services\WorkforceService;
+use App\Domains\Tickets\Services\TicketFormReferenceService;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -21,24 +21,22 @@ class EmailSettingController extends Controller
         private EmailInboxService $inboxes,
         private OutboundMailService $mail,
         private InboundMailboxPollService $pollService,
-        private BrandService $brands,
+        private EmailSettingsPageService $emailPage,
+        private TicketFormReferenceService $ticketReferenceData,
         private HelpdeskSettingService $helpdeskSettings,
-        private WorkforceService $workforce,
     ) {
     }
 
     public function index(): Response
     {
-        return Inertia::render('Settings/Email', [
-            'inboxes' => $this->inboxes->listForSettings(),
-            'outbound' => $this->mail->settingsSnapshot(),
-            'mailboxProviders' => $this->inboxes->mailboxProviders(),
-            'oauthProviders' => $this->inboxes->oauthProviders(),
-            'brands' => $this->brands->listForSettings(),
-            'departments' => $this->workforce->departmentOptions(),
-            'teams' => $this->workforce->teamOptions(),
-            'emailAdvanced' => $this->helpdeskSettings->emailAdvancedSnapshot(),
-        ]);
+        return Inertia::render('Settings/Email', array_merge(
+            $this->emailPage->staticPayload(),
+            $this->ticketReferenceData->only(['departments', 'teams']),
+            [
+                'inboxes' => $this->inboxes->listForSettings(),
+                'outbound' => $this->mail->settingsSnapshot(),
+            ],
+        ));
     }
 
     public function updateAdvanced(Request $request): RedirectResponse

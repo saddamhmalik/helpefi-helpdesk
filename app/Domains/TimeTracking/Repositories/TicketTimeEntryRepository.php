@@ -21,6 +21,25 @@ class TicketTimeEntryRepository
             ->get();
     }
 
+    public function snapshotForTicket(int $ticketId): array
+    {
+        $entries = $this->forTicket($ticketId);
+
+        return [
+            'total_minutes' => (int) $entries->sum('minutes'),
+            'entries' => $entries->map(fn (TicketTimeEntry $entry) => [
+                'id' => $entry->id,
+                'minutes' => $entry->minutes,
+                'note' => $entry->note,
+                'logged_at' => $entry->logged_at?->toIso8601String(),
+                'user' => $entry->user ? [
+                    'id' => $entry->user->id,
+                    'name' => $entry->user->name,
+                ] : null,
+            ])->values()->all(),
+        ];
+    }
+
     public function totalMinutesForTicket(int $ticketId): int
     {
         return (int) TicketTimeEntry::query()

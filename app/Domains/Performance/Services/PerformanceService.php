@@ -4,6 +4,7 @@ namespace App\Domains\Performance\Services;
 
 use App\Domains\Performance\Repositories\PerformanceRepository;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Collection;
 
 class PerformanceService
 {
@@ -46,8 +47,12 @@ class PerformanceService
             'metadata' => $metadata ?: null,
         ]);
 
-        $current = $this->performance->scoreForUser($userId);
-        $this->performance->updateScore($userId, $current + $delta);
+        $this->performance->incrementScore($userId, $delta);
+    }
+
+    public function recentEvents(int $userId, int $limit = 10): Collection
+    {
+        return $this->performance->recentForUser($userId, $limit);
     }
 
     public function recordCsat(int $userId, int $ticketId, int $rating): void
@@ -62,10 +67,10 @@ class PerformanceService
         return $this->performance->paginateForUser($userId, $perPage);
     }
 
-    public function summary(int $userId, int $days = 30): array
+    public function summary(int $userId, int $days = 30, ?float $score = null): array
     {
         return array_merge(
-            ['score' => $this->performance->scoreForUser($userId)],
+            ['score' => $score ?? $this->performance->scoreForUser($userId)],
             $this->performance->summaryForUser($userId, $days),
         );
     }

@@ -20,8 +20,7 @@ class CustomerContextService
 
     public function forTicket(int $ticketId, bool $refreshCrm = false): ?array
     {
-        $ticket = $this->tickets->find($ticketId);
-        $ticket->loadMissing(['contact.organization']);
+        $ticket = $this->tickets->findContactContext($ticketId);
 
         if (! $ticket->contact) {
             return null;
@@ -35,15 +34,13 @@ class CustomerContextService
         $contact->loadMissing('organization');
         $scopeIds = $this->metrics->contactIdsForScope($contact);
         $since = now()->subDays(90);
+        $summary = $this->metrics->metricsSummary($scopeIds, $since);
 
-        $openTickets = $this->metrics->openTicketCount($scopeIds);
-        $totalTickets = $this->metrics->totalTicketCount($scopeIds);
-        $slaBreaches = $this->metrics->slaBreachCount($scopeIds, $since);
-        $csat = $this->metrics->csatSummary($scopeIds, $since);
-        $lastCustomerAt = $this->metrics->lastCustomerMessageAt($scopeIds)
-            ?? $this->metrics->lastTicketActivityAt($scopeIds);
-
-        $health = $this->calculateHealth($openTickets, $slaBreaches, $csat);
+        $health = $this->calculateHealth(
+            $summary['open_tickets'],
+            $summary['sla_breaches_90d'],
+            $summary['csat'],
+        );
 
         $organization = null;
 
@@ -67,12 +64,12 @@ class CustomerContextService
                 'phone' => $contact->phone,
             ],
             'metrics' => [
-                'open_tickets' => $openTickets,
-                'total_tickets' => $totalTickets,
-                'sla_breaches_90d' => $slaBreaches,
-                'csat_average_90d' => $csat['average'],
-                'csat_responses_90d' => $csat['responses'],
-                'last_contact_at' => $lastCustomerAt?->toIso8601String(),
+                'open_tickets' => $summary['open_tickets'],
+                'total_tickets' => $summary['total_tickets'],
+                'sla_breaches_90d' => $summary['sla_breaches_90d'],
+                'csat_average_90d' => $summary['csat']['average'],
+                'csat_responses_90d' => $summary['csat']['responses'],
+                'last_contact_at' => $summary['last_contact_at']?->toIso8601String(),
             ],
             'crm' => $this->crmProfiles->snapshotForContact($contact, $refreshCrm),
             'commerce' => $this->commerce->snapshotForEmail($contact->email),

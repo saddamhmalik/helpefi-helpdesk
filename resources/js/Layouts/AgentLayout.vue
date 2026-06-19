@@ -1,4 +1,5 @@
 <script setup>
+import AgentStatusBar from '../Components/AgentStatusBar.vue';
 import AgentTopBar from '../Components/AgentTopBar.vue';
 import AppAvatar from '../Components/AppAvatar.vue';
 import AppLogo from '../Components/AppLogo.vue';
@@ -216,6 +217,8 @@ const iconWrapClass = (href, exact = false) => isActive(href, exact)
                     </Transition>
                 </div>
             </main>
+
+            <AgentStatusBar />
         </div>
     </div>
 </template>

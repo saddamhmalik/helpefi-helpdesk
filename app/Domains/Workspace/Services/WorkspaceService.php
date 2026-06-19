@@ -11,6 +11,7 @@ use App\Domains\Realtime\Services\RealtimePublisher;
 use App\Domains\Workspace\Repositories\WorkspaceRepository;
 use App\Domains\Workspace\Services\TicketPresenceService;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Contracts\Pagination\Paginator;
 use Illuminate\Support\Carbon;
 
 class WorkspaceService
@@ -24,7 +25,7 @@ class WorkspaceService
     ) {
     }
 
-    public function queue(array $filters, int $userId, int $perPage = 30): LengthAwarePaginator
+    public function queue(array $filters, int $userId, int $perPage = 30): Paginator
     {
         return $this->ticketReads->attachUnreadCounts(
             $this->workspace->queue($filters, $perPage, $userId),
@@ -68,7 +69,6 @@ class WorkspaceService
     public function pollTicket(int $ticketId, ?string $since, ?int $viewerId = null, ?int $sincePulse = null, bool $markRead = true): array
     {
         $ticketChanged = $this->presence->pulseSince($ticketId, $sincePulse);
-        $ticket = $this->tickets->show($ticketId);
         $sinceAt = $this->parseSince($since);
 
         $newMessages = $sinceAt
@@ -76,13 +76,19 @@ class WorkspaceService
             : [];
 
         if ($markRead && $viewerId) {
-            $latestMessageId = collect($newMessages)->last()?->id
-                ?? TicketMessage::query()->where('ticket_id', $ticketId)->max('id');
-            $this->ticketReads->markAsRead($viewerId, $ticketId, $latestMessageId);
+            $latestMessageId = collect($newMessages)->last()?->id;
+
+            if ($latestMessageId === null && ! $sinceAt) {
+                $latestMessageId = TicketMessage::query()->where('ticket_id', $ticketId)->max('id');
+            }
+
+            if ($latestMessageId) {
+                $this->ticketReads->markAsRead($viewerId, $ticketId, $latestMessageId);
+            }
         }
 
         return [
-            'ticket' => $ticket,
+            'ticket' => $ticketChanged ? $this->tickets->show($ticketId) : null,
             'new_messages' => $newMessages,
             'viewers' => $this->presence->viewers($ticketId, $viewerId),
             'ticket_changed' => $ticketChanged,

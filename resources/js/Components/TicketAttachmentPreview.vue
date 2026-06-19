@@ -55,6 +55,7 @@ const openPreview = () => {
                 :alt="attachment.filename"
                 class="h-full w-full object-cover transition duration-200 group-hover:scale-[1.02]"
                 loading="lazy"
+                decoding="async"
             />
             <div class="absolute inset-0 flex items-center justify-center bg-slate-900/0 transition group-hover:bg-slate-900/20">
                 <span class="rounded-full bg-white/90 px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-slate-700 opacity-0 shadow transition group-hover:opacity-100">

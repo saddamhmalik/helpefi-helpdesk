@@ -2,9 +2,9 @@
 
 namespace App\Domains\Contacts\Controllers;
 
+use App\Domains\Contacts\Services\ContactFormReferenceService;
 use App\Domains\Contacts\Services\ContactService;
 use App\Domains\Contacts\Services\ContactTimelineService;
-use App\Domains\Contacts\Services\OrganizationService;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -17,7 +17,7 @@ class ContactController extends Controller
     public function __construct(
         private ContactService $contactService,
         private ContactTimelineService $timelineService,
-        private OrganizationService $organizationService,
+        private ContactFormReferenceService $contactReferenceData,
     ) {
     }
 
@@ -42,11 +42,7 @@ class ContactController extends Controller
 
     public function create(): Response
     {
-        return Inertia::render('Contacts/Create', [
-            'organizations' => $this->organizationService->options(),
-            'tags' => $this->contactService->allTags(),
-            'customFieldDefinitions' => $this->contactService->fieldDefinitions(),
-        ]);
+        return Inertia::render('Contacts/Create', $this->contactReferenceData->payload());
     }
 
     public function store(Request $request): RedirectResponse
@@ -75,13 +71,13 @@ class ContactController extends Controller
 
     public function show(int $contact): Response
     {
-        return Inertia::render('Contacts/Show', [
-            'contact' => $this->contactService->show($contact),
-            'timeline' => $this->timelineService->forContact($contact),
-            'organizations' => $this->organizationService->options(),
-            'tags' => $this->contactService->allTags(),
-            'customFieldDefinitions' => $this->contactService->fieldDefinitions(),
-        ]);
+        return Inertia::render('Contacts/Show', array_merge(
+            [
+                'contact' => $this->contactService->show($contact),
+                'timeline' => $this->timelineService->forContact($contact),
+            ],
+            $this->contactReferenceData->payload(),
+        ));
     }
 
     public function update(Request $request, int $contact): RedirectResponse

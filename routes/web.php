@@ -17,6 +17,7 @@ use App\Domains\Platform\Controllers\Central\AdminPaymentController;
 use App\Domains\Platform\Controllers\Central\AdminPendingRegistrationController;
 use App\Domains\Platform\Controllers\Central\AdminProfileController;
 use App\Domains\Platform\Controllers\Central\AdminRoleController;
+use App\Domains\Platform\Controllers\Central\AdminSlowQueryController;
 use App\Domains\Platform\Controllers\Central\AdminSubscriptionController;
 use App\Domains\Platform\Controllers\Central\AdminTenantInfrastructureController;
 use App\Domains\Platform\Controllers\Central\AdminTenantController;
@@ -257,6 +258,10 @@ Route::prefix('admin')->name('central.admin.')->group(function () {
 
         Route::middleware('platform.permission:observability.view')->group(function () {
             Route::get('/observability', AdminObservabilityController::class)->name('observability.index');
+            Route::get('/slow-queries', [AdminSlowQueryController::class, 'index'])->name('slow-queries.index');
+            Route::delete('/slow-queries/bulk', [AdminSlowQueryController::class, 'bulkDestroy'])->name('slow-queries.bulk-destroy');
+            Route::delete('/slow-queries', [AdminSlowQueryController::class, 'destroyFiltered'])->name('slow-queries.destroy-filtered');
+            Route::get('/slow-queries/{slowQuery}', [AdminSlowQueryController::class, 'show'])->name('slow-queries.show');
         });
 
         Route::middleware('platform.permission:backups.view')->group(function () {

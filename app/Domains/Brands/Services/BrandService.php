@@ -5,7 +5,9 @@ namespace App\Domains\Brands\Services;
 use App\Domains\Brands\Models\Brand;
 use App\Domains\Brands\Repositories\BrandRepository;
 use App\Domains\Billing\Services\BillingService;
+use App\Domains\Channels\Support\EmailSettingsPageCache;
 use App\Domains\Security\Support\AuditRecorder;
+use App\Domains\Tickets\Support\TicketFormReferenceCache;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Str;
 use InvalidArgumentException;
@@ -50,6 +52,8 @@ class BrandService
 
         $this->audit->record('brand.created', $brand, ['name' => $brand->name, 'slug' => $brand->slug], $userId);
 
+        EmailSettingsPageCache::forget();
+
         return $brand;
     }
 
@@ -60,6 +64,9 @@ class BrandService
         $brand = $this->brands->update($brand, $validated);
 
         $this->audit->record('brand.updated', $brand, ['name' => $brand->name, 'slug' => $brand->slug], $userId);
+
+        EmailSettingsPageCache::forget();
+        TicketFormReferenceCache::forget();
 
         return $brand;
     }
@@ -78,6 +85,8 @@ class BrandService
 
         $this->audit->record('brand.deleted', $brand, ['name' => $brand->name], $userId);
         $this->brands->delete($brand);
+
+        EmailSettingsPageCache::forget();
     }
 
     public function ticketNumberPrefix(Brand $brand): ?string

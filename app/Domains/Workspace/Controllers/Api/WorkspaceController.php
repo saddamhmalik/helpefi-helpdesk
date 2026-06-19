@@ -2,8 +2,8 @@
 
 namespace App\Domains\Workspace\Controllers\Api;
 
+use App\Domains\Tickets\Services\TicketFormReferenceService;
 use App\Domains\Tickets\Services\TicketSnoozeService;
-use App\Domains\Tickets\Services\TicketService;
 use App\Domains\Workforce\Services\WorkforceService;
 use App\Domains\Workspace\Services\WorkspaceService;
 use App\Http\Controllers\Controller;
@@ -16,7 +16,7 @@ class WorkspaceController extends Controller
 {
     public function __construct(
         private WorkspaceService $workspaceService,
-        private TicketService $ticketService,
+        private TicketFormReferenceService $ticketReferenceData,
         private WorkforceService $workforceService,
         private TicketSnoozeService $snoozeService,
     ) {
@@ -125,10 +125,10 @@ class WorkspaceController extends Controller
 
     public function meta(): JsonResponse
     {
-        return response()->json([
-            'statuses' => $this->ticketService->statuses(),
-            'priorities' => $this->ticketService->priorities(),
-            'agents' => $this->workforceService->agentOptions(),
-        ]);
+        return response()->json($this->ticketReferenceData->only([
+            'statuses',
+            'priorities',
+            'agents',
+        ]));
     }
 }

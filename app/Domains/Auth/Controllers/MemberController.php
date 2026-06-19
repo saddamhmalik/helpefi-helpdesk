@@ -6,8 +6,8 @@ use App\Domains\Auth\Services\InvitationService;
 use App\Domains\Auth\Services\MemberProfileService;
 use App\Domains\Auth\Services\MemberService;
 use App\Domains\Auth\Services\RoleService;
+use App\Domains\Tickets\Services\TicketFormReferenceService;
 use App\Domains\Workforce\Services\SkillService;
-use App\Domains\Workforce\Services\WorkforceService;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -21,7 +21,7 @@ class MemberController extends Controller
         private MemberService $memberService,
         private InvitationService $invitationService,
         private RoleService $roleService,
-        private WorkforceService $workforceService,
+        private TicketFormReferenceService $ticketReferenceData,
         private MemberProfileService $memberProfileService,
         private SkillService $skillService,
     ) {
@@ -29,14 +29,14 @@ class MemberController extends Controller
 
     public function index(): Response
     {
-        return Inertia::render('Settings/Members', [
+        $reference = $this->ticketReferenceData->only(['departments', 'teams']);
+
+        return Inertia::render('Settings/Members', array_merge([
             'employees' => $this->memberService->listEmployees(),
             'pendingInvitations' => $this->invitationService->pending(),
             'roles' => $this->roleService->assignableRoles(),
             'customFieldDefinitions' => $this->memberService->fieldDefinitions(),
-            'departments' => $this->workforceService->departmentOptions(),
-            'teams' => $this->workforceService->teamOptions(),
-        ]);
+        ], $reference));
     }
 
     public function show(int $member): Response
@@ -45,7 +45,7 @@ class MemberController extends Controller
             $this->memberProfileService->show($member),
             [
                 'allSkills' => $this->skillService->options(),
-                'teams' => $this->workforceService->teamOptions(),
+                'teams' => $this->ticketReferenceData->only(['teams'])['teams'],
             ],
         ));
     }

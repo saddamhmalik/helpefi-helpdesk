@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from 'vue';
+import { lazyLoadHtmlImages } from '../lib/lazyHtmlImages.js';
 
 const props = defineProps({
     body: {
@@ -15,6 +16,8 @@ const props = defineProps({
 const normalizedBody = computed(() => (props.body ?? '').replace(/\r\n/g, '\n').replace(/\r/g, '\n'));
 
 const isHtml = computed(() => /<[a-z][\s\S]*>/i.test(normalizedBody.value));
+
+const renderedHtml = computed(() => lazyLoadHtmlImages(normalizedBody.value));
 
 const segments = computed(() => {
     const text = normalizedBody.value;
@@ -51,7 +54,7 @@ const htmlClass = computed(() => [
 </script>
 
 <template>
-    <div v-if="isHtml" :class="htmlClass" v-html="normalizedBody" />
+    <div v-if="isHtml" :class="htmlClass" v-html="renderedHtml" />
     <p v-else class="whitespace-pre-wrap break-words" :class="inverted ? 'text-white' : 'text-slate-800 dark:text-slate-200'">
         <template v-for="(segment, index) in segments" :key="index">
             <a
@@ -68,6 +71,11 @@ const htmlClass = computed(() => [
 </template>
 
 <style scoped>
+.ticket-message-html :deep(img) {
+    max-width: 100%;
+    height: auto;
+}
+
 .ticket-message-html :deep(blockquote) {
     border-left: 3px solid rgb(203 213 225);
     margin: 0.5rem 0;

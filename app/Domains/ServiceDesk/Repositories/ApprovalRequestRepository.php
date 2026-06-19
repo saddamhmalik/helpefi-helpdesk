@@ -96,21 +96,32 @@ class ApprovalRequestRepository
 
     public function pendingCountForApprover(int $userId): int
     {
-        return ApprovalRequest::query()
-            ->where('status', ApprovalRequest::STATUS_PENDING)
-            ->whereHas('steps', function ($stepQuery) use ($userId) {
-                $stepQuery->where('approver_user_id', $userId)
-                    ->where('status', ApprovalRequestStep::STATUS_PENDING)
-                    ->whereColumn('approval_request_steps.step_order', 'approval_requests.current_step');
-            })
-            ->count();
+        return $this->pendingCounts($userId)['pending_mine'];
     }
 
     public function pendingCount(): int
     {
-        return ApprovalRequest::query()
+        return $this->pendingCounts(0)['pending'];
+    }
+
+    public function pendingCounts(int $userId): array
+    {
+        $row = ApprovalRequest::query()
             ->where('status', ApprovalRequest::STATUS_PENDING)
-            ->count();
+            ->selectRaw('COUNT(*) as pending')
+            ->selectRaw('SUM(CASE WHEN EXISTS (
+                SELECT 1 FROM approval_request_steps
+                WHERE approval_request_steps.approval_request_id = approval_requests.id
+                AND approval_request_steps.approver_user_id = ?
+                AND approval_request_steps.status = ?
+                AND approval_request_steps.step_order = approval_requests.current_step
+            ) THEN 1 ELSE 0 END) as pending_mine', [$userId, ApprovalRequestStep::STATUS_PENDING])
+            ->first();
+
+        return [
+            'pending' => (int) ($row->pending ?? 0),
+            'pending_mine' => (int) ($row->pending_mine ?? 0),
+        ];
     }
 
     public function settings(): ServiceDeskSetting

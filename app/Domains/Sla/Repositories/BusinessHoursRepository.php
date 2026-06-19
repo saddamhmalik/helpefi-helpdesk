@@ -6,9 +6,11 @@ use App\Domains\Sla\Models\BusinessHours;
 
 class BusinessHoursRepository
 {
+    private static ?BusinessHours $default = null;
+
     public function default(): ?BusinessHours
     {
-        return BusinessHours::query()->orderBy('id')->first();
+        return self::$default ??= BusinessHours::query()->orderBy('id')->first();
     }
 
     public function find(int $id): BusinessHours
@@ -19,6 +21,7 @@ class BusinessHoursRepository
     public function update(BusinessHours $hours, array $data): BusinessHours
     {
         $hours->update($data);
+        self::$default = null;
 
         return $hours->fresh();
     }

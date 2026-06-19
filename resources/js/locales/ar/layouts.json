@@ -67,7 +67,10 @@
             "why_us": "لماذا نحن"
         },
         "app": {
-            "helpdesk": "helpefi"
+            "helpdesk": "helpefi",
+            "footer_copyright": "© {year}",
+            "live": "متصل",
+            "reconnecting": "إعادة الاتصال"
         }
     }
 }

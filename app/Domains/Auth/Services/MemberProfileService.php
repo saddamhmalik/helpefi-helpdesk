@@ -28,19 +28,16 @@ class MemberProfileService
             'member' => $this->serializeMember($member),
             'memberships' => $this->serializeMemberships($member),
             'departments' => $this->serializeDepartments($member),
-            'ticketStats' => [
-                'assigned' => $this->profiles->assignedTicketStats($member->id),
-                'team' => $this->profiles->teamTicketStats($teamIds),
-                'department' => $this->profiles->departmentTicketStats($departmentIds),
-                'watching' => $this->profiles->watchingCount($member->id),
-            ],
+            'ticketStats' => $this->profiles->ticketStatsBundle($member->id, $teamIds, $departmentIds),
             'assignedByStatus' => $this->profiles->assignedTicketsByStatus($member->id),
             'assignedByPriority' => $this->profiles->assignedTicketsByPriority($member->id),
             'recentAssignedTickets' => $this->profiles->recentAssignedTickets($member->id),
             'recentTeamTickets' => $this->profiles->recentTeamTickets($teamIds),
             'recentDepartmentTickets' => $this->profiles->recentDepartmentTickets($departmentIds),
-            'performance' => $this->performance->summary($member->id),
-            'recentPerformanceEvents' => $this->performance->history($member->id, 10),
+            'performance' => $this->performance->summary($member->id, 30, (float) $member->performance_score),
+            'recentPerformanceEvents' => [
+                'data' => $this->performance->recentEvents($member->id, 10)->all(),
+            ],
             'customFieldDefinitions' => $this->helpdeskSettings->userFieldDefinitions(),
         ];
     }

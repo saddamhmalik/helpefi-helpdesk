@@ -3,6 +3,7 @@
 namespace App\Domains\Tickets\Controllers\Api;
 
 use App\Domains\Tickets\Services\TicketCcService;
+use App\Domains\Tickets\Services\TicketFormReferenceService;
 use App\Domains\Tickets\Services\TicketService;
 use App\Domains\Tickets\Services\TicketViewService;
 use App\Domains\Workforce\Services\WorkforceService;
@@ -20,6 +21,7 @@ class TicketController extends Controller
     public function __construct(
         private TicketService $ticketService,
         private TicketViewService $ticketViewService,
+        private TicketFormReferenceService $ticketReferenceData,
         private WorkforceService $workforceService,
     ) {
     }
@@ -168,11 +170,11 @@ class TicketController extends Controller
 
     public function meta(): JsonResponse
     {
-        return response()->json([
-            'statuses' => $this->ticketService->statuses(),
-            'priorities' => $this->ticketService->priorities(),
-            'agents' => $this->workforceService->agentOptions(),
-        ]);
+        return response()->json($this->ticketReferenceData->only([
+            'statuses',
+            'priorities',
+            'agents',
+        ]));
     }
 
     private function peopleRules(): array

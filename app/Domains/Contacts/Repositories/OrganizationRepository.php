@@ -39,7 +39,12 @@ class OrganizationRepository
     public function find(int $id): Organization
     {
         return Organization::query()
-            ->with(['domains', 'contacts' => fn ($q) => $q->withCount('tickets')])
+            ->with([
+                'domains',
+                'contacts' => fn ($query) => $query
+                    ->orderBy('name')
+                    ->withCount(['tickets' => fn ($ticketQuery) => $ticketQuery->whereNull('merged_into_ticket_id')]),
+            ])
             ->findOrFail($id);
     }
 

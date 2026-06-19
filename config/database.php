@@ -226,4 +226,26 @@ return [
 
     ],
 
+    'slow_query' => [
+        'enabled' => env('DB_SLOW_QUERY_LOG', env('APP_ENV') === 'local'),
+        'log' => env('DB_SLOW_QUERY_LOG_TO_FILE', true),
+        'store' => env('DB_SLOW_QUERY_STORE', true),
+        'threshold_ms' => (int) env('DB_SLOW_QUERY_THRESHOLD_MS', 500),
+        'log_bindings' => env('DB_SLOW_QUERY_LOG_BINDINGS', false),
+        'log_sql_limit' => (int) env('DB_SLOW_QUERY_LOG_SQL_LIMIT', 500),
+        'channel' => env('DB_SLOW_QUERY_LOG_CHANNEL', env('LOG_CHANNEL', 'stack')),
+        'queue' => env('DB_SLOW_QUERY_QUEUE', 'default'),
+        'queue_connection' => env('DB_SLOW_QUERY_QUEUE_CONNECTION'),
+        'ignore_patterns' => [
+            '/\btelescope_/i',
+            '/\bpulse_/i',
+            '/\binformation_schema\b/i',
+        ],
+        'ignore_connections' => [
+            'tenant_bootstrap_check',
+            'tenant_infrastructure_test',
+        ],
+        'remote_threshold_ms' => (int) env('DB_SLOW_QUERY_REMOTE_THRESHOLD_MS', 1500),
+    ],
+
 ];

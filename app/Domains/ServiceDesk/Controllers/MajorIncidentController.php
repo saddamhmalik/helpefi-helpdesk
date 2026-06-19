@@ -2,14 +2,9 @@
 
 namespace App\Domains\ServiceDesk\Controllers;
 
-use App\Domains\Csat\Services\CsatService;
 use App\Domains\ServiceDesk\Services\MajorIncidentService;
 use App\Domains\ServiceDesk\Services\ServiceDeskService;
-use App\Domains\Sla\Services\SlaService;
-use App\Domains\Tickets\Services\TicketLifecycleService;
-use App\Domains\Tickets\Services\TicketReadService;
-use App\Domains\Tickets\Services\TicketService;
-use App\Domains\Workforce\Services\WorkforceService;
+use App\Domains\Tickets\Services\TicketShowPageService;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -21,12 +16,7 @@ class MajorIncidentController extends Controller
     public function __construct(
         private ServiceDeskService $serviceDesk,
         private MajorIncidentService $majorIncidents,
-        private TicketService $ticketService,
-        private TicketLifecycleService $lifecycleService,
-        private SlaService $slaService,
-        private WorkforceService $workforceService,
-        private CsatService $csatService,
-        private TicketReadService $ticketReads,
+        private TicketShowPageService $ticketShowPage,
     ) {
     }
 
@@ -53,20 +43,12 @@ class MajorIncidentController extends Controller
                 ->with('error', 'No war room exists for this ticket. Declare a major incident on an incident ticket first.');
         }
 
-        $ticketModel = $this->ticketService->show($ticket);
-        $this->ticketReads->markAsRead($request->user()->id, $ticketModel->id);
+        $userId = $request->user()->id;
 
-        return Inertia::render('ServiceDesk/MajorIncidents/WarRoom', [
-            'ticket' => $ticketModel,
-            'majorIncident' => $record,
-            'sla' => $this->slaService->snapshotForTicket($ticketModel),
-            'statuses' => $this->ticketService->statuses(),
-            'priorities' => $this->ticketService->priorities(),
-            'agents' => $this->workforceService->agentOptions(),
-            'currentUserId' => $request->user()->id,
-            'lifecycle' => $this->lifecycleService->timeline($ticketModel->id),
-            'csat' => $this->csatService->promptForTicket($ticketModel),
-        ]);
+        return Inertia::render('ServiceDesk/MajorIncidents/WarRoom', array_merge(
+            ['majorIncident' => $record],
+            $this->ticketShowPage->payload($ticket, $userId),
+        ));
     }
 
     public function declare(Request $request, int $ticket): RedirectResponse

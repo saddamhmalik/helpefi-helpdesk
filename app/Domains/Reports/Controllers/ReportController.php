@@ -5,10 +5,8 @@ namespace App\Domains\Reports\Controllers;
 use App\Domains\Reports\Models\SavedReport;
 use App\Domains\Reports\Services\ReportScheduleService;
 use App\Domains\Reports\Services\ReportService;
-use App\Domains\Tickets\Services\TicketService;
-use App\Domains\Workforce\Services\WorkforceService;
+use App\Domains\Tickets\Services\TicketFormReferenceService;
 use App\Http\Controllers\Controller;
-use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -20,8 +18,7 @@ class ReportController extends Controller
     public function __construct(
         private ReportService $reportService,
         private ReportScheduleService $scheduleService,
-        private TicketService $ticketService,
-        private WorkforceService $workforceService,
+        private TicketFormReferenceService $ticketReferenceData,
     ) {
     }
 
@@ -35,18 +32,14 @@ class ReportController extends Controller
             $result = $this->reportService->run($type, $filters);
         }
 
-        return Inertia::render('Reports/Index', [
+        return Inertia::render('Reports/Index', array_merge([
             'reportTypes' => $this->reportService->types(),
             'savedReports' => $this->reportService->savedForUser($request->user()->id),
             'scheduleOptions' => $this->scheduleService->options(),
-            'statuses' => $this->ticketService->statuses(),
-            'priorities' => $this->ticketService->priorities(),
-            'agents' => User::query()->orderBy('name')->get(['id', 'name']),
-            'teams' => $this->workforceService->teamOptions(),
             'filters' => $filters,
             'activeType' => $type,
             'result' => $result,
-        ]);
+        ], $this->ticketReferenceData->payload()));
     }
 
     public function export(Request $request): StreamedResponse

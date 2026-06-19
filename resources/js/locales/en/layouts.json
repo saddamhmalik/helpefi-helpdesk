@@ -21,6 +21,7 @@
             "nav_backups": "Backups",
             "nav_feedback": "Feedback & requests",
             "nav_audit_logs": "Audit logs",
+            "nav_slow_queries": "Slow queries",
             "nav_observability": "Errors & exceptions",
             "nav_access_group": "Access control",
             "nav_users": "Users",
@@ -71,7 +72,10 @@
             "why_us": "Why us"
         },
         "app": {
-            "helpdesk": "helpefi"
+            "helpdesk": "helpefi",
+            "footer_copyright": "© {year}",
+            "live": "Live",
+            "reconnecting": "Reconnecting"
         }
     }
 }

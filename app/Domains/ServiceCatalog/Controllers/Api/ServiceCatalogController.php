@@ -3,7 +3,7 @@
 namespace App\Domains\ServiceCatalog\Controllers\Api;
 
 use App\Domains\ServiceCatalog\Services\ServiceCatalogService;
-use App\Domains\Tickets\Services\TicketService;
+use App\Domains\Tickets\Services\TicketFormReferenceService;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -12,7 +12,7 @@ class ServiceCatalogController extends Controller
 {
     public function __construct(
         private ServiceCatalogService $catalogService,
-        private TicketService $ticketService,
+        private TicketFormReferenceService $ticketReferenceData,
     ) {
     }
 
@@ -28,9 +28,14 @@ class ServiceCatalogController extends Controller
 
     public function adminIndex(): JsonResponse
     {
+        $reference = $this->ticketReferenceData->only(['priorities', 'agents']);
+
         return response()->json([
             'categories' => $this->catalogService->adminCatalog(),
-            'meta' => $this->catalogService->meta($this->ticketService->priorities()),
+            'meta' => $this->catalogService->meta(
+                collect($reference['priorities']),
+                collect($reference['agents']),
+            ),
         ]);
     }
 

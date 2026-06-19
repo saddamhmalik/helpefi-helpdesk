@@ -2,14 +2,11 @@
 
 namespace App\Domains\Automation\Controllers;
 
-use App\Domains\Automation\Models\AutomationRule;
 use App\Domains\Automation\Services\AutomationService;
-use App\Domains\Channels\Services\ChannelService;
 use App\Domains\Contacts\Repositories\TagRepository;
 use App\Domains\Integrations\Services\WebhookService;
-use App\Domains\Tickets\Services\TicketService;
+use App\Domains\Tickets\Services\TicketFormReferenceService;
 use App\Http\Controllers\Controller;
-use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -19,8 +16,7 @@ class AutomationController extends Controller
 {
     public function __construct(
         private AutomationService $automationService,
-        private TicketService $ticketService,
-        private ChannelService $channelService,
+        private TicketFormReferenceService $ticketReferenceData,
         private WebhookService $webhookService,
         private TagRepository $tags,
     ) {
@@ -28,19 +24,15 @@ class AutomationController extends Controller
 
     public function index(): Response
     {
-        return Inertia::render('Settings/Automation', [
+        return Inertia::render('Settings/Automation', array_merge([
             'rules' => $this->automationService->all(),
             'meta' => $this->automationService->meta(),
-            'statuses' => $this->ticketService->statuses(),
-            'priorities' => $this->ticketService->priorities(),
-            'agents' => User::query()->orderBy('name')->get(['id', 'name']),
-            'channels' => $this->channelService->all(),
             'webhooks' => $this->webhookService->all()->map(fn ($webhook) => [
                 'id' => $webhook->id,
                 'name' => $webhook->name,
             ])->values(),
             'tags' => $this->tags->all(),
-        ]);
+        ], $this->ticketReferenceData->payload()));
     }
 
     public function store(Request $request): RedirectResponse

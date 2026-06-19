@@ -4,6 +4,7 @@ namespace App\Domains\Contacts\Models;
 
 use App\Domains\Tickets\Models\Ticket;
 use App\Models\User;
+use App\Support\AvatarSupport;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -12,6 +13,8 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Contact extends Model
 {
+    protected $appends = ['avatar_url'];
+
     protected $fillable = [
         'name',
         'email',
@@ -67,5 +70,10 @@ class Contact extends Model
     public function crmProfile(): HasOne
     {
         return $this->hasOne(\App\Domains\Integrations\Models\ContactCrmProfile::class);
+    }
+
+    public function getAvatarUrlAttribute(): ?string
+    {
+        return filled($this->email) ? AvatarSupport::gravatarUrl($this->email) : null;
     }
 }

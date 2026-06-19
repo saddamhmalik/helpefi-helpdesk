@@ -2,16 +2,16 @@
 
 namespace App\Domains\Reports\Services;
 
-use App\Domains\Contacts\Models\Contact;
 use App\Domains\Ai\Services\AiDeflectionService;
 use App\Domains\Csat\Services\CsatService;
 use App\Domains\Knowledge\Services\KbDeflectionService;
-use App\Domains\Knowledge\Services\KnowledgeService;
 use App\Domains\TimeTracking\Services\TimeTrackingService;
 use App\Domains\Reports\Models\SavedReport;
 use App\Domains\Reports\Repositories\ReportRepository;
+use App\Support\TenantCache;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\Cache;
 use InvalidArgumentException;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -19,7 +19,6 @@ class ReportService
 {
     public function __construct(
         private ReportRepository $reports,
-        private KnowledgeService $knowledge,
         private CsatService $csat,
         private AiDeflectionService $deflection,
         private KbDeflectionService $kbDeflection,
@@ -29,23 +28,70 @@ class ReportService
 
     public function dashboardWidgets(): array
     {
+        if (! tenancy()->initialized) {
+            return $this->loadDashboardWidgets();
+        }
+
+        return Cache::remember(
+            TenantCache::key('dashboard_widgets'),
+            300,
+            fn () => $this->loadDashboardWidgets(),
+        );
+    }
+
+    private function loadDashboardWidgets(): array
+    {
         $weekStart = now()->startOfWeek();
+        $snapshot = $this->reports->dashboardSnapshot($weekStart);
+        $meta = $this->reports->dashboardMetaCounts();
 
         return [
-            'openTickets' => $this->reports->openTicketCount(),
-            'contacts' => Contact::query()->count(),
-            'publishedArticles' => $this->knowledge->publishedCount(),
-            'createdThisWeek' => $this->reports->ticketsCreatedSince($weekStart),
-            'resolvedThisWeek' => $this->reports->ticketsResolvedSince($weekStart),
-            'slaBreaches' => $this->reports->activeSlaBreachCount(),
-            'ticketStatuses' => $this->reports->countByStatus(),
-            'ticketPriorities' => $this->reports->countByPriority(),
-            'topAgents' => $this->reports->topAgentsByOpenTickets(),
-            'volumeTrend' => $this->reports->ticketVolumeTrend(),
+            'openTickets' => $snapshot['open_tickets'],
+            'contacts' => $meta['contacts'],
+            'publishedArticles' => $meta['published_articles'],
+            'createdThisWeek' => $snapshot['created_since'],
+            'resolvedThisWeek' => $snapshot['resolved_since'],
+            'slaBreaches' => $snapshot['sla_breaches'],
+            'ticketStatuses' => $this->dashboardTicketStatuses($snapshot['ticket_statuses']),
+            'ticketPriorities' => $this->dashboardTicketPriorities($snapshot['ticket_priorities']),
+            'topAgents' => $this->dashboardTopAgents($snapshot['top_agents']),
+            'volumeTrend' => $snapshot['volume_trend'],
             'csat' => $this->csat->dashboardSummary(),
             'deflection' => $this->deflection->dashboardSummary(),
             'kbDeflection' => $this->kbDeflection->dashboardSummary(),
         ];
+    }
+
+    private function dashboardTicketStatuses(mixed $statuses): array
+    {
+        return collect($statuses)
+            ->values()
+            ->map(fn ($status) => [
+                'id' => $status->id,
+                'name' => $status->name,
+                'slug' => $status->slug,
+                'color' => $status->color,
+                'tickets_count' => (int) $status->tickets_count,
+            ])
+            ->all();
+    }
+
+    private function dashboardTicketPriorities(mixed $priorities): array
+    {
+        return collect($priorities)
+            ->values()
+            ->map(fn ($priority) => [
+                'id' => $priority->id,
+                'name' => $priority->name,
+                'slug' => $priority->slug,
+                'tickets_count' => (int) $priority->tickets_count,
+            ])
+            ->all();
+    }
+
+    private function dashboardTopAgents(mixed $agents): array
+    {
+        return collect($agents)->values()->all();
     }
 
     public function savedForUser(int $userId): Collection

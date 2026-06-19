@@ -78,10 +78,10 @@ watch(open, async (isOpen) => {
 </script>
 
 <template>
-    <div class="pointer-events-none fixed bottom-4 right-4 z-40 flex flex-col items-end gap-2">
+    <div class="pointer-events-none fixed right-4 z-40 flex flex-col items-end gap-2 bottom-[calc(1rem+var(--agent-status-bar-height,1.75rem))]">
         <div
             v-if="open"
-            class="pointer-events-auto flex h-[min(32rem,calc(100vh-6rem))] w-[min(24rem,calc(100vw-2rem))] flex-col overflow-hidden rounded-2xl border border-violet-200 dark:border-violet-900/60 dark:border-violet-800 bg-white dark:bg-slate-900 shadow-2xl shadow-violet-900/10"
+            class="pointer-events-auto flex h-[min(32rem,calc(100vh-6rem-var(--agent-status-bar-height,1.75rem)))] w-[min(24rem,calc(100vw-2rem))] flex-col overflow-hidden rounded-2xl border border-violet-200 dark:border-violet-900/60 dark:border-violet-800 bg-white dark:bg-slate-900 shadow-2xl shadow-violet-900/10"
         >
             <div class="flex items-center justify-between border-b border-violet-100 dark:border-violet-900/50 bg-gradient-to-r from-violet-600 to-indigo-600 px-4 py-3 text-white">
                 <div>

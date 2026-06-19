@@ -4,7 +4,7 @@ namespace App\Domains\ServiceDesk\Controllers;
 
 use App\Domains\ServiceDesk\Services\ChangeRecordService;
 use App\Domains\ServiceDesk\Services\ServiceDeskService;
-use App\Domains\Workforce\Services\WorkforceService;
+use App\Domains\Tickets\Services\TicketFormReferenceService;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -16,7 +16,7 @@ class ChangeController extends Controller
     public function __construct(
         private ServiceDeskService $serviceDesk,
         private ChangeRecordService $changes,
-        private WorkforceService $workforce,
+        private TicketFormReferenceService $ticketReferenceData,
     ) {
     }
 
@@ -33,11 +33,11 @@ class ChangeController extends Controller
             is_string($to) ? $to : null,
         );
 
-        return Inertia::render('ServiceDesk/ChangeCalendar', [
-            ...$calendar,
-            'agents' => $this->workforce->agentOptions(),
-            'riskOptions' => $this->changes->riskOptions(),
-        ]);
+        return Inertia::render('ServiceDesk/ChangeCalendar', array_merge(
+            $calendar,
+            $this->ticketReferenceData->only(['agents']),
+            ['riskOptions' => $this->changes->riskOptions()],
+        ));
     }
 
     public function update(Request $request, int $ticket): RedirectResponse

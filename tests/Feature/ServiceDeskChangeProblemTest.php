@@ -131,6 +131,57 @@ class ServiceDeskChangeProblemTest extends TenantTestCase
         ]);
     }
 
+    public function test_unlinking_unknown_incident_returns_validation_error(): void
+    {
+        $this->seed(TicketLookupSeeder::class);
+        $this->prepareServiceDeskTenant();
+
+        $admin = User::query()->where('email', 'admin@helpdesk.test')->first();
+        $statusId = TicketStatus::query()->where('slug', 'open')->value('id');
+        $priorityId = TicketPriority::query()->where('slug', 'normal')->value('id');
+
+        $problem = Ticket::query()->create([
+            'number' => 'HD-92006',
+            'subject' => 'Email delivery failures',
+            'ticket_status_id' => $statusId,
+            'ticket_priority_id' => $priorityId,
+            'type' => ServiceCatalogItem::TYPE_PROBLEM,
+        ]);
+
+        \App\Domains\ServiceDesk\Models\ProblemRecord::query()->create(['ticket_id' => $problem->id]);
+
+        $this->actingAs($admin)
+            ->tenantDelete("/tickets/{$problem->id}/problem-incidents/999999")
+            ->assertSessionHasErrors('incident_ticket_id');
+    }
+
+    public function test_problem_ticket_show_works_when_service_desk_addon_disabled(): void
+    {
+        $this->seed(TicketLookupSeeder::class);
+        $this->prepareServiceDeskTenant('professional', []);
+
+        $admin = User::query()->where('email', 'admin@helpdesk.test')->first();
+        $statusId = TicketStatus::query()->where('slug', 'open')->value('id');
+        $priorityId = TicketPriority::query()->where('slug', 'normal')->value('id');
+
+        $problem = Ticket::query()->create([
+            'number' => 'HD-92007',
+            'subject' => 'Legacy problem ticket',
+            'ticket_status_id' => $statusId,
+            'ticket_priority_id' => $priorityId,
+            'type' => ServiceCatalogItem::TYPE_PROBLEM,
+        ]);
+
+        \App\Domains\ServiceDesk\Models\ProblemRecord::query()->create(['ticket_id' => $problem->id]);
+
+        $this->actingAs($admin)
+            ->tenantGet("/tickets/{$problem->id}")
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('Tickets/Show')
+                ->where('incidentCandidates', []));
+    }
+
     public function test_professional_plan_cannot_update_change_record(): void
     {
         $this->seed(TicketLookupSeeder::class);

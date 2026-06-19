@@ -19,7 +19,8 @@ use App\Domains\Tickets\Services\TicketService;
 use App\Domains\Tickets\Services\TicketViewService;
 use App\Domains\Tickets\Support\MessageBodySanitizer;
 use App\Domains\Tickets\Support\TicketFilters;
-use App\Domains\Tickets\Services\TicketCcService;
+use App\Domains\Tickets\Services\TicketFormReferenceService;
+use App\Domains\Tickets\Services\TicketShowPageService;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -45,6 +46,8 @@ class TicketController extends Controller
         private TicketReadService $ticketReads,
         private TicketItsmContextService $itsmContext,
         private ServiceDeskService $serviceDesk,
+        private TicketShowPageService $ticketShowPage,
+        private TicketFormReferenceService $ticketReferenceData,
     ) {
     }
 
@@ -62,19 +65,13 @@ class TicketController extends Controller
 
         $user = $request->user();
 
-        return Inertia::render('Tickets/Index', [
+        return Inertia::render('Tickets/Index', array_merge([
             'tickets' => $this->ticketService->listFiltered($filters, $user->id),
             'ticketViews' => $this->ticketViewService->forUser($user->id),
-            'statuses' => $this->ticketService->statuses(),
-            'priorities' => $this->ticketService->priorities(),
-            'agents' => $this->workforceService->agentOptions(),
-            'channels' => $this->channelService->all(),
-            'departments' => $this->workforceService->departmentOptions(),
-            'teams' => $this->workforceService->teamOptions(),
             'userTeams' => $user->teams()->orderBy('name')->get(['teams.id', 'teams.name']),
             'filters' => $filters,
             'activeViewId' => $request->integer('view_id') ?: null,
-        ]);
+        ], $this->ticketReferenceData->payload()));
     }
 
     public function create(Request $request): Response
@@ -82,16 +79,13 @@ class TicketController extends Controller
         $requestedType = (string) $request->query('type', '');
         $defaultType = TicketTypes::isValid($requestedType) ? $requestedType : null;
 
-        return Inertia::render('Tickets/Create', [
-            'statuses' => $this->ticketService->statuses(),
-            'priorities' => $this->ticketService->priorities(),
-            'agents' => $this->workforceService->agentOptions(),
-            'departments' => $this->workforceService->departmentOptions(),
-            'teams' => $this->workforceService->teamOptions(),
-            'customFieldDefinitions' => $this->ticketService->fieldDefinitions(),
-            'ticketTypes' => $this->serviceDesk->isAvailable() ? $this->serviceDesk->ticketTypes() : [],
-            'defaultType' => $defaultType,
-        ]);
+        return Inertia::render('Tickets/Create', array_merge(
+            $this->ticketReferenceData->payload(),
+            [
+                'ticketTypes' => $this->serviceDesk->isAvailable() ? $this->serviceDesk->ticketTypes() : [],
+                'defaultType' => $defaultType,
+            ],
+        ));
     }
 
     public function store(Request $request): RedirectResponse
@@ -120,31 +114,14 @@ class TicketController extends Controller
 
     public function show(int $ticket, Request $request): Response
     {
-        $ticketModel = $this->ticketService->show($ticket);
-        $this->ticketReads->markAsRead($request->user()->id, $ticketModel->id);
+        return Inertia::render('Tickets/Show', $this->ticketShowPage->payload($ticket, $request->user()->id));
+    }
 
-        return Inertia::render('Tickets/Show', array_merge([
-            'ticket' => $ticketModel,
-            'sla' => $this->slaService->snapshotForTicket($ticketModel),
-            'statuses' => $this->ticketService->statuses(),
-            'priorities' => $this->ticketService->priorities(),
-            'agents' => $this->workforceService->agentOptions(),
-            'departments' => $this->workforceService->departmentOptions(),
-            'teams' => $this->workforceService->teamOptions(),
-            'mergeCandidates' => $this->ticketService->listFiltered([], $request->user()->id, 50)
-                ->getCollection()
-                ->where('id', '!=', $ticketModel->id)
-                ->values(),
-            'assetOptions' => $this->assetService->options(),
-            'currentUserId' => $request->user()->id,
-            'csat' => $this->csatService->promptForTicket($ticketModel),
-            'lifecycle' => $this->lifecycleService->timeline($ticketModel->id),
-            'customFieldDefinitions' => $this->ticketService->fieldDefinitions(),
-            'sideConversations' => $this->sideConversationService->listForTicket($ticketModel->id),
-            'timeTracking' => $this->timeTracking->snapshotForTicket($ticketModel->id),
-            'externalIssues' => $this->externalIssues->refreshForTicket($ticketModel->id),
-            'issueProviders' => $this->externalIssues->configuredIssueProviders(),
-        ], $this->itsmContext->forTicket($ticketModel, $request->user()->id)));
+    public function mergeCandidates(int $ticket, Request $request): \Illuminate\Http\JsonResponse
+    {
+        return response()->json([
+            'mergeCandidates' => $this->ticketShowPage->mergeCandidates($request->user()->id, $ticket),
+        ]);
     }
 
     public function update(Request $request, int $ticket): RedirectResponse

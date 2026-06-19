@@ -18,14 +18,21 @@ class KbDeflectionRepository
             ->when($filters['date_from'] ?? null, fn ($q, $date) => $q->whereDate('created_at', '>=', $date))
             ->when($filters['date_to'] ?? null, fn ($q, $date) => $q->whereDate('created_at', '<=', $date));
 
-        $suggestionsShown = (clone $query)->where('event_type', KbDeflectionEvent::EVENT_SUGGESTIONS_SHOWN)->count();
-        $deflected = (clone $query)->where('event_type', KbDeflectionEvent::EVENT_DEFLECTED)->count();
-        $continued = (clone $query)->where('event_type', KbDeflectionEvent::EVENT_CONTINUED)->count();
-        $tickets = (clone $query)->where('event_type', KbDeflectionEvent::EVENT_TICKET_CREATED)->count();
-        $articleClicks = (clone $query)->where('event_type', KbDeflectionEvent::EVENT_ARTICLE_CLICKED)->count();
+        $row = (clone $query)
+            ->selectRaw('SUM(CASE WHEN event_type = ? THEN 1 ELSE 0 END) as suggestions_shown', [KbDeflectionEvent::EVENT_SUGGESTIONS_SHOWN])
+            ->selectRaw('SUM(CASE WHEN event_type = ? THEN 1 ELSE 0 END) as deflected', [KbDeflectionEvent::EVENT_DEFLECTED])
+            ->selectRaw('SUM(CASE WHEN event_type = ? THEN 1 ELSE 0 END) as continued', [KbDeflectionEvent::EVENT_CONTINUED])
+            ->selectRaw('SUM(CASE WHEN event_type = ? THEN 1 ELSE 0 END) as tickets_created', [KbDeflectionEvent::EVENT_TICKET_CREATED])
+            ->selectRaw('SUM(CASE WHEN event_type = ? THEN 1 ELSE 0 END) as article_clicks', [KbDeflectionEvent::EVENT_ARTICLE_CLICKED])
+            ->first();
+
+        $suggestionsShown = (int) ($row->suggestions_shown ?? 0);
+        $deflected = (int) ($row->deflected ?? 0);
+        $continued = (int) ($row->continued ?? 0);
+        $tickets = (int) ($row->tickets_created ?? 0);
+        $articleClicks = (int) ($row->article_clicks ?? 0);
 
         $outcomes = $deflected + $continued + $tickets;
-        $deflectionRate = $outcomes > 0 ? round(($deflected / $outcomes) * 100, 1) : null;
 
         return [
             'suggestions_shown' => $suggestionsShown,
@@ -33,7 +40,7 @@ class KbDeflectionRepository
             'continued' => $continued,
             'tickets_created' => $tickets,
             'article_clicks' => $articleClicks,
-            'deflection_rate' => $deflectionRate,
+            'deflection_rate' => $outcomes > 0 ? round(($deflected / $outcomes) * 100, 1) : null,
         ];
     }
 

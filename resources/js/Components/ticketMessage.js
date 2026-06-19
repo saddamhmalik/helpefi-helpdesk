@@ -40,7 +40,7 @@ export function messageAvatar(message) {
     return {
         name: message.contact?.name || '',
         email: message.contact?.email || '',
-        imageUrl: null,
+        imageUrl: message.contact?.avatar_url ?? null,
     };
 }
 

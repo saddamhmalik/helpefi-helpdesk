@@ -4,6 +4,7 @@ namespace App\Domains\Tickets\Repositories;
 
 use App\Domains\Brands\Models\Brand;
 use App\Domains\Brands\Services\BrandService;
+use App\Support\AvatarSupport;
 use App\Domains\Tenancy\Services\TenantStorageResolver;
 use App\Domains\Settings\Repositories\HelpdeskSettingRepository;
 use App\Domains\Tickets\Models\Ticket;
@@ -137,9 +138,9 @@ class TicketRepository
         return $query;
     }
 
-    public function find(int $id): Ticket
+    public function find(int $id, int $messageLimit = 100): Ticket
     {
-        return Ticket::query()
+        $ticket = Ticket::query()
             ->with([
                 'channel:id,name,slug,type',
                 'contact',
@@ -154,11 +155,6 @@ class TicketRepository
                 'department.head:id,name,email',
                 'serviceCatalogItem:id,name,slug,ticket_type',
                 'assets.type:id,name,slug',
-                'messages.user:id,name,email,avatar_type,avatar_path',
-                'messages.contact:id,name,email',
-                'messages.mergedFromTicket:id,number,subject,created_at',
-                'messages.channel:id,name,slug,type',
-                'messages.attachments',
                 'attachments.user:id,name',
                 'watchers:id,name,email',
                 'ccs.contact:id,name,email',
@@ -166,6 +162,36 @@ class TicketRepository
                 'mergedTickets:id,number,subject',
                 'slaTimer.policy.businessHours',
             ])
+            ->findOrFail($id);
+
+        $this->loadRecentMessages($ticket, $messageLimit);
+
+        return $ticket;
+    }
+
+    private function loadRecentMessages(Ticket $ticket, int $limit): void
+    {
+        $messages = $ticket->messages()
+            ->with([
+                'user:'.implode(',', AvatarSupport::USER_COLUMNS),
+                'contact:id,name,email',
+                'mergedFromTicket:id,number,subject,created_at',
+                'channel:id,name,slug,type',
+                'attachments',
+            ])
+            ->orderByDesc('created_at')
+            ->limit($limit)
+            ->get()
+            ->sortBy('created_at')
+            ->values();
+
+        $ticket->setRelation('messages', $messages);
+    }
+
+    public function findContactContext(int $id): Ticket
+    {
+        return Ticket::query()
+            ->with(['contact.organization'])
             ->findOrFail($id);
     }
 

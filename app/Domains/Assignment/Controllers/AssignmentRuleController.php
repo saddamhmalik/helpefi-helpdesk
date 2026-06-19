@@ -3,10 +3,8 @@
 namespace App\Domains\Assignment\Controllers;
 
 use App\Domains\Assignment\Services\AssignmentService;
-use App\Domains\Channels\Services\ChannelService;
-use App\Domains\Tickets\Services\TicketService;
+use App\Domains\Tickets\Services\TicketFormReferenceService;
 use App\Domains\Workforce\Services\SkillService;
-use App\Domains\Workforce\Services\WorkforceService;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -17,24 +15,25 @@ class AssignmentRuleController extends Controller
 {
     public function __construct(
         private AssignmentService $assignment,
-        private WorkforceService $workforce,
-        private ChannelService $channels,
-        private TicketService $tickets,
+        private TicketFormReferenceService $ticketReferenceData,
         private SkillService $skills,
     ) {
     }
 
     public function index(): Response
     {
-        return Inertia::render('Settings/Assignment', [
+        $reference = $this->ticketReferenceData->only([
+            'departments',
+            'teams',
+            'channels',
+            'priorities',
+        ]);
+
+        return Inertia::render('Settings/Assignment', array_merge([
             'rules' => $this->assignment->all(),
             'meta' => $this->assignment->meta(),
-            'departments' => $this->workforce->departmentOptions(),
-            'teams' => $this->workforce->teamOptions(),
-            'channels' => $this->channels->all(),
-            'priorities' => $this->tickets->priorities(),
             'skills' => $this->skills->options(),
-        ]);
+        ], $reference));
     }
 
     public function store(Request $request): RedirectResponse

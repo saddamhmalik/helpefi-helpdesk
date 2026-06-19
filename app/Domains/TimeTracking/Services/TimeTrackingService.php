@@ -20,20 +20,11 @@ class TimeTrackingService
 
     public function snapshotForTicket(int $ticketId): array
     {
-        $entries = $this->entries->forTicket($ticketId);
+        $snapshot = $this->entries->snapshotForTicket($ticketId);
 
         return [
-            'total_minutes' => $this->entries->totalMinutesForTicket($ticketId),
-            'entries' => $entries->map(fn (TicketTimeEntry $entry) => [
-                'id' => $entry->id,
-                'minutes' => $entry->minutes,
-                'note' => $entry->note,
-                'logged_at' => $entry->logged_at?->toIso8601String(),
-                'user' => $entry->user ? [
-                    'id' => $entry->user->id,
-                    'name' => $entry->user->name,
-                ] : null,
-            ])->values()->all(),
+            'total_minutes' => $snapshot['total_minutes'],
+            'entries' => $snapshot['entries'],
         ];
     }
 

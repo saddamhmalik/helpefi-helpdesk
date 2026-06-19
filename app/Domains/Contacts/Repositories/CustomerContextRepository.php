@@ -23,6 +23,61 @@ class CustomerContextRepository
         return [$contact->id];
     }
 
+    public function metricsSummary(array $contactIds, Carbon $since): array
+    {
+        $lowSince = now()->subDays(30);
+
+        $ticketStats = Ticket::query()
+            ->whereIn('contact_id', $contactIds)
+            ->leftJoin('ticket_statuses', 'ticket_statuses.id', '=', 'tickets.ticket_status_id')
+            ->selectRaw('COUNT(*) as total_tickets')
+            ->selectRaw('SUM(CASE WHEN ticket_statuses.is_closed = 0 THEN 1 ELSE 0 END) as open_tickets')
+            ->selectRaw('MAX(tickets.updated_at) as last_ticket_activity_at')
+            ->first();
+
+        $slaBreaches = TicketSlaTimer::query()
+            ->whereHas('ticket', fn ($query) => $query->whereIn('contact_id', $contactIds))
+            ->where(function ($query) use ($since) {
+                $query->where(function ($inner) use ($since) {
+                    $inner->where('first_response_breached', true)
+                        ->where('updated_at', '>=', $since);
+                })->orWhere(function ($inner) use ($since) {
+                    $inner->where('resolution_breached', true)
+                        ->where('updated_at', '>=', $since);
+                });
+            })
+            ->count();
+
+        $csatRow = CsatResponse::query()
+            ->whereIn('contact_id', $contactIds)
+            ->where('created_at', '>=', $since)
+            ->selectRaw('COUNT(*) as responses')
+            ->selectRaw('AVG(rating) as average')
+            ->selectRaw('SUM(CASE WHEN created_at >= ? AND rating <= 2 THEN 1 ELSE 0 END) as low_recent_count', [$lowSince])
+            ->first();
+
+        $lastCustomerAt = TicketMessage::query()
+            ->whereNull('user_id')
+            ->whereHas('ticket', fn ($query) => $query->whereIn('contact_id', $contactIds))
+            ->max('created_at');
+
+        $lastActivity = $lastCustomerAt ?: $ticketStats?->last_ticket_activity_at;
+
+        return [
+            'open_tickets' => (int) ($ticketStats?->open_tickets ?? 0),
+            'total_tickets' => (int) ($ticketStats?->total_tickets ?? 0),
+            'sla_breaches_90d' => $slaBreaches,
+            'csat' => [
+                'responses' => (int) ($csatRow?->responses ?? 0),
+                'average' => ($csatRow?->responses ?? 0) > 0
+                    ? round((float) $csatRow->average, 2)
+                    : null,
+                'low_recent' => ((int) ($csatRow?->low_recent_count ?? 0)) > 0,
+            ],
+            'last_contact_at' => $lastActivity ? Carbon::parse($lastActivity) : null,
+        ];
+    }
+
     public function openTicketCount(array $contactIds): int
     {
         return Ticket::query()

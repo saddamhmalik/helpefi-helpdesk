@@ -36,21 +36,21 @@ class ChangeRecordService
         return $this->records->findOrCreateForTicket($ticket->id);
     }
 
-    public function snapshotForTicket(int $ticketId): ?array
+    public function snapshotForTicket(Ticket|int $ticketOrId): ?array
     {
         if (! $this->billing->canUseFeature('service_desk')) {
             return null;
         }
 
-        $ticket = $this->tickets->find($ticketId);
+        $ticket = $this->resolveTicket($ticketOrId);
 
         if ($ticket->type !== ServiceCatalogItem::TYPE_CHANGE) {
             return null;
         }
 
-        $record = $this->records->findOrCreateForTicket($ticketId);
+        $record = $this->records->findForTicket($ticket->id);
 
-        return $this->records->snapshot($record);
+        return $record ? $this->records->snapshot($record) : null;
     }
 
     public function update(int $ticketId, array $data): array
@@ -123,5 +123,10 @@ class ChangeRecordService
         }
 
         return $ticket;
+    }
+
+    private function resolveTicket(Ticket|int $ticketOrId): Ticket
+    {
+        return $ticketOrId instanceof Ticket ? $ticketOrId : $this->tickets->find($ticketOrId);
     }
 }
