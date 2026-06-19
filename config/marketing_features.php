@@ -19,4 +19,7 @@ return [
     'integrations' => [
         'accent' => 'indigo',
     ],
+    'data-residency' => [
+        'accent' => 'sky',
+    ],
 ];

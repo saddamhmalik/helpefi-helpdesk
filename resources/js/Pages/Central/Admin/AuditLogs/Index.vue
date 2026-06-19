@@ -21,6 +21,7 @@ const { t } = useI18n();
 
 const filterForm = useForm({
     event: props.filters.event ?? '',
+    category: props.filters.category ?? '',
     search: props.filters.search ?? '',
     tenant_id: props.filters.tenant_id ?? '',
 });
@@ -30,6 +31,10 @@ const exportUrl = computed(() => {
 
     if (filterForm.event) {
         params.set('event', filterForm.event);
+    }
+
+    if (filterForm.category) {
+        params.set('category', filterForm.category);
     }
 
     if (filterForm.search) {
@@ -51,8 +56,16 @@ const applyFilters = () => {
 
 const clearFilters = () => {
     filterForm.event = '';
+    filterForm.category = '';
     filterForm.search = '';
     filterForm.tenant_id = '';
+    applyFilters();
+};
+
+const applyInfrastructureFilter = () => {
+    filterForm.event = '';
+    filterForm.category = 'infrastructure';
+    filterForm.search = '';
     applyFilters();
 };
 
@@ -106,6 +119,13 @@ const formatProperties = (properties) => {
                     <input v-model="filterForm.event" type="text" :class="adminInputClass" placeholder="platform.tenant.updated" />
                 </div>
                 <div>
+                    <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">Category</label>
+                    <select v-model="filterForm.category" :class="adminInputClass">
+                        <option value="">All events</option>
+                        <option value="infrastructure">Infrastructure &amp; BYO</option>
+                    </select>
+                </div>
+                <div>
                     <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('common.search') }}</label>
                     <input v-model="filterForm.search" type="text" :class="adminInputClass" :placeholder="$t('central.email_event_subject_id')" />
                 </div>
@@ -113,6 +133,7 @@ const formatProperties = (properties) => {
                     <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('central.workspace_id') }}</label>
                     <input v-model="filterForm.tenant_id" type="text" :class="adminInputClass" :placeholder="$t('central.tenant_uuid')" />
                 </div>
+                <button type="button" class="rounded-lg border border-slate-300 dark:border-slate-700 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:bg-slate-950 dark:hover:bg-slate-800" @click="applyInfrastructureFilter">Infrastructure</button>
                 <button type="button" class="rounded-lg border border-slate-300 dark:border-slate-700 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:bg-slate-950 dark:hover:bg-slate-800" @click="applyFilters">{{ $t('central.filter') }}</button>
                 <button type="button" class="rounded-lg border border-slate-300 dark:border-slate-700 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:bg-slate-950 dark:hover:bg-slate-800" @click="clearFilters">{{ $t('central.clear') }}</button>
                 <a :href="exportUrl" class="rounded-lg border border-slate-300 dark:border-slate-700 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:bg-slate-950 dark:hover:bg-slate-800">

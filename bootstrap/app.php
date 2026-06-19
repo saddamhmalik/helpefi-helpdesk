@@ -31,6 +31,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'workspace.setup' => \App\Http\Middleware\EnsureWorkspaceSetup::class,
             'subscription.active' => \App\Http\Middleware\EnsureActiveSubscription::class,
             'central.admin' => \App\Http\Middleware\EnsureCentralAdmin::class,
+            'helpefi.license' => \App\Http\Middleware\EnsureValidHelpefiLicense::class,
             'platform.permission' => \App\Http\Middleware\EnsurePlatformPermission::class,
             'tenant.not_blocked' => \App\Http\Middleware\EnsureTenantNotBlocked::class,
             'tenant.custom_domain_redirect' => \App\Http\Middleware\RedirectToCustomDomain::class,

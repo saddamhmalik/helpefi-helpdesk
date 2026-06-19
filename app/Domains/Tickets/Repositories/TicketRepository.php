@@ -4,6 +4,7 @@ namespace App\Domains\Tickets\Repositories;
 
 use App\Domains\Brands\Models\Brand;
 use App\Domains\Brands\Services\BrandService;
+use App\Domains\Tenancy\Services\TenantStorageResolver;
 use App\Domains\Settings\Repositories\HelpdeskSettingRepository;
 use App\Domains\Tickets\Models\Ticket;
 use App\Domains\Tickets\Models\TicketAttachment;
@@ -15,7 +16,6 @@ use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class TicketRepository
@@ -23,6 +23,7 @@ class TicketRepository
     public function __construct(
         private HelpdeskSettingRepository $helpdeskSettings,
         private BrandService $brands,
+        private TenantStorageResolver $storage,
     ) {
     }
 
@@ -215,13 +216,15 @@ class TicketRepository
         int $userId,
         UploadedFile $file,
     ): TicketAttachment {
-        $path = $file->store('ticket-attachments', 'public');
+        $diskName = $this->storage->diskName();
+        $path = $file->store('ticket-attachments', $diskName);
 
         return $ticket->attachments()->create([
             'ticket_message_id' => $message->id,
             'user_id' => $userId,
             'filename' => $file->getClientOriginalName(),
             'path' => $path,
+            'storage_disk' => $diskName,
             'mime_type' => $file->getMimeType(),
             'size' => $file->getSize() ?: 0,
         ]);
@@ -237,13 +240,15 @@ class TicketRepository
     ): TicketAttachment {
         $safeName = preg_replace('/[^a-zA-Z0-9._-]/', '_', $filename) ?: 'attachment';
         $path = 'ticket-attachments/'.Str::uuid().'_'.$safeName;
-        Storage::disk('public')->put($path, $content);
+        $diskName = $this->storage->diskName();
+        $this->storage->disk()->put($path, $content);
 
         return $ticket->attachments()->create([
             'ticket_message_id' => $message->id,
             'user_id' => $userId,
             'filename' => $filename,
             'path' => $path,
+            'storage_disk' => $diskName,
             'mime_type' => $mimeType,
             'size' => strlen($content),
         ]);

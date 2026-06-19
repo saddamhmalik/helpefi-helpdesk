@@ -13,10 +13,12 @@ use App\Domains\Platform\Controllers\Central\AdminFeedbackController;
 use App\Domains\Platform\Controllers\Central\AdminLoginController;
 use App\Domains\Platform\Controllers\Central\AdminNoticeController;
 use App\Domains\Platform\Controllers\Central\AdminObservabilityController;
+use App\Domains\Platform\Controllers\Central\AdminPaymentController;
 use App\Domains\Platform\Controllers\Central\AdminPendingRegistrationController;
 use App\Domains\Platform\Controllers\Central\AdminProfileController;
 use App\Domains\Platform\Controllers\Central\AdminRoleController;
 use App\Domains\Platform\Controllers\Central\AdminSubscriptionController;
+use App\Domains\Platform\Controllers\Central\AdminTenantInfrastructureController;
 use App\Domains\Platform\Controllers\Central\AdminTenantController;
 use App\Domains\Platform\Controllers\Central\AdminUserController;
 use App\Domains\Platform\Controllers\Central\PlatformNoticeImageController;
@@ -103,7 +105,7 @@ Route::prefix('admin')->name('central.admin.')->group(function () {
         Route::post('/login', [AdminLoginController::class, 'store'])->middleware('throttle:5,1')->name('login.store');
     });
 
-    Route::middleware('central.admin')->group(function () {
+    Route::middleware(['central.admin', 'helpefi.license'])->group(function () {
         Route::post('/logout', [AdminLoginController::class, 'destroy'])->name('logout');
 
         Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
@@ -117,11 +119,28 @@ Route::prefix('admin')->name('central.admin.')->group(function () {
 
         Route::middleware('platform.permission:tenants.view')->group(function () {
             Route::get('/tenants', [AdminTenantController::class, 'index'])->name('tenants.index');
+            Route::get('/tenants/{tenant}/infrastructure', [AdminTenantInfrastructureController::class, 'show'])->name('tenants.infrastructure');
             Route::get('/pending-registrations', [AdminPendingRegistrationController::class, 'index'])->name('pending-registrations.index');
         });
 
         Route::middleware('platform.permission:tenants.manage')->group(function () {
             Route::put('/tenants/{tenant}', [AdminTenantController::class, 'update'])->name('tenants.update');
+            Route::put('/tenants/{tenant}/infrastructure', [AdminTenantInfrastructureController::class, 'update'])->name('tenants.infrastructure.update');
+            Route::post('/tenants/{tenant}/infrastructure/test-database', [AdminTenantInfrastructureController::class, 'testDatabase'])
+                ->middleware('throttle:tenant-infrastructure-verify')
+                ->name('tenants.infrastructure.test-database');
+            Route::post('/tenants/{tenant}/infrastructure/test-storage', [AdminTenantInfrastructureController::class, 'testStorage'])
+                ->middleware('throttle:tenant-infrastructure-verify')
+                ->name('tenants.infrastructure.test-storage');
+            Route::post('/tenants/{tenant}/infrastructure/verify', [AdminTenantInfrastructureController::class, 'verify'])
+                ->middleware('throttle:tenant-infrastructure-verify')
+                ->name('tenants.infrastructure.verify');
+            Route::post('/tenants/{tenant}/infrastructure/migrate-database', [AdminTenantInfrastructureController::class, 'migrateDatabase'])
+                ->name('tenants.infrastructure.migrate-database');
+            Route::post('/tenants/{tenant}/infrastructure/migrate-storage', [AdminTenantInfrastructureController::class, 'migrateStorage'])
+                ->name('tenants.infrastructure.migrate-storage');
+            Route::post('/tenants/{tenant}/infrastructure/export-backup', [AdminTenantInfrastructureController::class, 'exportBackup'])
+                ->name('tenants.infrastructure.export-backup');
             Route::delete('/tenants/{tenant}', [AdminTenantController::class, 'destroy'])->name('tenants.destroy');
             Route::delete('/pending-registrations/{registration}', [AdminPendingRegistrationController::class, 'destroy'])->name('pending-registrations.destroy');
             Route::post('/pending-registrations/purge-expired', [AdminPendingRegistrationController::class, 'purgeExpired'])->name('pending-registrations.purge-expired');

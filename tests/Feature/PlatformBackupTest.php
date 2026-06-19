@@ -150,6 +150,7 @@ class PlatformBackupTest extends TestCase
             app(PlatformBackupRepository::class),
             app(DatabaseBackupExporter::class),
             app(PlatformAuditRecorder::class),
+            app(\App\Domains\Tenancy\Services\TenantInfrastructureService::class),
         );
 
         $backup->refresh();

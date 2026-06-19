@@ -345,7 +345,7 @@
         "pricing": "Pricing",
         "pricing_addons_label": "Optional add-ons",
         "pricing_addons_title": "Extend any paid plan",
-        "pricing_addons_subtitle": "Add AI Copilot, Integrations, or Service Desk ITSM on Professional — or keep them bundled on Pro.",
+        "pricing_addons_subtitle": "Add AI Copilot, Integrations, Service Desk ITSM, or data residency (BYO database & storage) on any paid plan — or keep them bundled on Pro.",
         "pricing_addon_per_month": "/mo add-on",
         "save_up_to_2_months_with_annual_billing": "Save up to 2 months with annual billing",
         "no_credit_card_required": "No credit card required",
@@ -410,7 +410,7 @@
         "contacts_organizations": "Contacts & organizations",
         "track_customers_companies_vip_tags_activity_timelines_and_crm_context_": "Track customers, companies, VIP tags, activity timelines, and CRM context in the ticket sidebar.",
         "security_sso": "Security & SSO",
-        "two-factor_authentication_saml_oidc_single_sign-on_role_permissions_au": "Two-factor authentication, SAML/OIDC single sign-on, role permissions, audit logs, and data retention.",
+        "two-factor_authentication_saml_oidc_single_sign-on_role_permissions_au": "Two-factor authentication, SAML/OIDC single sign-on, role permissions, audit logs, data retention, and optional BYO database or object storage for data residency.",
         "workforce_management": "Workforce management",
         "organize_agents_into_teams_and_departments_with_skills_routing_perform": "Organize agents into teams and departments with skills routing, performance insights, and workload visibility.",
         "one_inbox_every_channel": "One inbox, every channel",
@@ -745,6 +745,9 @@
                 "assets": "Asset management (CMDB)",
                 "custom_domain": "Custom workspace domain",
                 "sso": "SSO (SAML / OIDC)",
+                "data_residency": "Data residency (BYO)",
+                "byo_database": "Bring your own database",
+                "byo_storage": "Bring your own storage",
                 "service_desk": "Service Desk ITSM"
             },
             "ai_capabilities": [
@@ -909,7 +912,7 @@
                     "HubSpot, Salesforce, Shopify, Slack, Jira, and Linear integrations",
                     "Customer context panel with CRM, commerce, and health scores in the ticket sidebar",
                     "Network asset discovery imports devices into your CMDB automatically",
-                    "Two-factor auth, SSO (SAML/OIDC), audit logs, and data retention",
+                    "Two-factor auth, SSO (SAML/OIDC), audit logs, data retention, and optional BYO database or storage",
                     "Custom workspace domain on Pro plans",
                     "REST API, OpenAPI docs, and usage-based plan limits"
                 ]
@@ -971,7 +974,7 @@
             "plan_taglines": {
                 "starter": "Essentials for small teams",
                 "professional": "Automation, SLA & channels",
-                "enterprise": "AI, integrations, SSO & custom domain"
+                "enterprise": "AI, integrations, SSO, custom domain & data residency"
             },
             "comparisons": [
                 { "feature": "Unified inbox (email + chat + portal + SMS)", "us": true, "them": false },
@@ -987,6 +990,7 @@
                 { "feature": "Multi-brand workspaces", "us": true, "them": false },
                 { "feature": "Dedicated workspace URL + custom domain", "us": true, "them": "Add-on" },
                 { "feature": "SSO (SAML / OIDC) & agent performance scoring", "us": true, "them": "Enterprise only" },
+                { "feature": "Bring your own database & object storage (data residency)", "us": true, "them": "Rare" },
                 { "feature": "Free trial, no credit card", "us": true, "them": "Limited" }
             ],
             "faqs": [
@@ -1016,7 +1020,15 @@
                 },
                 {
                     "q": "How does pricing work after the trial?",
-                    "a": "Plans are based on team size (agents) and monthly ticket volume. Professional includes automation, SLA, service catalog, and live chat. Pro adds AI, integrations, assets, SSO, and custom domain. AI Copilot, Integrations, and Service Desk ITSM are optional monthly add-ons on any paid plan. Upgrade anytime from your workspace billing settings."
+                    "a": "Plans are based on team size (agents) and monthly ticket volume. Professional includes automation, SLA, service catalog, and live chat. Pro adds AI, integrations, assets, SSO, and custom domain. AI Copilot, Integrations, Service Desk ITSM, and data residency add-ons (BYO database and storage) are optional monthly add-ons on any paid plan. Upgrade anytime from your workspace billing settings."
+                },
+                {
+                    "q": "Can we host workspace data in our own cloud?",
+                    "a": "Yes. On any paid plan, add Bring Your Own Database (MySQL on RDS, Aurora, or self-hosted) and/or Bring Your Own Storage (AWS S3 or Cloudflare R2). Configure credentials in Settings → Data residency, test the connection, and we migrate existing data automatically. Use the same region as your workspace for best performance. A small amount of control-plane metadata stays on helpefi — see our data residency page for details."
+                },
+                {
+                    "q": "Is BYO available on the free trial?",
+                    "a": "Data residency add-ons require a paid subscription. Start your trial on a paid plan tier, then enable BYO database or storage from billing add-ons before configuring your external resources."
                 },
                 {
                     "q": "Can I migrate existing data?",
@@ -1032,7 +1044,7 @@
                 "also_included": "Also included",
                 "everything_included": "Everything included",
                 "full_platform_title": "Full platform feature list",
-                "full_platform_body": "All plans include core ticketing. Higher tiers unlock automation, channels, AI, and platform features. Service Desk ITSM is optional on any paid plan.",
+                "full_platform_body": "All plans include core ticketing. Higher tiers unlock automation, channels, AI, and platform features. Service Desk ITSM and data residency (BYO database & storage) are optional on any paid plan.",
                 "capabilities_label": "Capabilities",
                 "workflow_areas_label": "Workflow areas",
                 "features_count": "{count} features"
@@ -1455,6 +1467,26 @@
                 ],
                 "cta_title": "Connect your tools",
                 "cta_body": "Start your trial and enable integrations from the admin setup wizard."
+            },
+            "data-residency": {
+                "nav_label": "Data Residency",
+                "badge": "Data residency & BYO cloud",
+                "hero_title": "Keep workspace data in your cloud",
+                "hero_highlight": "BYO database & object storage",
+                "hero_subtitle": "Store tickets, contacts, and attachments in your own MySQL (RDS, Aurora, or self-hosted) and S3 or Cloudflare R2 buckets — with guided migration, connection testing, and same-region performance best practices.",
+                "features": [
+                    { "title": "Bring your own database", "body": "Connect MySQL on AWS RDS, Aurora, or your infrastructure. We validate credentials, migrate existing workspace data, and run tenant migrations against your database." },
+                    { "title": "Bring your own storage", "body": "Point attachments and avatars to your AWS S3 or Cloudflare R2 bucket with prefix-scoped access. Files migrate automatically from helpefi-managed storage." },
+                    { "title": "Test before you save", "body": "Test database and storage connections independently before committing. Clear status in Settings → Data residency so your team knows when each resource is verified." }
+                ],
+                "faq": [
+                    { "q": "What data stays on helpefi?", "a": "Control-plane metadata remains in our central database: workspace slug, subscription, domain mappings, and encrypted BYO credentials. Application logs and queue metadata may also include tenant-scoped tags. Workspace ticket and contact data lives in your database when BYO database is enabled." },
+                    { "q": "Which cloud providers are supported?", "a": "MySQL-compatible databases including Amazon RDS and Aurora, plus object storage on AWS S3 or Cloudflare R2. Use the same region as your workspace for lowest latency." },
+                    { "q": "Can I enable database and storage separately?", "a": "Yes. Purchase and configure BYO database and BYO storage as separate add-ons. Test and save each resource independently from Settings → Data residency." },
+                    { "q": "Is this available on the free trial?", "a": "Data residency add-ons require a paid plan. Enable the add-on from billing, then configure your external resources." }
+                ],
+                "cta_title": "Meet your residency requirements",
+                "cta_body": "Start a paid plan, enable BYO add-ons, and configure your database and storage in minutes — with automatic migration from helpefi-managed resources."
             }
         },
         "static_pages": {
@@ -1463,8 +1495,9 @@
                 "hero_title": "Simple, transparent helpdesk pricing",
                 "hero_subtitle": "Choose a plan that fits your team. Every plan includes a {days}-day free trial with full platform access — no credit card required.",
                 "sections": [
-                    { "title": "Plans for every stage", "body": "From Starter for small teams to Enterprise with SSO, custom domains, and advanced ITSM — scale without switching platforms." },
-                    { "title": "Add-ons when you need more", "body": "Enable Service Desk ITSM, additional brands, or AI capacity as modular add-ons on Professional and Enterprise plans." }
+                    { "title": "Plans for every stage", "body": "From Starter for small teams to Enterprise with SSO, custom domains, advanced ITSM, and optional data residency — scale without switching platforms." },
+                    { "title": "Add-ons when you need more", "body": "Enable Service Desk ITSM, AI Copilot, Integrations, or data residency (BYO database and storage) as modular add-ons on any paid plan." },
+                    { "title": "Data residency for regulated teams", "body": "Bring your own MySQL and object storage so workspace data at rest stays in your AWS or Cloudflare account. We migrate existing data, test connections before save, and document what control-plane metadata remains on helpefi. See the Data Residency feature page for compliance details." }
                 ],
                 "cta_title": "Start your free trial",
                 "cta_body": "Create your workspace in minutes and explore every feature before you commit."
@@ -1514,6 +1547,7 @@
                 "existing_customer_body": "Sign in to your workspace for product support. For billing questions, email {contactEmail} from your registered address.",
                 "sections": [
                     { "title": "Sales and general inquiries", "body": "Email {contactEmail} for demos, partnership questions, or help choosing the right plan for your team." },
+                    { "title": "Enterprise & data residency", "body": "Need BYO database (RDS/Aurora), object storage (S3/R2), SSO at scale, or custom contracts? Email {contactEmail} with topic Enterprise — we'll walk through add-ons, migration, and compliance documentation." },
                     { "title": "Existing customers", "body": "Sign in to your workspace for product support. For billing or account questions, email {contactEmail} from your registered address." }
                 ],
                 "cta_title": "Ready to get started?",
@@ -1868,6 +1902,8 @@
             "feature_live_chat_description": "Embeddable live chat that routes to agents and creates tracked tickets. Part of {brand} helpdesk software. {days}-day free trial.",
             "feature_integrations_title": "Helpdesk Integrations · {brand}",
             "feature_integrations_description": "Connect Slack, HubSpot, Salesforce, Shopify, Jira, and more. CRM context in every ticket. {days}-day free trial.",
+            "feature_data_residency_title": "Data Residency & BYO Cloud · {brand}",
+            "feature_data_residency_description": "Store workspace data in your MySQL (RDS/Aurora) and S3 or R2 buckets. Guided migration and test-before-save. Paid plan add-ons on {brand}.",
             "static_pricing_title": "Helpdesk Pricing · {brand}",
             "static_pricing_description": "Transparent helpdesk and ITSM pricing for growing teams. Starter, Professional, and Enterprise plans. {days}-day free trial, no credit card.",
             "static_about_title": "About {brand}",
@@ -1881,7 +1917,9 @@
             "blog_title": "Blog · {brand}",
             "blog_description": "Guides on AI helpdesk software, ticket management, ITSM, and customer support best practices from {brand}.",
             "blog_ai_helpdesk_software_guide_title": "How to Choose AI Helpdesk Software · {brand}",
-            "blog_ai_helpdesk_software_guide_description": "Evaluate AI customer support tools: deflection, Copilot, security, and pricing. A practical guide from {brand}."
+            "blog_ai_helpdesk_software_guide_description": "Evaluate AI customer support tools: deflection, Copilot, security, and pricing. A practical guide from {brand}.",
+            "blog_bring_your_own_database_and_storage_title": "BYOD & BYOS Guide: Bring Your Own Database and Storage · {brand}",
+            "blog_bring_your_own_database_and_storage_description": "Complete guide to helpefi BYOD and BYOS — AWS RDS, Aurora, S3, Cloudflare R2, data residency, migration, and enterprise setup from {brand}."
         }
     }
 }

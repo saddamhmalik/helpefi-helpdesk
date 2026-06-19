@@ -76,6 +76,7 @@ class AdminTenantController extends Controller
 
         $data = $request->validate([
             'is_blocked' => ['sometimes', 'boolean'],
+            'byo_allowed' => ['sometimes', 'boolean'],
             'plan' => ['sometimes', 'nullable', 'required_with:billing_interval,renews_at,note,custom_price', 'string', 'in:'.$slugs],
             'billing_interval' => ['sometimes', 'string', 'in:month,year'],
             'renews_at' => ['sometimes', 'nullable', 'date', 'after:today'],

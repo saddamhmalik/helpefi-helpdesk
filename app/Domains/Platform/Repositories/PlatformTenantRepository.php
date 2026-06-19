@@ -12,7 +12,7 @@ class PlatformTenantRepository
     public function paginate(int $perPage = 20, ?string $search = null, ?string $status = null): LengthAwarePaginator
     {
         $query = Tenant::query()
-            ->with(['domains', 'subscription'])
+            ->with(['domains', 'subscription', 'infrastructure'])
             ->orderByDesc('created_at');
 
         if ($search !== null && $search !== '') {

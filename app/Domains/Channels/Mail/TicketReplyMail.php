@@ -4,6 +4,7 @@ namespace App\Domains\Channels\Mail;
 
 use App\Domains\Channels\Models\EmailTemplate;
 use App\Domains\Channels\Services\EmailTemplateService;
+use App\Domains\Tenancy\Services\TenantStorageResolver;
 use App\Domains\Tickets\Models\Ticket;
 use App\Domains\Tickets\Models\TicketMessage;
 use App\Models\User;
@@ -14,7 +15,6 @@ use Illuminate\Mail\Mailables\Attachment;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Support\Facades\Storage;
 use Symfony\Component\Mime\Email;
 
 class TicketReplyMail extends Mailable
@@ -98,7 +98,7 @@ class TicketReplyMail extends Mailable
 
         return $this->ticketMessage->attachments
             ->map(fn ($attachment) => Attachment::fromData(
-                fn () => Storage::disk('public')->get($attachment->path),
+                fn () => app(TenantStorageResolver::class)->get($attachment->path, $attachment->storage_disk) ?? '',
                 $attachment->filename,
             )->withMime($attachment->mime_type ?? 'application/octet-stream'))
             ->all();

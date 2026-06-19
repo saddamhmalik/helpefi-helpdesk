@@ -16,12 +16,16 @@ const FEATURE_I18N_KEYS = {
     custom_domain: 'settings_billing.feature_labels.custom_domain',
     sso: 'settings_billing.feature_labels.sso',
     service_desk: 'settings_billing.feature_labels.service_desk',
+    byo_database: 'settings_billing.feature_labels.byo_database',
+    byo_storage: 'settings_billing.feature_labels.byo_storage',
 };
 
 const FEATURE_TO_ADDON = {
     ai: 'ai_copilot',
     integrations: 'integrations',
     service_desk: 'service_desk',
+    byo_database: 'byo_database',
+    byo_storage: 'byo_storage',
 };
 
 export function usePlanFeature(feature) {

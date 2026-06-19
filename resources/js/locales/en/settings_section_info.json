@@ -18,6 +18,15 @@
                     "Each brand can use the same custom domain with separate portal paths."
                 ]
             },
+            "data_residency": {
+                "title": "Data residency",
+                "body": "Move workspace data to your own MySQL database and file storage. helpefi migrates existing tickets, users, attachments, and avatars when you connect external infrastructure.",
+                "tips": [
+                    "Purchase the Bring Your Own Database or Storage add-on from billing first.",
+                    "Allow helpefi egress IPs on your database firewall before verifying.",
+                    "Confirm the migration checkbox when switching from managed to external."
+                ]
+            },
             "brands": {
                 "title": "About brands",
                 "body": "Brands let you run separate customer portals, mailboxes, and knowledge bases from one workspace. Use them for different companies, product lines, or white-label clients.",

@@ -7,6 +7,7 @@ use App\Domains\Platform\Models\PlatformBackup;
 use App\Domains\Platform\Repositories\PlatformBackupRepository;
 use App\Domains\Platform\Support\DatabaseBackupExporter;
 use App\Domains\Platform\Support\PlatformAuditRecorder;
+use App\Domains\Tenancy\Services\TenantInfrastructureService;
 use App\Models\Tenant;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
@@ -29,6 +30,7 @@ class CreatePlatformBackupJob implements ShouldQueue
         PlatformBackupRepository $backups,
         DatabaseBackupExporter $exporter,
         PlatformAuditRecorder $audit,
+        TenantInfrastructureService $infrastructure,
     ): void {
         $this->ensureCentralContext();
 
@@ -39,7 +41,7 @@ class CreatePlatformBackupJob implements ShouldQueue
         try {
             $path = match ($backup->scope) {
                 PlatformBackup::SCOPE_CENTRAL => $this->backupCentral($exporter, $backup),
-                PlatformBackup::SCOPE_TENANT => $this->backupTenant($exporter, $backup),
+                PlatformBackup::SCOPE_TENANT => $this->backupTenant($exporter, $backup, $infrastructure),
                 default => throw new \RuntimeException("Unsupported backup scope [{$backup->scope}]."),
             };
 
@@ -95,9 +97,16 @@ class CreatePlatformBackupJob implements ShouldQueue
         return $path;
     }
 
-    private function backupTenant(DatabaseBackupExporter $exporter, PlatformBackup $backup): string
-    {
+    private function backupTenant(
+        DatabaseBackupExporter $exporter,
+        PlatformBackup $backup,
+        TenantInfrastructureService $infrastructure,
+    ): string {
         $tenant = Tenant::query()->findOrFail($backup->tenant_id);
+
+        if ($infrastructure->usesExternalDatabase($tenant)) {
+            throw new \RuntimeException('Central backups are disabled for workspaces with an external database.');
+        }
         $path = $this->buildPath(
             'tenants/'.$tenant->id,
             $tenant->slug.'-'.now()->format('Y-m-d-His').$this->defaultBackupExtension(),

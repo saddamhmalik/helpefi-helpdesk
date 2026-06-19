@@ -70,6 +70,7 @@ use App\Domains\Platform\Controllers\Tenant\PlatformFeedbackController;
 use App\Domains\Platform\Controllers\Tenant\PlatformNoticeController;
 use App\Domains\Workforce\Controllers\WorkforceController;
 use App\Domains\Tenancy\Controllers\CustomDomainController;
+use App\Domains\Tenancy\Controllers\InfrastructureController;
 use App\Domains\Tenancy\Controllers\SetupController;
 use App\Domains\Tickets\Controllers\TicketBulkController;
 use App\Domains\Tickets\Controllers\TicketController;
@@ -314,6 +315,29 @@ Route::middleware('auth')->group(function () {
             Route::post('/settings/custom-domain/verify', [CustomDomainController::class, 'verify'])->name('settings.custom-domain.verify');
             Route::put('/settings/custom-domain/preferences', [CustomDomainController::class, 'updatePreferences'])->name('settings.custom-domain.preferences');
             Route::delete('/settings/custom-domain', [CustomDomainController::class, 'destroy'])->name('settings.custom-domain.destroy');
+            Route::get('/settings/infrastructure', [InfrastructureController::class, 'index'])->name('settings.infrastructure');
+            Route::put('/settings/infrastructure', [InfrastructureController::class, 'update'])->name('settings.infrastructure.update');
+            Route::post('/settings/infrastructure/test-database', [InfrastructureController::class, 'testDatabase'])
+                ->middleware('throttle:tenant-infrastructure-verify')
+                ->name('settings.infrastructure.test-database');
+            Route::post('/settings/infrastructure/test-storage', [InfrastructureController::class, 'testStorage'])
+                ->middleware('throttle:tenant-infrastructure-verify')
+                ->name('settings.infrastructure.test-storage');
+            Route::post('/settings/infrastructure/verify', [InfrastructureController::class, 'verify'])
+                ->middleware('throttle:tenant-infrastructure-verify')
+                ->name('settings.infrastructure.verify');
+            Route::post('/settings/infrastructure/migrate-database', [InfrastructureController::class, 'migrateDatabase'])
+                ->name('settings.infrastructure.migrate-database');
+            Route::post('/settings/infrastructure/migrate-storage', [InfrastructureController::class, 'migrateStorage'])
+                ->name('settings.infrastructure.migrate-storage');
+            Route::post('/settings/infrastructure/export-backup', [InfrastructureController::class, 'exportBackup'])
+                ->name('settings.infrastructure.export-backup');
+            Route::put('/settings/infrastructure/auto-backup', [InfrastructureController::class, 'updateAutoBackup'])
+                ->name('settings.infrastructure.auto-backup');
+            Route::put('/settings/infrastructure/backups/{backup}', [InfrastructureController::class, 'updateBackup'])
+                ->name('settings.infrastructure.backups.update');
+            Route::delete('/settings/infrastructure/backups/{backup}', [InfrastructureController::class, 'destroyBackup'])
+                ->name('settings.infrastructure.backups.destroy');
             Route::get('/settings/security', [SecuritySettingController::class, 'index'])->name('settings.security');
             Route::put('/settings/security', [SecuritySettingController::class, 'update'])->name('settings.security.update');
             Route::put('/settings/security/sso', [SsoController::class, 'update'])->name('settings.security.sso.update');

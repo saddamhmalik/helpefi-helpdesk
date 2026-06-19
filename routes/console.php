@@ -15,4 +15,7 @@ Schedule::command('platform:run-backups')
     ->everyMinute()
     ->withoutOverlapping()
     ->when(fn () => app(\App\Domains\Platform\Services\PlatformBackupScheduleService::class)->isDue());
+Schedule::command('platform:check-tenant-infrastructure')->hourly()->withoutOverlapping();
+Schedule::command('platform:run-tenant-infrastructure-backups')->everyMinute()->withoutOverlapping();
+Schedule::command('platform:check-pending-tenant-migrations')->daily()->withoutOverlapping();
 Schedule::command('telescope:prune')->daily();

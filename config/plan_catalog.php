@@ -28,5 +28,7 @@ return [
         'assets' => 'Asset management',
         'custom_domain' => 'Custom workspace domain',
         'sso' => 'SSO (SAML / OIDC)',
+        'byo_database' => 'Bring your own database',
+        'byo_storage' => 'Bring your own storage',
     ],
 ];

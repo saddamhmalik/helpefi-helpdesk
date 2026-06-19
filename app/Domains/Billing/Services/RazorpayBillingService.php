@@ -1406,13 +1406,13 @@ class RazorpayBillingService
         $syncedPaymentIds = [];
 
         foreach ($response['items'] ?? [] as $invoice) {
-            if (! is_array($invoice) || ($invoice['status'] ?? '') !== 'paid') {
+            if (! is_array($invoice)) {
                 continue;
             }
 
-            $paymentId = (string) ($invoice['payment_id'] ?? '');
+            $paymentId = $this->paymentIdFromInvoice($invoice);
 
-            if ($paymentId === '') {
+            if ($paymentId === null || in_array($paymentId, $syncedPaymentIds, true)) {
                 continue;
             }
 
@@ -1431,12 +1431,12 @@ class RazorpayBillingService
         array $syncedPaymentIds,
     ): void {
         try {
-            $response = $this->client()->payment->all([
+            $response = $this->client()->invoice->all([
                 'customer_id' => $customerId,
                 'count' => 100,
             ])->toArray();
         } catch (Error $exception) {
-            Log::warning('Razorpay payment list failed during payment sync', [
+            Log::warning('Razorpay customer invoice list failed during payment sync', [
                 'tenant_id' => $tenantId,
                 'customer_id' => $customerId,
                 'message' => $exception->getMessage(),
@@ -1445,22 +1445,32 @@ class RazorpayBillingService
             return;
         }
 
-        foreach ($response['items'] ?? [] as $payment) {
-            if (! is_array($payment)) {
+        $this->recordPaymentsFromInvoices(
+            $response['items'] ?? [],
+            $subscriptionEntities,
+            $tenantId,
+            $syncedPaymentIds,
+        );
+    }
+
+    private function recordPaymentsFromInvoices(
+        array $invoices,
+        array $subscriptionEntities,
+        string $tenantId,
+        array $syncedPaymentIds,
+    ): void {
+        foreach ($invoices as $invoice) {
+            if (! is_array($invoice)) {
                 continue;
             }
 
-            $paymentId = (string) ($payment['id'] ?? '');
+            $paymentId = $this->paymentIdFromInvoice($invoice);
 
-            if ($paymentId === '' || in_array($paymentId, $syncedPaymentIds, true)) {
+            if ($paymentId === null || in_array($paymentId, $syncedPaymentIds, true)) {
                 continue;
             }
 
-            if (! in_array($payment['status'] ?? '', ['captured', 'authorized'], true)) {
-                continue;
-            }
-
-            $subscriptionId = (string) ($payment['subscription_id'] ?? '');
+            $subscriptionId = (string) ($invoice['subscription_id'] ?? '');
             $subscriptionEntity = $subscriptionId !== ''
                 ? ($subscriptionEntities[$subscriptionId] ?? $this->fetchSubscriptionEntityForSync($subscriptionId, $tenantId))
                 : ['notes' => ['tenant_id' => $tenantId]];
@@ -1469,8 +1479,19 @@ class RazorpayBillingService
                 $subscriptionEntity = ['notes' => ['tenant_id' => $tenantId]];
             }
 
-            $this->payments->recordFromRazorpayPayment($payment, $subscriptionEntity);
+            $this->recordSyncedPayment($paymentId, $subscriptionEntity, $tenantId);
         }
+    }
+
+    private function paymentIdFromInvoice(array $invoice): ?string
+    {
+        if (($invoice['status'] ?? '') !== 'paid') {
+            return null;
+        }
+
+        $paymentId = (string) ($invoice['payment_id'] ?? '');
+
+        return $paymentId !== '' ? $paymentId : null;
     }
 
     private function recordSyncedPayment(string $paymentId, array $subscriptionEntity, string $tenantId): bool

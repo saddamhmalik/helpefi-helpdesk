@@ -1661,6 +1661,11 @@ const featureGroups = computed(() => {
                             </p>
                         </article>
                     </div>
+                    <p class="mt-8 text-center text-sm text-slate-400">
+                        <Link href="/features/data-residency" class="font-semibold text-sky-300 transition hover:text-sky-200">
+                            {{ $t('central.feature_pages.data-residency.nav_label') }} →
+                        </Link>
+                    </p>
                 </div>
             </div>
         </section>

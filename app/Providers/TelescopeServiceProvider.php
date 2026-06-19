@@ -24,6 +24,22 @@ class TelescopeServiceProvider extends TelescopeApplicationServiceProvider
         $this->hideSensitiveRequestDetails();
 
         Telescope::filter(function (IncomingEntry $entry) {
+            if (
+                $entry->type === 'query'
+                && (bool) config('tenant_infrastructure.telescope_redact_external_queries', true)
+            ) {
+                try {
+                    if (tenancy()->initialized) {
+                        $tenant = tenant();
+
+                        if ($tenant && app(\App\Domains\Tenancy\Services\TenantInfrastructureService::class)->usesExternalDatabase($tenant)) {
+                            return false;
+                        }
+                    }
+                } catch (\Throwable) {
+                }
+            }
+
             if (app()->environment('local', 'testing')) {
                 return true;
             }

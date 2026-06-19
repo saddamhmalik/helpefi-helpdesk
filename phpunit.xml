@@ -38,5 +38,6 @@
         <env name="NIGHTWATCH_ENABLED" value="false"/>
         <env name="BILLING_DEFAULT_PLAN" value="enterprise"/>
         <env name="STRIPE_ENABLED" value="false"/>
+        <env name="TENANT_INFRASTRUCTURE_TEST_ON_SAVE" value="false"/>
     </php>
 </phpunit>

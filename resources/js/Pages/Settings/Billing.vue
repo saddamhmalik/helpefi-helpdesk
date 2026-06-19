@@ -481,19 +481,21 @@ const formatLimit = (limit) => (limit === 'unlimited' ? t('settings_billing.unli
                         ? 'border-emerald-200 bg-emerald-50 dark:border-emerald-900/60 dark:bg-emerald-950/40'
                         : 'agent-border agent-panel'"
                 >
-                    <div class="flex flex-wrap items-start justify-between gap-4">
-                        <div>
+                    <div class="flex items-start justify-between gap-4">
+                        <div class="min-w-0 flex-1">
                             <p class="font-medium agent-text">{{ addon.name }}</p>
                             <p class="mt-1 text-sm agent-text-muted">{{ addon.description }}</p>
                             <p class="mt-2 text-sm font-semibold agent-text">{{ formatAddonPrice(addon.price_monthly) }}/mo</p>
                         </div>
-                        <div class="flex items-center gap-2">
+                        <div class="flex shrink-0 flex-col items-end gap-2 sm:flex-row sm:items-center">
                             <span
                                 v-if="addon.active"
                                 class="rounded-full px-2.5 py-1 text-xs font-semibold"
                                 :class="addon.trial_access
                                     ? 'bg-blue-100 text-blue-800 dark:bg-blue-950/50 dark:text-blue-200'
-                                    : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-200'"
+                                    : addon.included_in_plan
+                                        ? 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200'
+                                        : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-200'"
                             >
                                 {{ addonStatusLabel(addon) }}
                             </span>
@@ -506,7 +508,7 @@ const formatLimit = (limit) => (limit === 'unlimited' ? t('settings_billing.unli
                                 {{ $t('settings_billing.cancel_addon') }}
                             </button>
                             <button
-                                v-else
+                                v-else-if="!addon.included_in_plan"
                                 type="button"
                                 class="rounded-lg bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
                                 :disabled="addonPurchaseDisabled(addon)"

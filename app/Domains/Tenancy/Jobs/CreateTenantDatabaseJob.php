@@ -2,6 +2,7 @@
 
 namespace App\Domains\Tenancy\Jobs;
 
+use App\Domains\Tenancy\Services\TenantInfrastructureService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Database\Eloquent\Model;
@@ -22,8 +23,15 @@ class CreateTenantDatabaseJob implements ShouldQueue
     {
     }
 
-    public function handle(DatabaseManager $databaseManager): void
+    public function handle(DatabaseManager $databaseManager, TenantInfrastructureService $infrastructure): void
     {
+        if ($infrastructure->usesExternalDatabase($this->tenant)) {
+            $this->tenant->setInternal('create_database', false);
+            $this->tenant->save();
+
+            return;
+        }
+
         event(new CreatingDatabase($this->tenant));
 
         if ($this->tenant->getInternal('create_database') === false) {

@@ -52,6 +52,7 @@ const accent = computed(() => {
         amber: { glow: 'bg-amber-600/25', badge: 'border-amber-400/30 bg-amber-500/10 text-amber-300', highlight: 'from-amber-400 via-orange-300 to-red-400', card: 'hover:border-amber-500/30', icon: 'text-amber-400' },
         cyan: { glow: 'bg-cyan-600/25', badge: 'border-cyan-400/30 bg-cyan-500/10 text-cyan-300', highlight: 'from-cyan-400 via-sky-300 to-blue-400', card: 'hover:border-cyan-500/30', icon: 'text-cyan-400' },
         indigo: { glow: 'bg-indigo-600/25', badge: 'border-indigo-400/30 bg-indigo-500/10 text-indigo-300', highlight: 'from-indigo-400 via-blue-300 to-violet-400', card: 'hover:border-indigo-500/30', icon: 'text-indigo-400' },
+        sky: { glow: 'bg-sky-600/25', badge: 'border-sky-400/30 bg-sky-500/10 text-sky-300', highlight: 'from-sky-400 via-cyan-300 to-teal-400', card: 'hover:border-sky-500/30', icon: 'text-sky-400' },
     };
 
     return map[props.featureMeta.accent ?? 'violet'] ?? map.violet;

@@ -102,25 +102,32 @@ class DatabaseBackupExporter
             mkdir($directory, 0755, true);
         }
 
+        $mysqldump = DatabaseMysqlCli::binary('mysqldump');
+
         $command = [
-            'mysqldump',
+            $mysqldump,
             '--host='.$config['host'],
             '--port='.$config['port'],
             '--user='.$config['username'],
+            '--single-transaction',
+            '--routines',
+            '--triggers',
             '--result-file='.$targetPath,
             $config['database'],
         ];
 
-        $environment = [];
-
-        if (! empty($config['password'])) {
-            $environment['MYSQL_PWD'] = $config['password'];
-        }
-
-        $result = Process::env($environment)->run($command);
+        $result = Process::env(DatabaseMysqlCli::passwordEnvironment($config))
+            ->timeout(DatabaseMysqlCli::processTimeout())
+            ->run($command);
 
         if (! $result->successful() || ! is_file($targetPath)) {
-            throw new RuntimeException(trim($result->errorOutput() ?: $result->output() ?: 'mysqldump failed to create backup file.'));
+            $message = trim($result->errorOutput() ?: $result->output() ?: 'mysqldump failed to create backup file.');
+
+            if (str_contains($message, 'not found')) {
+                $message .= ' Install the MySQL client tools (mysqldump) in the application container.';
+            }
+
+            throw new RuntimeException($message);
         }
 
         return $this->fileMeta($targetPath);

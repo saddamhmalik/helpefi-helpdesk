@@ -46,6 +46,17 @@ class PlatformAuditLogRepository
     {
         return PlatformAuditLog::query()
             ->with(['user:id,name,email', 'tenant:id,name,slug'])
+            ->when($filters['category'] ?? null, function ($query, $category) {
+                if ($category === 'infrastructure') {
+                    $query->where(function ($inner) {
+                        $inner->where('event', 'like', 'platform.tenant.infrastructure%')
+                            ->orWhereIn('event', [
+                                'platform.tenant.byo_allowed',
+                                'platform.tenant.byo_disallowed',
+                            ]);
+                    });
+                }
+            })
             ->when($filters['event'] ?? null, fn ($query, $event) => $query->where('event', $event))
             ->when($filters['tenant_id'] ?? null, fn ($query, $tenantId) => $query->where('tenant_id', $tenantId))
             ->when($filters['search'] ?? null, function ($query, $search) {

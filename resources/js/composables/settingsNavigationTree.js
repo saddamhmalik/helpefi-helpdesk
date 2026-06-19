@@ -15,6 +15,7 @@ export const SETTINGS_NAV_TREE = [
         items: [
             { key: 'overview', href: '/settings', admin: true },
             { key: 'custom_domain', href: '/settings/custom-domain', admin: true, feature: 'custom_domain', showWhenLocked: true },
+            { key: 'data_residency', href: '/settings/infrastructure', admin: true, showWhenLocked: true },
             { key: 'brands', href: '/settings/brands', admin: true },
             sectionEntry('usage_billing', '/settings/billing', 'usage', 'usage', { admin: true }),
             sectionEntry('change_plan', '/settings/billing', 'plans', 'usage', { admin: true }),

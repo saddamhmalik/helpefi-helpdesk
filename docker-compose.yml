@@ -103,7 +103,7 @@ services:
       - node_modules_data:/var/www/html/node_modules
       - app_storage:/var/www/html/storage/app
       - ./docker/php/php-dev.ini:/usr/local/etc/php/conf.d/99-helpdesk.ini:ro
-    command: ["php", "artisan", "queue:work", "redis", "--sleep=3", "--tries=3", "--timeout=900"]
+    command: ["php", "artisan", "queue:work", "redis", "--sleep=3", "--tries=3", "--timeout=3600"]
 
   scheduler:
     build:
