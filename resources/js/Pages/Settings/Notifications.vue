@@ -25,7 +25,8 @@ const save = () => {
 <template>
     <SettingsPage
         :title="$t('common.notifications')"
-        :description="$t('settings_notifications.configure_in-app_and_email_alerts_for_agents')"
+        :description="$t('settings.descriptions.notifications')"
+        info-section="notifications"
     >
         <div class="max-w-2xl agent-card">
             <form class="space-y-4" @submit.prevent="save">

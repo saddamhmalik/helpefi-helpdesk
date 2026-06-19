@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Domains\Assets\Models\AssetType;
+use App\Domains\Billing\Models\PlatformPayment;
 use App\Domains\Billing\Models\Subscription;
 use App\Domains\Billing\Services\BillingService;
 use App\Domains\Sla\Models\BusinessHours;
@@ -43,6 +44,28 @@ class BillingTest extends TenantTestCase
         $this->actingAs($admin)
             ->tenantGet('/settings/billing')
             ->assertOk();
+    }
+
+    public function test_billing_page_includes_payment_history(): void
+    {
+        $admin = User::query()->where('email', 'admin@helpdesk.test')->first();
+
+        PlatformPayment::query()->create([
+            'tenant_id' => tenant('id'),
+            'razorpay_payment_id' => 'pay_test_billing_history',
+            'amount' => 9900,
+            'currency' => 'INR',
+            'status' => PlatformPayment::STATUS_PAID,
+            'plan' => 'professional',
+            'paid_at' => now(),
+        ]);
+
+        $this->actingAs($admin)
+            ->tenantGet('/settings/billing?section=payments')
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->has('payments', 1)
+                ->where('payments.0.amount', 9900));
     }
 
     public function test_agent_cannot_view_billing_settings(): void

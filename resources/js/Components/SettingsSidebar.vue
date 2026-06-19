@@ -2,8 +2,11 @@
 import { Link, usePage } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
+import SettingsNavTree from './SettingsNavTree.vue';
 import { useAgentNavigation } from '../composables/useAgentNavigation.js';
 import { useSettingsNavFilter } from '../composables/useSettingsNavFilter.js';
+import { useSettingsNavExpand } from '../composables/useSettingsNavExpand.js';
+import { useSettingsNavScroll } from '../composables/useSettingsNavScroll.js';
 import { isSettingsNavActive } from '../composables/useSettingsSection.js';
 
 const { t } = useI18n();
@@ -13,8 +16,10 @@ const navRef = ref(null);
 const query = ref('');
 
 const { filteredGroups } = useSettingsNavFilter(settingsNavGroups, query);
-
 const currentUrl = computed(() => page.url.split('#')[0]);
+const { isExpanded, toggle } = useSettingsNavExpand(filteredGroups, currentUrl, query);
+
+useSettingsNavScroll(navRef, currentUrl);
 
 const navLinkClass = (href) => {
     const active = isSettingsNavActive(href, currentUrl.value);
@@ -23,16 +28,12 @@ const navLinkClass = (href) => {
         return 'agent-text font-medium';
     }
 
-    return 'agent-text-muted hover:text-slate-900 dark:text-slate-100 dark:hover:text-slate-100';
+    return 'agent-text-muted hover:text-slate-900 dark:text-slate-100 dark:hover:text-slate-200';
 };
-
-const iconClass = (href) => isSettingsNavActive(href, currentUrl.value)
-    ? 'text-slate-700 dark:text-slate-300'
-    : 'text-slate-400 dark:text-slate-500 group-hover:text-slate-600 dark:text-slate-400 dark:group-hover:text-slate-300';
 </script>
 
 <template>
-    <aside class="settings-sidebar hidden w-full min-w-0 lg:flex lg:min-h-0 lg:max-h-full lg:flex-col lg:overflow-hidden lg:border-r lg:border-slate-200 dark:border-slate-800 lg:dark:border-slate-700 lg:pr-6">
+    <aside class="settings-sidebar hidden w-full min-w-0 lg:flex lg:min-h-0 lg:max-h-full lg:flex-col lg:overflow-hidden lg:border-r lg:border-slate-200 lg:pl-4 dark:border-slate-800 lg:dark:border-slate-700 lg:pr-4">
         <Link
             href="/dashboard"
             class="mb-4 inline-flex shrink-0 items-center gap-2 text-sm font-medium agent-text-subtle transition hover:text-slate-800 dark:text-slate-200 dark:hover:text-slate-200"
@@ -58,39 +59,18 @@ const iconClass = (href) => isSettingsNavActive(href, currentUrl.value)
             </div>
         </div>
 
-        <nav ref="navRef" class="settings-sidebar-scroll min-h-0 w-full flex-1 space-y-5 overflow-y-auto pr-1" :aria-label="t('components.settings')">
+        <nav ref="navRef" class="settings-sidebar-scroll min-h-0 w-full flex-1 space-y-1 overflow-y-auto pr-1" :aria-label="t('components.settings')">
             <p v-if="query && filteredGroups.length === 0" class="px-2 text-sm agent-text-subtle">
                 {{ t('settings_overview.no_settings_matched') }}
             </p>
 
-            <div v-for="group in filteredGroups" :key="group.id">
-                <p class="mb-1 px-2 text-[11px] font-medium text-slate-400 dark:text-slate-500">
-                    {{ group.label }}
-                </p>
-                <ul class="w-full space-y-0">
-                    <li v-for="item in group.items" :key="item.href" class="w-full">
-                        <Link
-                            :href="item.href"
-                            class="group flex w-full items-center gap-2.5 rounded-md px-2 py-1.5 text-sm transition-ui"
-                            :class="navLinkClass(item.href)"
-                            :title="item.description"
-                            :aria-label="item.locked ? `${item.label} (${item.lockedLabel})` : item.label"
-                            :data-settings-nav-active="isSettingsNavActive(item.href, currentUrl) ? 'true' : undefined"
-                        >
-                            <svg class="h-4 w-4 shrink-0 transition" :class="iconClass(item.href)" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" :d="item.icon" />
-                            </svg>
-                            <span class="min-w-0 flex-1 truncate">{{ item.label }}</span>
-                            <span
-                                v-if="item.locked"
-                                class="shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300"
-                            >
-                                {{ item.lockedLabel }}
-                            </span>
-                        </Link>
-                    </li>
-                </ul>
-            </div>
+            <SettingsNavTree
+                :groups="filteredGroups"
+                :current-url="currentUrl"
+                :is-expanded="isExpanded"
+                :toggle="toggle"
+                :nav-link-class="navLinkClass"
+            />
         </nav>
     </aside>
 </template>

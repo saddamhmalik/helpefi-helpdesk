@@ -96,7 +96,11 @@ const removeField = (index) => form.ticket_fields.splice(index, 1);
 </script>
 
 <template>
-    <SettingsPage :title="$t('settings.brands')" :description="$t('settings_brands.separate_portal_urls_mailboxes_knowledge_bases_and_ticket_defaults_per')">
+    <SettingsPage
+        :title="$t('settings.brands')"
+        :description="$t('settings.descriptions.brands')"
+        info-section="brands"
+    >
         <PlanFeatureBanner feature="workspace" />
 
         <div class="mb-4 flex justify-end">

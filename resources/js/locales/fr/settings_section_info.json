@@ -1,0 +1,491 @@
+{
+    "settings": {
+        "section_info": {
+            "overview": {
+                "title": "Vue d'ensemble des paramètres",
+                "body": "Retrouvez tous les paramètres de l'espace de travail au même endroit. Utilisez la recherche pour accéder rapidement à la facturation, aux canaux, à l'équipe, aux tickets ou à la sécurité.",
+                "tips": [
+                    "Seuls les administrateurs peuvent modifier les paramètres de l'espace de travail.",
+                    "Votre rôle détermine les pages auxquelles vous avez accès."
+                ]
+            },
+            "custom_domain": {
+                "title": "Domaine personnalisé",
+                "body": "Diffusez votre portail client et votre centre d'aide sur votre propre domaine plutôt que sur le sous-domaine par défaut de l'espace de travail.",
+                "tips": [
+                    "Ajoutez les enregistrements DNS indiqués ici avant de vérifier le domaine.",
+                    "Le certificat SSL est provisionné automatiquement une fois le DNS correctement configuré.",
+                    "Chaque marque peut utiliser le même domaine personnalisé avec des chemins de portail distincts."
+                ]
+            },
+            "brands": {
+                "title": "À propos des marques",
+                "body": "Les marques vous permettent d'exploiter des portails clients, des boîtes mail et des bases de connaissances distincts au sein d'un même espace de travail. Utilisez-les pour différentes entreprises, gammes de produits ou clients en marque blanche.",
+                "tips": [
+                    "Chaque marque peut avoir sa propre URL de portail, son préfixe de ticket, ses couleurs et sa priorité par défaut.",
+                    "Assignez des boîtes mail et des collections de connaissances par marque pour isoler le contenu.",
+                    "Les agents travaillent depuis un seul espace de travail — le routage et les boîtes mail déterminent quelle marque reçoit chaque ticket."
+                ]
+            },
+            "usage_billing": {
+                "title": "Utilisation et facturation",
+                "body": "Consultez votre forfait actuel, l'utilisation des sièges, le volume de tickets du mois et la date de renouvellement de votre abonnement.",
+                "tips": [
+                    "Les sièges agents comptent dans la limite de votre forfait ; les comptes clients, non.",
+                    "Les espaces de travail en essai affichent ici le temps restant de la période d'essai.",
+                    "Ouvrez l'historique des paiements pour consulter les charges et reçus passés."
+                ]
+            },
+            "change_plan": {
+                "title": "Changer de forfait",
+                "body": "Passez à un forfait supérieur ou modifiez l'abonnement de votre espace de travail. Les limites du forfait pour les agents, les tickets et les fonctionnalités sont mises à jour lorsque le nouveau forfait devient actif.",
+                "tips": [
+                    "Vous ne pouvez pas passer à un forfait payant tant que l'essai gratuit est en cours.",
+                    "Le paiement s'effectue via Razorpay lorsque la facturation est activée.",
+                    "Comparez les fonctionnalités des forfaits pour voir ce que chaque niveau inclut."
+                ]
+            },
+            "addons": {
+                "title": "Modules complémentaires",
+                "body": "Activez des capacités optionnelles telles que Service Desk, AI Copilot ou Integrations en complément de votre forfait de base.",
+                "tips": [
+                    "Les modules complémentaires nécessitent un abonnement payant actif.",
+                    "Certaines fonctionnalités sont déjà incluses dans Enterprise — vérifiez avant d'acheter.",
+                    "Les modules complémentaires annulés restent actifs jusqu'à la fin de la période de facturation."
+                ]
+            },
+            "payment_history": {
+                "title": "Historique des paiements",
+                "body": "Consultez les charges et les reçus de cet espace de travail, y compris les abonnements au forfait et les paiements de modules complémentaires.",
+                "tips": [
+                    "Les paiements apparaissent une fois le paiement finalisé ou lors du renouvellement d'un abonnement.",
+                    "Téléchargez ou partagez les reçus à partir des détails de facture lorsqu'ils sont disponibles.",
+                    "Contactez l'administrateur de votre espace de travail si un paiement est manquant."
+                ]
+            },
+            "plan_features": {
+                "title": "Fonctionnalités du forfait",
+                "body": "Consultez les capacités dont dispose votre espace de travail aujourd'hui, selon le forfait actuel et les modules complémentaires actifs.",
+                "tips": [
+                    "Les fonctionnalités verrouillées indiquent quel forfait ou module complémentaire les débloque.",
+                    "Les limites d'utilisation s'appliquent par période de facturation pour les tickets et les sièges.",
+                    "Passez à un forfait supérieur depuis Changer de forfait si vous avez besoin de plus de capacité."
+                ]
+            },
+            "platform_feedback": {
+                "title": "Retours",
+                "body": "Partagez des suggestions, signalez des problèmes ou demandez des améliorations pour votre espace de travail. Vos envois sont transmis à l'équipe produit et ne sont pas visibles par les clients.",
+                "tips": [
+                    "Indiquez les étapes pour reproduire le problème lorsque vous signalez un bug.",
+                    "Les demandes de fonctionnalités aident à prioriser les prochaines évolutions.",
+                    "Vous ne recevrez pas de réponse directe pour chaque envoi."
+                ]
+            },
+            "profile": {
+                "title": "Votre profil",
+                "body": "Modifiez votre apparence dans l'espace de travail : nom, e-mail, avatar, langue, fuseau horaire et thème clair ou sombre.",
+                "tips": [
+                    "Le fuseau horaire détermine l'affichage des dates et heures pour vous.",
+                    "Les changements de langue s'appliquent uniquement à votre compte.",
+                    "Le choix de l'avatar s'applique aux tickets, à la barre latérale et aux vues d'équipe."
+                ]
+            },
+            "password": {
+                "title": "Mot de passe",
+                "body": "Modifiez le mot de passe que vous utilisez pour vous connecter à cet espace de travail.",
+                "tips": [
+                    "Utilisez un mot de passe fort et unique.",
+                    "Si le SSO est requis, la connexion par mot de passe peut être désactivée par votre administrateur.",
+                    "Activez l'authentification à deux facteurs pour une protection supplémentaire."
+                ]
+            },
+            "two_factor": {
+                "title": "Authentification à deux facteurs",
+                "body": "Protégez votre compte avec un code issu d'une application d'authentification, en plus de votre mot de passe.",
+                "tips": [
+                    "Conservez les codes de récupération en lieu sûr lorsque vous activez la 2FA.",
+                    "Votre administrateur peut exiger la 2FA pour tous les agents.",
+                    "Utilisez Google Authenticator, Authy, 1Password ou toute application TOTP."
+                ]
+            },
+            "notifications": {
+                "title": "Notifications",
+                "body": "Choisissez les alertes par e-mail et dans l'application que vous recevez en tant qu'agent dans cet espace de travail.",
+                "tips": [
+                    "Ticket assigné et réponse client sont les alertes les plus courantes.",
+                    "Les alertes de dépassement de SLA vous aident à agir avant l'échéance.",
+                    "Ces paramètres s'appliquent à votre compte, et non à toute l'équipe."
+                ]
+            },
+            "customer_fields": {
+                "title": "Champs client",
+                "body": "Ajoutez des champs personnalisés aux profils de contact pour que les agents recueillent les données dont votre équipe a besoin.",
+                "tips": [
+                    "Les champs peuvent être de type texte, liste déroulante, case à cocher ou date.",
+                    "Les champs obligatoires s'appliquent lors de la création ou de la modification de clients.",
+                    "Utilisez des libellés clairs pour que les agents sachent quelles informations collecter."
+                ]
+            },
+            "ticket_numbering": {
+                "title": "Numérotation des tickets",
+                "body": "Définissez le préfixe utilisé pour les identifiants de nouveaux tickets dans cet espace de travail, par exemple HD-00042.",
+                "tips": [
+                    "Un tiret est ajouté automatiquement si vous en omettez un.",
+                    "Les numéros de tickets existants ne sont pas modifiés lorsque vous mettez à jour le préfixe.",
+                    "Les marques peuvent remplacer le préfixe par marque dans les paramètres de marque."
+                ]
+            },
+            "ticket_statuses": {
+                "title": "Statuts des tickets",
+                "body": "Personnalisez les statuts par lesquels les tickets passent, de l'ouverture à la résolution et la clôture.",
+                "tips": [
+                    "Les statuts système tels qu'Ouvert et Fermé ne peuvent pas être supprimés.",
+                    "L'ordre des statuts influence l'affichage des tickets dans les vues et les rapports.",
+                    "Les règles d'automatisation peuvent se déclencher lors des changements de statut."
+                ]
+            },
+            "sla_business_hours": {
+                "title": "SLA et heures ouvrées",
+                "body": "Définissez les objectifs de réponse et de résolution ainsi que les heures pendant lesquelles les compteurs SLA sont actifs pour votre équipe.",
+                "tips": [
+                    "Les heures ouvrées mettent en pause les compteurs SLA en dehors du temps de travail.",
+                    "Assignez des politiques SLA aux priorités ou types de tickets selon vos besoins.",
+                    "Les tickets en dépassement apparaissent dans les rapports et peuvent déclencher des notifications."
+                ]
+            },
+            "auto_assignment": {
+                "title": "Attribution automatique",
+                "body": "Assignez automatiquement les nouveaux tickets non assignés aux agents selon des règles round-robin, basées sur la charge ou tenant compte des compétences.",
+                "tips": [
+                    "Définissez les compétences des agents dans Équipe → Compétences pour le routage par compétences.",
+                    "Le round-robin répartit le travail de manière équitable entre les agents éligibles.",
+                    "Les règles s'appliquent aux nouveaux tickets correspondant à vos conditions."
+                ]
+            },
+            "csat_surveys": {
+                "title": "Enquêtes CSAT",
+                "body": "Envoyez une courte enquête de satisfaction aux clients une fois les tickets résolus.",
+                "tips": [
+                    "Les enquêtes sont généralement envoyées par e-mail après la résolution.",
+                    "Les résultats apparaissent dans les rapports pour le suivi de la qualité.",
+                    "Gardez les enquêtes courtes pour améliorer le taux de réponse."
+                ]
+            },
+            "macros": {
+                "title": "Macros",
+                "body": "Créez des extraits de réponse réutilisables que les agents peuvent insérer dans les réponses aux tickets en un clic.",
+                "tips": [
+                    "Les macros peuvent inclure des variables pour les données client ou ticket.",
+                    "Les macros personnelles ne sont visibles que par vous ; les macros partagées nécessitent une configuration administrateur.",
+                    "Utilisez les macros pour les réponses courantes afin de gagner du temps."
+                ]
+            },
+            "automation_rules": {
+                "title": "Règles d'automatisation",
+                "body": "Exécutez des actions automatiquement lorsque des tickets sont créés ou mis à jour — assignation, étiquetage, changement de statut ou notification.",
+                "tips": [
+                    "Les règles sont évaluées dans l'ordre ; placez les règles spécifiques avant les règles générales.",
+                    "Testez avec une condition restreinte avant un déploiement plus large.",
+                    "Disponible sur les forfaits incluant l'automatisation."
+                ]
+            },
+            "ticket_fields": {
+                "title": "Champs de ticket",
+                "body": "Ajoutez des champs personnalisés aux tickets pour que les agents enregistrent des informations structurées sur chaque demande.",
+                "tips": [
+                    "Les champs peuvent apparaître sur le formulaire agent et éventuellement sur le portail.",
+                    "Les champs de type liste déroulante nécessitent des options définies avant utilisation.",
+                    "Utilisez les champs dans les conditions d'automatisation lorsque c'est pris en charge."
+                ]
+            },
+            "external_issues": {
+                "title": "Tickets externes",
+                "body": "Contrôlez si le statut des tickets se synchronise depuis les tickets Jira ou Linear liés lorsque les ingénieurs les mettent à jour en externe.",
+                "tips": [
+                    "La synchronisation entrante est désactivée par défaut — activez-la uniquement si vous souhaitez qu'helpefi suive l'outil externe.",
+                    "Liez les tickets depuis la barre latérale du ticket après avoir connecté Jira ou Linear.",
+                    "Les mises à jour sortantes d'helpefi vers Jira/Linear fonctionnent toujours lorsque les intégrations sont connectées."
+                ]
+            },
+            "jira": {
+                "title": "Jira",
+                "body": "Connectez Jira Cloud pour que les agents lient les tickets aux issues et maintiennent le travail d'ingénierie synchronisé.",
+                "tips": [
+                    "Utilisez un jeton API Jira avec accès aux projets dont vous avez besoin.",
+                    "Les issues liées apparaissent dans la barre latérale du ticket pour un contexte rapide.",
+                    "Configurez la synchronisation des tickets externes dans les paramètres Ticket si nécessaire."
+                ]
+            },
+            "linear": {
+                "title": "Linear",
+                "body": "Connectez Linear pour que les agents puissent lier les tickets aux issues et suivre le travail d'ingénierie aux côtés du support.",
+                "tips": [
+                    "Générez une clé API Linear avec accès en lecture et écriture aux issues.",
+                    "Liez les issues depuis la vue ticket après la connexion.",
+                    "Les options de synchronisation de statut se trouvent dans Tickets externes, dans les paramètres Ticket."
+                ]
+            },
+            "incoming_email": {
+                "title": "E-mail entrant",
+                "body": "Connectez des boîtes mail qui créent des tickets lorsque les clients envoient un e-mail à vos adresses de support.",
+                "tips": [
+                    "Chaque boîte peut être associée à une marque et à des règles de routage par défaut.",
+                    "Les fournisseurs OAuth simplifient la configuration pour Gmail et Microsoft 365.",
+                    "IMAP est disponible pour les autres fournisseurs."
+                ]
+            },
+            "outgoing_email": {
+                "title": "E-mail sortant",
+                "body": "Configurez SMTP pour que les réponses des agents aux clients soient envoyées depuis vos adresses de support.",
+                "tips": [
+                    "Faites correspondre l'adresse From à la boîte que les clients ont contactée initialement.",
+                    "Testez SMTP après l'enregistrement pour confirmer la livraison.",
+                    "Consultez E-mail avancé pour les instructions SPF et DKIM."
+                ]
+            },
+            "advanced_email": {
+                "title": "E-mail avancé",
+                "body": "Améliorez la délivrabilité avec SPF, DKIM et les politiques de gestion du courrier entrant et sortant de votre espace de travail.",
+                "tips": [
+                    "Publiez les enregistrements DNS exactement comme indiqué pour éviter les dossiers spam.",
+                    "Mettez sur liste de blocage les adresses qui ne doivent pas créer de tickets.",
+                    "Les modifications DNS peuvent prendre jusqu'à 48 heures pour se propager."
+                ]
+            },
+            "email_auto_reply": {
+                "title": "Réponse automatique par e-mail",
+                "body": "Envoyez une première réponse automatique lorsqu'un nouveau ticket arrive par e-mail, et gérez les listes de blocage entrantes.",
+                "tips": [
+                    "Gardez les réponses automatiques courtes et précisez le délai de réponse attendu.",
+                    "Bloquez les adresses spam ou internes qui ne doivent pas créer de tickets.",
+                    "La réponse automatique s'applique aux nouvelles conversations, pas à chaque message."
+                ]
+            },
+            "email_templates": {
+                "title": "Modèles d'e-mail",
+                "body": "Personnalisez les objets et les corps HTML des e-mails automatiques que votre espace de travail envoie aux clients et aux agents.",
+                "tips": [
+                    "Les modèles couvrent les notifications telles que ticket créé ou réinitialisation de mot de passe.",
+                    "Utilisez les variables documentées dans chaque modèle pour le contenu dynamique.",
+                    "Prévisualisez avant d'enregistrer des modifications à large portée."
+                ]
+            },
+            "ticket_sources": {
+                "title": "Sources de tickets",
+                "body": "Gérez les canaux par lesquels les clients vous contactent au-delà de l'e-mail : widget web, formulaires du portail, API et autres canaux de réception.",
+                "tips": [
+                    "Chaque source peut créer des tickets avec des champs par défaut ou un routage différents.",
+                    "Désactivez les sources que vous n'utilisez pas pour réduire le bruit.",
+                    "Intégrez le widget de chat sur votre site pour les conversations en direct."
+                ]
+            },
+            "whatsapp_sms": {
+                "title": "WhatsApp et SMS",
+                "body": "Connectez Twilio pour recevoir et répondre aux messages WhatsApp et SMS sous forme de tickets dans cet espace de travail.",
+                "tips": [
+                    "Vous avez besoin d'un compte Twilio avec un numéro compatible WhatsApp ou un expéditeur SMS.",
+                    "Les messages apparaissent dans la boîte de réception comme les autres conversations de canal.",
+                    "Configurez les webhooks dans Twilio avec les valeurs indiquées ici."
+                ]
+            },
+            "webhooks": {
+                "title": "Webhooks",
+                "body": "Envoyez des notifications HTTP en temps réel à vos systèmes lorsque des événements de tickets se produisent dans cet espace de travail.",
+                "tips": [
+                    "Abonnez-vous uniquement aux événements dont votre intégration a besoin.",
+                    "Conservez le secret de signature en lieu sûr pour vérifier les charges utiles.",
+                    "Les échecs de livraison sont réessayés selon la fiabilité de votre point de terminaison."
+                ]
+            },
+            "slack": {
+                "title": "Slack",
+                "body": "Publiez les notifications de tickets dans les canaux Slack et permettez aux agents de répondre depuis les fils de discussion lorsque c'est configuré.",
+                "tips": [
+                    "Installez l'application dans l'espace Slack que votre équipe utilise au quotidien.",
+                    "Choisissez les canaux par marque ou par équipe selon vos besoins.",
+                    "Nécessite la fonctionnalité intégrations sur votre forfait."
+                ]
+            },
+            "shopify": {
+                "title": "Shopify",
+                "body": "Affichez le contexte des commandes et clients Shopify sur les tickets pour votre équipe de support e-commerce.",
+                "tips": [
+                    "Connectez la boutique Shopify depuis laquelle vos clients achètent.",
+                    "Les détails de commande apparaissent lorsque l'e-mail du client correspond à un compte Shopify.",
+                    "Utile pour les remboursements, l'expédition et les questions sur le statut des commandes."
+                ]
+            },
+            "hubspot": {
+                "title": "HubSpot",
+                "body": "Enrichissez les tickets avec les données de contact et d'entreprise HubSpot pour vos relais entre ventes et support.",
+                "tips": [
+                    "Les clients sont associés par l'adresse e-mail du ticket.",
+                    "Nécessite un jeton d'application privée HubSpot avec accès en lecture aux contacts.",
+                    "Les données sont en lecture seule dans helpefi, sauf si vous créez des automatisations via les webhooks."
+                ]
+            },
+            "salesforce": {
+                "title": "Salesforce",
+                "body": "Intégrez le contexte des comptes et contacts Salesforce dans les tickets pour les équipes de support B2B.",
+                "tips": [
+                    "Utilisez une application connectée avec accès API aux objets dont vous avez besoin.",
+                    "La liaison fonctionne mieux lorsque les e-mails clients correspondent aux contacts Salesforce.",
+                    "Les données CRM sensibles respectent vos autorisations Salesforce."
+                ]
+            },
+            "microsoft_teams": {
+                "title": "Microsoft Teams",
+                "body": "Envoyez les notifications de tickets dans les canaux Teams pour que votre équipe reste informée sans quitter Microsoft 365.",
+                "tips": [
+                    "Connectez le tenant Teams utilisé par votre entreprise.",
+                    "Associez les canaux aux marques ou aux files d'attente selon vos besoins.",
+                    "Les notifications incluent des liens vers le ticket dans helpefi."
+                ]
+            },
+            "zapier": {
+                "title": "Zapier",
+                "body": "Connectez helpefi à des milliers d'applications via les déclencheurs et actions Zapier pour cet espace de travail.",
+                "tips": [
+                    "Zaps courants : créer des tickets depuis des formulaires, synchroniser vers des feuilles de calcul ou notifier des outils de chat.",
+                    "Utilisez la clé API de votre espace de travail pour l'authentification Zapier.",
+                    "Testez les zaps avec un seul ticket avant de les activer pour tout le trafic."
+                ]
+            },
+            "agents": {
+                "title": "Agents",
+                "body": "Gérez qui peut accéder à cet espace de travail, leurs rôles et leur appartenance aux équipes.",
+                "tips": [
+                    "Les administrateurs peuvent modifier tous les paramètres ; les agents traitent les tickets dans le cadre de leurs autorisations.",
+                    "Les limites de sièges dépendent de votre forfait d'abonnement.",
+                    "Désactivez les utilisateurs plutôt que de les supprimer pour conserver l'attribution de l'historique des tickets."
+                ]
+            },
+            "invitations": {
+                "title": "Invitations",
+                "body": "Invitez de nouveaux agents ou administrateurs par e-mail. Ils reçoivent un lien pour rejoindre cet espace de travail.",
+                "tips": [
+                    "Les invitations en attente comptent dans les limites de sièges sur certains forfaits.",
+                    "Renvoyez ou révoquez les invitations depuis cette liste.",
+                    "Choisissez le rôle au moment de l'invitation — modifiez-le ensuite dans Rôles si nécessaire."
+                ]
+            },
+            "teams_departments": {
+                "title": "Équipes et départements",
+                "body": "Organisez les agents en départements et équipes pour le routage, les rapports et la responsabilité.",
+                "tips": [
+                    "Assignez un responsable d'équipe ou de département pour les escalades.",
+                    "Les règles d'attribution automatique peuvent cibler des équipes spécifiques.",
+                    "Les agents peuvent appartenir à plusieurs équipes."
+                ]
+            },
+            "skills": {
+                "title": "Compétences",
+                "body": "Attribuez des compétences aux agents, comme la langue ou le domaine produit, pour que les règles d'assignation orientent les tickets vers les bonnes personnes.",
+                "tips": [
+                    "Les compétences sont utilisées par l'attribution automatique lorsque le routage par compétences est activé.",
+                    "Gardez la liste des compétences courte et pertinente.",
+                    "Mettez à jour les compétences lorsque les responsabilités de l'équipe évoluent."
+                ]
+            },
+            "roles_permissions": {
+                "title": "Rôles et autorisations",
+                "body": "Contrôlez ce que chaque rôle peut consulter et modifier pour les tickets, les paramètres et les rapports dans cet espace de travail.",
+                "tips": [
+                    "Les rôles intégrés conviennent à la plupart des équipes ; personnalisez-les uniquement si nécessaire.",
+                    "Restreignez l'accès aux paramètres aux administrateurs pour la sécurité.",
+                    "Les modifications d'autorisations s'appliquent immédiatement à tous les utilisateurs ayant ce rôle."
+                ]
+            },
+            "agent_fields": {
+                "title": "Champs agent",
+                "body": "Ajoutez des champs personnalisés aux profils agent pour des métadonnées internes telles que la région, l'équipe de travail ou l'identifiant employé.",
+                "tips": [
+                    "Les champs agent sont visibles par les administrateurs, pas par les clients.",
+                    "Utiles pour la planification des effectifs et le routage.",
+                    "Les champs apparaissent lors de la modification des membres de l'équipe."
+                ]
+            },
+            "security_overview": {
+                "title": "Vue d'ensemble de la sécurité",
+                "body": "Consultez les recommandations de sécurité et l'état actuel de cet espace de travail.",
+                "tips": [
+                    "Traitez d'abord les éléments prioritaires tels que la MFA et le SSO.",
+                    "Seuls les administrateurs de l'espace de travail peuvent modifier la politique de sécurité.",
+                    "Les journaux d'audit complètent cette vue pour les analyses approfondies."
+                ]
+            },
+            "security_policy": {
+                "title": "Politique de sécurité",
+                "body": "Définissez les règles de mot de passe, les délais d'expiration de session et si les agents doivent utiliser l'authentification à deux facteurs.",
+                "tips": [
+                    "Des politiques plus strictes renforcent la sécurité mais peuvent nécessiter un accompagnement des utilisateurs.",
+                    "La durée de session détermine la fréquence à laquelle les agents doivent se reconnecter.",
+                    "Les modifications s'appliquent aux nouvelles sessions après l'enregistrement."
+                ]
+            },
+            "single_sign_on": {
+                "title": "Authentification unique",
+                "body": "Permettez aux agents de se connecter avec le fournisseur d'identité de votre entreprise via SAML ou OIDC.",
+                "tips": [
+                    "Obtenez les métadonnées IdP auprès de votre équipe informatique avant la configuration.",
+                    "Testez avec un compte administrateur avant d'imposer le SSO à tous les agents.",
+                    "Le SSO est généralement disponible sur les forfaits Enterprise."
+                ]
+            },
+            "data_retention": {
+                "title": "Conservation des données",
+                "body": "Définissez la durée de conservation des tickets, des pièces jointes et des données d'audit dans cet espace de travail.",
+                "tips": [
+                    "Une conservation plus longue facilite la conformité mais utilise davantage de stockage.",
+                    "Certaines régions imposent des durées minimales de conservation — vérifiez avec le service juridique.",
+                    "La suppression est définitive une fois la période de conservation écoulée."
+                ]
+            },
+            "audit_logs": {
+                "title": "Journaux d'audit",
+                "body": "Consultez un historique infalsifiable des modifications importantes effectuées dans cet espace de travail et de leurs auteurs.",
+                "tips": [
+                    "Filtrez par utilisateur, action ou plage de dates pour enquêter sur un incident.",
+                    "Exportez les journaux pour les revues de conformité si nécessaire.",
+                    "L'accès nécessite l'autorisation audit.view."
+                ]
+            },
+            "ai_assistant": {
+                "title": "Assistant IA",
+                "body": "Configurez les fonctionnalités IA telles que les suggestions de réponse, le triage et la recherche dans la base de connaissances pour les agents de cet espace de travail.",
+                "tips": [
+                    "L'IA utilise votre base de connaissances et le contexte des tickets — maintenez les articles à jour.",
+                    "Relisez les suggestions avant de les envoyer aux clients lorsque la qualité est importante.",
+                    "Nécessite la fonctionnalité IA ou le module complémentaire AI Copilot sur votre forfait."
+                ]
+            },
+            "service_catalog": {
+                "title": "Catalogue de services",
+                "body": "Créez des catégories et des éléments demandables que les clients peuvent commander depuis le portail, comme du matériel ou des demandes d'accès.",
+                "tips": [
+                    "Chaque élément peut avoir ses propres champs de formulaire et son flux d'approbation.",
+                    "Publiez uniquement les éléments que votre équipe est prête à traiter.",
+                    "Les demandes du catalogue créent des tickets pour le suivi."
+                ]
+            },
+            "change_approvals": {
+                "title": "Approbations de changement",
+                "body": "Définissez qui doit approuver les demandes de changement avant que le travail ne commence dans Service Desk.",
+                "tips": [
+                    "Les approbateurs reçoivent des notifications lorsque leur validation est requise.",
+                    "Utilisez des groupes d'approbation pour des revues de type CAB.",
+                    "Nécessite le module complémentaire Service Desk."
+                ]
+            },
+            "api_docs": {
+                "title": "Documentation API",
+                "body": "Explorez l'API REST de cet espace de travail pour créer des tickets, gérer les clients et construire des intégrations par programmation.",
+                "tips": [
+                    "Authentifiez-vous avec un jeton API depuis votre profil agent ou les paramètres administrateur.",
+                    "Des limites de débit s'appliquent par espace de travail — regroupez les requêtes lorsque c'est possible.",
+                    "Utilisez les webhooks pour les événements en temps réel plutôt que l'interrogation périodique lorsque vous le pouvez."
+                ]
+            }
+        }
+    }
+}

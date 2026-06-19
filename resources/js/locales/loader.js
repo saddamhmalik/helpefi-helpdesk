@@ -21,7 +21,7 @@ function deepMerge(target, source) {
 
 const localeModules = import.meta.glob('./**/*.json');
 
-export async function loadLocaleMessages(locale) {
+async function loadLocaleFiles(locale) {
     let messages = {};
 
     const loaders = Object.entries(localeModules)
@@ -35,4 +35,8 @@ export async function loadLocaleMessages(locale) {
     }
 
     return messages;
+}
+
+export async function loadLocaleMessages(locale) {
+    return loadLocaleFiles(locale);
 }

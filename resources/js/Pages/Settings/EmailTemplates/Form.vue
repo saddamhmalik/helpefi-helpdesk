@@ -39,7 +39,7 @@ const placeholderTag = (key) => `{{${key}}}`;
 
 <template>
     <Head :title="`Edit · ${name}`" />
-    <SettingsPage :title="name" :description="trigger">
+    <SettingsPage :title="name" :description="trigger" info-section="email_templates">
         <div class="mb-6">
             <Link href="/settings/email-templates" class="text-sm agent-text-subtle hover:text-slate-700 dark:hover:text-slate-300 dark:text-slate-300">← Back to email templates</Link>
         </div>

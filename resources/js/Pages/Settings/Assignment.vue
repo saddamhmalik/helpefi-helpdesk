@@ -149,7 +149,7 @@ const destroyRule = (rule) => {
 </script>
 
 <template>
-    <SettingsPage :title="$t('settings.auto_assignment')" :description="$t('settings_assignment.distribute_unassigned_tickets_using_round-robin_or_load-based_rules')">
+    <SettingsPage :title="$t('settings.auto_assignment')" :description="$t('settings.descriptions.auto_assignment')" info-section="auto_assignment">
         <template #actions>
             <button type="button" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700" @click="openCreate">{{ $t('settings_assignment.new_rule') }}</button>
         </template>

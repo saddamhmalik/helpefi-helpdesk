@@ -96,7 +96,7 @@ const customFieldLabel = (name) => props.customFieldDefinitions.find((field) => 
 </script>
 
 <template>
-    <SettingsPage :title="member.name" :description="member.email" :head-title="`${member.name} · Profile`">
+    <SettingsPage :title="member.name" :description="member.email" :head-title="`${member.name} · Profile`" info-section="agents">
         <div class="relative -mx-4 pb-8 sm:-mx-6 lg:-mx-8">
             <div class="pointer-events-none absolute inset-x-0 top-0 h-56 bg-gradient-to-br from-blue-600/5 via-violet-500/5 to-transparent" />
 

@@ -17,7 +17,7 @@ const { t } = useI18n();
 </script>
 
 <template>
-    <SettingsPage :title="agent.name" :description="agent.email" :head-title="`Performance · ${agent.name}`">
+    <SettingsPage :title="agent.name" :description="agent.email" :head-title="`Performance · ${agent.name}`" info-section="agents">
         <Link :href="`/settings/members/${agent.id}`" class="mb-4 inline-block text-sm text-blue-600 transition hover:text-blue-700 dark:hover:text-blue-300 dark:text-blue-300">← Member profile</Link>
 
         <div class="mb-6 grid gap-4 sm:grid-cols-4">

@@ -77,7 +77,7 @@ const canDelete = (status) => !protectedSlugs.includes(status.slug);
 </script>
 
 <template>
-    <SettingsPage :title="$t('settings.ticket_statuses')" :description="$t('settings_ticket_statuses.customize_workflow_statuses_beyond_the_defaults')">
+    <SettingsPage :title="$t('settings.ticket_statuses')" :description="$t('settings.descriptions.ticket_statuses')" info-section="ticket_statuses">
         <template #actions>
             <button type="button" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700" @click="openCreate">{{ $t('settings_ticket_statuses.add_status') }}</button>
         </template>

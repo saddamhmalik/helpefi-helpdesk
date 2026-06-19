@@ -2,7 +2,6 @@
 import { useForm } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import SettingsPage from '../../Components/SettingsPage.vue';
-import SettingsSectionNav from '../../Components/SettingsSectionNav.vue';
 import CustomFieldEditor from '../../Components/CustomFieldEditor.vue';
 import AppToggle from '../../Components/AppToggle.vue';
 import { useSettingsSection } from '../../composables/useSettingsSection.js';
@@ -48,14 +47,16 @@ const pageTitles = {
 
 const pageMeta = computed(() => pageTitles[activeSection.value] ?? pageTitles.general);
 
-const sectionTabs = computed(() => [
-    { id: 'general', label: t('settings.ticket_numbering') },
-    { id: 'email', label: t('settings.email_auto_reply') },
-    { id: 'external_issues', label: t('settings_tickets.external_issues') },
-    { id: 'contact_fields', label: t('settings.customer_fields') },
-    { id: 'ticket_fields', label: t('settings.ticket_fields') },
-    { id: 'user_fields', label: t('settings.agent_fields') },
-]);
+const ticketSectionKeys = {
+    general: 'ticket_numbering',
+    email: 'email_auto_reply',
+    external_issues: 'external_issues',
+    contact_fields: 'customer_fields',
+    ticket_fields: 'ticket_fields',
+    user_fields: 'agent_fields',
+};
+
+const infoSection = computed(() => ticketSectionKeys[activeSection.value] ?? 'ticket_numbering');
 
 const cloneFields = (fields) => (fields ? JSON.parse(JSON.stringify(fields)) : []);
 
@@ -95,16 +96,10 @@ const save = () => {
 
 <template>
     <SettingsPage
-        :title="$t('settings.ticket_settings')"
+        :title="pageMeta.title"
         :description="pageMeta.description"
+        :info-section="infoSection"
     >
-        <SettingsSectionNav
-            path="/settings/tickets"
-            default-section="general"
-            :sections="sectionTabs"
-            :active-section="activeSection"
-        />
-
         <form @submit.prevent="save">
             <div v-show="activeSection === 'general'" class="max-w-2xl agent-card">
                         <h2 class="text-lg font-semibold agent-text">{{ $t('settings.ticket_numbering') }}</h2>

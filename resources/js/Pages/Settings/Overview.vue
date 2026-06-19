@@ -16,7 +16,8 @@ const { filteredGroups, resultCount } = useSettingsNavFilter(settingsNavGroups, 
 <template>
     <SettingsPage
         :title="t('common.settings')"
-        :description="t('settings_overview.find_workspace_team_channel_and_security_settings_in_one_place')"
+        :description="t('settings.descriptions.overview')"
+        info-section="overview"
     >
         <div class="mb-6 rounded-xl border agent-border agent-panel p-4 shadow-sm">
             <label class="block text-sm font-medium text-slate-700 dark:text-slate-300" for="settings-search">{{ t('settings_overview.search_settings') }}</label>

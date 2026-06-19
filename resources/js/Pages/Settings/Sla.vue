@@ -183,7 +183,7 @@ const saveBusinessHours = () => {
 </script>
 
 <template>
-    <SettingsPage :title="`SLA & business hours`" :description="`${breachedCount} ticket(s) currently breached.`">
+    <SettingsPage :title="$t('settings.sla_business_hours')" :description="$t('settings.descriptions.sla_business_hours')" info-section="sla_business_hours">
         <PlanFeatureBanner feature="sla" />
 
         <template #actions>

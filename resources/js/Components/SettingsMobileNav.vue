@@ -2,8 +2,10 @@
 import { Link, usePage } from '@inertiajs/vue3';
 import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
+import SettingsNavTree from './SettingsNavTree.vue';
 import { useAgentNavigation } from '../composables/useAgentNavigation.js';
 import { useSettingsNavFilter } from '../composables/useSettingsNavFilter.js';
+import { useSettingsNavExpand } from '../composables/useSettingsNavExpand.js';
 import { isSettingsNavActive } from '../composables/useSettingsSection.js';
 import { useBodyScrollLock, useEscapeKey } from '../composables/useModal.js';
 
@@ -19,6 +21,7 @@ const query = ref('');
 
 const { filteredGroups } = useSettingsNavFilter(settingsNavGroups, query);
 const currentUrl = computed(() => page.url.split('#')[0]);
+const { isExpanded, toggle } = useSettingsNavExpand(filteredGroups, currentUrl, query);
 
 const currentLabel = computed(() => props.breadcrumb?.page ?? t('common.settings'));
 const currentGroup = computed(() => props.breadcrumb?.group ?? null);
@@ -37,8 +40,6 @@ const navLinkClass = (href) => {
 
     return 'agent-text-muted agent-hover-surface';
 };
-
-const iconClass = (href) => (isSettingsNavActive(href, currentUrl.value) ? 'text-slate-700 dark:text-slate-300' : 'text-slate-400 dark:text-slate-500');
 
 const close = () => {
     open.value = false;
@@ -124,38 +125,19 @@ useEscapeKey(open, close);
                         </div>
                     </div>
 
-                    <nav class="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain px-3 py-3">
+                    <nav class="min-h-0 flex-1 space-y-1 overflow-y-auto overscroll-contain px-3 py-3">
                         <p v-if="query && filteredGroups.length === 0" class="px-2 py-6 text-center text-sm agent-text-subtle">
                             {{ t('settings_overview.no_settings_matched') }}
                         </p>
 
-                        <div v-for="group in filteredGroups" :key="group.id">
-                            <p class="mb-1 px-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-400 dark:text-slate-500">
-                                {{ group.label }}
-                            </p>
-                            <ul class="space-y-0.5">
-                                <li v-for="item in group.items" :key="item.href">
-                                    <Link
-                                        :href="item.href"
-                                        class="flex items-center gap-2.5 rounded-md px-2.5 py-2 text-sm transition"
-                                        :class="navLinkClass(item.href)"
-                                        :aria-label="item.locked ? `${item.label} (${item.lockedLabel})` : item.label"
-                                        @click="close"
-                                    >
-                                        <svg class="h-4 w-4 shrink-0" :class="iconClass(item.href)" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" :d="item.icon" />
-                                        </svg>
-                                        <span class="min-w-0 flex-1 truncate">{{ item.label }}</span>
-                                        <span
-                                            v-if="item.locked"
-                                            class="shrink-0 rounded-full bg-amber-50 dark:bg-amber-950/40 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-amber-700 dark:bg-amber-950/50 dark:text-amber-300"
-                                        >
-                                            {{ item.lockedLabel }}
-                                        </span>
-                                    </Link>
-                                </li>
-                            </ul>
-                        </div>
+                        <SettingsNavTree
+                            :groups="filteredGroups"
+                            :current-url="currentUrl"
+                            :is-expanded="isExpanded"
+                            :toggle="toggle"
+                            :nav-link-class="navLinkClass"
+                            @navigate="close"
+                        />
                     </nav>
 
                     <div class="shrink-0 border-t agent-border p-3">

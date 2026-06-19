@@ -3,7 +3,6 @@ import { router, useForm, usePage } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 import SettingsPage from '../../Components/SettingsPage.vue';
 import PlanFeatureBanner from '../../Components/PlanFeatureBanner.vue';
-import SettingsSectionNav from '../../Components/SettingsSectionNav.vue';
 import AppModal from '../../Components/AppModal.vue';
 import AppToggle from '../../Components/AppToggle.vue';
 import AppChipSelect from '../../Components/AppChipSelect.vue';
@@ -40,10 +39,21 @@ const { activeSection } = useSettingsSection({
     sections: integrationSections,
 });
 
-const sectionTabs = computed(() => integrationSections.map((id) => ({
-    id,
-    label: t(`settings.${id === 'teams' ? 'microsoft_teams' : id}`),
-})));
+const pageMeta = computed(() => {
+    const section = activeSection.value;
+    const key = section === 'teams' ? 'microsoft_teams' : section;
+
+    return {
+        title: t(`settings.${key}`),
+        description: t(`settings.descriptions.${key}`),
+    };
+});
+
+const infoSection = computed(() => {
+    const section = activeSection.value;
+
+    return section === 'teams' ? 'microsoft_teams' : section;
+});
 
 const connection = (provider) => props.connections.find((item) => item.provider === provider) ?? {};
 
@@ -206,15 +216,8 @@ const inputClass = 'w-full rounded-lg border agent-border px-3 py-2 text-sm focu
 </script>
 
 <template>
-    <SettingsPage :title="$t('settings.integrations')" :description="$t('settings_integrations.webhooks_slack_notifications_and_jira_linear_issue_sync')">
+    <SettingsPage :title="pageMeta.title" :description="pageMeta.description" :info-section="infoSection">
         <PlanFeatureBanner feature="integrations" />
-
-        <SettingsSectionNav
-            path="/settings/integrations"
-            default-section="webhooks"
-            :sections="sectionTabs"
-            :active-section="activeSection"
-        />
 
         <template #actions>
             <button

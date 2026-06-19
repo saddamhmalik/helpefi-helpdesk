@@ -148,6 +148,8 @@
         "ticket_limit_reached": "You've reached your plan limit of {limit} tickets this month ({used} created).",
         "ticket_limit_near": "You've created {used} of {limit} tickets this month on your plan.",
         "current_plan_label": "Current plan: {plan}",
+        "plan": "Plan",
+        "no_payments_yet": "No payments yet. Charges will appear here after your first successful payment.",
         "feature_labels": {
             "automation": "Automation & macros",
             "service_catalog": "Service catalog",

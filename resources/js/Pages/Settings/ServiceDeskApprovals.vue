@@ -38,8 +38,9 @@ const save = () => {
 
 <template>
     <SettingsPage
-        :title="$t('settings_service_desk_approvals.change_approvals')"
-        :description="$t('settings_service_desk_approvals.require_manager_sign-off_before_non-catalog_change_tickets_enter_the_o')"
+        :title="$t('settings.change_approvals')"
+        :description="$t('settings.descriptions.change_approvals')"
+        info-section="change_approvals"
     >
         <PlanFeatureBanner feature="service_desk" />
 

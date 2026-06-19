@@ -138,7 +138,7 @@ const needsValue = (condition) => !['is_empty', 'is_not_empty'].includes(conditi
 </script>
 
 <template>
-    <SettingsPage :title="$t('settings_automation.automation')" :description="$t('settings_automation.rules_that_run_automatically_on_ticket_events')">
+    <SettingsPage :title="$t('settings.automation_rules')" :description="$t('settings.descriptions.automation_rules')" info-section="automation_rules">
         <PlanFeatureBanner feature="automation" />
 
         <template #actions>

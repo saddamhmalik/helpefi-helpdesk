@@ -360,6 +360,13 @@ class BillingService
         return $this->razorpay->verifySubscriptionPayment($paymentId, $subscriptionId, $signature);
     }
 
+    public function syncPaymentHistory(string $tenantId): void
+    {
+        if ($this->razorpay->isEnabled()) {
+            $this->razorpay->syncTenantPaymentHistory($tenantId);
+        }
+    }
+
     public function cancelSubscription(): Subscription
     {
         if ($this->razorpay->isEnabled()) {

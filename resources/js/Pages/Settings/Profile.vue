@@ -5,7 +5,6 @@ import { useI18n } from 'vue-i18n';
 import QRCode from 'qrcode';
 import AppAvatar from '../../Components/AppAvatar.vue';
 import SettingsPage from '../../Components/SettingsPage.vue';
-import SettingsSectionNav from '../../Components/SettingsSectionNav.vue';
 import { useSettingsSection } from '../../composables/useSettingsSection.js';
 import { applyAppearance } from '../../composables/useAppearance.js';
 
@@ -37,11 +36,13 @@ const pageTitles = computed(() => ({
     security: { title: t('profile.security_title'), description: t('profile.security_description') },
 }));
 
-const sectionTabs = computed(() => [
-    { id: 'profile', label: t('settings.profile') },
-    { id: 'password', label: t('settings.password') },
-    { id: 'security', label: t('settings.two_factor') },
-]);
+const profileSectionKeys = {
+    profile: 'profile',
+    password: 'password',
+    security: 'two_factor',
+};
+
+const infoSection = computed(() => profileSectionKeys[activeSection.value] ?? 'profile');
 
 const page = usePage();
 const user = computed(() => page.props.auth.user);
@@ -214,14 +215,8 @@ const disableTwoFactor = () => {
     <SettingsPage
         :title="pageTitles[activeSection]?.title ?? t('profile.title')"
         :description="pageTitles[activeSection]?.description ?? ''"
+        :info-section="infoSection"
     >
-        <SettingsSectionNav
-            path="/settings/profile"
-            default-section="profile"
-            :sections="sectionTabs"
-            :active-section="activeSection"
-        />
-
         <div
             v-if="mfaRequired && !twoFactor.enabled"
             class="mb-6 rounded-lg border border-amber-200 dark:border-amber-900/60 bg-amber-50 dark:bg-amber-950/40 px-4 py-3 text-sm text-amber-900 dark:text-amber-200"

@@ -13,7 +13,7 @@ const placeholderTag = (key) => `{{${key}}}`;
 
 <template>
     <Head :title="$t('settings.email_templates')" />
-    <SettingsPage :title="$t('settings.email_templates')" description="Customize subject lines and HTML bodies for every automated email your workspace sends.">
+    <SettingsPage :title="$t('settings.email_templates')" :description="$t('settings.descriptions.email_templates')" info-section="email_templates">
         <div class="mb-6 rounded-xl border border-blue-200 dark:border-blue-900/60 bg-blue-50 dark:bg-blue-950/40 p-4">
             <p class="text-sm font-medium text-blue-900">Placeholders</p>
             <p class="mt-1 text-xs text-blue-800">Use these tokens in subjects and bodies. Each template also lists the placeholders relevant to that email.</p>
