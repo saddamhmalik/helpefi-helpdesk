@@ -131,8 +131,178 @@ class TicketLifecycleService
                 'Attachment added: %s',
                 $properties['filename'] ?? 'file',
             ),
+            'ticket.reopened_via_email' => sprintf(
+                'Ticket reopened via inbound email from %s',
+                $properties['from_email'] ?? 'customer',
+            ),
+            'ticket.snoozed' => sprintf(
+                'Ticket snoozed until %s',
+                $this->formatTimestamp($properties['snoozed_until'] ?? null),
+            ),
+            'ticket.unsnoozed' => 'Ticket unsnoozed',
+            'ticket.time_logged' => sprintf(
+                'Logged %d minutes%s',
+                (int) ($properties['minutes'] ?? 0),
+                isset($properties['note']) && $properties['note'] !== null && $properties['note'] !== ''
+                    ? ': '.$properties['note']
+                    : '',
+            ),
+            'ticket.time_deleted' => sprintf(
+                'Removed time entry (%d minutes)',
+                (int) ($properties['minutes'] ?? 0),
+            ),
+            'side_conversation.created' => sprintf(
+                'Side conversation started with %s: %s',
+                $properties['recipient_email'] ?? 'recipient',
+                $properties['subject'] ?? 'Untitled',
+            ),
+            'side_conversation.replied' => sprintf(
+                'Side conversation reply sent: %s',
+                $properties['subject'] ?? 'Untitled',
+            ),
+            'side_conversation.closed' => sprintf(
+                'Side conversation closed: %s',
+                $properties['subject'] ?? 'Untitled',
+            ),
+            'side_conversation.inbound' => sprintf(
+                'Side conversation reply received from %s: %s',
+                $properties['from_email'] ?? 'recipient',
+                $properties['subject'] ?? 'Untitled',
+            ),
+            'service_desk.approval_requested' => sprintf(
+                'Approval requested%s',
+                isset($properties['approver_names']) && $properties['approver_names'] !== []
+                    ? ' from '.implode(', ', $properties['approver_names'])
+                    : '',
+            ),
+            'service_desk.approval_step_approved' => sprintf(
+                '%s approved; waiting on %s',
+                $properties['approver_name'] ?? 'Approver',
+                $properties['next_approver_name'] ?? 'next approver',
+            ),
+            'service_desk.approval_approved' => sprintf(
+                'Approval granted by %s',
+                $properties['approver_name'] ?? 'approver',
+            ),
+            'service_desk.approval_rejected' => sprintf(
+                'Approval rejected by %s',
+                $properties['approver_name'] ?? 'approver',
+            ),
+            'service_desk.major_incident_declared' => 'Major incident declared',
+            'service_desk.major_incident_updated' => $this->describeRecordChanges(
+                $properties['changes'] ?? [],
+                [
+                    'status' => 'Status',
+                    'war_room_notes' => 'War room notes',
+                    'summary' => 'Summary',
+                    'timeline' => 'Timeline',
+                    'lessons_learned' => 'Lessons learned',
+                    'action_items' => 'Action items',
+                    'coordinator_user_ids' => 'Coordinators',
+                ],
+            ),
+            'service_desk.major_incident_resolved' => 'Major incident resolved',
+            'service_desk.major_incident_review_completed' => 'Post-incident review completed',
+            'service_desk.change_record_updated' => $this->describeRecordChanges(
+                $properties['changes'] ?? [],
+                [
+                    'risk' => 'Risk',
+                    'impact' => 'Impact',
+                    'rollback_plan' => 'Rollback plan',
+                    'planned_start' => 'Planned start',
+                    'planned_end' => 'Planned end',
+                    'cab_user_ids' => 'CAB members',
+                    'cab_notes' => 'CAB notes',
+                    'implementation_notes' => 'Implementation notes',
+                ],
+            ),
+            'service_desk.problem_record_updated' => $this->describeRecordChanges(
+                $properties['changes'] ?? [],
+                [
+                    'root_cause' => 'Root cause',
+                    'workaround' => 'Workaround',
+                    'is_known_error' => 'Known error flag',
+                ],
+            ),
+            'service_desk.problem_incident_linked' => sprintf(
+                'Linked incident %s',
+                $properties['incident_number'] ?? '#'.($properties['incident_ticket_id'] ?? 'unknown'),
+            ),
+            'service_desk.incident_linked_to_problem' => sprintf(
+                'Linked to problem %s',
+                $properties['problem_number'] ?? '#'.($properties['problem_ticket_id'] ?? 'unknown'),
+            ),
+            'service_desk.problem_incident_unlinked' => sprintf(
+                'Unlinked incident %s',
+                $properties['incident_number'] ?? '#'.($properties['incident_ticket_id'] ?? 'unknown'),
+            ),
+            'service_desk.incident_unlinked_from_problem' => sprintf(
+                'Unlinked from problem %s',
+                $properties['problem_number'] ?? '#'.($properties['problem_ticket_id'] ?? 'unknown'),
+            ),
             default => config("audit.events.{$log->event}", str_replace(['ticket.', '_'], ['', ' '], $log->event)),
         };
+    }
+
+    private function describeRecordChanges(array $changes, array $labels): string
+    {
+        if ($changes === []) {
+            return 'Record updated';
+        }
+
+        $lines = [];
+
+        foreach ($changes as $field => $change) {
+            $label = $labels[$field] ?? ucfirst(str_replace('_', ' ', $field));
+            $from = $this->stringifyValue($change['from'] ?? null);
+            $to = $this->stringifyValue($change['to'] ?? null);
+
+            if ($field === 'is_known_error') {
+                $lines[] = sprintf(
+                    '%s changed from %s to %s',
+                    $label,
+                    $this->formatBoolean($change['from'] ?? null),
+                    $this->formatBoolean($change['to'] ?? null),
+                );
+
+                continue;
+            }
+
+            $lines[] = sprintf('%s updated', $label);
+        }
+
+        return implode('; ', $lines);
+    }
+
+    private function stringifyValue(mixed $value): string
+    {
+        if ($value === null || $value === '') {
+            return 'None';
+        }
+
+        if (is_bool($value)) {
+            return $value ? 'Yes' : 'No';
+        }
+
+        if (is_array($value)) {
+            return $value === [] ? 'None' : implode(', ', $value);
+        }
+
+        return (string) $value;
+    }
+
+    private function formatTimestamp(?string $value): string
+    {
+        if (! $value) {
+            return 'later';
+        }
+
+        return \Illuminate\Support\Carbon::parse($value)->toDayDateTimeString();
+    }
+
+    private function formatBoolean(mixed $value): string
+    {
+        return filter_var($value, FILTER_VALIDATE_BOOLEAN) ? 'Yes' : 'No';
     }
 
     private function describeChanges(array $changes, array $lookups): string
@@ -173,6 +343,11 @@ class TicketLifecycleService
                 ),
                 'subject' => 'Subject updated',
                 'description' => 'Description updated',
+                'type' => sprintf(
+                    'Type changed from %s to %s',
+                    ucfirst((string) ($change['from'] ?? 'unknown')),
+                    ucfirst((string) ($change['to'] ?? 'unknown')),
+                ),
                 default => ucfirst(str_replace('_', ' ', $field)).' updated',
             };
         }

@@ -201,7 +201,7 @@ const sidebarProps = computed(() => ({
                     </form>
                 </section>
 
-                <aside class="hidden min-h-0 w-72 shrink-0 flex-col overflow-hidden border-l agent-border agent-panel xl:flex">
+                <aside class="hidden min-h-0 w-80 shrink-0 flex-col overflow-hidden border-l agent-border agent-panel xl:flex">
                     <TicketDetailsSidebar embedded v-bind="sidebarProps" />
                 </aside>
             </div>

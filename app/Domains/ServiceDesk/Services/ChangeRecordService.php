@@ -6,6 +6,7 @@ use App\Domains\Billing\Services\BillingService;
 use App\Domains\ServiceCatalog\Models\ServiceCatalogItem;
 use App\Domains\ServiceDesk\Models\ChangeRecord;
 use App\Domains\ServiceDesk\Repositories\ChangeRecordRepository;
+use App\Domains\Security\Support\AuditRecorder;
 use App\Domains\Tickets\Models\Ticket;
 use App\Domains\Tickets\Repositories\TicketRepository;
 use Carbon\Carbon;
@@ -18,6 +19,7 @@ class ChangeRecordService
         private ChangeRecordRepository $records,
         private TicketRepository $tickets,
         private BillingService $billing,
+        private AuditRecorder $audit,
     ) {
     }
 
@@ -66,7 +68,15 @@ class ChangeRecordService
             ]);
         }
 
+        $before = $record->only(array_keys($data));
         $updated = $this->records->update($record, $data);
+
+        $this->audit->recordChanges(
+            'service_desk.change_record_updated',
+            $ticket,
+            $before,
+            $updated->only(array_keys($data)),
+        );
 
         return $this->records->snapshot($updated);
     }

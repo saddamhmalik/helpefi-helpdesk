@@ -13,6 +13,7 @@ class TicketMessage extends Model
 {
     protected $fillable = [
         'ticket_id',
+        'merged_from_ticket_id',
         'channel_id',
         'user_id',
         'contact_id',
@@ -29,6 +30,11 @@ class TicketMessage extends Model
     public function ticket(): BelongsTo
     {
         return $this->belongsTo(Ticket::class);
+    }
+
+    public function mergedFromTicket(): BelongsTo
+    {
+        return $this->belongsTo(Ticket::class, 'merged_from_ticket_id');
     }
 
     public function channel(): BelongsTo

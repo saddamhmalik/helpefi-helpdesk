@@ -72,8 +72,15 @@ class AuditLogRepository
     {
         return AuditLog::query()
             ->with('user:id,name,email')
-            ->where('subject_type', \App\Domains\Tickets\Models\Ticket::class)
-            ->where('subject_id', $ticketId)
+            ->where(function ($query) use ($ticketId) {
+                $query->where(function ($inner) use ($ticketId) {
+                    $inner->where('subject_type', \App\Domains\Tickets\Models\Ticket::class)
+                        ->where('subject_id', $ticketId);
+                })->orWhere(function ($inner) use ($ticketId) {
+                    $inner->where('subject_type', \App\Domains\SideConversations\Models\SideConversation::class)
+                        ->where('properties->ticket_id', $ticketId);
+                });
+            })
             ->when($excludeEvents !== [], fn ($query) => $query->whereNotIn('event', $excludeEvents))
             ->orderBy('created_at')
             ->get();

@@ -1,6 +1,6 @@
 import { nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
 
-export function useFixedPopover(openRef, anchorRef) {
+export function useFixedPopover(openRef, anchorRef, panelRef = null) {
     const panelStyle = ref({ visibility: 'hidden' });
 
     const updatePosition = () => {
@@ -11,24 +11,33 @@ export function useFixedPopover(openRef, anchorRef) {
         }
 
         const rect = anchor.getBoundingClientRect();
-        const panelWidth = Math.min(352, window.innerWidth - 16);
+        const panelWidth = Math.min(320, window.innerWidth - 16);
         const margin = 8;
         const isRtl = document.documentElement.dir === 'rtl';
-        let left = isRtl ? rect.left : rect.right - panelWidth;
+        const panelHeight = panelRef?.value?.offsetHeight ?? 180;
 
+        let left = isRtl ? rect.right - panelWidth : rect.left;
         left = Math.max(margin, Math.min(left, window.innerWidth - panelWidth - margin));
 
-        const top = rect.bottom + margin;
-        const maxHeight = window.innerHeight - top - margin;
+        const spaceBelow = window.innerHeight - rect.bottom - margin;
+        const spaceAbove = rect.top - margin;
+        const openAbove = spaceBelow < panelHeight && spaceAbove > spaceBelow;
+
+        let top = openAbove ? rect.top - panelHeight - margin : rect.bottom + margin;
+        top = Math.max(margin, Math.min(top, window.innerHeight - panelHeight - margin));
+
+        const maxHeight = openAbove
+            ? Math.max(120, rect.top - margin - margin)
+            : Math.max(120, window.innerHeight - rect.bottom - margin - margin);
 
         panelStyle.value = {
             position: 'fixed',
             top: `${top}px`,
             left: `${left}px`,
             width: `${panelWidth}px`,
-            maxHeight: `${Math.max(160, maxHeight)}px`,
+            maxHeight: `${maxHeight}px`,
             overflowY: 'auto',
-            zIndex: 100,
+            zIndex: 9999,
             visibility: 'visible',
         };
     };
@@ -48,6 +57,9 @@ export function useFixedPopover(openRef, anchorRef) {
 
         await nextTick();
         updatePosition();
+        await nextTick();
+        updatePosition();
+        requestAnimationFrame(updatePosition);
     });
 
     onMounted(() => {

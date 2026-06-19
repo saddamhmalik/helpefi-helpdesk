@@ -66,7 +66,7 @@ const formatDate = (value) => {
             </template>
             <template #body>
                 <tr v-if="!entries?.length">
-                    <td colspan="5" class="px-4 py-10 text-center text-sm text-slate-500 dark:text-slate-400">No active major incidents or pending reviews.</td>
+                    <td colspan="5" class="px-4 py-10 text-center text-sm text-slate-500 dark:text-slate-400">{{ $t('service_desk.no_major_incidents_or_reviews') }}</td>
                 </tr>
                 <tr v-for="entry in entries" :key="entry.id" class="border-t border-slate-100 dark:border-slate-800">
                     <td class="px-4 py-3">
@@ -89,7 +89,7 @@ const formatDate = (value) => {
                             :href="entry.war_room_url"
                             class="rounded-lg bg-red-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-red-700"
                         >
-                            {{ entry.status === 'active' ? 'War room' : 'Review' }}
+                            {{ entry.status === 'active' ? $t('service_desk.war_room') : $t('service_desk.post-incident_review') }}
                         </Link>
                     </td>
                 </tr>

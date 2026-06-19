@@ -69,7 +69,7 @@ class TicketTest extends TestCase
         $this->assertSame(1, $ticket->messages()->count());
     }
 
-    public function test_create_ticket_without_contact_adds_agent_description_message(): void
+    public function test_create_ticket_requires_requester(): void
     {
         [$status, $priority] = $this->seedTicketMeta();
         $user = User::factory()->create();
@@ -81,15 +81,35 @@ class TicketTest extends TestCase
                 'ticket_status_id' => $status->id,
                 'ticket_priority_id' => $priority->id,
             ])
+            ->assertSessionHasErrors(['requester_email']);
+
+        $this->assertDatabaseMissing('tickets', [
+            'subject' => 'Internal follow-up',
+        ]);
+    }
+
+    public function test_create_ticket_accepts_new_requester_email(): void
+    {
+        [$status, $priority] = $this->seedTicketMeta();
+        $user = User::factory()->create();
+
+        $this->actingAs($user)
+            ->post('/tickets', [
+                'subject' => 'Phone callback',
+                'description' => '<p>Callback requested by phone.</p>',
+                'requester_email' => 'caller@example.com',
+                'requester_name' => 'Caller',
+                'ticket_status_id' => $status->id,
+                'ticket_priority_id' => $priority->id,
+            ])
             ->assertRedirect();
 
-        $ticket = Ticket::query()->where('subject', 'Internal follow-up')->firstOrFail();
+        $this->assertDatabaseHas('tickets', [
+            'subject' => 'Phone callback',
+        ]);
 
-        $this->assertDatabaseHas('ticket_messages', [
-            'ticket_id' => $ticket->id,
-            'user_id' => $user->id,
-            'body' => '<p>Callback requested by phone.</p>',
-            'is_internal' => false,
+        $this->assertDatabaseHas('contacts', [
+            'email' => 'caller@example.com',
         ]);
     }
 
@@ -176,6 +196,51 @@ class TicketTest extends TestCase
         $source->refresh();
         $this->assertSame($target->id, $source->merged_into_ticket_id);
         $this->assertDatabaseHas('ticket_messages', [
+            'ticket_id' => $target->id,
+            'body' => 'Source message',
+            'merged_from_ticket_id' => $source->id,
+        ]);
+    }
+
+    public function test_merge_without_importing_conversation_keeps_messages_on_source(): void
+    {
+        [$status, $priority] = $this->seedTicketMeta();
+        $user = User::factory()->create();
+
+        $target = Ticket::query()->create([
+            'number' => 'HD-00001',
+            'subject' => 'Target',
+            'ticket_status_id' => $status->id,
+            'ticket_priority_id' => $priority->id,
+        ]);
+
+        $source = Ticket::query()->create([
+            'number' => 'HD-00002',
+            'subject' => 'Source',
+            'ticket_status_id' => $status->id,
+            'ticket_priority_id' => $priority->id,
+        ]);
+
+        TicketMessage::query()->create([
+            'ticket_id' => $source->id,
+            'user_id' => $user->id,
+            'body' => 'Source message',
+            'is_internal' => false,
+        ]);
+
+        $this->actingAs($user)
+            ->post("/tickets/{$target->id}/merge", [
+                'source_ticket_id' => $source->id,
+                'import_conversation' => false,
+            ])
+            ->assertRedirect("/tickets/{$target->id}");
+
+        $this->assertDatabaseHas('ticket_messages', [
+            'ticket_id' => $source->id,
+            'body' => 'Source message',
+        ]);
+
+        $this->assertDatabaseMissing('ticket_messages', [
             'ticket_id' => $target->id,
             'body' => 'Source message',
         ]);

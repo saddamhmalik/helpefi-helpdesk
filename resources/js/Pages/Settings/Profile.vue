@@ -236,7 +236,7 @@ const disableTwoFactor = () => {
                     <div class="min-w-0 flex-1 space-y-4">
                         <div>
                             <p class="text-sm font-medium text-slate-700 dark:text-slate-300">{{ t('profile.avatar') }}</p>
-                            <p class="mt-1 text-xs agent-text-subtle">{{ t('profile.avatar_hint') }}</p>
+                            <p class="mt-1 text-xs agent-text-subtle" dir="auto">{{ t('profile.avatar_hint') }}</p>
                         </div>
                         <div class="grid gap-2 sm:grid-cols-3">
                             <label
@@ -257,7 +257,7 @@ const disableTwoFactor = () => {
                                     />
                                     <span class="font-medium">{{ t(`profile.avatar_${option.value}`) }}</span>
                                 </span>
-                                <span class="mt-1 text-xs opacity-80">{{ t(`profile.avatar_${option.value}_hint`) }}</span>
+                                <span class="mt-1 text-xs opacity-80" dir="auto">{{ t(`profile.avatar_${option.value}_hint`) }}</span>
                             </label>
                         </div>
                         <div v-if="profileForm.avatar_type === 'upload'" class="flex flex-wrap items-center gap-3">

@@ -197,19 +197,30 @@ class ChannelService
         }
 
         if ($ticket) {
+            $ticket->loadMissing('status');
+            $wasClosed = (bool) $ticket->status?->is_closed;
+
             $message = $this->tickets->addContactMessage(
                 $ticket->id,
                 $contact->id,
                 $payload['body'],
                 $channel->id,
                 $externalId,
+                true,
             );
+
+            $reopened = $wasClosed && ! $this->tickets->show($ticket->id)->status?->is_closed;
 
             $this->tickets->storeInboundAttachments($ticket->id, $message, $payload['attachments'] ?? []);
             $this->syncInboundCcs($ticket, $payload);
             $this->presence->pulse($ticket->id);
 
-            return ['action' => 'reply', 'ticket' => $this->tickets->show($ticket->id), 'message' => $message, 'inbox_id' => $inbox->id];
+            return [
+                'action' => $reopened ? 'reopened' : 'reply',
+                'ticket' => $this->tickets->show($ticket->id),
+                'message' => $message,
+                'inbox_id' => $inbox->id,
+            ];
         }
 
         $openStatus = $this->tickets->statuses()->firstWhere('slug', 'open')

@@ -131,11 +131,17 @@ class TicketController extends Controller
     {
         $data = $request->validate([
             'source_ticket_id' => ['required', 'exists:tickets,id'],
+            'import_conversation' => ['boolean'],
         ]);
 
         try {
             return response()->json(
-                $this->ticketService->merge($ticket, $data['source_ticket_id'], $request->user()->id)
+                $this->ticketService->merge(
+                    $ticket,
+                    $data['source_ticket_id'],
+                    $request->user()->id,
+                    $request->boolean('import_conversation', true),
+                )
             );
         } catch (InvalidArgumentException $e) {
             return response()->json(['message' => $e->getMessage()], 422);

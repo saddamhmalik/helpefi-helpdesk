@@ -10,6 +10,7 @@ use App\Domains\Ai\Contracts\AiEmbeddingClient;
 use App\Domains\Automation\Events\TicketAutomationTrigger;
 use App\Domains\Csat\Observers\TicketCsatObserver;
 use App\Domains\Notifications\Listeners\PublishAgentNotificationRealtime;
+use App\Domains\Notifications\Observers\TicketNotificationObserver;
 use App\Domains\Tickets\Models\Ticket;
 use App\Domains\Automation\Listeners\RunAutomationRules;
 use App\Domains\Integrations\Listeners\DispatchSlackNotifications;
@@ -46,6 +47,7 @@ class AppServiceProvider extends ServiceProvider
         Event::listen(NotificationSent::class, PublishAgentNotificationRealtime::class);
 
         Ticket::observe(TicketCsatObserver::class);
+        Ticket::observe(TicketNotificationObserver::class);
 
         RateLimiter::for('tenant-infrastructure-verify', function (Request $request) {
             $limit = max(1, (int) config('tenant_infrastructure.verify_rate_limit_per_minute', 5));

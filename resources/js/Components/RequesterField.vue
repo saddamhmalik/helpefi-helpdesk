@@ -2,6 +2,7 @@
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { formInputClass } from '../composables/useFormControls.js';
+import AppAvatar from './AppAvatar.vue';
 import { csrfHeaders } from '../support/csrf.js';
 
 const props = defineProps({
@@ -10,6 +11,7 @@ const props = defineProps({
     requesterName: { type: String, default: '' },
     initialContact: { type: Object, default: null },
     error: { type: String, default: '' },
+    clearable: { type: Boolean, default: false },
 });
 
 const emit = defineEmits(['update:contactId', 'update:requesterEmail', 'update:requesterName']);
@@ -22,6 +24,7 @@ const loading = ref(false);
 const results = ref([]);
 const selected = ref(null);
 const showNameField = ref(false);
+const changing = ref(false);
 
 let debounceTimer = null;
 let abortController = null;
@@ -37,6 +40,7 @@ const displayLabel = computed(() => {
 });
 
 const hasSelection = computed(() => Boolean(selected.value));
+const showSearch = computed(() => !hasSelection.value || changing.value);
 
 const syncFromProps = () => {
     if (props.contactId && props.initialContact) {
@@ -106,6 +110,7 @@ const selectContact = (contact) => {
     selected.value = contact;
     query.value = '';
     open.value = false;
+    changing.value = false;
     showNameField.value = false;
     emit('update:contactId', contact.id);
     emit('update:requesterEmail', '');
@@ -120,6 +125,7 @@ const selectNewEmail = (email) => {
     };
     query.value = '';
     open.value = false;
+    changing.value = false;
     showNameField.value = true;
     emit('update:contactId', '');
     emit('update:requesterEmail', email);
@@ -127,12 +133,23 @@ const selectNewEmail = (email) => {
 };
 
 const clearSelection = () => {
+    if (!props.clearable) {
+        return;
+    }
+
     selected.value = null;
     query.value = '';
+    changing.value = false;
     showNameField.value = false;
     emit('update:contactId', '');
     emit('update:requesterEmail', '');
     emit('update:requesterName', '');
+};
+
+const startChange = () => {
+    changing.value = true;
+    query.value = '';
+    open.value = false;
 };
 
 const onInput = () => {
@@ -189,17 +206,41 @@ onUnmounted(() => {
 
 <template>
     <div class="relative">
-        <div v-if="hasSelection" class="flex items-center gap-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 px-3 py-2">
+        <div v-if="hasSelection && !changing" class="flex items-center gap-3 rounded-lg border border-slate-300 bg-slate-50 px-3 py-2 dark:border-slate-700 dark:bg-slate-950">
+            <AppAvatar :name="selected.name" :email="selected.email" size="sm" />
             <div class="min-w-0 flex-1">
                 <p class="truncate text-sm font-medium text-slate-900 dark:text-slate-100">{{ displayLabel }}</p>
                 <p v-if="selected.email" class="truncate text-xs text-slate-500 dark:text-slate-400">{{ selected.email }}</p>
             </div>
-            <button type="button" class="shrink-0 text-xs text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300 dark:text-slate-300" @click="clearSelection">
+            <button
+                v-if="clearable"
+                type="button"
+                class="shrink-0 text-xs text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300"
+                @click="clearSelection"
+            >
                 {{ $t('components.clear') }}
+            </button>
+            <button
+                v-else
+                type="button"
+                class="shrink-0 text-xs font-medium text-blue-600 hover:text-blue-700 dark:text-blue-300 dark:hover:text-blue-200"
+                @click="startChange"
+            >
+                {{ $t('components.change') }}
             </button>
         </div>
 
-        <template v-else>
+        <template v-if="showSearch">
+            <div
+                v-if="changing"
+                class="mb-2 flex items-center justify-between gap-2 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-xs text-blue-800 dark:border-blue-900/50 dark:bg-blue-950/30 dark:text-blue-200"
+            >
+                <span class="truncate">{{ $t('components.select_new_requester') }}</span>
+                <button type="button" class="shrink-0 font-medium hover:underline" @click="changing = false">
+                    {{ $t('components.cancel') }}
+                </button>
+            </div>
+
             <input
                 v-model="query"
                 type="text"

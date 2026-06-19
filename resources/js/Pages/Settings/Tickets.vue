@@ -69,6 +69,8 @@ const form = useForm({
     auto_first_response_body: props.settings.auto_first_response_body ?? '',
     email_blocklist: [...(props.settings.email_blocklist ?? [])],
     sync_ticket_status_from_external_issues: props.settings.sync_ticket_status_from_external_issues ?? false,
+    email_reopen_closed_on_inbound: props.settings.email_reopen_closed_on_inbound ?? true,
+    email_suppress_reopen_on_thank_you: props.settings.email_suppress_reopen_on_thank_you ?? true,
 });
 
 const blocklistText = computed({
@@ -149,6 +151,24 @@ const save = () => {
                                     <code v-pre class="rounded bg-slate-100 dark:bg-slate-900 px-1">{{contact_name}}</code>,
                                     <code v-pre class="rounded bg-slate-100 dark:bg-slate-900 px-1">{{contact_email}}</code>
                                 </p>
+                            </div>
+                        </div>
+
+                        <div class="max-w-3xl agent-card">
+                            <h2 class="text-lg font-semibold agent-text">{{ $t('settings_tickets.closed_ticket_email_replies') }}</h2>
+                            <p class="mt-1 text-sm agent-text-subtle">{{ $t('settings_tickets.closed_ticket_email_replies_help') }}</p>
+
+                            <div class="mt-4 space-y-4">
+                                <AppToggle
+                                    v-model="form.email_reopen_closed_on_inbound"
+                                    :label="$t('settings_tickets.reopen_closed_tickets_on_customer_reply')"
+                                />
+                                <AppToggle
+                                    v-model="form.email_suppress_reopen_on_thank_you"
+                                    :disabled="!form.email_reopen_closed_on_inbound"
+                                    :label="$t('settings_tickets.ignore_thank_you_notes')"
+                                />
+                                <p class="text-xs agent-text-subtle">{{ $t('settings_tickets.ignore_thank_you_notes_help') }}</p>
                             </div>
                         </div>
 

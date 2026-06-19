@@ -48,6 +48,8 @@ class HelpdeskSettingService
             'email_blocklist' => ['nullable', 'array'],
             'email_blocklist.*' => ['string', 'max:255'],
             'sync_ticket_status_from_external_issues' => ['boolean'],
+            'email_reopen_closed_on_inbound' => ['boolean'],
+            'email_suppress_reopen_on_thank_you' => ['boolean'],
         ];
     }
 
@@ -64,6 +66,8 @@ class HelpdeskSettingService
             'auto_first_response_body' => $setting->auto_first_response_body ?? self::DEFAULT_AUTO_FIRST_RESPONSE_BODY,
             'email_blocklist' => $setting->email_blocklist ?? [],
             'sync_ticket_status_from_external_issues' => (bool) ($setting->sync_ticket_status_from_external_issues ?? false),
+            'email_reopen_closed_on_inbound' => (bool) ($setting->email_reopen_closed_on_inbound ?? true),
+            'email_suppress_reopen_on_thank_you' => (bool) ($setting->email_suppress_reopen_on_thank_you ?? true),
         ];
     }
 
@@ -83,6 +87,16 @@ class HelpdeskSettingService
         ]);
 
         return $this->snapshot();
+    }
+
+    public function emailReopenClosedOnInbound(): bool
+    {
+        return (bool) ($this->settings->current()->email_reopen_closed_on_inbound ?? true);
+    }
+
+    public function emailSuppressReopenOnThankYou(): bool
+    {
+        return (bool) ($this->settings->current()->email_suppress_reopen_on_thank_you ?? true);
     }
 
     public function ticketNumberPrefix(): string
@@ -408,6 +422,8 @@ class HelpdeskSettingService
             'auto_first_response_body' => $this->normalizeAutoFirstResponseBody($data['auto_first_response_body'] ?? null),
             'email_blocklist' => $this->normalizeEmailBlocklist($data['email_blocklist'] ?? []),
             'sync_ticket_status_from_external_issues' => (bool) ($data['sync_ticket_status_from_external_issues'] ?? false),
+            'email_reopen_closed_on_inbound' => (bool) ($data['email_reopen_closed_on_inbound'] ?? true),
+            'email_suppress_reopen_on_thank_you' => (bool) ($data['email_suppress_reopen_on_thank_you'] ?? true),
         ];
     }
 

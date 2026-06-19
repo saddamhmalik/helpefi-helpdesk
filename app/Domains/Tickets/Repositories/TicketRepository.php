@@ -156,6 +156,7 @@ class TicketRepository
                 'assets.type:id,name,slug',
                 'messages.user:id,name,email,avatar_type,avatar_path',
                 'messages.contact:id,name,email',
+                'messages.mergedFromTicket:id,number,subject,created_at',
                 'messages.channel:id,name,slug,type',
                 'messages.attachments',
                 'attachments.user:id,name',
@@ -264,16 +265,21 @@ class TicketRepository
         $ticket->watchers()->detach($userId);
     }
 
-    public function merge(Ticket $target, Ticket $source, int $userId): Ticket
+    public function merge(Ticket $target, Ticket $source, int $userId, bool $importConversation = true): Ticket
     {
-        DB::transaction(function () use ($target, $source, $userId) {
-            TicketMessage::query()
-                ->where('ticket_id', $source->id)
-                ->update(['ticket_id' => $target->id]);
+        DB::transaction(function () use ($target, $source, $userId, $importConversation) {
+            if ($importConversation) {
+                TicketMessage::query()
+                    ->where('ticket_id', $source->id)
+                    ->update([
+                        'ticket_id' => $target->id,
+                        'merged_from_ticket_id' => $source->id,
+                    ]);
 
-            TicketAttachment::query()
-                ->where('ticket_id', $source->id)
-                ->update(['ticket_id' => $target->id]);
+                TicketAttachment::query()
+                    ->where('ticket_id', $source->id)
+                    ->update(['ticket_id' => $target->id]);
+            }
 
             $watcherIds = $source->watchers()->pluck('users.id')->all();
             if ($watcherIds) {
@@ -288,9 +294,13 @@ class TicketRepository
                 'closed_at' => now(),
             ]);
 
+            $mergeNote = $importConversation
+                ? "Ticket {$source->number} was merged into this ticket."
+                : "Ticket {$source->number} was merged into this ticket. Conversation was not imported.";
+
             $target->messages()->create([
                 'user_id' => $userId,
-                'body' => "Ticket {$source->number} was merged into this ticket.",
+                'body' => $mergeNote,
                 'is_internal' => true,
             ]);
         });

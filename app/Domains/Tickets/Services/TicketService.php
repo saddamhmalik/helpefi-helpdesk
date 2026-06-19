@@ -8,6 +8,7 @@ use App\Domains\Automation\Models\AutomationRule;
 use App\Domains\Billing\Services\BillingService;
 use App\Domains\Channels\Models\Channel;
 use App\Domains\Channels\Repositories\ChannelRepository;
+use App\Domains\Channels\Services\ClosedTicketInboundReopenService;
 use App\Domains\Channels\Services\OutboundMailService;
 use App\Domains\Channels\Services\TwilioMessagingService;
 use App\Domains\Notifications\Services\NotificationService;
@@ -59,6 +60,7 @@ class TicketService
         private ApprovalService $approvals,
         private ChangeRecordService $changeRecords,
         private ProblemRecordService $problemRecords,
+        private ClosedTicketInboundReopenService $closedTicketReopen,
     ) {
     }
 
@@ -123,10 +125,6 @@ class TicketService
         $ticket = $this->tickets->find($ticket->id);
         TicketAutomationTrigger::dispatch($ticket, AutomationRule::TRIGGER_TICKET_CREATED);
 
-        if ($ticket->assigned_to) {
-            $this->notifications->ticketAssigned($ticket);
-        }
-
         $this->audit->record('ticket.created', $ticket, [
             'number' => $ticket->number,
             'subject' => $ticket->subject,
@@ -142,7 +140,6 @@ class TicketService
     public function update(int $id, array $data, ?int $userId = null, array $context = []): Ticket
     {
         $ticket = $this->tickets->find($id);
-        $previousAssignee = $ticket->assigned_to;
         [$ccEmails, $requesterEmail, $requesterName] = $this->extractPeopleFields($data);
 
         if ($requesterEmail !== null || array_key_exists('contact_id', $data)) {
@@ -196,10 +193,6 @@ class TicketService
             'changed' => array_keys($data),
         ], $context));
 
-        if (array_key_exists('assigned_to', $data) && $ticket->assigned_to !== $previousAssignee) {
-            $this->notifications->ticketAssigned($ticket, auth()->id());
-        }
-
         $this->audit->recordChanges('ticket.updated', $ticket, $before, $ticket->only(array_keys($data)), [
             'number' => $ticket->number,
         ]);
@@ -220,6 +213,12 @@ class TicketService
         }
 
         $ticket = $this->tickets->find($id);
+
+        if (! $isInternal && $this->closedTicketReopen->maybeReopenOnAgentReply($ticket)) {
+            $ticket = $this->tickets->find($id);
+            $this->broadcastTicketSnapshot($ticket);
+        }
+
         $channelId = $ticket->channel_id && $this->channels->find($ticket->channel_id)?->type === 'email'
             ? $ticket->channel_id
             : $this->channels->findActiveBySlug('web')?->id;
@@ -276,8 +275,16 @@ class TicketService
         string $body,
         int $channelId,
         ?string $externalId = null,
+        bool $fromEmail = false,
     ): TicketMessage {
-        $message = $this->tickets->addMessage($this->tickets->find($ticketId), [
+        $ticket = $this->tickets->find($ticketId);
+
+        if ($this->closedTicketReopen->maybeReopenOnCustomerMessage($ticket, $body, $fromEmail)) {
+            $ticket = $this->tickets->find($ticketId);
+            $this->broadcastTicketSnapshot($ticket);
+        }
+
+        $message = $this->tickets->addMessage($ticket, [
             'contact_id' => $contactId,
             'body' => $body,
             'is_internal' => false,
@@ -391,7 +398,7 @@ class TicketService
         return $this->tickets->find($id);
     }
 
-    public function merge(int $targetId, int $sourceId, int $userId): Ticket
+    public function merge(int $targetId, int $sourceId, int $userId, bool $importConversation = true): Ticket
     {
         if ($targetId === $sourceId) {
             throw new InvalidArgumentException('Cannot merge a ticket into itself.');
@@ -408,17 +415,25 @@ class TicketService
             throw new InvalidArgumentException('Target ticket is already merged.');
         }
 
-        $merged = $this->tickets->merge($target, $source, $userId);
+        $sourceHadMessages = $source->messages()->exists();
+
+        $merged = $this->tickets->merge($target, $source, $userId, $importConversation);
+
+        if ($importConversation && ! $sourceHadMessages) {
+            $this->importMergedTicketDescription($merged, $source);
+            $merged = $this->tickets->find($merged->id);
+        }
+
         $this->ticketCcs->mergeFromTicket($merged, $source, $userId);
-        $merged = $this->tickets->find($merged->id);
 
         $this->audit->record('ticket.merged', $merged, [
             'target_number' => $merged->number,
             'source_number' => $source->number,
             'source_id' => $source->id,
+            'import_conversation' => $importConversation,
         ], $userId);
 
-        return $merged;
+        return $this->tickets->find($merged->id);
     }
 
     public function split(int $id, int $fromMessageId, int $userId, ?string $subject = null): Ticket
@@ -518,7 +533,11 @@ class TicketService
         }
 
         if (array_key_exists('contact_id', $data) && ($data['contact_id'] === '' || $data['contact_id'] === null)) {
-            $data['contact_id'] = null;
+            if ($ticket && ! $requesterEmail) {
+                unset($data['contact_id']);
+            } else {
+                $data['contact_id'] = null;
+            }
         } elseif (! array_key_exists('contact_id', $data) && $ticket) {
             $data['contact_id'] = $ticket->contact_id;
         }
@@ -577,6 +596,30 @@ class TicketService
                 'channel_id' => $channelId,
             ]);
         }
+    }
+
+    private function importMergedTicketDescription(Ticket $target, Ticket $source): void
+    {
+        $description = $this->normalizeRichText($source->description);
+
+        if ($description === null) {
+            return;
+        }
+
+        $channelId = $source->channel_id ?? $target->channel_id ?? $this->channels->findActiveBySlug('web')?->id;
+
+        $payload = [
+            'body' => $description,
+            'is_internal' => false,
+            'channel_id' => $channelId,
+            'merged_from_ticket_id' => $source->id,
+        ];
+
+        if ($source->contact_id) {
+            $payload['contact_id'] = $source->contact_id;
+        }
+
+        $this->tickets->addMessage($target, $payload);
     }
 
     private function broadcastMessage(TicketMessage $message, bool $includeChatChannel): void

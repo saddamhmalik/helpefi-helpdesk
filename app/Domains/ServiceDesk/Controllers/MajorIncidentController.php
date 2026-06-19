@@ -45,10 +45,12 @@ class MajorIncidentController extends Controller
             return Inertia::render('ServiceDesk/Upgrade', $this->serviceDesk->upgradeContext());
         }
 
-        $record = $this->majorIncidents->snapshotForTicket($ticket);
+        $record = $this->majorIncidents->warRoomSnapshot($ticket);
 
         if ($record === null) {
-            return redirect()->route('tickets.show', $ticket);
+            return redirect()
+                ->route('service-desk.major-incidents.index')
+                ->with('error', 'No war room exists for this ticket. Declare a major incident on an incident ticket first.');
         }
 
         $ticketModel = $this->ticketService->show($ticket);

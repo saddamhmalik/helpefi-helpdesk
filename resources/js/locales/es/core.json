@@ -62,7 +62,8 @@
             "directory": "Directorio",
             "content": "Contenido",
             "insights": "Análisis",
-            "manage": "Gestionar"
+            "manage": "Gestionar",
+            "service_desk": "Service Desk"
         },
         "dashboard": "Panel",
         "inbox": "Bandeja de entrada",
@@ -75,6 +76,14 @@
         "knowledge_base": "Base de conocimiento",
         "reports": "Informes",
         "service_desk": "Mesa de servicio",
+        "service_desk_overview": "Overview",
+        "service_desk_approvals": "Approvals",
+        "service_desk_calendar": "Change calendar",
+        "service_desk_major_incidents": "Major incidents",
+        "service_desk_incidents": "Incidents",
+        "service_desk_requests": "Requests",
+        "service_desk_changes": "Changes",
+        "service_desk_problems": "Problems",
         "assets": "Activos",
         "descriptions": {
             "dashboard": "Métricas y resumen",
@@ -88,6 +97,14 @@
             "knowledge_base": "Artículos de ayuda",
             "reports": "Análisis y exportaciones",
             "service_desk": "Colas ITSM y flujos de trabajo",
+            "service_desk_overview": "Service Desk dashboard and stats",
+            "service_desk_approvals": "Review and decide approval requests",
+            "service_desk_calendar": "Scheduled and planned changes",
+            "service_desk_major_incidents": "Active major incidents and war rooms",
+            "service_desk_incidents": "Incident ticket queue",
+            "service_desk_requests": "Service request queue",
+            "service_desk_changes": "Change request queue",
+            "service_desk_problems": "Problem management queue",
             "assets": "CMDB, descubrimiento y garantía"
         }
     },

@@ -201,6 +201,33 @@ class TicketRequesterCcTest extends TestCase
         Mail::assertSent(\App\Domains\Channels\Mail\TicketReplyMail::class);
     }
 
+    public function test_update_ticket_cannot_remove_requester(): void
+    {
+        [$status, $priority] = $this->seedTicketMeta();
+        $user = User::factory()->create();
+        $contact = Contact::query()->create(['name' => 'Jane', 'email' => 'jane@example.com']);
+
+        $ticket = Ticket::query()->create([
+            'number' => 'HD-00101',
+            'subject' => 'Keep requester',
+            'contact_id' => $contact->id,
+            'ticket_status_id' => $status->id,
+            'ticket_priority_id' => $priority->id,
+        ]);
+
+        $this->actingAs($user)
+            ->put("/tickets/{$ticket->id}", [
+                'contact_id' => '',
+                '_autosave' => true,
+            ])
+            ->assertRedirect();
+
+        $this->assertDatabaseHas('tickets', [
+            'id' => $ticket->id,
+            'contact_id' => $contact->id,
+        ]);
+    }
+
     public function test_merge_copies_cc_emails_to_target_ticket(): void
     {
         [$status, $priority] = $this->seedTicketMeta();

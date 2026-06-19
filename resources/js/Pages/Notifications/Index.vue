@@ -124,7 +124,7 @@ const hasReadItems = computed(() => props.notifications.data?.some((item) => ite
                 type="button"
                 class="rounded-full px-3 py-1.5 text-xs font-medium transition"
                 :class="activeTab === tab.key
-                    ? 'bg-slate-900 text-white'
+                    ? 'bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900'
                     : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 ring-1 ring-slate-200 dark:ring-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800'"
                 @click="applyFilter(tab)"
             >
@@ -137,7 +137,7 @@ const hasReadItems = computed(() => props.notifications.data?.some((item) => ite
                 v-for="item in notifications.data"
                 :key="item.id"
                 class="flex items-center gap-4 border-b border-slate-100 dark:border-slate-800 px-4 py-4 last:border-b-0"
-                :class="item.read_at ? '' : 'bg-blue-50 dark:bg-blue-950/40/40'"
+                :class="item.read_at ? '' : 'bg-blue-50/80 dark:bg-blue-950/30'"
             >
                 <NotificationTypeIcon :type="item.type" />
                 <div class="min-w-0 flex-1">
@@ -166,7 +166,7 @@ const hasReadItems = computed(() => props.notifications.data?.some((item) => ite
                     <button
                         v-if="item.url"
                         type="button"
-                        class="inline-flex items-center rounded-lg border border-blue-200 dark:border-blue-900/60 bg-blue-50 dark:bg-blue-950/40 px-3 py-1.5 text-xs font-semibold text-blue-700 dark:text-blue-300 hover:bg-blue-100"
+                        class="inline-flex items-center rounded-lg border border-blue-200 dark:border-blue-900/60 bg-blue-50 dark:bg-blue-950/40 px-3 py-1.5 text-xs font-semibold text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/60"
                         @click="openNotification(item)"
                     >
                         {{ $t('common.open') }}

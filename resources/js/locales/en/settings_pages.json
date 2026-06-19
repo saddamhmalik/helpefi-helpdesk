@@ -624,12 +624,25 @@
         "notifications": "Notifications",
         "configure_in-app_and_email_alerts_for_agents": "Configure in-app and email alerts for agents.",
         "save_settings": "Save settings",
+        "in_app_alerts": "In-app alerts",
+        "in_app_alerts_help": "When enabled, assignees and watchers see alerts in the notification bell and receive live toasts while signed in.",
+        "email_alerts": "Email alerts",
+        "email_alerts_help": "Send the same agent alerts by email when outgoing mail is configured for your workspace.",
         "alert_types": "Alert types",
-        "email_enabled": "Send email notifications (requires mail configuration)",
+        "email_enabled": "Send email notifications",
+        "email_enabled_help": "Requires outgoing email to be configured under Settings → Email.",
         "notify_ticket_assigned": "Ticket assigned to an agent",
+        "notify_ticket_assigned_help": "Notifies the assignee when a ticket is assigned manually, via automation, or auto-assignment rules.",
         "notify_customer_reply": "Customer reply on a ticket",
+        "notify_customer_reply_help": "Notifies the assignee and watchers when a customer sends a new public message.",
         "notify_sla_breach": "SLA breach detected",
-        "notify_approval_pending": "Approval requests and decisions"
+        "notify_sla_breach_help": "Notifies the assignee, watchers, and escalation recipients when an SLA target is missed.",
+        "notify_approval_pending": "Approval requests and decisions",
+        "notify_approval_pending_help": "Notifies approvers and requesters for service desk approval workflows.",
+        "email_templates_title": "Agent notification emails",
+        "email_templates_help": "Customize the subject and body for each agent alert email. In-app notifications always use the built-in message text.",
+        "template": "Template",
+        "when_sent": "When sent"
     },
     "settings_overview": {
         "settings": "Settings",
@@ -863,7 +876,12 @@
         "external_issues": "External issues",
         "sync_ticket_status_from_external_issues": "Sync ticket status from Jira/Linear",
         "sync_ticket_status_from_external_issues_help": "When enabled, moving a linked Jira or Linear issue to Done, Closed, or Resolved will close the ticket. Reopening the external issue will reopen the ticket.",
-        "external_issues_description": "Control how linked Jira and Linear issues affect ticket status."
+        "external_issues_description": "Control how linked Jira and Linear issues affect ticket status.",
+        "closed_ticket_email_replies": "Closed ticket email replies",
+        "closed_ticket_email_replies_help": "Control what happens when a customer replies by email to a closed or resolved ticket.",
+        "reopen_closed_tickets_on_customer_reply": "Reopen closed tickets when the customer replies by email",
+        "ignore_thank_you_notes": "Do not reopen for short thank-you messages",
+        "ignore_thank_you_notes_help": "When enabled, brief messages such as \"Thanks!\" or \"Thank you for your help\" are added to the ticket thread but keep the ticket closed."
     },
     "settings_workforce": {
         "departments_teams": "Departments & teams",
@@ -909,7 +927,12 @@
         "body_html": "Body (HTML)",
         "restore_default_confirm": "Restore this template to the default content?",
         "restore_default": "Restore default",
-        "active_emails_sent": "Active (emails will be sent when this template is used)"
+        "active_emails_sent": "Active — when disabled, the built-in default email is used instead",
+        "preview": "Preview email",
+        "preview_loading": "Loading preview…",
+        "preview_title": "Email preview",
+        "preview_description": "Sample placeholder values are used so you can see how recipients will receive this email.",
+        "preview_failed": "Unable to generate preview."
     },
     "settings_profile": {}
 }

@@ -83,11 +83,11 @@ watch(
 </script>
 
 <template>
-    <Head :title="`${type.singular} queue`" />
+    <Head :title="t('service_desk.queue_title', { singular: type.singular })" />
     <AgentLayout>
         <PageHeader :title="type.label" :description="type.description">
             <template #description>
-                {{ tickets.total }} {{ type.label.toLowerCase() }}
+                {{ $t('service_desk.queue_description', { total: tickets.total, type: type.label.toLowerCase() }) }}
             </template>
         </PageHeader>
 
@@ -138,7 +138,7 @@ watch(
             <template #body>
                 <tr v-if="tickets.data.length === 0">
                     <td colspan="6" class="px-4 py-10 text-center text-sm text-slate-500 dark:text-slate-400">
-                        No {{ type.label.toLowerCase() }} match your filters.
+                        {{ $t('service_desk.no_matches_filters', { type: type.label.toLowerCase() }) }}
                     </td>
                 </tr>
                 <tr v-for="ticket in tickets.data" :key="ticket.id" class="border-t border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 dark:bg-slate-950/80">

@@ -72,7 +72,7 @@ const applyFilter = (mine) => {
     <AgentLayout>
         <PageHeader :title="$t('service_desk.approvals')" :description="$t('service_desk.review_and_decide_on_service_catalog_and_change_requests')">
             <template #description>
-                {{ pendingMine }} waiting on you
+                {{ $t('service_desk.waiting_on_you', { count: pendingMine }) }}
             </template>
         </PageHeader>
 
@@ -105,7 +105,7 @@ const applyFilter = (mine) => {
             </template>
             <template #body>
                 <tr v-if="approvals.data.length === 0">
-                    <td colspan="5" class="px-4 py-10 text-center text-sm text-slate-500 dark:text-slate-400">No approval requests match this view.</td>
+                    <td colspan="5" class="px-4 py-10 text-center text-sm text-slate-500 dark:text-slate-400">{{ $t('service_desk.no_approval_requests') }}</td>
                 </tr>
                 <tr v-for="approval in approvals.data" :key="approval.id" class="border-t border-slate-100 dark:border-slate-800">
                     <td class="px-4 py-3">
@@ -134,7 +134,7 @@ const applyFilter = (mine) => {
                                 @click="reject(approval.id)"
                             >{{ $t('service_desk.reject') }}</button>
                         </div>
-                        <Link v-else :href="`/tickets/${approval.ticket_id}`" class="text-sm text-blue-600 hover:text-blue-700 dark:hover:text-blue-300 dark:text-blue-300">View ticket</Link>
+                        <Link v-else :href="`/tickets/${approval.ticket_id}`" class="text-sm text-blue-600 hover:text-blue-700 dark:hover:text-blue-300 dark:text-blue-300">{{ $t('service_desk.view_ticket') }}</Link>
                     </td>
                 </tr>
             </template>

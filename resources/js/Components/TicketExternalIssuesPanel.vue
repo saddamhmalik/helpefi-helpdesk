@@ -105,7 +105,7 @@ const unlinkIssue = (issueId) => {
 </script>
 
 <template>
-    <section class="px-4 py-3">
+    <section v-if="hasAnyProvider" class="px-4 py-3">
         <div>
             <p class="text-[11px] font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500">
                 {{ $t('components.external_issues') }}
@@ -115,15 +115,7 @@ const unlinkIssue = (issueId) => {
             </p>
         </div>
 
-        <p
-            v-if="!hasAnyProvider"
-            class="mt-3 rounded-lg border border-amber-200/80 bg-amber-50 px-3 py-2 text-xs text-amber-800 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-300"
-        >
-            {{ $t('components.external_issues_not_configured') }}
-        </p>
-
-        <template v-else>
-            <div class="mt-3 flex flex-wrap items-center gap-2">
+        <div class="mt-3 flex flex-wrap items-center gap-2">
                 <button
                     v-if="hasJira"
                     type="button"
@@ -212,7 +204,6 @@ const unlinkIssue = (issueId) => {
                     {{ $t('components.link_issue') }}
                 </button>
             </form>
-        </template>
 
         <ul v-if="issues.length" class="mt-3 space-y-2">
             <li
@@ -251,7 +242,7 @@ const unlinkIssue = (issueId) => {
             </li>
         </ul>
 
-        <p v-else-if="hasAnyProvider" class="mt-3 text-xs text-slate-500 dark:text-slate-400">
+        <p v-else class="mt-3 text-xs text-slate-500 dark:text-slate-400">
             {{ $t('components.no_linked_issues_yet') }}
         </p>
     </section>

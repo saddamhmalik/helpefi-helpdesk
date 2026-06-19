@@ -5,6 +5,7 @@ namespace App\Domains\Channels\Controllers;
 use App\Domains\Channels\Services\EmailTemplateService;
 use App\Domains\Channels\Support\EmailTemplateRegistry;
 use App\Http\Controllers\Controller;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -46,5 +47,26 @@ class EmailTemplateController extends Controller
         $this->templates->reset($template);
 
         return back()->with('success', 'Email template restored to default.');
+    }
+
+    public function preview(Request $request, int $template): JsonResponse
+    {
+        $templateData = $this->templates->find($template);
+        $data = $request->validate([
+            'subject' => ['required', 'string', 'max:255'],
+            'body_html' => ['required', 'string', 'max:50000'],
+        ]);
+
+        $placeholderKeys = collect($templateData['placeholders'] ?? [])
+            ->pluck('key')
+            ->filter(fn ($key) => is_string($key) && $key !== '')
+            ->values()
+            ->all();
+
+        return response()->json($this->templates->previewDraft(
+            $data['subject'],
+            $data['body_html'],
+            $placeholderKeys,
+        ));
     }
 }

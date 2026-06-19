@@ -2,6 +2,7 @@
 
 namespace App\Domains\Notifications\Controllers;
 
+use App\Domains\Channels\Services\EmailTemplateService;
 use App\Domains\Notifications\Services\NotificationService;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
@@ -11,14 +12,17 @@ use Inertia\Response;
 
 class NotificationSettingController extends Controller
 {
-    public function __construct(private NotificationService $notifications)
-    {
+    public function __construct(
+        private NotificationService $notifications,
+        private EmailTemplateService $emailTemplates,
+    ) {
     }
 
     public function edit(): Response
     {
         return Inertia::render('Settings/Notifications', [
             'settings' => $this->notifications->settingsSnapshot(),
+            'emailTemplates' => $this->emailTemplates->agentNotificationTemplates(),
         ]);
     }
 

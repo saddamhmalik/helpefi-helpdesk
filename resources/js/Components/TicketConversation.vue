@@ -34,6 +34,16 @@ const sortedMessages = computed(() =>
     }),
 );
 
+const showMergeDivider = (message, index) => {
+    if (!message.merged_from_ticket_id || !message.merged_from_ticket) {
+        return false;
+    }
+
+    const previous = sortedMessages.value[index - 1];
+
+    return !previous || previous.merged_from_ticket_id !== message.merged_from_ticket_id;
+};
+
 const alignment = (message) => {
     if (message.is_internal) {
         return 'center';
@@ -157,12 +167,25 @@ const relativeTime = (value) => formatRelativeTime(value);
             :class="fill ? 'absolute inset-0' : 'max-h-[32rem]'"
             @scroll="onScroll"
         >
-            <div
-                v-for="message in sortedMessages"
-                :key="message.id"
-                class="message-item flex gap-2.5"
-                :class="rowClass(message)"
-            >
+            <template v-for="(message, index) in sortedMessages" :key="message.id">
+                <div
+                    v-if="showMergeDivider(message, index)"
+                    class="flex justify-center py-1"
+                >
+                    <div class="max-w-md rounded-2xl border border-indigo-200/80 bg-indigo-50/90 px-4 py-2.5 text-center shadow-sm dark:border-indigo-900/50 dark:bg-indigo-950/30">
+                        <p class="text-[11px] font-semibold uppercase tracking-wide text-indigo-700 dark:text-indigo-300">
+                            {{ $t('components.merged_from_ticket', { number: message.merged_from_ticket.number }) }}
+                        </p>
+                        <p v-if="message.merged_from_ticket.subject" class="mt-0.5 truncate text-xs text-indigo-900/80 dark:text-indigo-200/80">
+                            {{ message.merged_from_ticket.subject }}
+                        </p>
+                    </div>
+                </div>
+
+                <div
+                    class="message-item flex gap-2.5"
+                    :class="rowClass(message)"
+                >
                 <AppAvatar
                     v-if="alignment(message) === 'left'"
                     v-bind="messageAvatar(message)"
@@ -260,7 +283,8 @@ const relativeTime = (value) => formatRelativeTime(value);
                     size="md"
                     class="mt-1 shrink-0"
                 />
-            </div>
+                </div>
+            </template>
 
             <p v-if="!sortedMessages.length" class="py-8 text-center text-sm text-slate-500 dark:text-slate-400">{{ $t('components.no_messages_yet') }}</p>
         </div>

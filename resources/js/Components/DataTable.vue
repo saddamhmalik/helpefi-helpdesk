@@ -18,7 +18,15 @@ const resolvedEmptyTitle = computed(() => props.emptyTitle || t('components.no_r
     <div class="overflow-hidden rounded-xl border agent-border agent-panel shadow-sm">
         <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-slate-200 dark:divide-slate-800 dark:divide-slate-700">
-                <slot />
+                <template v-if="$slots.head || $slots.body">
+                    <thead v-if="$slots.head" class="agent-panel-muted">
+                        <slot name="head" />
+                    </thead>
+                    <tbody v-if="$slots.body" class="divide-y divide-slate-100 dark:divide-slate-800">
+                        <slot name="body" />
+                    </tbody>
+                </template>
+                <slot v-else />
             </table>
         </div>
         <div v-if="empty" class="px-4 py-12 text-center">
