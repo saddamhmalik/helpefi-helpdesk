@@ -33,8 +33,27 @@ const eventLabel = (slug) => {
         return 'Sent on registration';
     }
 
+    if (slug === 'registration_verification') {
+        return 'Sent when email verification is requested';
+    }
+
     if (slug === 'workspace_welcome') {
         return 'Sent when workspace is ready';
+    }
+
+    if (slug.startsWith('trial_nurture_day_')) {
+        return `Trial nurture — day ${slug.replace('trial_nurture_day_', '')}`;
+    }
+
+    if (slug.startsWith('subscription_ending_')) {
+        const labels = {
+            subscription_ending_7_days: '7 days before access ends',
+            subscription_ending_3_days: '3 days before access ends',
+            subscription_ending_1_day: '1 day before access ends',
+            subscription_ending_final: 'Last day of access',
+        };
+
+        return labels[slug] ?? 'Subscription ending reminder';
     }
 
     return 'Custom template';

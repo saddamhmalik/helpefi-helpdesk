@@ -13,6 +13,7 @@ class CentralDatabaseSeeder extends Seeder
             PlatformUserSeeder::class,
             PlatformEmailTemplateSeeder::class,
             MarketingBlogPostSeeder::class,
+            MarketingDefaultsSeeder::class,
         ]);
     }
 }

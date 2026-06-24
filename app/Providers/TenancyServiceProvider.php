@@ -71,7 +71,9 @@ class TenancyServiceProvider extends ServiceProvider
             Events\DatabaseDeleted::class => [],
 
             // Tenancy events
-            Events\InitializingTenancy::class => [],
+            Events\InitializingTenancy::class => [
+                \App\Domains\Billing\Listeners\ClearSubscriptionCache::class,
+            ],
             Events\TenancyInitialized::class => [
                 Listeners\BootstrapTenancy::class,
             ],

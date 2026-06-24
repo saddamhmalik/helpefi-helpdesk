@@ -191,6 +191,10 @@ export function useAgentBreadcrumbs() {
             return [{ label: navOr('/reports', 'nav.reports') }];
         }
 
+        if (path === '/growth') {
+            return [{ label: navOr('/growth', 'nav.growth_hub') }];
+        }
+
         if (path === '/notifications') {
             return [{ label: t('common.notifications') }];
         }

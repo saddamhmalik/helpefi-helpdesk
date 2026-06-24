@@ -12,6 +12,8 @@ class MarketingSeoContext
         'central.register',
         'central.vertical',
         'central.compare',
+        'central.migrate',
+        'central.features.index',
         'central.feature',
         'central.static.pricing',
         'central.static.about',
@@ -38,6 +40,10 @@ class MarketingSeoContext
             $request->routeIs('central.compare') => CompareLandingDefinition::seoKey(
                 (string) $request->route('competitor')
             ),
+            $request->routeIs('central.migrate') => MigrateLandingDefinition::seoKey(
+                (string) $request->route('source')
+            ),
+            $request->routeIs('central.features.index') => 'features_index',
             $request->routeIs('central.feature') => MarketingFeatureDefinition::seoKey(
                 (string) $request->route('feature')
             ),

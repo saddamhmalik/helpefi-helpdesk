@@ -2,29 +2,24 @@
 
 namespace App\Domains\Tickets\Repositories;
 
-use App\Domains\Brands\Models\Brand;
-use App\Domains\Brands\Services\BrandService;
+use App\Domains\ServiceCatalog\Models\ServiceCatalogItem;
 use App\Support\AvatarSupport;
-use App\Domains\Tenancy\Services\TenantStorageResolver;
-use App\Domains\Settings\Repositories\HelpdeskSettingRepository;
 use App\Domains\Tickets\Models\Ticket;
-use App\Domains\Tickets\Models\TicketAttachment;
 use App\Domains\Tickets\Models\TicketMessage;
 use App\Domains\Tickets\Models\TicketPriority;
 use App\Domains\Tickets\Models\TicketStatus;
+use App\Domains\Tickets\Services\TicketNumberGenerator;
+use App\Domains\Tickets\Services\TicketStatusLookup;
 use App\Domains\Tickets\Support\TicketFilters;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 
 class TicketRepository
 {
     public function __construct(
-        private HelpdeskSettingRepository $helpdeskSettings,
-        private BrandService $brands,
-        private TenantStorageResolver $storage,
+        private TicketNumberGenerator $numbers,
+        private TicketStatusLookup $statusLookup,
     ) {
     }
 
@@ -53,8 +48,6 @@ class TicketRepository
 
     private function filteredQuery(array $filters, ?int $watchingUserId = null)
     {
-        $filters = TicketFilters::normalize($filters);
-
         $query = Ticket::query()
             ->with([
                 'contact:id,name,email',
@@ -71,74 +64,10 @@ class TicketRepository
             ->visibleInQueue()
             ->orderByDesc('updated_at');
 
-        if (! empty($filters['status_id'])) {
-            $query->where('ticket_status_id', $filters['status_id']);
-        }
-
-        if (! empty($filters['priority_id'])) {
-            $query->where('ticket_priority_id', $filters['priority_id']);
-        }
-
-        if (! empty($filters['mine']) && $watchingUserId) {
-            $query->where('assigned_to', $watchingUserId);
-        } elseif (! empty($filters['unassigned'])) {
-            $query->whereNull('assigned_to');
-        } elseif (! empty($filters['assigned_to'])) {
-            $query->where('assigned_to', $filters['assigned_to']);
-        }
-
-        if (! empty($filters['channel_id'])) {
-            $query->where('channel_id', $filters['channel_id']);
-        }
-
-        if (! empty($filters['department_id'])) {
-            $query->where('department_id', $filters['department_id']);
-        }
-
-        if (! empty($filters['team_id'])) {
-            $query->where('team_id', $filters['team_id']);
-        }
-
-        if (! empty($filters['created_from'])) {
-            $query->whereDate('created_at', '>=', $filters['created_from']);
-        }
-
-        if (! empty($filters['created_to'])) {
-            $query->whereDate('created_at', '<=', $filters['created_to']);
-        }
-
-        if (! empty($filters['search'])) {
-            $search = $filters['search'];
-            $query->where(function ($q) use ($search) {
-                $q->where('subject', 'like', "%{$search}%")
-                    ->orWhere('number', 'like', "%{$search}%")
-                    ->orWhereHas('contact', function ($contact) use ($search) {
-                        $contact->where('name', 'like', "%{$search}%")
-                            ->orWhere('email', 'like', "%{$search}%");
-                    });
-            });
-        }
-
-        if (! empty($filters['contact'])) {
-            $contact = $filters['contact'];
-            $query->whereHas('contact', function ($query) use ($contact) {
-                $query->where('name', 'like', "%{$contact}%")
-                    ->orWhere('email', 'like', "%{$contact}%");
-            });
-        }
-
-        if (! empty($filters['watching']) && $watchingUserId) {
-            $query->whereHas('watchers', fn ($q) => $q->where('user_id', $watchingUserId));
-        }
-
-        if (! empty($filters['type'])) {
-            $query->where('type', $filters['type']);
-        }
-
-        return $query;
+        return TicketFilters::applyToQueueQuery($query, $filters, $watchingUserId);
     }
 
-    public function find(int $id, int $messageLimit = 100): Ticket
+    public function find(int $id, int $messageLimit = 100, bool $includeInternal = true): Ticket
     {
         $ticket = Ticket::query()
             ->with([
@@ -164,14 +93,58 @@ class TicketRepository
             ])
             ->findOrFail($id);
 
-        $this->loadRecentMessages($ticket, $messageLimit);
+        $this->loadRecentMessages($ticket, $messageLimit, $includeInternal);
 
         return $ticket;
     }
 
-    private function loadRecentMessages(Ticket $ticket, int $limit): void
+    public function findForWrite(int $id): Ticket
     {
-        $messages = $ticket->messages()
+        return Ticket::query()
+            ->with([
+                'status:id,is_closed,slug',
+                'channel:id,type',
+                'contact:id,email,phone',
+            ])
+            ->findOrFail($id);
+    }
+
+    public function findForBroadcast(int $id): Ticket
+    {
+        return Ticket::query()
+            ->with([
+                'status:id,name,slug,color',
+                'priority:id,name,slug',
+                'contact:id,name,email',
+                'assignee:id,name',
+            ])
+            ->findOrFail($id);
+    }
+
+    public function findForMerge(int $id): Ticket
+    {
+        return Ticket::query()
+            ->select(['id', 'number', 'description', 'contact_id', 'channel_id', 'merged_into_ticket_id'])
+            ->findOrFail($id);
+    }
+
+    private function loadRecentMessages(Ticket $ticket, int $limit, bool $includeInternal = true): void
+    {
+        $messageIds = $ticket->messages()
+            ->when(! $includeInternal, fn ($query) => $query->where('is_internal', false))
+            ->orderByDesc('created_at')
+            ->orderByDesc('id')
+            ->limit($limit)
+            ->pluck('id');
+
+        if ($messageIds->isEmpty()) {
+            $ticket->setRelation('messages', collect());
+
+            return;
+        }
+
+        $messages = TicketMessage::query()
+            ->whereIn('id', $messageIds)
             ->with([
                 'user:'.implode(',', AvatarSupport::USER_COLUMNS),
                 'contact:id,name,email',
@@ -179,11 +152,9 @@ class TicketRepository
                 'channel:id,name,slug,type',
                 'attachments',
             ])
-            ->orderByDesc('created_at')
-            ->limit($limit)
-            ->get()
-            ->sortBy('created_at')
-            ->values();
+            ->orderBy('created_at')
+            ->orderBy('id')
+            ->get();
 
         $ticket->setRelation('messages', $messages);
     }
@@ -198,10 +169,23 @@ class TicketRepository
     public function create(array $data): Ticket
     {
         return DB::transaction(function () use ($data) {
-            $data['number'] = $this->nextNumber($data['brand_id'] ?? null);
+            $data['number'] = $this->numbers->next($data['brand_id'] ?? null);
+
+            if (blank($data['type'] ?? null)) {
+                $data['type'] = ServiceCatalogItem::TYPE_INCIDENT;
+            }
 
             return Ticket::query()->create($data);
         });
+    }
+
+    public function insert(array $data): Ticket
+    {
+        if (blank($data['type'] ?? null)) {
+            $data['type'] = ServiceCatalogItem::TYPE_INCIDENT;
+        }
+
+        return Ticket::query()->create($data);
     }
 
     public function update(Ticket $ticket, array $data): Ticket
@@ -216,71 +200,6 @@ class TicketRepository
         return $ticket->messages()->create($data);
     }
 
-    public function addAttachment(Ticket $ticket, int $userId, UploadedFile $file): TicketAttachment
-    {
-        $path = $file->store('ticket-attachments', 'public');
-
-        return $ticket->attachments()->create([
-            'user_id' => $userId,
-            'filename' => $file->getClientOriginalName(),
-            'path' => $path,
-            'mime_type' => $file->getMimeType(),
-            'size' => $file->getSize() ?: 0,
-        ]);
-    }
-
-    public function hasMatchingAttachment(Ticket $ticket, string $filename, int $size): bool
-    {
-        return $ticket->attachments()
-            ->where('filename', $filename)
-            ->where('size', $size)
-            ->exists();
-    }
-
-    public function addMessageAttachmentFromUpload(
-        Ticket $ticket,
-        TicketMessage $message,
-        int $userId,
-        UploadedFile $file,
-    ): TicketAttachment {
-        $diskName = $this->storage->diskName();
-        $path = $file->store('ticket-attachments', $diskName);
-
-        return $ticket->attachments()->create([
-            'ticket_message_id' => $message->id,
-            'user_id' => $userId,
-            'filename' => $file->getClientOriginalName(),
-            'path' => $path,
-            'storage_disk' => $diskName,
-            'mime_type' => $file->getMimeType(),
-            'size' => $file->getSize() ?: 0,
-        ]);
-    }
-
-    public function addMessageAttachment(
-        Ticket $ticket,
-        TicketMessage $message,
-        string $filename,
-        string $content,
-        ?string $mimeType = null,
-        ?int $userId = null,
-    ): TicketAttachment {
-        $safeName = preg_replace('/[^a-zA-Z0-9._-]/', '_', $filename) ?: 'attachment';
-        $path = 'ticket-attachments/'.Str::uuid().'_'.$safeName;
-        $diskName = $this->storage->diskName();
-        $this->storage->disk()->put($path, $content);
-
-        return $ticket->attachments()->create([
-            'ticket_message_id' => $message->id,
-            'user_id' => $userId,
-            'filename' => $filename,
-            'path' => $path,
-            'storage_disk' => $diskName,
-            'mime_type' => $mimeType,
-            'size' => strlen($content),
-        ]);
-    }
-
     public function addWatcher(Ticket $ticket, int $userId): void
     {
         $ticket->watchers()->syncWithoutDetaching([$userId]);
@@ -289,88 +208,6 @@ class TicketRepository
     public function removeWatcher(Ticket $ticket, int $userId): void
     {
         $ticket->watchers()->detach($userId);
-    }
-
-    public function merge(Ticket $target, Ticket $source, int $userId, bool $importConversation = true): Ticket
-    {
-        DB::transaction(function () use ($target, $source, $userId, $importConversation) {
-            if ($importConversation) {
-                TicketMessage::query()
-                    ->where('ticket_id', $source->id)
-                    ->update([
-                        'ticket_id' => $target->id,
-                        'merged_from_ticket_id' => $source->id,
-                    ]);
-
-                TicketAttachment::query()
-                    ->where('ticket_id', $source->id)
-                    ->update(['ticket_id' => $target->id]);
-            }
-
-            $watcherIds = $source->watchers()->pluck('users.id')->all();
-            if ($watcherIds) {
-                $target->watchers()->syncWithoutDetaching($watcherIds);
-            }
-
-            $closedStatus = TicketStatus::query()->where('is_closed', true)->orderBy('sort_order')->first();
-
-            $source->update([
-                'merged_into_ticket_id' => $target->id,
-                'ticket_status_id' => $closedStatus?->id ?? $source->ticket_status_id,
-                'closed_at' => now(),
-            ]);
-
-            $mergeNote = $importConversation
-                ? "Ticket {$source->number} was merged into this ticket."
-                : "Ticket {$source->number} was merged into this ticket. Conversation was not imported.";
-
-            $target->messages()->create([
-                'user_id' => $userId,
-                'body' => $mergeNote,
-                'is_internal' => true,
-            ]);
-        });
-
-        return $this->find($target->id);
-    }
-
-    public function split(Ticket $ticket, int $fromMessageId, int $userId, ?string $subject = null): Ticket
-    {
-        return DB::transaction(function () use ($ticket, $fromMessageId, $userId, $subject) {
-            $message = $ticket->messages()->findOrFail($fromMessageId);
-            $messageIds = $ticket->messages()
-                ->where('created_at', '>=', $message->created_at)
-                ->pluck('id');
-
-            $newTicket = $this->create([
-                'subject' => $subject ?? "Split from {$ticket->number}",
-                'description' => null,
-                'contact_id' => $ticket->contact_id,
-                'assigned_to' => $ticket->assigned_to,
-                'ticket_status_id' => $ticket->ticket_status_id,
-                'ticket_priority_id' => $ticket->ticket_priority_id,
-            ]);
-
-            TicketMessage::query()->whereIn('id', $messageIds)->update(['ticket_id' => $newTicket->id]);
-
-            TicketAttachment::query()
-                ->whereIn('ticket_message_id', $messageIds)
-                ->update(['ticket_id' => $newTicket->id]);
-
-            $ticket->messages()->create([
-                'user_id' => $userId,
-                'body' => "Split messages into ticket {$newTicket->number}.",
-                'is_internal' => true,
-            ]);
-
-            $newTicket->messages()->create([
-                'user_id' => $userId,
-                'body' => "Created by split from ticket {$ticket->number}.",
-                'is_internal' => true,
-            ]);
-
-            return $this->find($newTicket->id);
-        });
     }
 
     public function statuses(): Collection
@@ -387,7 +224,7 @@ class TicketRepository
     {
         return Ticket::query()
             ->whereNull('merged_into_ticket_id')
-            ->whereHas('status', fn ($q) => $q->where('is_closed', false))
+            ->tap(fn ($query) => $this->statusLookup->restrictToOpenTickets($query))
             ->count();
     }
 
@@ -397,44 +234,5 @@ class TicketRepository
             ->withCount(['tickets' => fn ($q) => $q->whereNull('merged_into_ticket_id')])
             ->orderBy('sort_order')
             ->get(['id', 'name', 'slug', 'color']);
-    }
-
-    private function nextNumber(?int $brandId = null): string
-    {
-        $prefix = $this->resolvePrefix($brandId);
-
-        $numbers = Ticket::query()
-            ->where('number', 'like', $prefix.'%')
-            ->lockForUpdate()
-            ->pluck('number');
-
-        $sequence = 0;
-
-        foreach ($numbers as $number) {
-            if (! str_starts_with(strtoupper($number), strtoupper($prefix))) {
-                continue;
-            }
-
-            $sequence = max($sequence, (int) Str::after($number, $prefix));
-        }
-
-        return $prefix.str_pad((string) ($sequence + 1), 5, '0', STR_PAD_LEFT);
-    }
-
-    private function resolvePrefix(?int $brandId): string
-    {
-        if ($brandId) {
-            $brand = Brand::query()->find($brandId);
-
-            if ($brand) {
-                $prefix = $this->brands->ticketNumberPrefix($brand);
-
-                if ($prefix) {
-                    return $prefix;
-                }
-            }
-        }
-
-        return $this->helpdeskSettings->current()->ticket_number_prefix ?: 'HD-';
     }
 }

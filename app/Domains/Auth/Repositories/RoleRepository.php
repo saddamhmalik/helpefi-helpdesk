@@ -90,4 +90,21 @@ class RoleRepository
             ->where('name', $name)
             ->exists();
     }
+
+    public function agentSeatRoleNames(): array
+    {
+        return Role::query()
+            ->where('guard_name', 'web')
+            ->where(function ($query) {
+                $query->whereIn('name', ['admin', 'agent'])
+                    ->orWhereHas('permissions', fn ($permissions) => $permissions->where('name', 'access.agent'));
+            })
+            ->pluck('name')
+            ->all();
+    }
+
+    public function roleConsumesAgentSeat(string $roleName): bool
+    {
+        return in_array($roleName, $this->agentSeatRoleNames(), true);
+    }
 }

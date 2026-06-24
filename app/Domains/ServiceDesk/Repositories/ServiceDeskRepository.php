@@ -4,23 +4,27 @@ namespace App\Domains\ServiceDesk\Repositories;
 
 use App\Domains\ServiceDesk\Support\TicketTypes;
 use App\Domains\Tickets\Models\Ticket;
+use App\Domains\Tickets\Services\TicketStatusLookup;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Collection as SupportCollection;
 
 class ServiceDeskRepository
 {
+    public function __construct(private TicketStatusLookup $statusLookup)
+    {
+    }
+
     public function typeSummaries(): array
     {
         $types = TicketTypes::all();
         $typeValues = TicketTypes::values();
 
         $rows = $this->baseQuery()
-            ->leftJoin('ticket_statuses', 'ticket_statuses.id', '=', 'tickets.ticket_status_id')
             ->whereIn('tickets.type', $typeValues)
             ->select('tickets.type')
             ->selectRaw('COUNT(*) as total')
-            ->selectRaw('SUM(CASE WHEN ticket_statuses.is_closed = 0 THEN 1 ELSE 0 END) as open_count')
-            ->selectRaw('SUM(CASE WHEN ticket_statuses.is_closed = 0 AND tickets.assigned_to IS NULL THEN 1 ELSE 0 END) as unassigned_count')
+            ->selectRaw($this->statusLookup->sumOpenTicketsSelect('tickets.ticket_status_id', 'open_count'))
+            ->selectRaw($this->statusLookup->sumOpenUnassignedTicketsSelect())
             ->groupBy('tickets.type')
             ->get()
             ->keyBy('type');

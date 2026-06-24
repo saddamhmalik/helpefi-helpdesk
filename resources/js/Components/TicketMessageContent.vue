@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from 'vue';
+import DOMPurify from 'dompurify';
 import { lazyLoadHtmlImages } from '../lib/lazyHtmlImages.js';
 
 const props = defineProps({
@@ -17,7 +18,10 @@ const normalizedBody = computed(() => (props.body ?? '').replace(/\r\n/g, '\n').
 
 const isHtml = computed(() => /<[a-z][\s\S]*>/i.test(normalizedBody.value));
 
-const renderedHtml = computed(() => lazyLoadHtmlImages(normalizedBody.value));
+const renderedHtml = computed(() => DOMPurify.sanitize(lazyLoadHtmlImages(normalizedBody.value), {
+    ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'b', 'i', 'u', 'a', 'ul', 'ol', 'li', 'img', 'blockquote', 'span', 'div', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'table', 'thead', 'tbody', 'tr', 'th', 'td'],
+    ALLOWED_ATTR: ['href', 'src', 'alt', 'class', 'target', 'rel', 'colspan', 'rowspan'],
+}));
 
 const segments = computed(() => {
     const text = normalizedBody.value;

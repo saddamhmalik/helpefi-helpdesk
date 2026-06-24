@@ -26,8 +26,12 @@ class IntegrationController extends Controller
     public function store(Request $request): JsonResponse
     {
         $webhook = $this->webhookService->create($this->validatedWebhook($request));
+        $plainSecret = $webhook->secret;
 
-        return response()->json($webhook->makeVisible('secret'), 201);
+        return response()->json([
+            ...$webhook->toArray(),
+            'secret' => $plainSecret,
+        ], 201);
     }
 
     public function update(Request $request, int $webhook): JsonResponse
@@ -56,8 +60,12 @@ class IntegrationController extends Controller
     public function regenerateSecret(int $webhook): JsonResponse
     {
         $webhook = $this->webhookService->regenerateSecret($webhook);
+        $plainSecret = $webhook->secret;
 
-        return response()->json($webhook->makeVisible('secret'));
+        return response()->json([
+            ...$webhook->toArray(),
+            'secret' => $plainSecret,
+        ]);
     }
 
     private function validatedWebhook(Request $request): array

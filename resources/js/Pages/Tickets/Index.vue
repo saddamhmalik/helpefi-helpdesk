@@ -6,6 +6,7 @@ import AppModal from '../../Components/AppModal.vue';
 import PageHeader from '../../Components/PageHeader.vue';
 import FilterField from '../../Components/FilterField.vue';
 import DataTable from '../../Components/DataTable.vue';
+import DataTableMobileCard from '../../Components/ui/DataTableMobileCard.vue';
 import PaginationLinks from '../../Components/PaginationLinks.vue';
 import StatusBadge from '../../Components/StatusBadge.vue';
 import UnreadBadge from '../../Components/UnreadBadge.vue';
@@ -633,6 +634,40 @@ const activeFilterLabels = computed(() => {
                     </td>
                 </tr>
             </tbody>
+            <template #mobile>
+                <DataTableMobileCard
+                    v-for="ticket in tickets.data"
+                    :key="`mobile-${ticket.id}`"
+                    tag="div"
+                >
+                    <div class="flex items-start gap-3">
+                        <input
+                            type="checkbox"
+                            class="mt-1 rounded border-slate-300 dark:border-slate-700"
+                            :checked="selectedIds.includes(ticket.id)"
+                            @change="toggleTicket(ticket.id)"
+                        >
+                        <Link :href="`/tickets/${ticket.id}`" class="min-w-0 flex-1">
+                            <div class="flex items-center gap-2">
+                                <span class="text-sm font-semibold text-blue-600 dark:text-blue-300">{{ ticket.number }}</span>
+                                <UnreadBadge :count="ticket.unread_count ?? 0" />
+                            </div>
+                            <p class="mt-1 text-sm font-medium agent-text">{{ ticket.subject }}</p>
+                            <p class="mt-1 text-xs agent-text-muted">{{ ticket.contact?.name || ticket.contact?.email || '—' }}</p>
+                            <div class="mt-2 flex flex-wrap items-center gap-2">
+                                <StatusBadge :label="ticket.status?.name" :color="ticket.status?.color" />
+                                <span class="text-xs agent-text-subtle">{{ ticket.priority?.name }}</span>
+                                <span class="text-xs agent-text-subtle">{{ ticket.assignee?.name || $t('tickets.unassigned') }}</span>
+                            </div>
+                            <p class="mt-2 text-xs agent-text-subtle">{{ formatDate(ticket.updated_at) }}</p>
+                        </Link>
+                    </div>
+                </DataTableMobileCard>
+                <div v-if="!tickets.data?.length" class="p-6 text-center">
+                    <p class="text-sm font-medium agent-text">{{ $t('tickets.no_tickets_match_these_filters') }}</p>
+                    <button type="button" class="mt-3 text-sm font-medium text-blue-600 dark:text-blue-300" @click="clearFilters">{{ $t('tickets.clear_all_filters') }}</button>
+                </div>
+            </template>
             <template #footer>
                 <PaginationLinks
                     :links="tickets.links"

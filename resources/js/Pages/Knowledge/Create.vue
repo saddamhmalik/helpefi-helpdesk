@@ -1,5 +1,5 @@
 <script setup>
-import { Head, useForm } from '@inertiajs/vue3';
+import { Head, useForm, router } from '@inertiajs/vue3';
 import { onMounted } from 'vue';
 import AgentLayout from '../../Layouts/AgentLayout.vue';
 import FormRichTextField from '../../Components/FormRichTextField.vue';
@@ -34,7 +34,9 @@ onMounted(() => {
     }
 });
 
-const submit = () => form.post('/knowledge');
+const submit = () => form.post('/knowledge', {
+    onSuccess: () => router.reload({ only: ['helpCenter'] }),
+});
 </script>
 
 <template>

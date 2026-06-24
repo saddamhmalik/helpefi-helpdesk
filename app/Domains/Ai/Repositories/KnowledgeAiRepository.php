@@ -15,4 +15,9 @@ class KnowledgeAiRepository
     {
         return $this->search->searchPublished($query, $limit, $brandId);
     }
+
+    public function searchPortalPublished(string $query, int $limit = 5, ?int $brandId = null): Collection
+    {
+        return $this->search->searchPortalPublished($query, $limit, $brandId);
+    }
 }

@@ -3,8 +3,8 @@
 namespace App\Domains\Knowledge\Services;
 
 use App\Domains\Brands\Services\BrandService;
+use App\Domains\Knowledge\Support\HelpCenterGuestCache;
 use App\Domains\Knowledge\Repositories\KnowledgeRepository;
-use App\Support\TenantCache;
 use Illuminate\Support\Facades\Cache;
 
 class HelpCenterService
@@ -47,6 +47,6 @@ class HelpCenterService
             return $this->guestState();
         }
 
-        return Cache::remember(TenantCache::key('help_center.guest'), 300, fn () => $this->guestState());
+        return HelpCenterGuestCache::remember(300, fn () => $this->guestState());
     }
 }

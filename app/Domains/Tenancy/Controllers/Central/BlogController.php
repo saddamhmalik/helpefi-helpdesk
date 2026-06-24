@@ -4,6 +4,7 @@ namespace App\Domains\Tenancy\Controllers\Central;
 
 use App\Domains\Tenancy\Support\CentralMarketingPresenter;
 use App\Domains\Tenancy\Support\MarketingBlogDefinition;
+use App\Domains\Tenancy\Support\MarketingBlogInternalLinks;
 use App\Http\Controllers\Controller;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -28,6 +29,7 @@ class BlogController extends Controller
             ...CentralMarketingPresenter::shared(),
             'post' => $post,
             'relatedPosts' => MarketingBlogDefinition::related($slug),
+            'internalLinks' => MarketingBlogInternalLinks::forSlug($slug),
         ]);
     }
 }

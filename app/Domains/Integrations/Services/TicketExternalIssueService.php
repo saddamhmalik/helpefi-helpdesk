@@ -2,15 +2,15 @@
 
 namespace App\Domains\Integrations\Services;
 
-use App\Domains\Billing\Services\BillingService;
+use App\Domains\Billing\Contracts\FeatureEntitlementChecker;
 use App\Domains\Integrations\Models\IntegrationConnection;
 use App\Domains\Integrations\Models\TicketExternalIssue;
 use App\Domains\Integrations\Repositories\TicketExternalIssueRepository;
 use App\Domains\Settings\Services\HelpdeskSettingService;
 use App\Domains\Tickets\Models\Ticket;
-use App\Domains\Tickets\Models\TicketStatus;
 use App\Domains\Tickets\Repositories\TicketRepository;
 use App\Domains\Tickets\Services\TicketService;
+use App\Domains\Tickets\Services\TicketStatusLookup;
 use Illuminate\Http\Client\RequestException;
 use InvalidArgumentException;
 
@@ -22,8 +22,9 @@ class TicketExternalIssueService
         private TicketService $ticketService,
         private JiraIntegrationService $jira,
         private LinearIntegrationService $linear,
-        private BillingService $billing,
+        private FeatureEntitlementChecker $entitlements,
         private HelpdeskSettingService $helpdeskSettings,
+        private TicketStatusLookup $statusLookup,
     ) {
     }
 
@@ -118,7 +119,7 @@ class TicketExternalIssueService
 
     public function createIssue(int $ticketId, string $provider, int $userId): array
     {
-        $this->billing->assertFeature('integrations');
+        $this->entitlements->assertFeature('integrations');
 
         $ticket = $this->tickets->find($ticketId);
         $payload = match ($provider) {
@@ -138,7 +139,7 @@ class TicketExternalIssueService
 
     public function linkIssue(int $ticketId, string $provider, string $reference): array
     {
-        $this->billing->assertFeature('integrations');
+        $this->entitlements->assertFeature('integrations');
 
         $this->tickets->find($ticketId);
 
@@ -261,7 +262,7 @@ class TicketExternalIssueService
         $ticket->loadMissing('status:id,name,slug,is_closed');
 
         if ($isClosed && ! $ticket->status?->is_closed) {
-            $closedStatusId = TicketStatus::query()->where('is_closed', true)->orderBy('sort_order')->value('id');
+            $closedStatusId = $this->statusLookup->firstClosedId();
 
             if ($closedStatusId) {
                 $this->ticketService->update($ticketId, [
@@ -273,7 +274,7 @@ class TicketExternalIssueService
         }
 
         if (! $isClosed && $ticket->status?->is_closed) {
-            $openStatusId = TicketStatus::query()->where('is_closed', false)->orderBy('sort_order')->value('id');
+            $openStatusId = $this->statusLookup->firstOpenId();
 
             if ($openStatusId) {
                 $this->ticketService->update($ticketId, [

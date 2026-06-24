@@ -2,11 +2,13 @@
 
 namespace App\Domains\Integrations\Services;
 
-use App\Domains\Billing\Services\BillingService;
+use App\Domains\Billing\Contracts\FeatureEntitlementChecker;
 use App\Domains\Integrations\Models\Webhook;
 use App\Domains\Integrations\Repositories\WebhookRepository;
+use App\Domains\Integrations\Support\WebhookSecretCipher;
 use App\Domains\Security\Support\AuditRecorder;
 use App\Domains\Tickets\Models\Ticket;
+use App\Support\SafeUrlValidator;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
@@ -17,7 +19,7 @@ class WebhookService
 {
     public function __construct(
         private WebhookRepository $webhooks,
-        private BillingService $billing,
+        private FeatureEntitlementChecker $entitlements,
         private AuditRecorder $audit,
     ) {
     }
@@ -29,12 +31,14 @@ class WebhookService
 
     public function create(array $data): Webhook
     {
-        $this->billing->assertFeature('integrations');
+        $this->entitlements->assertFeature('integrations');
         $this->assertValidWebhook($data);
 
-        $data['secret'] = $data['secret'] ?? Str::random(32);
+        $plainSecret = $data['secret'] ?? Str::random(32);
+        $data['secret'] = WebhookSecretCipher::encrypt($plainSecret);
 
         $webhook = $this->webhooks->create($data);
+        $webhook->setAttribute('secret', $plainSecret);
 
         $this->audit->record('webhook.created', $webhook, [
             'name' => $webhook->name,
@@ -76,9 +80,12 @@ class WebhookService
 
     public function regenerateSecret(int $id): Webhook
     {
+        $plainSecret = Str::random(32);
+
         $webhook = $this->webhooks->update($this->webhooks->find($id), [
-            'secret' => Str::random(32),
+            'secret' => WebhookSecretCipher::encrypt($plainSecret),
         ]);
+        $webhook->setAttribute('secret', $plainSecret);
 
         $this->audit->record('webhook.updated', $webhook, [
             'name' => $webhook->name,
@@ -139,6 +146,14 @@ class WebhookService
 
     private function deliver(Webhook $webhook, string $event, array $payload): bool
     {
+        try {
+            SafeUrlValidator::assertPublicHttpUrl($webhook->url);
+        } catch (InvalidArgumentException) {
+            $this->webhooks->recordDelivery($webhook, $event, false, null, 'Blocked URL');
+
+            return false;
+        }
+
         $body = [
             'event' => $event,
             'payload' => $payload,
@@ -146,7 +161,7 @@ class WebhookService
         ];
 
         $encoded = json_encode($body, JSON_THROW_ON_ERROR);
-        $signature = hash_hmac('sha256', $encoded, $webhook->secret);
+        $signature = hash_hmac('sha256', $encoded, WebhookSecretCipher::decrypt((string) $webhook->secret));
 
         try {
             $response = Http::timeout(5)
@@ -212,6 +227,10 @@ class WebhookService
             Webhook::EVENT_TICKET_UPDATED,
             Webhook::EVENT_CUSTOMER_MESSAGE,
         ];
+
+        if (! empty($data['url'])) {
+            SafeUrlValidator::assertPublicHttpUrl((string) $data['url']);
+        }
 
         if (empty($data['events']) || ! is_array($data['events'])) {
             throw new InvalidArgumentException('Webhook requires at least one event.');

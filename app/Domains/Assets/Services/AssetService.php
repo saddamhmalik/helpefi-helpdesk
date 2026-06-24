@@ -3,7 +3,7 @@
 namespace App\Domains\Assets\Services;
 
 use App\Domains\Assets\Models\Asset;
-use App\Domains\Billing\Services\BillingService;
+use App\Domains\Billing\Contracts\FeatureEntitlementChecker;
 use App\Domains\Assets\Models\AssetAssignmentLog;
 use App\Domains\Assets\Repositories\AssetAssignmentLogRepository;
 use App\Domains\Assets\Repositories\AssetRepository;
@@ -20,7 +20,7 @@ class AssetService
         private AssetRepository $assets,
         private AssetTypeRepository $types,
         private AssetAssignmentLogRepository $assignmentLogs,
-        private BillingService $billing,
+        private FeatureEntitlementChecker $entitlements,
         private AuditRecorder $audit,
     ) {
     }
@@ -65,7 +65,7 @@ class AssetService
 
     public function create(array $data): Asset
     {
-        $this->billing->assertFeature('assets');
+        $this->entitlements->assertFeature('assets');
         $this->assertValidAsset($data);
 
         $asset = $this->assets->create($this->normalizedAsset($data));

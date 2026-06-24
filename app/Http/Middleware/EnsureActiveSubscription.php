@@ -29,6 +29,10 @@ class EnsureActiveSubscription
             return $next($request);
         }
 
+        if ($request->expectsJson() || $request->is('api/*')) {
+            return response()->json(['message' => 'An active subscription is required.'], 402);
+        }
+
         return redirect()->route('subscription.required');
     }
 

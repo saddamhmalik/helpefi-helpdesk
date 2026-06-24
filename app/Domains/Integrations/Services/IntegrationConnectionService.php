@@ -2,11 +2,12 @@
 
 namespace App\Domains\Integrations\Services;
 
-use App\Domains\Billing\Services\BillingService;
+use App\Domains\Billing\Contracts\FeatureEntitlementChecker;
 use App\Domains\Integrations\Models\IntegrationConnection;
 use App\Domains\Integrations\Models\Webhook;
 use App\Domains\Integrations\Repositories\IntegrationConnectionRepository;
 use App\Domains\Security\Support\AuditRecorder;
+use App\Support\IntegrationWebhookUrlValidator;
 use Illuminate\Support\Str;
 
 class IntegrationConnectionService
@@ -18,7 +19,7 @@ class IntegrationConnectionService
         private HubspotIntegrationService $hubspot,
         private SalesforceIntegrationService $salesforce,
         private TeamsIntegrationService $teams,
-        private BillingService $billing,
+        private FeatureEntitlementChecker $entitlements,
         private AuditRecorder $audit,
     ) {
     }
@@ -61,7 +62,7 @@ class IntegrationConnectionService
 
     public function updateShopify(array $data): IntegrationConnection
     {
-        $this->billing->assertFeature('integrations');
+        $this->entitlements->assertFeature('integrations');
 
         $existing = $this->connections->findByProvider(IntegrationConnection::PROVIDER_SHOPIFY);
         $config = $this->mergeSecrets($existing?->config ?? [], [
@@ -83,7 +84,7 @@ class IntegrationConnectionService
 
     public function updateHubspot(array $data): IntegrationConnection
     {
-        $this->billing->assertFeature('integrations');
+        $this->entitlements->assertFeature('integrations');
 
         $existing = $this->connections->findByProvider(IntegrationConnection::PROVIDER_HUBSPOT);
         $config = $this->mergeSecrets($existing?->config ?? [], [
@@ -102,7 +103,7 @@ class IntegrationConnectionService
 
     public function updateSalesforce(array $data): IntegrationConnection
     {
-        $this->billing->assertFeature('integrations');
+        $this->entitlements->assertFeature('integrations');
 
         $existing = $this->connections->findByProvider(IntegrationConnection::PROVIDER_SALESFORCE);
         $config = $this->mergeSecrets($existing?->config ?? [], [
@@ -126,12 +127,16 @@ class IntegrationConnectionService
 
     public function updateTeams(array $data): IntegrationConnection
     {
-        $this->billing->assertFeature('integrations');
+        $this->entitlements->assertFeature('integrations');
 
         $existing = $this->connections->findByProvider(IntegrationConnection::PROVIDER_MICROSOFT_TEAMS);
         $config = $this->mergeSecrets($existing?->config ?? [], [
             'webhook_url' => $data['webhook_url'] ?? null,
         ], ['webhook_url']);
+
+        if (! empty($config['webhook_url'])) {
+            IntegrationWebhookUrlValidator::assertTeamsWebhookUrl($config['webhook_url']);
+        }
 
         $connection = $this->connections->upsert(IntegrationConnection::PROVIDER_MICROSOFT_TEAMS, [
             'config' => $config,
@@ -145,7 +150,7 @@ class IntegrationConnectionService
 
     public function updateZapier(array $data): IntegrationConnection
     {
-        $this->billing->assertFeature('integrations');
+        $this->entitlements->assertFeature('integrations');
 
         $existing = $this->connections->findByProvider(IntegrationConnection::PROVIDER_ZAPIER);
         $config = array_merge($existing?->config ?? [], [
@@ -184,13 +189,17 @@ class IntegrationConnectionService
 
     public function updateSlack(array $data): IntegrationConnection
     {
-        $this->billing->assertFeature('integrations');
+        $this->entitlements->assertFeature('integrations');
 
         $existing = $this->connections->findByProvider(IntegrationConnection::PROVIDER_SLACK);
         $config = $this->mergeSecrets($existing?->config ?? [], [
             'webhook_url' => $data['webhook_url'] ?? null,
             'channel' => $data['channel'] ?? null,
         ], ['webhook_url']);
+
+        if (! empty($config['webhook_url'])) {
+            IntegrationWebhookUrlValidator::assertSlackWebhookUrl($config['webhook_url']);
+        }
 
         $connection = $this->connections->upsert(IntegrationConnection::PROVIDER_SLACK, [
             'config' => $config,
@@ -205,7 +214,7 @@ class IntegrationConnectionService
 
     public function updateJira(array $data): IntegrationConnection
     {
-        $this->billing->assertFeature('integrations');
+        $this->entitlements->assertFeature('integrations');
 
         $existing = $this->connections->findByProvider(IntegrationConnection::PROVIDER_JIRA);
         $config = $this->mergeSecrets($existing?->config ?? [], [
@@ -219,6 +228,10 @@ class IntegrationConnectionService
             'webhook_secret' => $data['webhook_secret'] ?? ($existing?->config['webhook_secret'] ?? Str::random(32)),
         ], ['api_token', 'webhook_secret']);
 
+        if (! empty($config['site_url'])) {
+            IntegrationWebhookUrlValidator::assertJiraSiteUrl($config['site_url']);
+        }
+
         $connection = $this->connections->upsert(IntegrationConnection::PROVIDER_JIRA, [
             'config' => $config,
             'is_active' => $data['is_active'] ?? false,
@@ -231,7 +244,7 @@ class IntegrationConnectionService
 
     public function updateLinear(array $data): IntegrationConnection
     {
-        $this->billing->assertFeature('integrations');
+        $this->entitlements->assertFeature('integrations');
 
         $existing = $this->connections->findByProvider(IntegrationConnection::PROVIDER_LINEAR);
         $apiKey = isset($data['api_key']) ? preg_replace('/^Bearer\s+/i', '', trim((string) $data['api_key'])) : null;
@@ -329,14 +342,14 @@ class IntegrationConnectionService
                 'done_transition' => $config['done_transition'] ?? 'Done',
                 'reopen_transition' => $config['reopen_transition'] ?? 'To Do',
                 'has_api_token' => ! empty($config['api_token']),
-                'webhook_secret' => $config['webhook_secret'] ?? '',
+                'has_webhook_secret' => ! empty($config['webhook_secret']),
             ],
             IntegrationConnection::PROVIDER_LINEAR => [
                 'team_id' => $config['team_id'] ?? '',
                 'done_state' => $config['done_state'] ?? 'Done',
                 'open_state' => $config['open_state'] ?? 'Todo',
                 'has_api_key' => ! empty($config['api_key']),
-                'webhook_secret' => $config['webhook_secret'] ?? '',
+                'has_webhook_secret' => ! empty($config['webhook_secret']),
             ],
             IntegrationConnection::PROVIDER_SHOPIFY => [
                 'shop' => $config['shop'] ?? '',
@@ -356,7 +369,7 @@ class IntegrationConnectionService
                 'has_webhook_url' => ! empty($config['webhook_url']),
             ],
             IntegrationConnection::PROVIDER_ZAPIER => [
-                'subscribe_secret' => $config['subscribe_secret'] ?? '',
+                'has_subscribe_secret' => ! empty($config['subscribe_secret']),
             ],
             default => [],
         };

@@ -41,6 +41,7 @@ const deleteTenant = ref(null);
 const deleteConfirmSlug = ref('');
 const deleting = ref(false);
 const savingByoAllowed = ref(false);
+const resendingSlug = ref(null);
 
 const statusFilters = [
     { value: 'all', label: t('central.all') },
@@ -290,6 +291,35 @@ const showInfrastructureLink = (tenant) => tenant.byo_allowed
     || tenant.infrastructure?.storage_mode === 'external';
 
 const hasFilters = computed(() => Boolean(props.filters.q) || (props.filters.status && props.filters.status !== 'all'));
+
+const showTrialReminders = (tenant) => tenant?.subscription?.on_trial
+    || tenant?.lifecycle_emails?.trial?.some((item) => item.sent);
+
+const showSubscriptionReminders = (tenant) => tenant?.subscription?.cancellation_pending
+    || tenant?.subscription?.in_grace_period
+    || tenant?.subscription?.status === 'cancelled'
+    || tenant?.subscription?.status === 'past_due'
+    || tenant?.lifecycle_emails?.subscription_ending?.some((item) => item.sent);
+
+const resendLifecycleEmail = (tenant, slug) => {
+    resendingSlug.value = slug;
+
+    router.post(`/admin/tenants/${tenant.id}/resend-lifecycle-email`, {
+        template_slug: slug,
+    }, {
+        preserveScroll: true,
+        onSuccess: (page) => {
+            const updated = page.props.tenants?.data?.find((item) => item.id === tenant.id);
+
+            if (updated && manageTenant.value?.id === tenant.id) {
+                manageTenant.value = updated;
+            }
+        },
+        onFinish: () => {
+            resendingSlug.value = null;
+        },
+    });
+};
 </script>
 
 <template>
@@ -571,6 +601,83 @@ const hasFilters = computed(() => Boolean(props.filters.q) || (props.filters.sta
                     >
                         {{ savingPlan ? $t('central.saving') : $t('central.update_plan') }}
                     </button>
+                </div>
+
+                <div
+                    v-if="canManage && manageTenant && (showTrialReminders(manageTenant) || showSubscriptionReminders(manageTenant))"
+                    class="space-y-4 border-t border-slate-200 dark:border-slate-800 pt-4"
+                >
+                    <div>
+                        <p class="text-sm font-medium text-slate-900 dark:text-slate-100">Lifecycle reminder emails</p>
+                        <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                            Trial nurture and subscription ending reminders sent to the workspace admin.
+                        </p>
+                    </div>
+
+                    <div v-if="showTrialReminders(manageTenant)" class="rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden">
+                        <div class="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 px-4 py-2.5">
+                            <p class="text-xs font-semibold uppercase tracking-wide text-slate-600 dark:text-slate-400">Trial nurture</p>
+                        </div>
+                        <ul class="divide-y divide-slate-100 dark:divide-slate-800">
+                            <li
+                                v-for="item in manageTenant.lifecycle_emails?.trial ?? []"
+                                :key="item.slug"
+                                class="flex items-center justify-between gap-3 px-4 py-3 text-sm"
+                            >
+                                <div class="min-w-0">
+                                    <p class="font-medium text-slate-900 dark:text-slate-100">{{ item.label }}</p>
+                                    <p class="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
+                                        <span v-if="item.sent">Sent {{ formatDateTime(item.sent_at) }}</span>
+                                        <span v-else-if="item.due" class="text-amber-700 dark:text-amber-300">Due — not sent yet</span>
+                                        <span v-else>Not due yet</span>
+                                    </p>
+                                </div>
+                                <button
+                                    v-if="item.sent || item.due"
+                                    type="button"
+                                    class="shrink-0 rounded-lg px-3 py-1.5 text-xs font-medium text-blue-700 ring-1 ring-blue-200 hover:bg-blue-50 disabled:opacity-60 dark:text-blue-300 dark:ring-blue-900/60 dark:hover:bg-blue-950/40"
+                                    :disabled="resendingSlug === item.slug"
+                                    @click="resendLifecycleEmail(manageTenant, item.slug)"
+                                >
+                                    {{ resendingSlug === item.slug ? 'Sending…' : 'Resend' }}
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div v-if="showSubscriptionReminders(manageTenant)" class="rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden">
+                        <div class="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 px-4 py-2.5">
+                            <p class="text-xs font-semibold uppercase tracking-wide text-slate-600 dark:text-slate-400">Subscription ending</p>
+                            <p v-if="manageTenant.subscription?.access_ends_at" class="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
+                                Access ends {{ formatDate(manageTenant.subscription.access_ends_at) }}
+                            </p>
+                        </div>
+                        <ul class="divide-y divide-slate-100 dark:divide-slate-800">
+                            <li
+                                v-for="item in manageTenant.lifecycle_emails?.subscription_ending ?? []"
+                                :key="item.slug"
+                                class="flex items-center justify-between gap-3 px-4 py-3 text-sm"
+                            >
+                                <div class="min-w-0">
+                                    <p class="font-medium text-slate-900 dark:text-slate-100">{{ item.label }}</p>
+                                    <p class="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
+                                        <span v-if="item.sent">Sent {{ formatDateTime(item.sent_at) }}</span>
+                                        <span v-else-if="item.due" class="text-amber-700 dark:text-amber-300">Due — not sent yet</span>
+                                        <span v-else>Not due yet</span>
+                                    </p>
+                                </div>
+                                <button
+                                    v-if="item.sent || item.due"
+                                    type="button"
+                                    class="shrink-0 rounded-lg px-3 py-1.5 text-xs font-medium text-blue-700 ring-1 ring-blue-200 hover:bg-blue-50 disabled:opacity-60 dark:text-blue-300 dark:ring-blue-900/60 dark:hover:bg-blue-950/40"
+                                    :disabled="resendingSlug === item.slug"
+                                    @click="resendLifecycleEmail(manageTenant, item.slug)"
+                                >
+                                    {{ resendingSlug === item.slug ? 'Sending…' : 'Resend' }}
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
                 </div>
 
                 <div v-if="canManage" class="border-t border-slate-200 dark:border-slate-800 pt-4">

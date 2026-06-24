@@ -34,6 +34,7 @@ use App\Domains\Tenancy\Controllers\Central\CompareLandingController;
 use App\Domains\Tenancy\Controllers\Central\FeatureLandingController;
 use App\Domains\Tenancy\Controllers\Central\MarketingContactController;
 use App\Domains\Tenancy\Controllers\Central\MarketingStaticPageController;
+use App\Domains\Tenancy\Controllers\Central\MigrateLandingController;
 use App\Domains\Tenancy\Controllers\Central\VerticalLandingController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -51,6 +52,7 @@ Route::get('/platform-notices/{notice}/image', PlatformNoticeImageController::cl
 Route::get('/robots.txt', RobotsController::class)->name('central.robots');
 Route::get('/sitemap.xml', SitemapController::class)->name('central.sitemap');
 Route::get('/', [HomeController::class, 'index'])->name('central.home');
+Route::get('/features', [FeatureLandingController::class, 'index'])->name('central.features.index');
 Route::get('/features/{feature}', [FeatureLandingController::class, 'show'])
     ->where('feature', '[a-z0-9-]+')
     ->name('central.feature');
@@ -60,6 +62,9 @@ Route::get('/for/{vertical}', [VerticalLandingController::class, 'show'])
 Route::get('/vs/{competitor}', [CompareLandingController::class, 'show'])
     ->where('competitor', '[a-z0-9-]+')
     ->name('central.compare');
+Route::get('/migrate/from-{source}', [MigrateLandingController::class, 'show'])
+    ->where('source', '[a-z0-9-]+')
+    ->name('central.migrate');
 Route::get('/pricing', fn () => app(MarketingStaticPageController::class)->show('pricing'))->name('central.static.pricing');
 Route::get('/about', fn () => app(MarketingStaticPageController::class)->show('about'))->name('central.static.about');
 Route::get('/contact', [MarketingContactController::class, 'index'])->name('central.static.contact');
@@ -126,6 +131,9 @@ Route::prefix('admin')->name('central.admin.')->group(function () {
 
         Route::middleware('platform.permission:tenants.manage')->group(function () {
             Route::put('/tenants/{tenant}', [AdminTenantController::class, 'update'])->name('tenants.update');
+            Route::post('/tenants/{tenant}/resend-lifecycle-email', [AdminTenantController::class, 'resendLifecycleEmail'])
+                ->middleware('throttle:10,1')
+                ->name('tenants.resend-lifecycle-email');
             Route::put('/tenants/{tenant}/infrastructure', [AdminTenantInfrastructureController::class, 'update'])->name('tenants.infrastructure.update');
             Route::post('/tenants/{tenant}/infrastructure/test-database', [AdminTenantInfrastructureController::class, 'testDatabase'])
                 ->middleware('throttle:tenant-infrastructure-verify')

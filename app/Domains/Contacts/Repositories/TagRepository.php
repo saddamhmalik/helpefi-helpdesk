@@ -3,7 +3,6 @@
 namespace App\Domains\Contacts\Repositories;
 
 use App\Domains\Contacts\Models\Tag;
-use App\Domains\Contacts\Support\ContactFormReferenceCache;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Str;
 
@@ -34,10 +33,6 @@ class TagRepository
             ['slug' => $slug],
             ['name' => $name, 'color' => 'blue'],
         );
-
-        if ($tag->wasRecentlyCreated) {
-            ContactFormReferenceCache::forget();
-        }
 
         return $tag;
     }

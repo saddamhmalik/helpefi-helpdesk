@@ -36,6 +36,15 @@ return [
         'site' => env('MARKETING_TWITTER_SITE', '@helpefi'),
     ],
 
+    'og_images' => [
+        'home' => env('MARKETING_OG_IMAGE_HOME', '/og-image.png'),
+        'features_index' => env('MARKETING_OG_IMAGE_FEATURES', '/og-image.png'),
+        'static_pricing' => env('MARKETING_OG_IMAGE_PRICING', '/og-image.png'),
+        'feature_ai' => env('MARKETING_OG_IMAGE_AI', '/og-image.png'),
+        'compare_zendesk' => env('MARKETING_OG_IMAGE_COMPARE_ZENDESK', '/og-image.png'),
+        'migrate_zendesk' => env('MARKETING_OG_IMAGE_MIGRATE_ZENDESK', '/og-image.png'),
+    ],
+
     'robots' => [
         'disallow' => [
             '/admin',

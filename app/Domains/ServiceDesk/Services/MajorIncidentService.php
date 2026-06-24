@@ -2,13 +2,14 @@
 
 namespace App\Domains\ServiceDesk\Services;
 
-use App\Domains\Billing\Services\BillingService;
+use App\Domains\Billing\Contracts\FeatureEntitlementChecker;
 use App\Domains\ServiceCatalog\Models\ServiceCatalogItem;
 use App\Domains\ServiceDesk\Models\MajorIncidentRecord;
 use App\Domains\ServiceDesk\Repositories\MajorIncidentRepository;
 use App\Domains\Security\Support\AuditRecorder;
 use App\Domains\Tickets\Models\Ticket;
 use App\Domains\Tickets\Repositories\TicketRepository;
+use App\Domains\Workforce\Support\AssignableAgentValidator;
 use Illuminate\Support\Collection;
 use Illuminate\Validation\ValidationException;
 
@@ -17,14 +18,15 @@ class MajorIncidentService
     public function __construct(
         private MajorIncidentRepository $records,
         private TicketRepository $tickets,
-        private BillingService $billing,
+        private FeatureEntitlementChecker $entitlements,
         private AuditRecorder $audit,
+        private AssignableAgentValidator $assignableAgents,
     ) {
     }
 
     public function snapshotForTicket(Ticket|int $ticketOrId): ?array
     {
-        if (! $this->billing->canUseFeature('service_desk')) {
+        if (! $this->entitlements->canUseFeature('service_desk')) {
             return null;
         }
 
@@ -46,7 +48,7 @@ class MajorIncidentService
 
     public function warRoomSnapshot(int $ticketId): ?array
     {
-        if (! $this->billing->canUseFeature('service_desk')) {
+        if (! $this->entitlements->canUseFeature('service_desk')) {
             return null;
         }
 
@@ -61,7 +63,7 @@ class MajorIncidentService
 
     public function declare(int $ticketId, int $userId): array
     {
-        $this->billing->assertFeature('service_desk');
+        $this->entitlements->assertFeature('service_desk');
         $this->assertIncidentTicket($ticketId);
 
         if ($this->records->findForTicket($ticketId) !== null) {
@@ -85,7 +87,7 @@ class MajorIncidentService
 
     public function update(int $ticketId, array $data): array
     {
-        $this->billing->assertFeature('service_desk');
+        $this->entitlements->assertFeature('service_desk');
         $record = $this->assertRecord($ticketId);
 
         if ($record->status === MajorIncidentRecord::STATUS_CLOSED) {
@@ -95,6 +97,11 @@ class MajorIncidentService
         }
 
         $before = $record->only(array_keys($data));
+
+        if (array_key_exists('coordinator_user_ids', $data)) {
+            $data['coordinator_user_ids'] = $this->assignableAgents->filter((array) $data['coordinator_user_ids']);
+        }
+
         $updated = $this->records->update($record, $data);
 
         $this->audit->recordChanges(
@@ -109,7 +116,7 @@ class MajorIncidentService
 
     public function resolve(int $ticketId, int $userId): array
     {
-        $this->billing->assertFeature('service_desk');
+        $this->entitlements->assertFeature('service_desk');
         $record = $this->assertRecord($ticketId);
 
         if ($record->status !== MajorIncidentRecord::STATUS_ACTIVE) {
@@ -131,7 +138,7 @@ class MajorIncidentService
 
     public function completeReview(int $ticketId, array $data, int $userId): array
     {
-        $this->billing->assertFeature('service_desk');
+        $this->entitlements->assertFeature('service_desk');
         $record = $this->assertRecord($ticketId);
 
         if ($record->status !== MajorIncidentRecord::STATUS_RESOLVED) {
@@ -153,7 +160,7 @@ class MajorIncidentService
 
     public function activeCount(): int
     {
-        if (! $this->billing->canUseFeature('service_desk')) {
+        if (! $this->entitlements->canUseFeature('service_desk')) {
             return 0;
         }
 
@@ -162,7 +169,7 @@ class MajorIncidentService
 
     public function pendingReviewCount(): int
     {
-        if (! $this->billing->canUseFeature('service_desk')) {
+        if (! $this->entitlements->canUseFeature('service_desk')) {
             return 0;
         }
 
@@ -171,7 +178,7 @@ class MajorIncidentService
 
     public function dashboardCounts(): array
     {
-        if (! $this->billing->canUseFeature('service_desk')) {
+        if (! $this->entitlements->canUseFeature('service_desk')) {
             return ['active' => 0, 'pending_review' => 0];
         }
 
@@ -180,7 +187,7 @@ class MajorIncidentService
 
     public function index(): array
     {
-        $this->billing->assertFeature('service_desk');
+        $this->entitlements->assertFeature('service_desk');
 
         $entries = $this->records->listIndex()
             ->map(fn (MajorIncidentRecord $record) => $this->records->indexEntry($record))
@@ -198,7 +205,7 @@ class MajorIncidentService
 
     public function activeIncidents(): Collection
     {
-        $this->billing->assertFeature('service_desk');
+        $this->entitlements->assertFeature('service_desk');
 
         return $this->records->activeIncidents();
     }

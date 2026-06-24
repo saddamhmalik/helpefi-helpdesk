@@ -7,10 +7,10 @@ use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function () {
     Route::post('/channels/inbound/email', [ApiChannelController::class, 'inboundEmail'])
-        ->middleware('tenancy.public-api:inbound');
+        ->middleware(['tenancy.public-api:inbound', 'throttle:60,1']);
 
     Route::post('/channels/inbound/twilio', [ApiChannelController::class, 'inboundTwilio'])
-        ->middleware('tenancy.public-api:inbound');
+        ->middleware(['tenancy.public-api:inbound', 'throttle:120,1']);
 
     Route::middleware(['tenancy.public-api:widget', 'chat.widget.cors', 'throttle:120,1'])->prefix('chat')->group(function () {
         Route::get('/config', [ApiChatWidgetController::class, 'config']);

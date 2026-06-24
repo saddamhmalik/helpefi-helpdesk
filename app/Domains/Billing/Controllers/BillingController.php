@@ -25,7 +25,7 @@ class BillingController extends Controller
     {
         $tenantId = (string) tenant('id');
 
-        $this->billingService->syncPaymentHistory($tenantId);
+        $this->billingService->syncPaymentHistoryIfStale($tenantId);
 
         return Inertia::render('Settings/Billing', [
             'billing' => $this->billingService->snapshot(),

@@ -2,6 +2,7 @@ import { onUnmounted, watch } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 import { getSharedRealtimeClient } from '../lib/realtimeClient.js';
 import { ticketChannel } from '../lib/realtimeChannels.js';
+import { fetchTicketRealtimeToken } from '../lib/realtimeTokens.js';
 
 export function useTicketRealtimeMessages(ticketIdRef, messagesRef) {
     const page = usePage();
@@ -57,12 +58,18 @@ export function useTicketRealtimeMessages(ticketIdRef, messagesRef) {
         handler = null;
     };
 
-    const subscribe = (ticketId) => {
+    const subscribe = async (ticketId) => {
         unsubscribe();
 
         const client = getSharedRealtimeClient(page.props.realtime);
 
         if (!client || !ticketId) {
+            return;
+        }
+
+        const credentials = await fetchTicketRealtimeToken(ticketId);
+
+        if (!credentials?.token) {
             return;
         }
 
@@ -73,7 +80,7 @@ export function useTicketRealtimeMessages(ticketIdRef, messagesRef) {
         };
 
         subscribedTicketId = ticketId;
-        client.subscribe(ticketChannel(page.props.tenantId, ticketId), handler);
+        client.subscribe(credentials.channel, handler, credentials.token);
     };
 
     watch(ticketIdRef, (ticketId) => {

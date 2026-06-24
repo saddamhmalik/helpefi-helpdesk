@@ -16,4 +16,10 @@ return [
     'helpscout' => [
         'accent' => 'amber',
     ],
+    'intercom' => [
+        'accent' => 'orange',
+    ],
+    'jira-service-management' => [
+        'accent' => 'blue',
+    ],
 ];

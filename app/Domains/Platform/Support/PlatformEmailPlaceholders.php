@@ -12,11 +12,17 @@ class PlatformEmailPlaceholders
             ['key' => 'admin_email', 'label' => 'Registrant email', 'example' => 'jane@company.com'],
             ['key' => 'organization_name', 'label' => 'Organization name', 'example' => 'Acme Support'],
             ['key' => 'workspace_slug', 'label' => 'Workspace slug', 'example' => 'acme'],
-            ['key' => 'workspace_url', 'label' => 'Workspace URL', 'example' => 'https://acme.helpdesk.test'],
-            ['key' => 'welcome_url', 'label' => 'Welcome sign-in link', 'example' => 'https://acme.helpdesk.test/welcome?token=...'],
-            ['key' => 'verification_url', 'label' => 'Email verification link', 'example' => 'https://helpdesk.test/register/verify/...'],
+            ['key' => 'workspace_url', 'label' => 'Workspace URL', 'example' => 'https://acme.helpefi.com'],
+            ['key' => 'welcome_url', 'label' => 'Welcome sign-in link', 'example' => 'https://acme.helpefi.com/welcome?token=...'],
+            ['key' => 'verification_url', 'label' => 'Email verification link', 'example' => 'https://helpefi.com/register/verify/...'],
             ['key' => 'trial_days', 'label' => 'Trial length (days)', 'example' => '14'],
-            ['key' => 'central_domain', 'label' => 'Central domain', 'example' => 'helpdesk.test'],
+            ['key' => 'trial_days_remaining', 'label' => 'Trial days remaining', 'example' => '7'],
+            ['key' => 'central_domain', 'label' => 'Central domain', 'example' => 'helpefi.com'],
+            ['key' => 'setup_url', 'label' => 'Setup wizard URL', 'example' => 'https://acme.helpefi.com/setup'],
+            ['key' => 'billing_url', 'label' => 'Billing settings URL', 'example' => 'https://acme.helpefi.com/settings/billing'],
+            ['key' => 'pricing_url', 'label' => 'Marketing pricing page', 'example' => 'https://helpefi.com/pricing'],
+            ['key' => 'access_ends_at', 'label' => 'Subscription access end date', 'example' => 'July 15, 2026'],
+            ['key' => 'grace_days_remaining', 'label' => 'Days until access ends', 'example' => '3'],
         ];
     }
 

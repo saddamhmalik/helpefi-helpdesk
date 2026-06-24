@@ -22,6 +22,7 @@ const helpCenter = computed(() => usePage().props.helpCenter);
 </script>
 
 <template>
+    <a href="#main-content" class="agent-skip-link">{{ $t('components.skip_to_main_content') }}</a>
     <div class="relative min-h-screen overflow-hidden bg-gradient-to-br from-slate-50 via-white to-blue-50/50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
         <div class="pointer-events-none absolute inset-0" aria-hidden="true">
             <div class="absolute -left-24 top-0 h-72 w-72 rounded-full bg-blue-200/30 blur-3xl dark:bg-blue-900/20" />
@@ -51,7 +52,7 @@ const helpCenter = computed(() => usePage().props.helpCenter);
             </div>
         </header>
 
-        <main class="relative flex min-h-[calc(100vh-4.25rem)] items-center justify-center px-4 py-10 sm:px-6">
+        <main id="main-content" class="relative flex min-h-[calc(100vh-4.25rem)] items-center justify-center px-4 py-10 sm:px-6">
             <div class="mx-auto grid w-full max-w-4xl overflow-hidden rounded-2xl border agent-border agent-panel shadow-xl shadow-slate-300/30 dark:shadow-black/40 lg:grid-cols-5">
                 <aside class="relative hidden overflow-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950 p-8 text-white lg:col-span-2 lg:flex lg:flex-col lg:justify-between">
                     <div class="pointer-events-none absolute inset-0 opacity-40" aria-hidden="true">

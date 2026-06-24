@@ -1,5 +1,5 @@
 <script setup>
-import { usePage } from '@inertiajs/vue3';
+import { Link, usePage } from '@inertiajs/vue3';
 import { computed, onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
@@ -7,6 +7,7 @@ const { t } = useI18n();
 
 const page = usePage();
 const billing = computed(() => page.props.billing);
+const isAdmin = computed(() => page.props.auth?.user?.is_admin ?? false);
 const dismissed = ref(false);
 
 const storageKey = computed(() => {
@@ -44,6 +45,13 @@ const dismiss = () => {
             {{ $t('components.trial_badge') }}
         </span>
         <span class="min-w-0 flex-1 truncate text-blue-900 dark:text-blue-100">{{ message }}</span>
+        <Link
+            v-if="isAdmin"
+            href="/growth"
+            class="shrink-0 font-semibold text-blue-800 underline underline-offset-2 dark:text-blue-200"
+        >
+            {{ t('growth.trial_hub_link') }}
+        </Link>
         <button
             type="button"
             class="shrink-0 rounded p-0.5 text-blue-700/80 transition hover:bg-blue-100 hover:text-blue-900 dark:text-blue-300 dark:hover:bg-blue-900/40 dark:hover:text-blue-100"

@@ -49,7 +49,21 @@ function verifyToken(token, channel) {
             return false;
         }
 
-        return true;
+        const suffix = payload.tenant_id && channel.startsWith(`${payload.tenant_id}.`)
+            ? channel.slice(payload.tenant_id.length + 1)
+            : channel;
+
+        if (suffix === 'workspace') {
+            return true;
+        }
+
+        const userMatch = suffix.match(/^user\.(\d+)$/);
+
+        if (userMatch) {
+            return Number(payload.user_id) === Number(userMatch[1]);
+        }
+
+        return false;
     }
 
     return payload.channel === channel;
@@ -122,7 +136,9 @@ wss.on('connection', (ws, request) => {
             return;
         }
 
-        if (!verifyToken(ws.authToken, data.channel)) {
+        const subscriptionToken = data.token || ws.authToken;
+
+        if (!verifyToken(subscriptionToken, data.channel)) {
             ws.send(JSON.stringify({ event: 'error', data: { message: 'Unauthorized subscription.' } }));
 
             return;

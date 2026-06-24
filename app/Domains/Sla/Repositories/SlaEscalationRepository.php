@@ -60,16 +60,74 @@ class SlaEscalationRepository
             ->exists();
     }
 
+    public function loggedRuleKeysForTimers(array $timerIds): array
+    {
+        if ($timerIds === []) {
+            return [];
+        }
+
+        return SlaEscalationLog::query()
+            ->whereIn('ticket_sla_timer_id', $timerIds)
+            ->get(['ticket_sla_timer_id', 'level', 'breach_type'])
+            ->groupBy('ticket_sla_timer_id')
+            ->map(fn ($logs) => $logs
+                ->map(fn ($log) => self::ruleKey((int) $log->level, (string) $log->breach_type))
+                ->flip()
+                ->all())
+            ->all();
+    }
+
+    public static function ruleKey(int $level, string $breachType): string
+    {
+        return "{$level}:{$breachType}";
+    }
+
     public function createLog(array $data): SlaEscalationLog
     {
         return SlaEscalationLog::query()->create($data);
     }
 
+    public function activeRulesGroupedByPolicy(array $policyIds): \Illuminate\Support\Collection
+    {
+        if ($policyIds === []) {
+            return collect();
+        }
+
+        return SlaEscalationRule::query()
+            ->whereIn('sla_policy_id', $policyIds)
+            ->where('is_active', true)
+            ->orderBy('breach_type')
+            ->orderBy('level')
+            ->get()
+            ->groupBy('sla_policy_id');
+    }
+
     public function timersEligibleForEscalation(): Collection
     {
+        $now = now();
+
         return TicketSlaTimer::query()
             ->with(['ticket.assignee', 'ticket.team.lead', 'ticket.department.head', 'policy'])
-            ->whereHas('ticket', fn ($query) => $query->whereNull('merged_into_ticket_id'))
+            ->whereHas('ticket', fn ($query) => $query
+                ->whereNull('merged_into_ticket_id')
+                ->whereNull('closed_at'))
+            ->where(function ($query) use ($now) {
+                $query->where(function ($query) use ($now) {
+                    $query->whereNull('first_responded_at')
+                        ->whereNotNull('first_response_due_at')
+                        ->where(function ($query) use ($now) {
+                            $query->where('first_response_breached', true)
+                                ->orWhere('first_response_due_at', '<=', $now);
+                        });
+                })->orWhere(function ($query) use ($now) {
+                    $query->whereNull('resolved_at')
+                        ->whereNotNull('resolution_due_at')
+                        ->where(function ($query) use ($now) {
+                            $query->where('resolution_breached', true)
+                                ->orWhere('resolution_due_at', '<=', $now);
+                        });
+                });
+            })
             ->get();
     }
 }

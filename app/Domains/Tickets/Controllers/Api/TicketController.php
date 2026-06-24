@@ -2,18 +2,21 @@
 
 namespace App\Domains\Tickets\Controllers\Api;
 
-use App\Domains\Tickets\Services\TicketCcService;
+use App\Domains\Tickets\Requests\Api\StoreTicketRequest;
+use App\Domains\Tickets\Requests\Api\UpdateTicketRequest;
+use App\Domains\Tickets\Requests\MergeTicketRequest;
+use App\Domains\Tickets\Requests\ReplyTicketRequest;
+use App\Domains\Tickets\Requests\SplitTicketRequest;
+use App\Domains\Tickets\Requests\StoreTicketAttachmentRequest;
+use App\Domains\Tickets\Requests\StoreTicketWatcherRequest;
 use App\Domains\Tickets\Services\TicketFormReferenceService;
 use App\Domains\Tickets\Services\TicketService;
+use App\Domains\Tickets\Services\TicketShowPageService;
 use App\Domains\Tickets\Services\TicketViewService;
-use App\Domains\Workforce\Services\WorkforceService;
-use App\Domains\Tickets\Support\MessageBodySanitizer;
 use App\Domains\Tickets\Support\TicketFilters;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
-use Illuminate\Validation\ValidationException;
 use InvalidArgumentException;
 
 class TicketController extends Controller
@@ -22,7 +25,7 @@ class TicketController extends Controller
         private TicketService $ticketService,
         private TicketViewService $ticketViewService,
         private TicketFormReferenceService $ticketReferenceData,
-        private WorkforceService $workforceService,
+        private TicketShowPageService $ticketShowPage,
     ) {
     }
 
@@ -43,18 +46,14 @@ class TicketController extends Controller
         );
     }
 
-    public function store(Request $request): JsonResponse
+    public function store(StoreTicketRequest $request): JsonResponse
     {
-        $data = $request->validate(array_merge([
-            'subject' => ['required', 'string', 'max:255'],
-            'description' => ['nullable', 'string'],
-            'contact_id' => ['nullable', 'exists:contacts,id'],
-            'assigned_to' => ['nullable', Rule::in($this->workforceService->assignableAgentIds())],
-            'ticket_status_id' => ['required', 'exists:ticket_statuses,id'],
-            'ticket_priority_id' => ['required', 'exists:ticket_priorities,id'],
-        ], $this->peopleRules()));
+        return response()->json($this->ticketService->create($request->validated(), $request->user()->id), 201);
+    }
 
-        return response()->json($this->ticketService->create($data, $request->user()->id), 201);
+    public function panels(int $ticket): JsonResponse
+    {
+        return response()->json($this->ticketShowPage->lazyPanels($ticket));
     }
 
     public function show(int $ticket): JsonResponse
@@ -62,34 +61,14 @@ class TicketController extends Controller
         return response()->json($this->ticketService->show($ticket));
     }
 
-    public function update(Request $request, int $ticket): JsonResponse
+    public function update(UpdateTicketRequest $request, int $ticket): JsonResponse
     {
-        $data = $request->validate(array_merge([
-            'subject' => ['sometimes', 'string', 'max:255'],
-            'description' => ['nullable', 'string'],
-            'contact_id' => ['nullable', 'exists:contacts,id'],
-            'assigned_to' => ['nullable', Rule::in($this->workforceService->assignableAgentIds())],
-            'ticket_status_id' => ['sometimes', 'exists:ticket_statuses,id'],
-            'ticket_priority_id' => ['sometimes', 'exists:ticket_priorities,id'],
-        ], $this->peopleRules()));
-
-        return response()->json($this->ticketService->update($ticket, $data, $request->user()->id));
+        return response()->json($this->ticketService->update($ticket, $request->validated(), $request->user()->id));
     }
 
-    public function reply(Request $request, int $ticket): JsonResponse
+    public function reply(ReplyTicketRequest $request, int $ticket): JsonResponse
     {
-        $data = $request->validate([
-            'body' => ['nullable', 'string'],
-            'is_internal' => ['boolean'],
-            'attachments' => ['nullable', 'array', 'max:5'],
-            'attachments.*' => ['file', 'max:10240'],
-        ]);
-
-        if (MessageBodySanitizer::isEmpty($data['body'] ?? '') && ! $request->hasFile('attachments')) {
-            throw ValidationException::withMessages([
-                'body' => 'Add a message or attach at least one file.',
-            ]);
-        }
+        $data = $request->validated();
 
         $message = $this->ticketService->reply(
             $ticket,
@@ -102,22 +81,16 @@ class TicketController extends Controller
         return response()->json($message, 201);
     }
 
-    public function storeAttachment(Request $request, int $ticket): JsonResponse
+    public function storeAttachment(StoreTicketAttachmentRequest $request, int $ticket): JsonResponse
     {
-        $data = $request->validate([
-            'file' => ['required', 'file', 'max:10240'],
-        ]);
-
-        $attachment = $this->ticketService->addAttachment($ticket, $request->user()->id, $data['file']);
+        $attachment = $this->ticketService->addAttachment($ticket, $request->user()->id, $request->file('file'));
 
         return response()->json($attachment, 201);
     }
 
-    public function storeWatcher(Request $request, int $ticket): JsonResponse
+    public function storeWatcher(StoreTicketWatcherRequest $request, int $ticket): JsonResponse
     {
-        $data = $request->validate([
-            'user_id' => ['nullable', 'exists:users,id'],
-        ]);
+        $data = $request->validated();
 
         return response()->json(
             $this->ticketService->addWatcher($ticket, $data['user_id'] ?? $request->user()->id)
@@ -129,12 +102,9 @@ class TicketController extends Controller
         return response()->json($this->ticketService->removeWatcher($ticket, $user));
     }
 
-    public function merge(Request $request, int $ticket): JsonResponse
+    public function merge(MergeTicketRequest $request, int $ticket): JsonResponse
     {
-        $data = $request->validate([
-            'source_ticket_id' => ['required', 'exists:tickets,id'],
-            'import_conversation' => ['boolean'],
-        ]);
+        $data = $request->validated();
 
         try {
             return response()->json(
@@ -150,12 +120,9 @@ class TicketController extends Controller
         }
     }
 
-    public function split(Request $request, int $ticket): JsonResponse
+    public function split(SplitTicketRequest $request, int $ticket): JsonResponse
     {
-        $data = $request->validate([
-            'from_message_id' => ['required', 'exists:ticket_messages,id'],
-            'subject' => ['nullable', 'string', 'max:255'],
-        ]);
+        $data = $request->validated();
 
         return response()->json(
             $this->ticketService->split(
@@ -175,15 +142,5 @@ class TicketController extends Controller
             'priorities',
             'agents',
         ]));
-    }
-
-    private function peopleRules(): array
-    {
-        return [
-            'requester_email' => ['nullable', 'email', 'max:255'],
-            'requester_name' => ['nullable', 'string', 'max:255'],
-            'cc_emails' => ['nullable', 'array', 'max:'.TicketCcService::MAX_CC],
-            'cc_emails.*' => ['email', 'max:255'],
-        ];
     }
 }

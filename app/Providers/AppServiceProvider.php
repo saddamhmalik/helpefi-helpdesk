@@ -7,11 +7,34 @@ use App\Domains\Ai\Clients\HttpAiClient;
 use App\Domains\Ai\Clients\OpenAiEmbeddingClient;
 use App\Domains\Ai\Contracts\AiCompletionClient;
 use App\Domains\Ai\Contracts\AiEmbeddingClient;
+use App\Domains\Billing\Contracts\FeatureEntitlementChecker;
+use App\Domains\Billing\Services\BillingService;
+use App\Domains\Automation\Listeners\BridgeTicketLifecycleToAutomation;
 use App\Domains\Automation\Events\TicketAutomationTrigger;
+use App\Domains\ServiceDesk\Events\TicketApprovalApproved;
+use App\Domains\ServiceDesk\Events\TicketApprovalRejected;
+use App\Domains\Tickets\Events\TicketCreated;
+use App\Domains\Tickets\Events\TicketCustomerMessageReceived;
+use App\Domains\Tickets\Events\TicketUpdated;
 use App\Domains\Csat\Observers\TicketCsatObserver;
 use App\Domains\Notifications\Listeners\PublishAgentNotificationRealtime;
 use App\Domains\Notifications\Observers\TicketNotificationObserver;
+use App\Domains\Brands\Models\Brand;
+use App\Domains\Channels\Models\Channel;
+use App\Domains\Contacts\Models\Organization;
+use App\Domains\Contacts\Models\Tag;
+use App\Domains\Contacts\Observers\ContactFormReferenceCacheObserver;
+use App\Domains\Settings\Models\HelpdeskSetting;
+use App\Domains\Settings\Observers\HelpdeskSettingCacheObserver;
+use App\Domains\Sla\Models\TicketSlaTimer;
+use App\Domains\Sla\Observers\TicketSlaTimerDashboardCacheObserver;
 use App\Domains\Tickets\Models\Ticket;
+use App\Domains\Tickets\Models\TicketStatus;
+use App\Domains\Tickets\Observers\TicketDashboardCacheObserver;
+use App\Domains\Tickets\Observers\TicketFormReferenceCacheObserver;
+use App\Domains\Tickets\Observers\TicketStatusCacheObserver;
+use App\Domains\Workforce\Models\Department;
+use App\Domains\Workforce\Models\Team;
 use App\Domains\Automation\Listeners\RunAutomationRules;
 use App\Domains\Integrations\Listeners\DispatchSlackNotifications;
 use App\Domains\Integrations\Listeners\DispatchWebhooks;
@@ -35,11 +58,20 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(\App\Domains\Brands\Support\BrandContext::class);
         $this->app->bind(AiCompletionClient::class, HttpAiClient::class);
         $this->app->bind(AiEmbeddingClient::class, OpenAiEmbeddingClient::class);
+        $this->app->bind(FeatureEntitlementChecker::class, BillingService::class);
     }
 
     public function boot(): void
     {
         SlowQueryLogger::register();
+
+        $bridge = BridgeTicketLifecycleToAutomation::class;
+
+        Event::listen(TicketCreated::class, [$bridge, 'handleCreated']);
+        Event::listen(TicketUpdated::class, [$bridge, 'handleUpdated']);
+        Event::listen(TicketCustomerMessageReceived::class, [$bridge, 'handleCustomerMessage']);
+        Event::listen(TicketApprovalApproved::class, [$bridge, 'handleApprovalApproved']);
+        Event::listen(TicketApprovalRejected::class, [$bridge, 'handleApprovalRejected']);
 
         Event::listen(TicketAutomationTrigger::class, RunAutomationRules::class);
         Event::listen(TicketAutomationTrigger::class, DispatchWebhooks::class);
@@ -51,6 +83,18 @@ class AppServiceProvider extends ServiceProvider
 
         Ticket::observe(TicketCsatObserver::class);
         Ticket::observe(TicketNotificationObserver::class);
+        Ticket::observe(TicketDashboardCacheObserver::class);
+
+        TicketSlaTimer::observe(TicketSlaTimerDashboardCacheObserver::class);
+
+        TicketStatus::observe(TicketStatusCacheObserver::class);
+        Brand::observe(TicketFormReferenceCacheObserver::class);
+        Channel::observe(TicketFormReferenceCacheObserver::class);
+        Department::observe(TicketFormReferenceCacheObserver::class);
+        Team::observe(TicketFormReferenceCacheObserver::class);
+        Organization::observe(ContactFormReferenceCacheObserver::class);
+        Tag::observe(ContactFormReferenceCacheObserver::class);
+        HelpdeskSetting::observe(HelpdeskSettingCacheObserver::class);
 
         RateLimiter::for('tenant-infrastructure-verify', function (Request $request) {
             $limit = max(1, (int) config('tenant_infrastructure.verify_rate_limit_per_minute', 5));

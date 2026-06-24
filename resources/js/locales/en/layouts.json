@@ -37,7 +37,10 @@
             "track_request": "Track request",
             "sign_in": "Sign in",
             "register": "Register",
-            "agent_login": "Agent login"
+            "agent_login": "Agent login",
+            "open_menu": "Open menu",
+            "close_menu": "Close menu",
+            "language": "Language"
         },
         "central": {
             "product": "Product",
@@ -48,12 +51,13 @@
             "faq": "FAQ",
             "sign_in": "Sign in",
             "start_free_trial": "Start free trial",
-            "footer_tagline": "Modern customer support and ITSM software — tickets, chat, knowledge base, automation, and Service Desk workflows in one helpdesk built for growing teams.",
+            "footer_tagline": "AI-powered helpdesk and ITSM for growing teams — unified inbox, live chat, knowledge base, automation, and optional Service Desk in one platform.",
             "footer_product": "Product",
             "footer_features": "Features",
             "footer_solutions": "Solutions",
             "footer_company": "Company",
             "footer_compare": "Compare",
+            "footer_migrate": "Migrate",
             "footer_platform_overview": "Platform overview",
             "footer_get_started": "Get started",
             "footer_sign_in_workspace": "Sign in to workspace",

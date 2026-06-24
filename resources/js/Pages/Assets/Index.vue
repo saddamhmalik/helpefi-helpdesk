@@ -7,6 +7,7 @@ import PageHeader from '../../Components/PageHeader.vue';
 import ListPanel from '../../Components/ListPanel.vue';
 import FilterField from '../../Components/FilterField.vue';
 import DataTable from '../../Components/DataTable.vue';
+import DataTableMobileCard from '../../Components/ui/DataTableMobileCard.vue';
 import AppIconAction from '../../Components/AppIconAction.vue';
 import AppEditAction from '../../Components/AppEditAction.vue';
 import AppRowActions from '../../Components/AppRowActions.vue';
@@ -242,6 +243,21 @@ const statCards = computed(() => [
                     <td colspan="9" class="px-4 py-12 text-center text-sm text-slate-500 dark:text-slate-400">{{ $t('assets.no_assets_found') }}</td>
                 </tr>
             </tbody>
+            <template #mobile>
+                <DataTableMobileCard v-for="asset in assets.data" :key="`mobile-${asset.id}`" tag="div">
+                    <Link :href="`/assets/${asset.id}`" class="block">
+                        <p class="font-mono text-sm font-semibold text-blue-600 dark:text-blue-300">{{ asset.asset_tag }}</p>
+                        <p class="mt-1 text-sm font-medium agent-text">{{ asset.name }}</p>
+                        <div class="mt-2 flex flex-wrap gap-2 text-xs agent-text-muted">
+                            <span>{{ asset.type?.name }}</span>
+                            <span>·</span>
+                            <span>{{ statusLabel(asset.status) }}</span>
+                        </div>
+                        <p class="mt-2 text-xs agent-text-subtle">{{ asset.contact?.name || $t('assets.unassigned') }} · {{ asset.location || '—' }}</p>
+                    </Link>
+                </DataTableMobileCard>
+                <div v-if="!assets.data?.length" class="p-6 text-center text-sm agent-text-muted">{{ $t('assets.no_assets_found') }}</div>
+            </template>
             <template #footer>
                 <PaginationLinks
                     :links="assets.links"

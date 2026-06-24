@@ -11,7 +11,7 @@ use App\Domains\Assets\Repositories\AssetRepository;
 use App\Domains\Assets\Repositories\AssetTypeRepository;
 use App\Domains\Assets\Support\DeviceNameResolver;
 use App\Domains\Assets\Support\NetworkDiscoveryScanner;
-use App\Domains\Billing\Services\BillingService;
+use App\Domains\Billing\Contracts\FeatureEntitlementChecker;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use InvalidArgumentException;
 
@@ -21,7 +21,7 @@ class AssetDiscoveryService
         private AssetDiscoveryRepository $discovery,
         private AssetRepository $assets,
         private AssetTypeRepository $types,
-        private BillingService $billing,
+        private FeatureEntitlementChecker $entitlements,
         private DeviceNameResolver $names,
         private NetworkDiscoveryScanner $scanner,
     ) {
@@ -43,7 +43,7 @@ class AssetDiscoveryService
 
     public function startScan(string $subnet, int $userId): AssetDiscoveryScan
     {
-        $this->billing->assertFeature('assets');
+        $this->entitlements->assertFeature('assets');
 
         $this->scanner->validateSubnet($subnet);
 
@@ -55,7 +55,7 @@ class AssetDiscoveryService
 
     public function importDevices(int $scanId, array $deviceIds, int $assetTypeId, array $deviceNames = []): array
     {
-        $this->billing->assertFeature('assets');
+        $this->entitlements->assertFeature('assets');
 
         $scan = $this->discovery->findScan($scanId);
         $devices = $this->discovery->devicesForImport($scan, $deviceIds);

@@ -5,6 +5,7 @@ namespace App\Domains\Platform\Repositories;
 use App\Domains\Contacts\Models\Contact;
 use App\Domains\Csat\Models\CsatResponse;
 use App\Domains\Tickets\Models\Ticket;
+use App\Domains\Tickets\Services\TicketStatusLookup;
 use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Support\Facades\Cache;
@@ -35,11 +36,13 @@ class PlatformExecutiveMetricsRepository
                 ->each(function (Tenant $tenant) use (&$totals, &$csatSum, &$csatCount) {
                     try {
                         $tenant->run(function () use (&$totals, &$csatSum, &$csatCount) {
+                            $statusLookup = app(TicketStatusLookup::class);
+
                             $totals['workspaces_scanned']++;
                             $totals['total_tickets'] += Ticket::query()->whereNull('merged_into_ticket_id')->count();
                             $totals['open_tickets'] += Ticket::query()
                                 ->whereNull('merged_into_ticket_id')
-                                ->whereHas('status', fn ($q) => $q->where('is_closed', false))
+                                ->tap(fn ($query) => $statusLookup->restrictToOpenStatusRelation($query))
                                 ->count();
                             $totals['tickets_last_30_days'] += Ticket::query()
                                 ->whereNull('merged_into_ticket_id')

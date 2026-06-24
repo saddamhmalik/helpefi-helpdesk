@@ -7,10 +7,14 @@ use App\Domains\Csat\Models\CsatResponse;
 use App\Domains\Sla\Models\TicketSlaTimer;
 use App\Domains\Tickets\Models\Ticket;
 use App\Domains\Tickets\Models\TicketMessage;
+use App\Domains\Tickets\Services\TicketStatusLookup;
 use Illuminate\Support\Carbon;
 
 class CustomerContextRepository
 {
+    public function __construct(private TicketStatusLookup $statusLookup)
+    {
+    }
     public function contactIdsForScope(Contact $contact): array
     {
         if ($contact->organization_id) {
@@ -29,9 +33,8 @@ class CustomerContextRepository
 
         $ticketStats = Ticket::query()
             ->whereIn('contact_id', $contactIds)
-            ->leftJoin('ticket_statuses', 'ticket_statuses.id', '=', 'tickets.ticket_status_id')
             ->selectRaw('COUNT(*) as total_tickets')
-            ->selectRaw('SUM(CASE WHEN ticket_statuses.is_closed = 0 THEN 1 ELSE 0 END) as open_tickets')
+            ->selectRaw($this->statusLookup->sumOpenTicketsSelect('tickets.ticket_status_id', 'open_tickets'))
             ->selectRaw('MAX(tickets.updated_at) as last_ticket_activity_at')
             ->first();
 
@@ -82,7 +85,7 @@ class CustomerContextRepository
     {
         return Ticket::query()
             ->whereIn('contact_id', $contactIds)
-            ->whereHas('status', fn ($query) => $query->where('is_closed', false))
+            ->tap(fn ($query) => $this->statusLookup->restrictToOpenStatusRelation($query))
             ->count();
     }
 

@@ -247,6 +247,7 @@ fi
 sudo -u "$DEPLOY_USER" php "$ROOT/artisan" migrate --force
 sudo -u "$DEPLOY_USER" php "$ROOT/artisan" db:seed --class=Database\\Seeders\\CentralDatabaseSeeder --force
 sudo -u "$DEPLOY_USER" php "$ROOT/artisan" tenants:migrate --force || true
+sudo -u "$DEPLOY_USER" php "$ROOT/artisan" tenants:upgrade || true
 sudo -u "$DEPLOY_USER" php "$ROOT/artisan" storage:link --force
 sudo -u "$DEPLOY_USER" php "$ROOT/artisan" config:cache
 sudo -u "$DEPLOY_USER" php "$ROOT/artisan" route:cache

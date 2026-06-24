@@ -3,18 +3,19 @@
 namespace App\Domains\Integrations\Listeners;
 
 use App\Domains\Automation\Events\TicketAutomationTrigger;
-use App\Domains\Integrations\Services\WebhookService;
+use App\Domains\Automation\Support\AutomationTriggerGuard;
+use App\Domains\Integrations\Jobs\DeliverTicketWebhooksJob;
 
 class DispatchWebhooks
 {
-    public function __construct(private WebhookService $webhooks)
-    {
-    }
-
     public function handle(TicketAutomationTrigger $event): void
     {
-        $this->webhooks->dispatchForTicket(
-            $event->ticket,
+        if (AutomationTriggerGuard::shouldSkip($event->context)) {
+            return;
+        }
+
+        DeliverTicketWebhooksJob::dispatch(
+            $event->ticket->id,
             $event->trigger,
             $event->context,
         );

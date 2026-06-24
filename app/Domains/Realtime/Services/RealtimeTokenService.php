@@ -47,7 +47,7 @@ class RealtimeTokenService
                 return false;
             }
 
-            return true;
+            return $this->agentMaySubscribe($payload, $channel, $tenantId);
         }
 
         return ($payload['channel'] ?? null) === $channel;
@@ -102,5 +102,22 @@ class RealtimeTokenService
         if (! preg_match('/^(?:[0-9a-f-]{36}\.)?(ticket\.\d+|chat\.[0-9a-f-]{36}|workspace|user\.\d+)$/', $channel)) {
             throw new InvalidArgumentException('Invalid realtime channel.');
         }
+    }
+
+    private function agentMaySubscribe(array $payload, string $channel, ?string $tenantId): bool
+    {
+        $suffix = $tenantId && str_starts_with($channel, "{$tenantId}.")
+            ? substr($channel, strlen($tenantId) + 1)
+            : $channel;
+
+        if ($suffix === 'workspace') {
+            return true;
+        }
+
+        if (preg_match('/^user\.(\d+)$/', $suffix, $matches)) {
+            return (int) ($payload['user_id'] ?? 0) === (int) $matches[1];
+        }
+
+        return false;
     }
 }

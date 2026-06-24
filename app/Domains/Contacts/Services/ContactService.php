@@ -7,6 +7,7 @@ use App\Domains\Contacts\Models\ContactNote;
 use App\Domains\Contacts\Repositories\ContactActivityRepository;
 use App\Domains\Contacts\Repositories\ContactRepository;
 use App\Domains\Contacts\Repositories\TagRepository;
+use App\Domains\Reports\Support\DashboardWidgetCache;
 use App\Domains\Security\Support\AuditRecorder;
 use App\Domains\Settings\Services\HelpdeskSettingService;
 use App\Domains\Tickets\Support\MessageBodySanitizer;
@@ -120,6 +121,8 @@ class ContactService
             'name' => $contact->name,
         ], $userId);
 
+        DashboardWidgetCache::forget();
+
         return $contact;
     }
 
@@ -164,6 +167,8 @@ class ContactService
             'email' => $contact->email,
             'name' => $contact->name,
         ]);
+
+        DashboardWidgetCache::forget();
     }
 
     public function addNote(int $contactId, int $userId, string $body): ContactNote

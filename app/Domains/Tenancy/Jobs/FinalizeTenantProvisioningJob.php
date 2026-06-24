@@ -4,6 +4,7 @@ namespace App\Domains\Tenancy\Jobs;
 
 use App\Domains\Platform\Services\PlatformMailService;
 use App\Domains\Tenancy\Services\TenantProvisioningService;
+use App\Domains\Tenancy\Services\TenantReleaseUpgradeService;
 use App\Domains\Tenancy\Services\TenantRouteRegistryService;
 use App\Models\Tenant;
 use App\Models\User;
@@ -64,6 +65,8 @@ class FinalizeTenantProvisioningJob implements ShouldQueue
         ]);
 
         $tenantRoutes->syncCurrentTenant();
+
+        app(TenantReleaseUpgradeService::class)->upgradeTenant($this->tenant);
 
         tenancy()->end();
 

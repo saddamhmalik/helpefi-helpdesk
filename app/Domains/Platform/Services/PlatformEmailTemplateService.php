@@ -129,9 +129,6 @@ class PlatformEmailTemplateService
 
     private function reservedSlugs(): array
     {
-        return [
-            PlatformEmailTemplate::SLUG_REGISTRATION,
-            PlatformEmailTemplate::SLUG_WORKSPACE_WELCOME,
-        ];
+        return PlatformEmailTemplate::systemSlugs();
     }
 }

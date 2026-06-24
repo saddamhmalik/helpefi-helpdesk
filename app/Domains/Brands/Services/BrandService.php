@@ -4,10 +4,10 @@ namespace App\Domains\Brands\Services;
 
 use App\Domains\Brands\Models\Brand;
 use App\Domains\Brands\Repositories\BrandRepository;
-use App\Domains\Billing\Services\BillingService;
+use App\Domains\Billing\Contracts\FeatureEntitlementChecker;
 use App\Domains\Channels\Support\EmailSettingsPageCache;
+use App\Domains\Knowledge\Support\HelpCenterGuestCache;
 use App\Domains\Security\Support\AuditRecorder;
-use App\Domains\Tickets\Support\TicketFormReferenceCache;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Str;
 use InvalidArgumentException;
@@ -16,7 +16,7 @@ class BrandService
 {
     public function __construct(
         private BrandRepository $brands,
-        private BillingService $billing,
+        private FeatureEntitlementChecker $entitlements,
         private AuditRecorder $audit,
     ) {
     }
@@ -44,7 +44,7 @@ class BrandService
     public function create(array $data, ?int $userId = null): Brand
     {
         if ($this->brands->all()->count() >= 1) {
-            $this->billing->assertFeature('workspace');
+            $this->entitlements->assertFeature('workspace');
         }
 
         $validated = $this->validate($data);
@@ -53,6 +53,7 @@ class BrandService
         $this->audit->record('brand.created', $brand, ['name' => $brand->name, 'slug' => $brand->slug], $userId);
 
         EmailSettingsPageCache::forget();
+        HelpCenterGuestCache::forget();
 
         return $brand;
     }
@@ -66,7 +67,7 @@ class BrandService
         $this->audit->record('brand.updated', $brand, ['name' => $brand->name, 'slug' => $brand->slug], $userId);
 
         EmailSettingsPageCache::forget();
-        TicketFormReferenceCache::forget();
+        HelpCenterGuestCache::forget();
 
         return $brand;
     }
@@ -181,8 +182,8 @@ class BrandService
             'default_ticket_priority_id' => $brand->default_ticket_priority_id,
             'kb_deflection_enabled' => $brand->kb_deflection_enabled,
             'portal_url' => url('/portal/'.$brand->slug),
-            'collections_count' => $brand->collections()->count(),
-            'inboxes_count' => $brand->inboxes()->count(),
+            'collections_count' => $brand->collections_count,
+            'inboxes_count' => $brand->inboxes_count,
         ];
     }
 }

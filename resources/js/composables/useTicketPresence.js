@@ -2,6 +2,7 @@ import { ref, watch, onUnmounted } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 import { getSharedRealtimeClient } from '../lib/realtimeClient.js';
 import { ticketChannel } from '../lib/realtimeChannels.js';
+import { fetchTicketRealtimeToken } from '../lib/realtimeTokens.js';
 import { csrfHeaders } from '../support/csrf.js';
 
 export function useTicketPresence(ticketIdRef, composingRef) {
@@ -55,7 +56,7 @@ export function useTicketPresence(ticketIdRef, composingRef) {
         presenceHandler = null;
     };
 
-    const subscribePresence = (ticketId) => {
+    const subscribePresence = async (ticketId) => {
         unsubscribePresence();
 
         const client = getSharedRealtimeClient(page.props.realtime);
@@ -64,14 +65,19 @@ export function useTicketPresence(ticketIdRef, composingRef) {
             return;
         }
 
-        const channel = ticketChannel(page.props.tenantId, ticketId);
+        const credentials = await fetchTicketRealtimeToken(ticketId);
+
+        if (!credentials?.token) {
+            return;
+        }
+
         presenceHandler = (payload) => {
             if (payload.event === 'presence.updated') {
                 viewers.value = payload.data?.viewers ?? [];
             }
         };
 
-        client.subscribe(channel, presenceHandler);
+        client.subscribe(credentials.channel, presenceHandler, credentials.token);
         subscribedTicketId = ticketId;
     };
 

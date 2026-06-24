@@ -104,13 +104,18 @@ class WorkspaceService
 
         $this->realtime->presenceUpdated(
             $ticketId,
-            $this->presence->viewers($ticketId),
+            $this->presence->viewers($ticketId, $userId),
         );
     }
 
     public function leaveTicket(int $ticketId, int $userId): void
     {
         $this->presence->leave($ticketId, $userId);
+
+        $this->realtime->presenceUpdated(
+            $ticketId,
+            $this->presence->viewers($ticketId),
+        );
     }
 
     public function pollQueue(?string $since, int $userId, array $ticketIds = []): array

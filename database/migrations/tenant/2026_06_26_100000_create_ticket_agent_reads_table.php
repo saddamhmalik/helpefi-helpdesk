@@ -13,6 +13,7 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->foreignId('ticket_id')->constrained()->cascadeOnDelete();
             $table->foreignId('last_read_message_id')->nullable()->constrained('ticket_messages')->nullOnDelete();
+            $table->unsignedInteger('unread_count')->default(0);
             $table->timestamp('read_at');
             $table->timestamps();
 

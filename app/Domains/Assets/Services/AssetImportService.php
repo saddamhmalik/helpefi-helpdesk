@@ -5,7 +5,7 @@ namespace App\Domains\Assets\Services;
 use App\Domains\Assets\Models\Asset;
 use App\Domains\Assets\Repositories\AssetRepository;
 use App\Domains\Assets\Repositories\AssetTypeRepository;
-use App\Domains\Billing\Services\BillingService;
+use App\Domains\Billing\Contracts\FeatureEntitlementChecker;
 use App\Domains\Contacts\Models\Contact;
 use App\Domains\Contacts\Models\Organization;
 use Illuminate\Http\UploadedFile;
@@ -17,13 +17,13 @@ class AssetImportService
     public function __construct(
         private AssetRepository $assets,
         private AssetTypeRepository $types,
-        private BillingService $billing,
+        private FeatureEntitlementChecker $entitlements,
     ) {
     }
 
     public function import(UploadedFile $file): array
     {
-        $this->billing->assertFeature('assets');
+        $this->entitlements->assertFeature('assets');
 
         $handle = fopen($file->getRealPath(), 'r');
 

@@ -3,11 +3,10 @@
 namespace App\Domains\Tickets\Services;
 
 use App\Domains\Channels\Repositories\ChannelRepository;
-use App\Domains\Sla\Services\SlaService;
 use App\Domains\Tickets\Models\Ticket;
+use App\Domains\Tickets\Models\TicketMessage;
 use App\Domains\Tickets\Repositories\TicketRepository;
 use App\Domains\Workforce\Models\Department;
-use App\Domains\Workforce\Models\Team;
 use App\Domains\Workforce\Repositories\TeamRepository;
 use App\Models\User;
 
@@ -15,8 +14,9 @@ class TicketActionService
 {
     public function __construct(
         private TicketRepository $tickets,
-        private SlaService $sla,
-        private ChannelRepository $channels,
+        private TicketUpdateService $updates,
+        private TicketWatcherService $watchers,
+        private TicketReplyService $replies,
         private TeamRepository $teams,
     ) {
     }
@@ -32,7 +32,7 @@ class TicketActionService
 
     public function executeOne(Ticket $ticket, array $action): Ticket
     {
-        $ticket = $this->tickets->find($ticket->id);
+        $ticket = $this->tickets->findForWrite($ticket->id);
 
         return match ($action['type'] ?? '') {
             'set_status' => $this->setStatus($ticket, (int) ($action['value'] ?? 0)),
@@ -50,49 +50,39 @@ class TicketActionService
 
     private function setStatus(Ticket $ticket, int $statusId): Ticket
     {
-        $status = $this->tickets->statuses()->firstWhere('id', $statusId);
-        $data = ['ticket_status_id' => $statusId, 'closed_at' => $status?->is_closed ? now() : null];
-        $ticket = $this->tickets->update($ticket, $data);
-
-        if ($status?->is_closed) {
-            $this->sla->recordResolution($ticket);
-        }
-
-        return $ticket;
+        return $this->updates->update($ticket->id, ['ticket_status_id' => $statusId], null, [
+            'source' => 'escalation',
+        ]);
     }
 
     private function setPriority(Ticket $ticket, int $priorityId): Ticket
     {
-        return $this->tickets->update($ticket, ['ticket_priority_id' => $priorityId]);
+        return $this->updates->update($ticket->id, ['ticket_priority_id' => $priorityId], null, [
+            'source' => 'escalation',
+        ]);
     }
 
     private function assignTo(Ticket $ticket, ?int $userId): Ticket
     {
-        return $this->tickets->update($ticket, ['assigned_to' => $userId]);
+        return $this->updates->update($ticket->id, ['assigned_to' => $userId], null, [
+            'source' => 'escalation',
+        ]);
     }
 
     private function addWatcher(Ticket $ticket, int $userId): Ticket
     {
         if ($userId) {
-            $this->tickets->addWatcher($ticket, $userId);
+            $this->watchers->addWatcher($ticket->id, $userId);
         }
 
-        return $ticket;
+        return $this->tickets->findForWrite($ticket->id);
     }
 
     private function addInternalNote(Ticket $ticket, string $body): Ticket
     {
-        if ($body === '') {
-            return $ticket;
-        }
+        $this->replies->addInternalNote($ticket->id, $body);
 
-        $this->tickets->addMessage($ticket, [
-            'body' => $body,
-            'is_internal' => true,
-            'channel_id' => $this->channels->findActiveBySlug('web')?->id,
-        ]);
-
-        return $ticket;
+        return $this->tickets->findForWrite($ticket->id);
     }
 
     private function notifyTeamLead(Ticket $ticket, string $note): Ticket
@@ -100,14 +90,14 @@ class TicketActionService
         $lead = $this->resolveTeamLead($ticket);
 
         if ($lead) {
-            $this->tickets->addWatcher($ticket, $lead->id);
+            $this->watchers->addWatcher($ticket->id, $lead->id);
 
             if ($note !== '') {
-                $this->addInternalNote($ticket, $note);
+                $this->replies->addInternalNote($ticket->id, $note);
             }
         }
 
-        return $ticket;
+        return $this->tickets->findForWrite($ticket->id);
     }
 
     private function notifyDepartmentHead(Ticket $ticket, string $note): Ticket
@@ -115,28 +105,32 @@ class TicketActionService
         $head = $this->resolveDepartmentHead($ticket);
 
         if ($head) {
-            $this->tickets->addWatcher($ticket, $head->id);
+            $this->watchers->addWatcher($ticket->id, $head->id);
 
             if ($note !== '') {
-                $this->addInternalNote($ticket, $note);
+                $this->replies->addInternalNote($ticket->id, $note);
             }
         }
 
-        return $ticket;
+        return $this->tickets->findForWrite($ticket->id);
     }
 
     private function assignToTeamLead(Ticket $ticket): Ticket
     {
         $lead = $this->resolveTeamLead($ticket);
 
-        return $lead ? $this->assignTo($ticket, $lead->id) : $ticket;
+        return $lead
+            ? $this->updates->update($ticket->id, ['assigned_to' => $lead->id], null, ['source' => 'escalation'])
+            : $ticket;
     }
 
     private function assignToDepartmentHead(Ticket $ticket): Ticket
     {
         $head = $this->resolveDepartmentHead($ticket);
 
-        return $head ? $this->assignTo($ticket, $head->id) : $ticket;
+        return $head
+            ? $this->updates->update($ticket->id, ['assigned_to' => $head->id], null, ['source' => 'escalation'])
+            : $ticket;
     }
 
     private function resolveTeamLead(Ticket $ticket): ?User

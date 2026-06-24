@@ -62,7 +62,7 @@ REALTIME_WS_URL=ws://localhost:8080
 REALTIME_WS_HOST=0.0.0.0
 ```
 
-Tenant workspaces use subdomains, e.g. `demo.helpdesk.test:8081` — add each to `/etc/hosts` or use a wildcard DNS tool.
+Tenant workspaces use subdomains, e.g. `demo.helpefi.com:8081` — add each to `/etc/hosts` or use a wildcard DNS tool.
 
 ## Common commands
 

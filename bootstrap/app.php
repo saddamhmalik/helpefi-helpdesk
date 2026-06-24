@@ -16,7 +16,16 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        $middleware->trustProxies(at: '*');
+        $trustedProxies = array_values(array_filter(array_map(
+            'trim',
+            explode(',', (string) env('TRUSTED_PROXIES', '')),
+        )));
+
+        $middleware->trustProxies(
+            at: $trustedProxies !== [] ? $trustedProxies : null,
+        );
+
+        $middleware->throttleApi('60,1');
 
         $middleware->alias([
             'admin' => \App\Http\Middleware\EnsureUserIsAdmin::class,
@@ -24,6 +33,10 @@ return Application::configure(basePath: dirname(__DIR__))
             'audit.view' => \App\Http\Middleware\EnsureCanViewAudit::class,
             'customer' => \App\Http\Middleware\EnsureUserIsCustomer::class,
             'api.token' => \App\Http\Middleware\AuthenticateApiToken::class,
+            'api.agent' => \App\Http\Middleware\EnsureApiUserIsAgent::class,
+            'api.admin' => \App\Http\Middleware\EnsureApiUserIsAdmin::class,
+            'api.customer' => \App\Http\Middleware\EnsureApiUserIsCustomer::class,
+            'permission' => \App\Http\Middleware\EnsurePermission::class,
             'two-factor' => \App\Http\Middleware\EnsureTwoFactorVerified::class,
             'chat.widget.cors' => \App\Http\Middleware\ChatWidgetCors::class,
             'tenancy.public-api' => \App\Http\Middleware\InitializeTenancyForPublicApi::class,
@@ -52,6 +65,7 @@ return Application::configure(basePath: dirname(__DIR__))
             \App\Http\Middleware\HandleInertiaRequests::class,
             \App\Http\Middleware\TrackMarketingPageView::class,
             \App\Http\Middleware\MarketingSecurityHeaders::class,
+            \App\Http\Middleware\TenantSecurityHeaders::class,
         ]);
 
         $middleware->validateCsrfTokens(except: [

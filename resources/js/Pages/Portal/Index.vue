@@ -52,7 +52,7 @@ const { t } = useI18n();
                 <Link
                     v-for="article in featured"
                     :key="article.id"
-                    :href="portalPath(`/articles/${article.slug}`)"
+                    :href="portalPath(`/articles/${article.slug}${article.locale ? `?lang=${article.locale}` : ''}`)"
                     class="block rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-sm hover:border-blue-300"
                 >
                     <h3 class="font-medium text-blue-600">{{ article.title }}</h3>

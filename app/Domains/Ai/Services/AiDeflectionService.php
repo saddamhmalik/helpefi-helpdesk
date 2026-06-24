@@ -7,7 +7,7 @@ use App\Domains\Ai\Models\AiDeflectionEvent;
 use App\Domains\Ai\Repositories\AiDeflectionRepository;
 use App\Domains\Ai\Repositories\AiSettingRepository;
 use App\Domains\Ai\Repositories\KnowledgeAiRepository;
-use App\Domains\Billing\Services\BillingService;
+use App\Domains\Billing\Contracts\FeatureEntitlementChecker;
 use App\Domains\Brands\Services\BrandService;
 use App\Domains\Knowledge\Services\PortalService;
 use Illuminate\Auth\Access\AuthorizationException;
@@ -21,7 +21,7 @@ class AiDeflectionService
         private AiDeflectionRepository $events,
         private KnowledgeAiRepository $knowledge,
         private AiCompletionClient $client,
-        private BillingService $billing,
+        private FeatureEntitlementChecker $entitlements,
         private PortalService $portal,
         private BrandService $brands,
     ) {
@@ -77,9 +77,9 @@ class AiDeflectionService
         }
 
         $sessionId = $sessionId ?: (string) Str::uuid();
-        $articles = $this->knowledge->searchPublished($query, 5);
+        $articles = $this->knowledge->searchPortalPublished($query, 5);
         $mapped = $this->mapArticles($articles);
-        $useOpenAi = $this->client->available() && $this->billing->canUseFeature('ai');
+        $useOpenAi = $this->client->available() && $this->entitlements->canUseFeature('ai');
 
         if ($useOpenAi && $mapped !== []) {
             $answer = $this->client->complete(

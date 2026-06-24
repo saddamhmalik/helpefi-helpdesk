@@ -2,7 +2,7 @@
 
 namespace App\Domains\Security\Services;
 
-use App\Domains\Billing\Services\BillingService;
+use App\Domains\Billing\Contracts\FeatureEntitlementChecker;
 use App\Domains\Security\Repositories\SecuritySettingRepository;
 use App\Domains\Security\Socialite\OidcProvider;
 use Illuminate\Support\Facades\Config;
@@ -13,13 +13,13 @@ class OidcAuthService
 {
     public function __construct(
         private SecuritySettingRepository $settings,
-        private BillingService $billing,
+        private FeatureEntitlementChecker $entitlements,
     ) {
     }
 
     public function redirectUrl(): string
     {
-        $this->billing->assertFeature('sso');
+        $this->entitlements->assertFeature('sso');
         $config = $this->oidcConfig();
 
         return $this->driver($config)->redirect()->getTargetUrl();
@@ -27,7 +27,7 @@ class OidcAuthService
 
     public function handleCallback(): array
     {
-        $this->billing->assertFeature('sso');
+        $this->entitlements->assertFeature('sso');
         $config = $this->oidcConfig();
         $socialUser = $this->driver($config)->user();
 

@@ -18,7 +18,7 @@
         "onelogin/php-saml": "^4.2",
         "openai-php/client": "^0.18",
         "razorpay/razorpay": "^2.9",
-        "shopify/shopify-api": "^5.10",
+        "shopify/shopify-api": "^6.1",
         "socialiteproviders/manager": "^4.8",
         "socialiteproviders/microsoft-azure": "^5.2",
         "spatie/laravel-permission": "^8.0",

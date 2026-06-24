@@ -2,13 +2,13 @@
 
 namespace App\Domains\Channels\Services;
 
-use App\Domains\Automation\Events\TicketAutomationTrigger;
-use App\Domains\Automation\Models\AutomationRule;
+use App\Domains\Tickets\Events\TicketUpdated;
 use App\Domains\Channels\Support\ThankYouMessageDetector;
 use App\Domains\Security\Support\AuditRecorder;
 use App\Domains\Settings\Services\HelpdeskSettingService;
 use App\Domains\Tickets\Models\Ticket;
 use App\Domains\Tickets\Repositories\TicketRepository;
+use App\Domains\Tickets\Services\TicketStatusLookup;
 
 class ClosedTicketInboundReopenService
 {
@@ -17,6 +17,7 @@ class ClosedTicketInboundReopenService
         private HelpdeskSettingService $helpdeskSettings,
         private ThankYouMessageDetector $thankYouDetector,
         private AuditRecorder $audit,
+        private TicketStatusLookup $statusLookup,
     ) {
     }
 
@@ -66,8 +67,7 @@ class ClosedTicketInboundReopenService
 
     private function reopen(Ticket $ticket, string $auditEvent, array $auditMeta): bool
     {
-        $openStatus = $this->tickets->statuses()->firstWhere('slug', 'open')
-            ?? $this->tickets->statuses()->firstWhere('is_closed', false);
+        $openStatus = $this->statusLookup->defaultOpen();
 
         if (! $openStatus) {
             return false;
@@ -75,9 +75,15 @@ class ClosedTicketInboundReopenService
 
         $beforeStatusId = $ticket->ticket_status_id;
 
+        $closedIds = $this->statusLookup->closedIds();
+
+        if ($closedIds->isEmpty()) {
+            return false;
+        }
+
         $updated = Ticket::query()
             ->whereKey($ticket->id)
-            ->whereHas('status', fn ($query) => $query->where('is_closed', true))
+            ->whereIn('ticket_status_id', $closedIds)
             ->update([
                 'ticket_status_id' => $openStatus->id,
                 'closed_at' => null,
@@ -96,7 +102,7 @@ class ClosedTicketInboundReopenService
             'to_status_id' => $openStatus->id,
         ], $auditMeta));
 
-        TicketAutomationTrigger::dispatch($ticket, AutomationRule::TRIGGER_TICKET_UPDATED, [
+        TicketUpdated::dispatch($ticket, [
             'changed' => ['ticket_status_id'],
             'reopened_via_reply' => true,
         ]);

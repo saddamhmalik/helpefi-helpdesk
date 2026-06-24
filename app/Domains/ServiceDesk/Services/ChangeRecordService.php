@@ -2,7 +2,7 @@
 
 namespace App\Domains\ServiceDesk\Services;
 
-use App\Domains\Billing\Services\BillingService;
+use App\Domains\Billing\Contracts\FeatureEntitlementChecker;
 use App\Domains\ServiceCatalog\Models\ServiceCatalogItem;
 use App\Domains\ServiceDesk\Models\ChangeRecord;
 use App\Domains\ServiceDesk\Repositories\ChangeRecordRepository;
@@ -18,14 +18,14 @@ class ChangeRecordService
     public function __construct(
         private ChangeRecordRepository $records,
         private TicketRepository $tickets,
-        private BillingService $billing,
+        private FeatureEntitlementChecker $entitlements,
         private AuditRecorder $audit,
     ) {
     }
 
     public function ensureForTicket(Ticket $ticket): ?ChangeRecord
     {
-        if (! $this->billing->canUseFeature('service_desk')) {
+        if (! $this->entitlements->canUseFeature('service_desk')) {
             return null;
         }
 
@@ -38,7 +38,7 @@ class ChangeRecordService
 
     public function snapshotForTicket(Ticket|int $ticketOrId): ?array
     {
-        if (! $this->billing->canUseFeature('service_desk')) {
+        if (! $this->entitlements->canUseFeature('service_desk')) {
             return null;
         }
 
@@ -55,7 +55,7 @@ class ChangeRecordService
 
     public function update(int $ticketId, array $data): array
     {
-        $this->billing->assertFeature('service_desk');
+        $this->entitlements->assertFeature('service_desk');
         $ticket = $this->assertChangeTicket($ticketId);
         $record = $this->records->findOrCreateForTicket($ticket->id);
 
@@ -83,7 +83,7 @@ class ChangeRecordService
 
     public function calendar(?string $from = null, ?string $to = null): array
     {
-        $this->billing->assertFeature('service_desk');
+        $this->entitlements->assertFeature('service_desk');
 
         $start = $from ? Carbon::parse($from)->startOfDay() : now()->startOfMonth();
         $end = $to ? Carbon::parse($to)->endOfDay() : now()->endOfMonth();

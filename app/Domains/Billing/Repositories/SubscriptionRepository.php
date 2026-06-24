@@ -6,7 +6,7 @@ use App\Domains\Billing\Models\Subscription;
 
 class SubscriptionRepository
 {
-    private static ?Subscription $current = null;
+    private ?Subscription $current = null;
 
     public function current(): Subscription
     {
@@ -16,11 +16,11 @@ class SubscriptionRepository
             throw new \RuntimeException('Billing subscription requires an initialized tenant context.');
         }
 
-        if (self::$current !== null && self::$current->tenant_id === $tenantId) {
-            return self::$current;
+        if ($this->current !== null && $this->current->tenant_id === $tenantId) {
+            return $this->current;
         }
 
-        return self::$current = Subscription::query()->firstOrCreate(
+        return $this->current = Subscription::query()->firstOrCreate(
             ['tenant_id' => $tenantId],
             [
                 'plan' => null,
@@ -34,9 +34,14 @@ class SubscriptionRepository
     public function update(Subscription $subscription, array $data): Subscription
     {
         $subscription->update($data);
-        self::$current = null;
+        $this->current = null;
 
         return $subscription->fresh();
+    }
+
+    public function forget(): void
+    {
+        $this->current = null;
     }
 
     public function countByPlan(string $slug): int

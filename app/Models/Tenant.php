@@ -15,6 +15,7 @@ class Tenant extends BaseTenant implements TenantWithDatabase
         'is_blocked' => 'boolean',
         'byo_allowed' => 'boolean',
         'custom_domain_redirect' => 'boolean',
+        'release_upgraded_at' => 'datetime',
     ];
 
     public static function getCustomColumns(): array
@@ -23,6 +24,8 @@ class Tenant extends BaseTenant implements TenantWithDatabase
             'id',
             'name',
             'slug',
+            'release_version',
+            'release_upgraded_at',
             'is_blocked',
             'byo_allowed',
             'custom_domain_redirect',

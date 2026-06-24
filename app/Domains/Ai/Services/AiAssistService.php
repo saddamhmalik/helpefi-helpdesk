@@ -3,11 +3,10 @@
 namespace App\Domains\Ai\Services;
 
 use App\Domains\Ai\Contracts\AiCompletionClient;
-use App\Domains\Billing\Services\BillingService;
+use App\Domains\Billing\Contracts\FeatureEntitlementChecker;
 use App\Domains\Ai\Repositories\AiSettingRepository;
 use App\Domains\Ai\Repositories\KnowledgeAiRepository;
 use App\Domains\Ai\Repositories\TicketAiRepository;
-use App\Domains\Brands\Services\BrandService;
 use App\Models\User;
 use App\Domains\Tickets\Models\Ticket;
 use Illuminate\Auth\Access\AuthorizationException;
@@ -19,8 +18,7 @@ class AiAssistService
         private TicketAiRepository $tickets,
         private KnowledgeAiRepository $knowledge,
         private AiCompletionClient $client,
-        private BillingService $billing,
-        private BrandService $brands,
+        private FeatureEntitlementChecker $entitlements,
     ) {
     }
 
@@ -110,15 +108,14 @@ class AiAssistService
         $query = trim($ticket->subject.' '.$this->lastCustomerMessage($ticket));
         $articles = $this->knowledge->searchPublished($query);
 
-        $mapped = $articles->map(fn ($article) => [
+        $mapped = $articles
+            ->filter(fn ($article) => $article->is_published)
+            ->map(fn ($article) => [
             'id' => $article->id,
             'title' => $article->title,
             'slug' => $article->slug,
             'excerpt' => $article->excerpt,
-            'url' => route('portal.article', [
-                'brand' => $this->brands->defaultSlug(),
-                'articleSlug' => $article->slug,
-            ]),
+            'url' => '/knowledge/'.$article->id,
         ])->values()->all();
 
         if ($this->client->available() && $mapped) {
@@ -153,7 +150,7 @@ class AiAssistService
 
     private function assertEnabled(): void
     {
-        $this->billing->assertFeature('ai');
+        $this->entitlements->assertFeature('ai');
 
         if (! $this->isEnabled()) {
             throw new AuthorizationException('AI assistance is disabled.');

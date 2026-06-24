@@ -8,15 +8,19 @@ use App\Domains\Integrations\Services\WebhookService;
 use App\Domains\Sla\Services\SlaService;
 use App\Domains\Tickets\Models\Ticket;
 use App\Domains\Tickets\Repositories\TicketRepository;
+use App\Domains\Tickets\Services\TicketStatusLookup;
+use App\Domains\Workforce\Services\WorkforceService;
 
 class AutomationActionExecutor
 {
     public function __construct(
         private TicketRepository $tickets,
+        private TicketStatusLookup $statusLookup,
         private SlaService $sla,
         private ChannelRepository $channels,
         private TagRepository $tags,
         private WebhookService $webhooks,
+        private WorkforceService $workforce,
     ) {
     }
 
@@ -36,18 +40,15 @@ class AutomationActionExecutor
 
     private function setStatus(Ticket $ticket, int $statusId): Ticket
     {
-        $status = $this->tickets->statuses()->firstWhere('id', $statusId);
-        $data = ['ticket_status_id' => $statusId];
-
-        if ($status?->is_closed) {
-            $data['closed_at'] = now();
-        } else {
-            $data['closed_at'] = null;
-        }
+        $isClosed = $this->statusLookup->isClosedId($statusId);
+        $data = [
+            'ticket_status_id' => $statusId,
+            'closed_at' => $isClosed ? now() : null,
+        ];
 
         $ticket = $this->tickets->update($ticket, $data);
 
-        if ($status?->is_closed) {
+        if ($isClosed) {
             $this->sla->recordResolution($ticket);
         }
 
@@ -61,11 +62,19 @@ class AutomationActionExecutor
 
     private function assignTo(Ticket $ticket, ?int $userId): Ticket
     {
+        if ($userId && ! in_array($userId, $this->workforce->assignableAgentIds(), true)) {
+            return $ticket;
+        }
+
         return $this->tickets->update($ticket, ['assigned_to' => $userId]);
     }
 
     private function addWatcher(Ticket $ticket, int $userId): Ticket
     {
+        if (! in_array($userId, $this->workforce->assignableAgentIds(), true)) {
+            return $ticket;
+        }
+
         $this->tickets->addWatcher($ticket, $userId);
 
         return $this->tickets->find($ticket->id);

@@ -33,8 +33,25 @@ class AutomationScheduledActionRepository
             ->get();
     }
 
+    public function claimDue(int $id): ?AutomationScheduledAction
+    {
+        $claimed = AutomationScheduledAction::query()
+            ->where('id', $id)
+            ->whereNull('processed_at')
+            ->where('run_at', '<=', now())
+            ->update(['processed_at' => now()]);
+
+        if (! $claimed) {
+            return null;
+        }
+
+        return AutomationScheduledAction::query()->find($id);
+    }
+
     public function markProcessed(AutomationScheduledAction $scheduled): void
     {
-        $scheduled->update(['processed_at' => now()]);
+        if ($scheduled->processed_at === null) {
+            $scheduled->update(['processed_at' => now()]);
+        }
     }
 }

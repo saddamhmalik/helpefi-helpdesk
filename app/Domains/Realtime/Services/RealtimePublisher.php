@@ -3,7 +3,9 @@
 namespace App\Domains\Realtime\Services;
 
 use App\Domains\Realtime\Support\RealtimeChannelNames;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redis;
+use Throwable;
 
 class RealtimePublisher
 {
@@ -66,11 +68,35 @@ class RealtimePublisher
 
     private function publish(string $channel, array $payload): void
     {
+        if (! $this->canPublish()) {
+            return;
+        }
+
         $payload['timestamp'] = now()->toIso8601String();
 
-        Redis::connection('realtime')->publish(
-            config('realtime.redis_prefix').$channel,
-            json_encode($payload, JSON_THROW_ON_ERROR),
-        );
+        try {
+            Redis::connection('realtime')->publish(
+                config('realtime.redis_prefix').$channel,
+                json_encode($payload, JSON_THROW_ON_ERROR),
+            );
+        } catch (Throwable $exception) {
+            Log::warning('Realtime publish skipped', [
+                'channel' => $channel,
+                'message' => $exception->getMessage(),
+            ]);
+        }
+    }
+
+    private function canPublish(): bool
+    {
+        if (! config('realtime.enabled', true)) {
+            return false;
+        }
+
+        if (config('database.redis.client') === 'phpredis' && ! extension_loaded('redis')) {
+            return false;
+        }
+
+        return true;
     }
 }

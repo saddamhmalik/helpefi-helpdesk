@@ -4,6 +4,8 @@ namespace App\Domains\Workspace\Controllers\Api;
 
 use App\Domains\Tickets\Services\TicketFormReferenceService;
 use App\Domains\Tickets\Services\TicketSnoozeService;
+use App\Domains\Realtime\Services\RealtimeTokenService;
+use App\Domains\Realtime\Support\RealtimeChannelNames;
 use App\Domains\Workforce\Services\WorkforceService;
 use App\Domains\Workspace\Services\WorkspaceService;
 use App\Http\Controllers\Controller;
@@ -45,9 +47,30 @@ class WorkspaceController extends Controller
 
     public function pollQueue(Request $request): JsonResponse
     {
+        $ticketIds = array_values(array_filter(array_map(
+            'intval',
+            explode(',', (string) $request->query('ticket_ids', '')),
+        )));
+
         return response()->json(
-            $this->workspaceService->pollQueue($request->query('since'))
+            $this->workspaceService->pollQueue(
+                $request->query('since'),
+                $request->user()->id,
+                $ticketIds,
+            )
         );
+    }
+
+    public function realtimeToken(Request $request, int $ticket): JsonResponse
+    {
+        $this->workspaceService->ticket($ticket);
+
+        $channel = RealtimeChannelNames::ticket($ticket);
+
+        return response()->json([
+            'channel' => $channel,
+            'token' => app(RealtimeTokenService::class)->forChannel($channel, $request->user()->id),
+        ]);
     }
 
     public function saveDraft(Request $request, int $ticket): JsonResponse

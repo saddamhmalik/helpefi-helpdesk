@@ -16,8 +16,8 @@ class TenantDomainServiceTest extends TestCase
         $method->setAccessible(true);
 
         $this->assertSame(
-            'http://acme.helpdesk.test:8081',
-            $method->invoke($service, 'acme.helpdesk.test'),
+            'http://acme.helpefi.com:8081',
+            $method->invoke($service, 'acme.helpefi.com'),
         );
     }
 
@@ -30,8 +30,8 @@ class TenantDomainServiceTest extends TestCase
         $method->setAccessible(true);
 
         $this->assertSame(
-            'http://acme.helpdesk.test',
-            $method->invoke($service, 'acme.helpdesk.test'),
+            'http://acme.helpefi.com',
+            $method->invoke($service, 'acme.helpefi.com'),
         );
     }
 }

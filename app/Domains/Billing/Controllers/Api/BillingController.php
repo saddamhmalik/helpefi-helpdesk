@@ -27,6 +27,12 @@ class BillingController extends Controller
             'plan' => ['required', 'in:'.implode(',', $this->planRepository->slugs())],
         ]);
 
+        if ($this->billingService->usesRazorpayCheckout()) {
+            return response()->json([
+                'message' => 'Use checkout to change plans with Razorpay.',
+            ], 422);
+        }
+
         $this->billingService->changePlan($data['plan']);
 
         return response()->json($this->billingService->snapshot());

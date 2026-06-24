@@ -14,6 +14,7 @@ use App\Models\User;
 use App\Support\TenantCache;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 class TenantSetupService
 {
@@ -114,6 +115,12 @@ class TenantSetupService
 
     public function completeStep(string $step): array
     {
+        if (! in_array($step, $this->stepKeys(), true)) {
+            throw ValidationException::withMessages([
+                'step' => 'Unknown setup step.',
+            ]);
+        }
+
         $setting = $this->settings->current();
         $completed = $setting->setup_steps_completed ?? [];
 
@@ -132,7 +139,13 @@ class TenantSetupService
 
     public function finish(): array
     {
+        $this->assertRequiredStepsComplete();
+
         $setting = $this->settings->current();
+
+        if ($setting->setup_completed_at !== null) {
+            return $this->snapshot();
+        }
 
         $this->settings->update($setting, [
             'setup_completed_at' => now(),
@@ -141,6 +154,32 @@ class TenantSetupService
         self::forgetAdminMenuCache();
 
         return $this->snapshot();
+    }
+
+    public function requiredStepsComplete(): bool
+    {
+        $steps = collect($this->snapshot()['steps'])->where('required', true);
+
+        return $steps->isNotEmpty() && $steps->every(fn (array $step) => $step['complete']);
+    }
+
+    private function assertRequiredStepsComplete(): void
+    {
+        if ($this->requiredStepsComplete()) {
+            return;
+        }
+
+        throw ValidationException::withMessages([
+            'setup' => 'Complete all required setup steps before finishing.',
+        ]);
+    }
+
+    private function stepKeys(): array
+    {
+        return collect($this->requiredStepDefinitions())
+            ->merge($this->optionalStepDefinitions([]))
+            ->pluck('key')
+            ->all();
     }
 
     private function steps(HelpdeskSetting $setting): array

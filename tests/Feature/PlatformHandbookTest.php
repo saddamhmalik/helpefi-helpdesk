@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Domains\Knowledge\Support\PlatformKnowledge;
 use App\Domains\Settings\Repositories\HelpdeskSettingRepository;
 use App\Domains\Tenancy\Services\TenantDummyDataService;
+use App\Domains\Ai\Models\AiSetting;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\PlatformHandbookSeeder;
@@ -65,6 +66,64 @@ class PlatformHandbookTest extends TenantTestCase
             ->assertRedirect();
 
         $this->assertTrue($article->fresh()->is_public);
+    }
+
+    public function test_private_handbook_article_is_not_visible_on_portal(): void
+    {
+        $this->assertDatabaseHas('knowledge_articles', [
+            'slug' => 'handbook-ai-copilot',
+            'is_public' => false,
+        ]);
+
+        $this->tenantGet('/portal/default/articles/handbook-ai-copilot')
+            ->assertNotFound();
+    }
+
+    public function test_public_handbook_article_is_visible_on_portal(): void
+    {
+        $admin = $this->admin();
+        $article = \App\Domains\Knowledge\Models\KnowledgeArticle::query()
+            ->where('slug', 'handbook-ai-copilot')
+            ->firstOrFail();
+
+        $this->actingAs($admin)
+            ->tenantPut("/knowledge/{$article->id}", ['is_public' => true])
+            ->assertRedirect();
+
+        $this->tenantGet('/portal/default/articles/handbook-ai-copilot')
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('Portal/Article')
+                ->where('article.title', 'AI Copilot and suggested replies'));
+    }
+
+    public function test_copilot_suggests_handbook_with_agent_knowledge_url(): void
+    {
+        config(['ai.api_key' => null, 'ai.provider' => 'openai']);
+        AiSetting::query()->create(['enabled' => true]);
+
+        $response = $this->actingAs($this->admin())
+            ->tenantPostJson('/ai/copilot/ask', ['message' => 'AI copilot suggested replies']);
+
+        $response->assertOk()
+            ->assertJsonPath('source', 'local');
+
+        $articles = collect($response->json('articles'));
+        $handbook = $articles->firstWhere('slug', 'handbook-ai-copilot');
+
+        $this->assertNotNull($handbook);
+        $this->assertStringStartsWith('/knowledge/', $handbook['url']);
+    }
+
+    public function test_portal_search_excludes_private_handbook_articles(): void
+    {
+        $search = app(\App\Domains\Knowledge\Repositories\KnowledgeSearchRepository::class);
+
+        $portalResults = $search->searchPortalPublished('AI copilot suggested replies', 5);
+        $agentResults = $search->searchPublished('AI copilot suggested replies', 5);
+
+        $this->assertFalse($portalResults->contains(fn ($article) => $article->slug === 'handbook-ai-copilot'));
+        $this->assertTrue($agentResults->contains(fn ($article) => $article->slug === 'handbook-ai-copilot'));
     }
 
     public function test_system_handbook_survives_bootstrap_demo_removal(): void
