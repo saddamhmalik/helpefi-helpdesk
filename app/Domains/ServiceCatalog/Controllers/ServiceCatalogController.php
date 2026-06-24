@@ -28,8 +28,8 @@ class ServiceCatalogController extends Controller
             'categories' => $this->catalogService->adminCatalog(),
             'meta' => array_merge(
                 $this->catalogService->meta(
-                    collect($reference['priorities']),
-                    collect($reference['agents']),
+                    $reference['priorities'],
+                    $reference['agents'],
                 ),
                 ['service_desk_available' => $this->entitlements->canUseFeature('service_desk')],
             ),

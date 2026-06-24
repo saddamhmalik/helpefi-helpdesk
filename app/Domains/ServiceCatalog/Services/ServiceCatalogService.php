@@ -50,7 +50,7 @@ class ServiceCatalogService
         return $this->items->findPublicBySlug($slug);
     }
 
-    public function meta(Collection $priorities, Collection $agents): array
+    public function meta(array $priorities, array $agents): array
     {
         return [
             'ticket_types' => [

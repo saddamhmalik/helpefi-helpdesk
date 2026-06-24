@@ -17,12 +17,12 @@ Route::prefix('portal/{brand:slug}')->middleware(['brand', 'portal.locale'])->na
     Route::get('/articles/{articleSlug}', [PortalController::class, 'article'])->name('article');
     Route::get('/search', [PortalController::class, 'search'])->name('search');
     Route::get('/submit', [PortalController::class, 'showSubmit'])->name('submit');
-    Route::post('/submit', [PortalController::class, 'submit'])->middleware('throttle:10,1')->name('submit.store');
+    Route::post('/submit', [PortalController::class, 'submit'])->middleware('throttle:portal-ticket-submit')->name('submit.store');
     Route::get('/services', [PortalServiceCatalogController::class, 'index'])->name('services');
     Route::get('/services/{service}', [PortalServiceCatalogController::class, 'show'])->name('services.show');
-    Route::post('/services/{service}', [PortalServiceCatalogController::class, 'submit'])->middleware('throttle:10,1')->name('services.submit');
+    Route::post('/services/{service}', [PortalServiceCatalogController::class, 'submit'])->middleware('throttle:portal-ticket-submit')->name('services.submit');
     Route::get('/track', [PortalController::class, 'showTrack'])->name('track');
-    Route::post('/track', [PortalController::class, 'track'])->middleware('throttle:10,1')->name('track.lookup');
+    Route::post('/track', [PortalController::class, 'track'])->middleware('throttle:portal-track-lookup')->name('track.lookup');
     Route::post('/csat', [PortalCsatController::class, 'submitGuest'])->name('csat');
 
     Route::middleware('signed')->prefix('csat/email')->name('csat.email.')->group(function () {
@@ -33,9 +33,9 @@ Route::prefix('portal/{brand:slug}')->middleware(['brand', 'portal.locale'])->na
 
     Route::middleware('guest')->group(function () {
         Route::get('/login', [PortalAuthController::class, 'showLogin'])->name('login');
-        Route::post('/login', [PortalAuthController::class, 'login'])->middleware('throttle:5,1');
+        Route::post('/login', [PortalAuthController::class, 'login'])->middleware('throttle:portal-auth');
         Route::get('/register', [PortalAuthController::class, 'showRegister'])->name('register');
-        Route::post('/register', [PortalAuthController::class, 'register'])->middleware('throttle:5,1');
+        Route::post('/register', [PortalAuthController::class, 'register'])->middleware('throttle:portal-auth');
     });
 
     Route::middleware(['auth', 'customer'])->group(function () {

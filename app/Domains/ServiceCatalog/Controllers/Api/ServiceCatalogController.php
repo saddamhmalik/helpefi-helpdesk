@@ -33,8 +33,8 @@ class ServiceCatalogController extends Controller
         return response()->json([
             'categories' => $this->catalogService->adminCatalog(),
             'meta' => $this->catalogService->meta(
-                collect($reference['priorities']),
-                collect($reference['agents']),
+                $reference['priorities'],
+                $reference['agents'],
             ),
         ]);
     }

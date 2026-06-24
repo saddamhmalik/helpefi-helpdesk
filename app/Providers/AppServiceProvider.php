@@ -44,6 +44,8 @@ use App\Domains\Ai\Listeners\TriageTicketOnCreate;
 use Illuminate\Notifications\Events\NotificationSent;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
+use App\Support\PortalRateLimiters;
+use App\Support\QueueConnectionFallback;
 use App\Support\SlowQueryLogger;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\RateLimiter;
@@ -64,6 +66,8 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        QueueConnectionFallback::apply();
+
         $this->registerRouteParameterConstraints();
 
         SlowQueryLogger::register();
@@ -98,6 +102,8 @@ class AppServiceProvider extends ServiceProvider
         Organization::observe(ContactFormReferenceCacheObserver::class);
         Tag::observe(ContactFormReferenceCacheObserver::class);
         HelpdeskSetting::observe(HelpdeskSettingCacheObserver::class);
+
+        PortalRateLimiters::register();
 
         RateLimiter::for('tenant-infrastructure-verify', function (Request $request) {
             $limit = max(1, (int) config('tenant_infrastructure.verify_rate_limit_per_minute', 5));
