@@ -3,43 +3,27 @@ import { Link } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import CentralLayout from '../../Layouts/CentralLayout.vue';
-import { useMarketingCopy } from '../../composables/useMarketingCopy.js';
 
 const props = defineProps({
     brand: { type: String, default: 'helpefi' },
     trialDays: { type: Number, default: 14 },
     competitor: { type: String, required: true },
     compareMeta: { type: Object, default: () => ({}) },
+    content: { type: Object, required: true },
     socialLinks: { type: Array, default: () => [] },
 });
 
-const { t, tm } = useI18n();
-const { platformName, brandParams, createLocalizedSection } = useMarketingCopy(() => props.trialDays);
+const { t } = useI18n();
 
-const seoPage = computed(() => props.compareMeta.seo_key ?? `compare_${props.competitor.replace(/-/g, '_')}`);
+const platformName = computed(() => props.brand);
 
-const copyPrefix = computed(() => `central.comparisons.${props.competitor}`);
+const competitorName = computed(() => props.content.competitor_name ?? props.competitor);
 
-const competitorName = computed(() => t(`${copyPrefix.value}.competitor_name`));
+const reasons = computed(() => props.content.reasons ?? []);
 
-const copy = computed(() => ({
-    badge: t(`${copyPrefix.value}.badge`, brandParams.value),
-    heroTitle: t(`${copyPrefix.value}.hero_title`),
-    heroHighlight: t(`${copyPrefix.value}.hero_highlight`),
-    heroSubtitle: t(`${copyPrefix.value}.hero_subtitle`, brandParams.value),
-    ctaTitle: t(`${copyPrefix.value}.cta_title`, brandParams.value),
-    ctaBody: t(`${copyPrefix.value}.cta_body`, brandParams.value),
-}));
+const rows = computed(() => props.content.rows ?? []);
 
-const reasons = createLocalizedSection(() => `${copyPrefix.value}.reasons`);
-
-const rows = computed(() => {
-    const value = tm(`${copyPrefix.value}.rows`);
-
-    return Array.isArray(value) ? value : [];
-});
-
-const faqs = createLocalizedSection(() => `${copyPrefix.value}.faq`);
+const faqs = computed(() => props.content.faq ?? []);
 
 const accent = computed(() => {
     const map = {
@@ -84,18 +68,6 @@ const toggleFaq = (index) => {
     openFaq.value = openFaq.value === index ? null : index;
 };
 
-const formatCell = (value) => {
-    if (value === true) {
-        return 'yes';
-    }
-
-    if (value === false) {
-        return 'no';
-    }
-
-    return String(value);
-};
-
 const isCheck = (value) => value === true;
 
 const isDash = (value) => value === false;
@@ -122,16 +94,16 @@ const isDash = (value) => value === false;
 
                 <div class="max-w-3xl">
                     <span class="inline-flex rounded-full border px-4 py-1.5 text-xs font-semibold backdrop-blur" :class="accent.badge">
-                        {{ copy.badge }}
+                        {{ content.badge }}
                     </span>
                     <h1 class="mt-6 text-3xl font-extrabold leading-tight tracking-tight sm:text-5xl">
-                        {{ copy.heroTitle }}
+                        {{ content.hero_title }}
                         <span class="mt-2 block bg-gradient-to-r bg-clip-text text-transparent" :class="accent.highlight">
-                            {{ copy.heroHighlight }}
+                            {{ content.hero_highlight }}
                         </span>
                     </h1>
                     <p class="mt-6 text-lg leading-relaxed text-slate-300">
-                        {{ copy.heroSubtitle }}
+                        {{ content.hero_subtitle }}
                     </p>
                     <div class="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
                         <Link
@@ -275,8 +247,8 @@ const isDash = (value) => value === false;
 
         <section class="bg-slate-950 py-16 sm:py-24">
             <div class="mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-8">
-                <h2 class="text-3xl font-bold tracking-tight text-white sm:text-4xl">{{ copy.ctaTitle }}</h2>
-                <p class="mx-auto mt-4 max-w-2xl text-lg text-slate-400">{{ copy.ctaBody }}</p>
+                <h2 class="text-3xl font-bold tracking-tight text-white sm:text-4xl">{{ content.cta_title }}</h2>
+                <p class="mx-auto mt-4 max-w-2xl text-lg text-slate-400">{{ content.cta_body }}</p>
                 <div class="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
                     <Link
                         href="/register"

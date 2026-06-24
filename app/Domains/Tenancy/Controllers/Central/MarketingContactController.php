@@ -37,19 +37,11 @@ class MarketingContactController extends Controller
             return redirect()->route('central.static.contact');
         }
 
-        $validated = $request->validate([
-            'name' => ['required', 'string', 'max:120'],
-            'email' => ['required', 'email', 'max:255'],
-            'company' => ['nullable', 'string', 'max:120'],
-            'topic' => ['required', 'in:sales,support,partnership,enterprise,other'],
-            'message' => ['required', 'string', 'min:10', 'max:5000'],
-            'website' => ['nullable', 'string', 'max:0'],
-            'cf_turnstile_response' => ['nullable', 'string', 'max:2048'],
-        ]);
+        $validated = $request->validate($this->contacts->submitRules());
 
         $this->botGuard->assertTurnstile($request);
         $this->rateLimiter->assertWithinLimit($request);
-        $this->contacts->submit($validated);
+        $this->contacts->submit($validated, $request);
         $this->rateLimiter->recordAttempt($request);
 
         return redirect()

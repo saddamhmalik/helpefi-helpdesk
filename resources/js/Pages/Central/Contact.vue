@@ -36,6 +36,7 @@ const form = useForm({
     company: '',
     topic: 'sales',
     message: '',
+    marketing_consent: false,
     website: '',
     cf_turnstile_response: '',
 });
@@ -245,6 +246,11 @@ const sidebarLinks = computed(() => [
                                     />
                                     <p v-if="fieldError('message')" class="mt-1 text-xs text-red-600 dark:text-red-400">{{ fieldError('message') }}</p>
                                 </div>
+
+                                <label class="flex items-start gap-3 text-sm text-slate-600 dark:text-slate-400">
+                                    <input v-model="form.marketing_consent" type="checkbox" class="mt-1 rounded border-slate-300 text-blue-600 focus:ring-blue-500" />
+                                    <span>{{ $t('central.marketing_leads.consent_short') }}</span>
+                                </label>
 
                                 <div v-if="turnstileSiteKey">
                                     <ContactTurnstile

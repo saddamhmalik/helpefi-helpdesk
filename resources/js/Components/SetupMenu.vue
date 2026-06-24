@@ -138,7 +138,8 @@ watch(show, (visible) => {
                 <div class="flex items-center justify-between border-b border-amber-100 px-3 py-2.5 dark:border-amber-900/40 dark:bg-amber-950/30">
                     <div>
                         <p class="text-sm font-semibold text-amber-950 dark:text-amber-100">{{ t('components.setup_incomplete') }}</p>
-                        <p class="text-xs text-amber-800 dark:text-amber-200">{{ countLabel }}</p>
+                        <p class="text-xs text-amber-800 dark:text-amber-200">{{ t('components.setup_menu_subtitle') }}</p>
+                        <p class="mt-0.5 text-xs font-medium text-amber-700 dark:text-amber-300">{{ countLabel }}</p>
                     </div>
                     <button
                         type="button"

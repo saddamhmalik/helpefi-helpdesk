@@ -20,6 +20,7 @@
             "nav_testimonials": "Testimonials",
             "nav_backups": "Backups",
             "nav_feedback": "Feedback & requests",
+            "nav_leads": "Marketing leads",
             "nav_audit_logs": "Audit logs",
             "nav_slow_queries": "Slow queries",
             "nav_observability": "Errors & exceptions",

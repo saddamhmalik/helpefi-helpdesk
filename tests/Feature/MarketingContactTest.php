@@ -62,6 +62,12 @@ class MarketingContactTest extends TestCase
         Mail::assertSent(MarketingContactInquiryMail::class, function (MarketingContactInquiryMail $mail) {
             return $mail->hasReplyTo('jane@acme.test', 'Jane Admin');
         });
+
+        $this->assertDatabaseHas('marketing_leads', [
+            'email' => 'jane@acme.test',
+            'source' => 'contact',
+            'intent' => 'sales',
+        ], 'central');
     }
 
     public function test_contact_form_silently_discards_honeypot_submissions(): void
@@ -96,6 +102,15 @@ class MarketingContactTest extends TestCase
         $this->withValidContactSession()
             ->post($this->centralUrl('/contact'), [])
             ->assertSessionHasErrors(['name', 'email', 'topic', 'message']);
+    }
+
+    public function test_contact_form_rejects_invalid_topic(): void
+    {
+        $this->withValidContactSession()
+            ->post($this->centralUrl('/contact'), $this->validPayload([
+                'topic' => 'sql-injection',
+            ]))
+            ->assertSessionHasErrors('topic');
     }
 
     public function test_contact_form_is_rate_limited_by_ip(): void

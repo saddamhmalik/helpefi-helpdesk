@@ -137,6 +137,15 @@ export function usePlatformAdmin() {
             });
         }
 
+        if (can('leads.view')) {
+            platformItems.push({
+                label: t('layouts.admin.nav_leads'),
+                href: '/admin/leads',
+                permission: 'leads.view',
+                match: (url) => url.startsWith('/admin/leads'),
+            });
+        }
+
         if (can('audit.view')) {
             platformItems.push({
                 label: t('layouts.admin.nav_audit_logs'),

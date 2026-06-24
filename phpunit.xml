@@ -39,5 +39,7 @@
         <env name="BILLING_DEFAULT_PLAN" value="enterprise"/>
         <env name="STRIPE_ENABLED" value="false"/>
         <env name="TENANT_INFRASTRUCTURE_TEST_ON_SAVE" value="false"/>
+        <env name="TURNSTILE_SITE_KEY" value=""/>
+        <env name="TURNSTILE_SECRET_KEY" value=""/>
     </php>
 </phpunit>

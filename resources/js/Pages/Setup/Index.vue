@@ -37,6 +37,36 @@ const showDemoManagement = computed(() => (
     && (showDemoLoadSample.value || showDemoBootstrap.value)
 ));
 
+const stepIcons = {
+    business_hours: 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z',
+    email: 'M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z',
+    chat_widget: 'M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z',
+    invite_team: 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z',
+    sla_policies: 'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z',
+};
+
+const stepIconPath = (key) => stepIcons[key] ?? stepIcons.sla_policies;
+
+const nextStepKey = computed(() => {
+    const steps = props.guide?.steps ?? [];
+
+    return steps.find((step) => step.required && !step.complete)?.key ?? null;
+});
+
+const progressPercent = computed(() => {
+    const total = progress.value.total;
+
+    if (! total) {
+        return 0;
+    }
+
+    return Math.round((progress.value.completed / total) * 100);
+});
+
+const dismissWelcome = () => {
+    showWelcome.value = false;
+};
+
 const sampleSummaryLabel = computed(() => t('setup_index.sample_summary', {
     tickets: props.dummyData?.summary?.tickets ?? 0,
     contacts: props.dummyData?.summary?.contacts ?? 0,
@@ -120,7 +150,7 @@ onMounted(() => {
 
     window.setTimeout(() => {
         showWelcome.value = false;
-    }, 6000);
+    }, 12000);
 });
 
 const completeStep = (key) => {
@@ -153,18 +183,25 @@ const copy = async (text) => {
                         <span v-for="n in 12" :key="n" class="welcome-particle" :style="{ '--i': n }" />
                     </div>
                     <div class="relative flex items-start gap-4">
-                        <div class="welcome-check flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-white/20 text-2xl font-bold backdrop-blur">
-                            ✓
+                        <div class="welcome-check flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-white/20 text-2xl backdrop-blur">
+                            🎉
                         </div>
-                        <div>
+                        <div class="min-w-0 flex-1">
                             <p class="text-sm font-medium text-blue-100">{{ $t('setup_index.workspace_ready') }}</p>
-                            <h2 class="mt-1 text-xl font-semibold">Welcome to {{ guide.workspace?.name }}</h2>
+                            <h2 class="mt-1 text-xl font-semibold">
+                                {{ $t('setup_index.welcome_headline', { name: guide.workspace?.name }) }}
+                            </h2>
                             <p class="mt-2 text-sm text-blue-100">
-                                {{ $t('setup_index.helpdesk_live_at') }}
-                                <span class="font-medium text-white">{{ guide.workspace?.domain }}</span>.
-                                {{ $t('setup_index.complete_steps_below') }}
+                                {{ $t('setup_index.welcome_subline', { domain: guide.workspace?.domain }) }}
                             </p>
                         </div>
+                        <button
+                            type="button"
+                            class="shrink-0 rounded-lg bg-white/15 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-white/25"
+                            @click="dismissWelcome"
+                        >
+                            {{ $t('setup_index.welcome_dismiss') }}
+                        </button>
                     </div>
                 </div>
             </Transition>
@@ -173,8 +210,9 @@ const copy = async (text) => {
                 v-if="dummyData.needs_choice"
                 class="mb-8 overflow-hidden rounded-2xl border border-blue-200 dark:border-blue-900/60 bg-white dark:bg-slate-900 shadow-sm"
             >
-                <div class="border-b border-blue-100 bg-blue-50 px-5 py-4 dark:border-blue-900/60 dark:bg-blue-950/50">
-                    <p class="text-sm font-semibold text-blue-900 dark:text-blue-100">{{ $t('setup_index.how_would_you_like_to_start') }}</p>
+                <div class="border-b border-blue-100 bg-gradient-to-r from-blue-50 to-indigo-50 px-5 py-4 dark:border-blue-900/60 dark:from-blue-950/50 dark:to-indigo-950/40">
+                    <p class="text-xs font-semibold uppercase tracking-wide text-blue-600 dark:text-blue-400">{{ $t('setup_index.choice_eyebrow') }}</p>
+                    <p class="mt-1 text-sm font-semibold text-blue-900 dark:text-blue-100">{{ $t('setup_index.how_would_you_like_to_start') }}</p>
                     <p class="mt-1 text-sm text-blue-800 dark:text-blue-200">
                         {{ $t('setup_index.load_realistic_sample_tickets_and_customers_to_explore_the_product_or_') }}
                     </p>
@@ -182,10 +220,14 @@ const copy = async (text) => {
                 <div class="grid gap-4 p-5 sm:grid-cols-2">
                     <button
                         type="button"
-                        class="rounded-xl border border-blue-200 bg-blue-50 p-5 text-left transition hover:border-blue-400 hover:bg-blue-100 disabled:opacity-60 dark:border-blue-800 dark:bg-blue-950/60 dark:hover:border-blue-600 dark:hover:bg-blue-950/80"
+                        class="relative rounded-xl border-2 border-blue-300 bg-gradient-to-br from-blue-50 to-indigo-50 p-5 text-left transition hover:border-blue-500 hover:shadow-md disabled:opacity-60 dark:border-blue-700 dark:from-blue-950/60 dark:to-indigo-950/40 dark:hover:border-blue-500"
                         :disabled="loadingSample || loadingSkip"
                         @click="loadSampleData"
                     >
+                        <span class="absolute right-3 top-3 rounded-full bg-blue-600 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white">
+                            {{ $t('setup_index.sample_card_badge') }}
+                        </span>
+                        <div class="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600 text-lg text-white">✨</div>
                         <p class="text-base font-semibold text-slate-900 dark:text-slate-100">{{ $t('setup_index.explore_with_sample_data') }}</p>
                         <p class="mt-2 text-sm text-slate-600 dark:text-slate-300">
                             {{ $t('setup_index.adds_demo_tickets_conversations_customers_tags_teams_and_departments_y') }}
@@ -196,10 +238,14 @@ const copy = async (text) => {
                     </button>
                     <button
                         type="button"
-                        class="rounded-xl border border-slate-200 dark:border-slate-800 p-5 text-left transition hover:border-slate-300 dark:hover:border-slate-600 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 dark:bg-slate-950 disabled:opacity-60"
+                        class="relative rounded-xl border border-slate-200 p-5 text-left transition hover:border-slate-300 hover:bg-slate-50 disabled:opacity-60 dark:border-slate-700 dark:hover:border-slate-600 dark:hover:bg-slate-800/80"
                         :disabled="loadingSample || loadingSkip"
                         @click="startEmpty"
                     >
+                        <span class="absolute right-3 top-3 rounded-full bg-slate-200 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-slate-600 dark:bg-slate-700 dark:text-slate-300">
+                            {{ $t('setup_index.empty_card_badge') }}
+                        </span>
+                        <div class="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 text-lg dark:bg-slate-800">🚀</div>
                         <p class="text-base font-semibold text-slate-900 dark:text-slate-100">{{ $t('setup_index.start_with_my_own_data') }}</p>
                         <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">
                             {{ $t('setup_index.skip_sample_content_and_build_your_workspace_from_scratch_with_real_cu') }}
@@ -333,16 +379,21 @@ const copy = async (text) => {
 
             <div v-if="!guidePaused" class="mb-8">
                 <p class="text-sm font-medium text-blue-600">{{ $t('setup_index.getting_started') }}</p>
-                <h1 class="mt-1 text-2xl font-semibold text-slate-900 dark:text-slate-100">Set up {{ guide.workspace?.name }}</h1>
+                <h1 class="mt-1 text-2xl font-semibold text-slate-900 dark:text-slate-100">
+                    {{ $t('setup_index.set_up_workspace', { name: guide.workspace?.name }) }}
+                </h1>
                 <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">
                     {{ $t('setup_index.complete_steps_configure') }}
                     <span class="font-medium text-slate-800 dark:text-slate-200">{{ guide.workspace?.domain }}</span>.
                 </p>
-                <div class="mt-4 h-2 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-900">
-                    <div
-                        class="h-full rounded-full bg-blue-600 transition-all duration-700 ease-out"
-                        :style="{ width: `${progress.total ? (progress.completed / progress.total) * 100 : 0}%` }"
-                    />
+                <div class="mt-4 flex items-center gap-4">
+                    <div class="h-2 flex-1 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-900">
+                        <div
+                            class="h-full rounded-full bg-gradient-to-r from-blue-600 to-indigo-500 transition-all duration-700 ease-out"
+                            :style="{ width: `${progressPercent}%` }"
+                        />
+                    </div>
+                    <span class="text-sm font-semibold tabular-nums text-blue-600 dark:text-blue-400">{{ progressPercent }}%</span>
                 </div>
                 <p class="mt-2 text-xs text-slate-500 dark:text-slate-400">{{ $t('setup_index.steps_complete', { completed: progress.completed, total: progress.total }) }}</p>
             </div>
@@ -351,25 +402,50 @@ const copy = async (text) => {
                 <article
                     v-for="(step, index) in guide.steps"
                     :key="step.key"
-                    class="setup-step rounded-xl border bg-white dark:bg-slate-900 shadow-sm"
-                    :class="step.complete ? 'border-emerald-200 dark:border-emerald-900/60' : 'border-slate-200 dark:border-slate-800'"
+                    class="setup-step rounded-xl border bg-white shadow-sm dark:bg-slate-900"
+                    :class="[
+                        step.complete
+                            ? 'border-emerald-200 dark:border-emerald-900/60'
+                            : step.key === nextStepKey
+                                ? 'border-blue-300 ring-2 ring-blue-500/20 dark:border-blue-700'
+                                : 'border-slate-200 dark:border-slate-800',
+                    ]"
                     :style="{ animationDelay: `${index * 60}ms` }"
                 >
                     <div class="p-5">
                         <div class="flex items-start gap-3">
                             <span
-                                class="mt-0.5 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-bold transition-colors"
-                                :class="step.complete ? 'bg-emerald-100 text-emerald-700 dark:text-emerald-300' : 'bg-slate-100 dark:bg-slate-900 text-slate-500 dark:text-slate-400'"
+                                class="mt-0.5 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-xs font-bold transition-colors"
+                                :class="step.complete
+                                    ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300'
+                                    : step.key === nextStepKey
+                                        ? 'bg-blue-600 text-white'
+                                        : 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400'"
                             >
-                                {{ step.complete ? '✓' : '•' }}
+                                <svg v-if="!step.complete" class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" :d="stepIconPath(step.key)" />
+                                </svg>
+                                <span v-else>✓</span>
                             </span>
                             <div class="min-w-0 flex-1">
                                 <div class="flex flex-wrap items-center gap-2">
                                     <h2 class="text-base font-semibold text-slate-900 dark:text-slate-100">{{ step.title }}</h2>
-                                    <span v-if="!step.required" class="rounded-full bg-slate-100 dark:bg-slate-900 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{{ $t('setup_index.optional') }}</span>
+                                    <span
+                                        v-if="step.key === nextStepKey && !step.complete"
+                                        class="rounded-full bg-blue-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-blue-700 dark:bg-blue-950/60 dark:text-blue-300"
+                                    >
+                                        {{ $t('setup_index.start_here') }}
+                                    </span>
+                                    <span v-if="!step.required" class="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-500 dark:bg-slate-800 dark:text-slate-400">{{ $t('setup_index.optional') }}</span>
+                                    <span
+                                        v-if="step.minutes && !step.complete"
+                                        class="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-400"
+                                    >
+                                        {{ $t('setup_index.step_minutes', { minutes: step.minutes }) }}
+                                    </span>
                                     <span
                                         v-if="step.complete"
-                                        class="rounded-full bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-emerald-700 dark:text-emerald-300"
+                                        class="rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300"
                                     >
                                         {{ $t('setup_index.done') }}
                                     </span>
@@ -405,7 +481,10 @@ const copy = async (text) => {
                         >{{ $t('setup_index.mark_done') }}</button>
                         <Link
                             :href="step.url"
-                            class="inline-flex h-9 w-full items-center justify-center rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 text-sm font-medium text-slate-700 dark:text-slate-300 transition hover:bg-slate-50 dark:hover:bg-slate-800 dark:bg-slate-950 sm:w-auto"
+                            class="inline-flex h-9 w-full items-center justify-center rounded-lg px-4 text-sm font-medium transition sm:w-auto"
+                            :class="step.key === nextStepKey && !step.complete
+                                ? 'bg-blue-600 text-white hover:bg-blue-700'
+                                : 'border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800'"
                         >
                             {{ $t('setup_index.open') }}
                         </Link>
@@ -421,7 +500,7 @@ const copy = async (text) => {
                     </template>
                     <template v-else>
                         <p class="text-sm font-medium text-slate-900 dark:text-slate-100">{{ $t('setup_index.ready_to_start_supporting') }}</p>
-                        <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">{{ $t('setup_index.finish_setup_to_open_your_workspace_dashboard_missing_configuration_wi') }}</p>
+                        <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">{{ $t('setup_index.finish_setup_description') }}</p>
                         <p v-if="dummyData.needs_choice" class="mt-2 text-sm text-amber-700 dark:text-amber-300">{{ $t('setup_index.choose_sample_or_empty') }}</p>
                         <p v-else-if="showDemoBootstrap && !guidePaused" class="mt-2 text-sm text-amber-700 dark:text-amber-300">{{ $t('setup_index.remove_default_demo_to_finish') }}</p>
                     </template>

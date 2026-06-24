@@ -4,6 +4,7 @@ import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import CentralLayout from '../../Layouts/CentralLayout.vue';
 import CentralAiDemoWidget from '../../Components/CentralAiDemoWidget.vue';
+import CentralMarketingLeadCapture from '../../Components/CentralMarketingLeadCapture.vue';
 import IntegrationStackIcon from '../../Components/IntegrationStackIcon.vue';
 import { useCurrency } from '../../composables/useCurrency.js';
 import { useBillingInterval } from '../../composables/useBillingInterval.js';
@@ -57,8 +58,6 @@ const homeObject = (suffix) => {
 };
 
 const socialProofLogos = computed(() => centralArray('social_proof_logos'));
-
-const compareNavLabel = (slug) => t(`central.comparisons.${slug}.nav_label`);
 
 const workspaceDomainExample = computed(() => {
     const domain = props.centralDomain || 'helpefi.com';
@@ -1475,7 +1474,7 @@ const featureGroups = computed(() => {
                             :href="page.path"
                             class="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/5 px-4 py-2 text-sm font-medium text-slate-200 transition hover:border-blue-400/40 hover:bg-blue-500/10 hover:text-white"
                         >
-                            {{ platformName }} vs {{ compareNavLabel(page.slug) }}
+                            {{ platformName }} vs {{ page.nav_label }}
                             <svg class="h-3.5 w-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
                         </Link>
                     </div>
@@ -1670,6 +1669,8 @@ const featureGroups = computed(() => {
                 </div>
             </div>
         </section>
+
+        <CentralMarketingLeadCapture variant="dark" />
 
         <section id="faq" class="bg-white dark:bg-slate-900 py-16 sm:py-24">
             <div class="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">

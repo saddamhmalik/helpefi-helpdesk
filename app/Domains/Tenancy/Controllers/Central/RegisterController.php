@@ -32,13 +32,7 @@ class RegisterController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
-        $data = $request->validate([
-            'organization_name' => ['required', 'string', 'max:255'],
-            'slug' => ['required', 'string', 'max:63', 'regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/'],
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', 'max:255'],
-            'password' => ['required', 'string', 'min:8', 'confirmed'],
-        ]);
+        $data = $request->validate($this->verification->registerRules());
 
         $this->verification->register($data);
 
@@ -50,9 +44,7 @@ class RegisterController extends Controller
 
     public function resend(Request $request): RedirectResponse
     {
-        $data = $request->validate([
-            'email' => ['required', 'email', 'max:255'],
-        ]);
+        $data = $request->validate($this->verification->resendRules());
 
         $this->verification->resend($data['email']);
 
@@ -64,6 +56,8 @@ class RegisterController extends Controller
 
     public function verify(Request $request, string $token): HttpResponse|RedirectResponse
     {
+        validator(['token' => $token], $this->verification->verificationTokenRules())->validate();
+
         try {
             $tenant = $this->verification->verify($token);
         } catch (InvalidRegistrationTokenException $exception) {

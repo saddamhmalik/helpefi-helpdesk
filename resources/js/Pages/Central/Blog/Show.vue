@@ -55,7 +55,7 @@ const platformName = computed(() => t('app.name'));
                             :href="link.path"
                             class="rounded-full border border-blue-200 bg-white px-4 py-2 text-sm font-medium text-blue-800 transition hover:border-blue-400 dark:border-blue-800 dark:bg-slate-900 dark:text-blue-200"
                         >
-                            {{ $t(link.label_key) }}
+                            {{ link.label ?? $t(link.label_key) }}
                         </Link>
                     </div>
                 </section>

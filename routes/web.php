@@ -11,6 +11,8 @@ use App\Domains\Platform\Controllers\Central\AdminDashboardController;
 use App\Domains\Platform\Controllers\Central\AdminEmailTemplateController;
 use App\Domains\Platform\Controllers\Central\AdminFeedbackController;
 use App\Domains\Platform\Controllers\Central\AdminLoginController;
+use App\Domains\Platform\Controllers\Central\AdminMarketingLeadController;
+use App\Domains\Platform\Controllers\Central\MarketingLeadCaptureController;
 use App\Domains\Platform\Controllers\Central\AdminNoticeController;
 use App\Domains\Platform\Controllers\Central\AdminObservabilityController;
 use App\Domains\Platform\Controllers\Central\AdminPaymentController;
@@ -27,6 +29,7 @@ use App\Domains\Tenancy\Controllers\Central\AdminSettingsController;
 use App\Domains\Tenancy\Controllers\Central\HomeController;
 use App\Domains\Tenancy\Controllers\Central\LoginController;
 use App\Domains\Tenancy\Controllers\Central\RegisterController;
+use App\Domains\Tenancy\Controllers\Central\RegisterSlugCheckController;
 use App\Domains\Tenancy\Controllers\Central\RobotsController;
 use App\Domains\Tenancy\Controllers\Central\SitemapController;
 use App\Domains\Tenancy\Controllers\Central\BlogController;
@@ -80,6 +83,10 @@ Route::post('/api/marketing/ai-demo', [MarketingAiDemoController::class, 'store'
     ->middleware('throttle:10,1')
     ->name('central.marketing.ai-demo');
 
+Route::post('/api/marketing/leads', [MarketingLeadCaptureController::class, 'store'])
+    ->middleware('throttle:8,1')
+    ->name('central.marketing.leads.store');
+
 Route::get('/dashboard', function () {
     if (Auth::guard('platform')->check()) {
         return redirect()->route('central.admin.dashboard');
@@ -100,6 +107,7 @@ Route::middleware('guest')->group(function () {
     Route::get('/login', [LoginController::class, 'create'])->name('central.login');
     Route::post('/login', [LoginController::class, 'redirect'])->middleware('throttle:10,1')->name('central.login.redirect');
     Route::get('/register', [RegisterController::class, 'create'])->name('central.register');
+    Route::get('/api/register/check-slug', RegisterSlugCheckController::class)->middleware('throttle:30,1')->name('central.register.check-slug');
     Route::post('/register', [RegisterController::class, 'store'])->middleware('throttle:5,1')->name('central.register.store');
     Route::post('/register/resend', [RegisterController::class, 'resend'])->middleware('throttle:3,1')->name('central.register.resend');
     Route::get('/register/verify/{token}', [RegisterController::class, 'verify'])->name('central.register.verify');
@@ -257,6 +265,16 @@ Route::prefix('admin')->name('central.admin.')->group(function () {
 
         Route::middleware('platform.permission:feedback.manage')->group(function () {
             Route::put('/feedback/{feedback}/status', [AdminFeedbackController::class, 'updateStatus'])->name('feedback.status');
+        });
+
+        Route::middleware('platform.permission:leads.view')->group(function () {
+            Route::get('/leads', [AdminMarketingLeadController::class, 'index'])->name('leads.index');
+            Route::get('/leads/{lead}', [AdminMarketingLeadController::class, 'show'])->name('leads.show');
+        });
+
+        Route::middleware('platform.permission:leads.manage')->group(function () {
+            Route::put('/leads/{lead}/status', [AdminMarketingLeadController::class, 'updateStatus'])->name('leads.status');
+            Route::put('/leads/{lead}/notes', [AdminMarketingLeadController::class, 'updateNotes'])->name('leads.notes');
         });
 
         Route::middleware('platform.permission:audit.view')->group(function () {

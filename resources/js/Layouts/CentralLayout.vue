@@ -3,6 +3,7 @@ import { Link, usePage } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import AppLogo from '../Components/AppLogo.vue';
+import CentralMarketingHelpBot from '../Components/CentralMarketingHelpBot.vue';
 import { useBodyScrollLock } from '../composables/useModal.js';
 
 defineProps({
@@ -10,6 +11,7 @@ defineProps({
     trialDays: { type: Number, default: 14 },
     showFooter: { type: Boolean, default: true },
     showPromoBar: { type: Boolean, default: true },
+    minimalHeader: { type: Boolean, default: false },
     socialLinks: { type: Array, default: () => [] },
 });
 
@@ -19,9 +21,15 @@ const mobileOpen = ref(false);
 
 const verticalPages = computed(() => page.props.verticalPages ?? []);
 const comparePages = computed(() => page.props.comparePages ?? []);
+
+const compareLinkLabel = (compare) => (
+    compare.footer_label
+    || `vs ${compare.competitor_name || compare.nav_label || compare.slug}`
+);
 const migratePages = computed(() => page.props.migratePages ?? []);
 const featurePages = computed(() => page.props.featurePages ?? []);
 const parentCompany = computed(() => page.props.parentCompany ?? null);
+const aiDemoEnabled = computed(() => page.props.aiDemoEnabled ?? true);
 
 const socialIcons = {
     x: 'M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z',
@@ -60,13 +68,22 @@ useBodyScrollLock(mobileOpen);
                 </Link>
             </div>
         </div>
-        <header class="sticky top-0 z-40 border-b agent-border bg-white shadow-sm dark:bg-slate-900/95 dark:backdrop-blur">
+        <header class="sticky top-0 z-40 border-b agent-border bg-white/95 shadow-sm backdrop-blur-md dark:bg-slate-900/95">
             <div class="mx-auto flex h-14 min-w-0 max-w-7xl items-center justify-between gap-3 px-4 sm:h-16 sm:px-6 lg:px-8">
                 <Link href="/" class="flex min-w-0 shrink items-center">
                     <AppLogo size="md" />
                 </Link>
 
-                <nav class="hidden items-center gap-1 lg:flex">
+                <div v-if="minimalHeader" class="flex items-center gap-2">
+                    <Link
+                        href="/login"
+                        class="rounded-lg px-3 py-2 text-sm font-medium agent-text-muted transition hover:text-slate-900 dark:hover:text-slate-100"
+                    >
+                        {{ $t('layouts.central.sign_in') }}
+                    </Link>
+                </div>
+
+                <nav v-else class="hidden items-center gap-1 lg:flex">
                     <a
                         v-for="link in navLinks"
                         :key="link.href"
@@ -77,7 +94,7 @@ useBodyScrollLock(mobileOpen);
                     </a>
                 </nav>
 
-                <div class="hidden items-center gap-2 sm:flex">
+                <div v-if="!minimalHeader" class="hidden items-center gap-2 sm:flex">
                     <Link
                         href="/login"
                         class="rounded-lg px-3 py-2 text-sm font-medium agent-text-muted transition hover:text-slate-900 dark:text-slate-100 dark:hover:text-slate-100"
@@ -92,7 +109,7 @@ useBodyScrollLock(mobileOpen);
                     </Link>
                 </div>
 
-                <div class="flex items-center gap-2 lg:hidden">
+                <div v-if="!minimalHeader" class="flex items-center gap-2 lg:hidden">
                     <Link
                         href="/register"
                         class="rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-bold text-white shadow-sm sm:hidden"
@@ -154,7 +171,11 @@ useBodyScrollLock(mobileOpen);
             <slot />
         </main>
 
-        <footer v-if="showFooter" class="border-t border-slate-200 bg-slate-950 text-slate-300 dark:border-slate-800">
+        <footer
+            v-if="showFooter"
+            class="border-t border-slate-200 bg-slate-950 text-slate-300 dark:border-slate-800"
+            :class="aiDemoEnabled ? 'pb-20 sm:pb-0' : ''"
+        >
             <div class="mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-14 lg:px-8">
                 <div class="flex flex-col gap-8 border-b border-white/10 pb-10 lg:flex-row lg:items-start lg:justify-between lg:gap-12">
                     <div class="max-w-md">
@@ -233,7 +254,7 @@ useBodyScrollLock(mobileOpen);
                         <ul class="mt-4 space-y-2.5 text-sm">
                             <li v-for="compare in comparePages" :key="compare.slug">
                                 <Link :href="compare.path" class="transition hover:text-white">
-                                    {{ $t('central.compare_vs', { name: $t(`central.comparisons.${compare.slug}.competitor_name`) }) }}
+                                    {{ compareLinkLabel(compare) }}
                                 </Link>
                             </li>
                         </ul>
@@ -260,9 +281,12 @@ useBodyScrollLock(mobileOpen);
                         </ul>
                     </div>
                 </div>
-                <div class="mt-8 flex flex-col gap-2 border-t border-white/10 pt-6 sm:mt-12 sm:flex-row sm:items-center sm:justify-between sm:pt-8">
+                <div
+                    class="mt-8 flex flex-col items-start gap-2 border-t border-white/10 pt-6 sm:mt-12 sm:flex-row sm:items-center sm:justify-between sm:pt-8"
+                    :class="aiDemoEnabled ? 'pr-[4.75rem] sm:pr-0' : ''"
+                >
                     <p class="text-xs text-slate-500 dark:text-slate-400">© {{ new Date().getFullYear() }} {{ brand }}. {{ $t('layouts.central.footer_rights') }}</p>
-                    <p v-if="parentCompany" class="text-right text-xs text-slate-500 dark:text-slate-400 sm:text-right">
+                    <p v-if="parentCompany" class="text-xs text-slate-500 dark:text-slate-400 sm:text-right">
                         {{ $t('layouts.central.footer_product_of') }}
                         <a
                             :href="parentCompany.url"
@@ -274,6 +298,8 @@ useBodyScrollLock(mobileOpen);
                 </div>
             </div>
         </footer>
+
+        <CentralMarketingHelpBot :enabled="aiDemoEnabled" :brand="brand" />
     </div>
 </template>
 

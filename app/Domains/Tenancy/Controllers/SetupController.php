@@ -31,8 +31,10 @@ class SetupController extends Controller
         ]);
     }
 
-    public function completeStep(string $step): RedirectResponse
+    public function completeStep(Request $request, string $step): RedirectResponse
     {
+        validator(['step' => $step], $this->setup->stepRules())->validate();
+
         if ($this->dummyData->isActive()) {
             return back()->withErrors([
                 'setup' => 'Finish exploring sample data first. Remove it when you are ready to configure your workspace.',
@@ -74,6 +76,6 @@ class SetupController extends Controller
             return back()->withErrors($exception->errors());
         }
 
-        return redirect()->route('dashboard')->with('success', 'Setup complete. Your helpdesk is ready.');
+        return redirect()->route('dashboard')->with('success', 'Setup complete — your helpdesk is ready to go.');
     }
 }

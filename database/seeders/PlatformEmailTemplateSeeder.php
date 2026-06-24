@@ -34,16 +34,16 @@ HTML,
             ['slug' => PlatformEmailTemplate::SLUG_REGISTRATION_VERIFICATION],
             [
                 'name' => 'Registration verification',
-                'subject' => 'Verify your email to create your {{brand}} workspace',
+                'subject' => 'One quick click to launch {{organization_name}} on {{brand}}',
                 'body_html' => <<<'HTML'
 <p>Hi {{admin_name}},</p>
-<p>Thanks for signing up for <strong>{{organization_name}}</strong> on {{brand}}. Confirm your email address to create your workspace.</p>
+<p>You're almost in. Confirm your email and we'll spin up <strong>{{organization_name}}</strong> — your dedicated {{brand}} workspace with a {{trial_days}}-day free trial.</p>
 <p style="margin:28px 0;">
-  <a href="{{verification_url}}" style="display:inline-block;background:#2563eb;color:#ffffff;text-decoration:none;padding:12px 24px;border-radius:10px;font-weight:600;">Verify email &amp; create workspace</a>
+  <a href="{{verification_url}}" style="display:inline-block;background:#2563eb;color:#ffffff;text-decoration:none;padding:14px 28px;border-radius:12px;font-weight:600;">Verify email &amp; launch workspace</a>
 </p>
-<p>Or copy this link into your browser:<br>{{verification_url}}</p>
-<p>Your workspace and {{trial_days}}-day free trial are created only after you verify. This link expires in 24 hours.</p>
-<p>If you didn't request this, you can safely ignore this email.</p>
+<p>Or paste this link in your browser:<br>{{verification_url}}</p>
+<p><strong>What happens next:</strong> we create your workspace, seed a quick-start guide, and drop you straight into setup — usually under a minute.</p>
+<p>This link expires in 24 hours. Didn't sign up? You can safely ignore this email.</p>
 <p>— The {{brand}} team</p>
 HTML,
                 'is_active' => true,
@@ -55,17 +55,16 @@ HTML,
             ['slug' => PlatformEmailTemplate::SLUG_WORKSPACE_WELCOME],
             [
                 'name' => 'Workspace welcome',
-                'subject' => 'Your {{brand}} workspace is ready',
+                'subject' => "{{organization_name}} is ready — let's get you set up",
                 'body_html' => <<<'HTML'
 <p>Hi {{admin_name}},</p>
-<p>Great news — <strong>{{organization_name}}</strong> is ready to use on {{brand}}.</p>
-<p>Click the button below to sign in and complete your guided setup:</p>
+<p>Your workspace is live. <strong>{{organization_name}}</strong> is ready on {{brand}} — and your {{trial_days}}-day trial starts now.</p>
 <p style="margin:28px 0;">
-  <a href="{{welcome_url}}" style="display:inline-block;background:#2563eb;color:#ffffff;text-decoration:none;padding:12px 24px;border-radius:10px;font-weight:600;">Open my workspace</a>
+  <a href="{{welcome_url}}" style="display:inline-block;background:#2563eb;color:#ffffff;text-decoration:none;padding:14px 28px;border-radius:12px;font-weight:600;">Open my workspace</a>
 </p>
-<p>Or copy this link: {{welcome_url}}</p>
-<p>Your workspace: {{workspace_url}}<br>
-Free trial: {{trial_days}} days of full access</p>
+<p>Or paste this link: {{welcome_url}}</p>
+<p><strong>Your workspace:</strong> {{workspace_url}}</p>
+<p>We've prepared a quick-start checklist — connect email or chat, invite your team, and you'll be supporting customers in minutes.</p>
 <p>— The {{brand}} team</p>
 HTML,
                 'is_active' => true,

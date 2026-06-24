@@ -20,6 +20,7 @@ class PlatformDashboardService
         private CentralSettingsService $settings,
         private PlatformExecutiveMetricsService $executiveMetrics,
         private MarketingAnalyticsService $marketingAnalytics,
+        private MarketingLeadService $marketingLeads,
     ) {
     }
 
@@ -39,6 +40,10 @@ class PlatformDashboardService
 
         if ($this->authorization->allows($user, 'analytics.view')) {
             $data['marketing_analytics'] = $this->marketingAnalytics->snapshot();
+        }
+
+        if ($this->authorization->allows($user, 'leads.view')) {
+            $data['marketing_leads'] = $this->marketingLeads->stats();
         }
 
         if ($this->authorization->allows($user, 'users.view')) {

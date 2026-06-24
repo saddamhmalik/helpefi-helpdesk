@@ -18,8 +18,22 @@ class CompareLandingTest extends TestCase
                 ->assertInertia(fn ($page) => $page
                     ->component('Central/CompareLanding')
                     ->where('competitor', $slug)
+                    ->has('content.reasons', 3)
+                    ->has('content.rows')
+                    ->has('content.faq')
                 );
         }
+    }
+
+    public function test_home_page_includes_compare_navigation(): void
+    {
+        $this->get('http://'.config('tenancy.central_app_domain').'/')
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('Central/Home')
+                ->has('comparePages', count(CompareLandingDefinition::slugs()))
+                ->where('comparePages.0.footer_label', 'vs Freshdesk')
+            );
     }
 
     public function test_unknown_compare_page_returns_not_found(): void

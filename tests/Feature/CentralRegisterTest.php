@@ -96,8 +96,16 @@ class CentralRegisterTest extends TestCase
 
     public function test_invalid_verification_token_redirects_back_to_register(): void
     {
-        $this->get('http://'.config('tenancy.central_app_domain').'/register/verify/invalid-token')
+        $this->get('http://'.config('tenancy.central_app_domain').'/register/verify/'.str_repeat('a', 64))
             ->assertRedirect(route('central.register'));
+
+        $this->assertSame(0, Tenant::query()->count());
+    }
+
+    public function test_verification_rejects_malformed_token_before_lookup(): void
+    {
+        $this->get('http://'.config('tenancy.central_app_domain').'/register/verify/invalid-token')
+            ->assertSessionHasErrors('token');
 
         $this->assertSame(0, Tenant::query()->count());
     }
@@ -144,5 +152,30 @@ class CentralRegisterTest extends TestCase
                 'X-Requested-With' => 'XMLHttpRequest',
             ])
             ->assertSessionHasErrors('slug');
+    }
+
+    public function test_register_slug_check_endpoint(): void
+    {
+        app(RegistrationVerificationService::class)->register([
+            'organization_name' => 'Existing Co',
+            'slug' => 'taken-slug',
+            'name' => 'Existing Admin',
+            'email' => 'existing@test.com',
+            'password' => 'password123',
+        ]);
+
+        $this->getJson('http://'.config('tenancy.central_app_domain').'/api/register/check-slug?slug=fresh-workspace')
+            ->assertOk()
+            ->assertJsonPath('status', 'available')
+            ->assertJsonPath('slug', 'fresh-workspace');
+
+        $this->getJson('http://'.config('tenancy.central_app_domain').'/api/register/check-slug?slug=taken-slug')
+            ->assertOk()
+            ->assertJsonPath('status', 'taken')
+            ->assertJsonPath('available', false);
+
+        $this->getJson('http://'.config('tenancy.central_app_domain').'/api/register/check-slug?slug=!!!')
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['slug']);
     }
 }

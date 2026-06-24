@@ -7,11 +7,12 @@ use App\Domains\Billing\Support\RegionCurrencyResolver;
 use App\Domains\Platform\Services\PlatformTestimonialService;
 use App\Domains\Tenancy\Services\CentralSeoService;
 use App\Domains\Tenancy\Services\CentralSettingsService;
+use App\Domains\Tenancy\Services\CompareLandingContentService;
 use Illuminate\Support\Facades\Cache;
 
 class CentralMarketingPresenter
 {
-    private const CACHE_KEY = 'marketing.shared.base';
+    private const CACHE_KEY = 'marketing.shared.base.v3';
 
     private const CACHE_TTL_SECONDS = 600;
 
@@ -20,6 +21,7 @@ class CentralMarketingPresenter
         return array_merge(self::cachedBase(), [
             'currency' => app(RegionCurrencyResolver::class)->resolveMeta(request()),
             'parentCompany' => self::parentCompany(),
+            'comparePages' => app(CompareLandingContentService::class)->navigation(),
         ]);
     }
 
@@ -71,7 +73,6 @@ class CentralMarketingPresenter
             'plans' => self::plans(),
             'addons' => self::addons(),
             'verticalPages' => VerticalLandingDefinition::forNavigation(),
-            'comparePages' => CompareLandingDefinition::forNavigation(),
             'migratePages' => MigrateLandingDefinition::forNavigation(),
             'featurePages' => MarketingFeatureDefinition::forNavigation(),
             'blogPosts' => MarketingBlogDefinition::forIndex(),

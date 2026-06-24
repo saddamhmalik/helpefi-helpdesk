@@ -14,6 +14,7 @@ use App\Models\User;
 use App\Support\TenantCache;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
 class TenantSetupService
@@ -113,6 +114,13 @@ class TenantSetupService
         ];
     }
 
+    public function stepRules(): array
+    {
+        return [
+            'step' => ['required', 'string', Rule::in($this->stepKeys())],
+        ];
+    }
+
     public function completeStep(string $step): array
     {
         if (! in_array($step, $this->stepKeys(), true)) {
@@ -199,6 +207,7 @@ class TenantSetupService
                 required: $definition['required'],
                 complete: $this->isStepComplete($key, $manual) || $this->isConfigured($key),
                 meta: $definition['meta'] ?? [],
+                minutes: $definition['minutes'] ?? null,
             );
         }, array_merge($definitions, $optional));
     }
@@ -211,27 +220,30 @@ class TenantSetupService
         return [
             [
                 'key' => 'business_hours',
-                'title' => 'Business hours & timezone',
-                'description' => 'Set when your team is available. Live chat uses these hours when offline mode is set to business hours.',
-                'warning' => 'Business hours are not configured. Live chat and SLA schedules may not reflect your working hours.',
+                'title' => 'Set your working hours',
+                'description' => "Tell customers when you're online. Chat offline mode and SLA timers follow these hours automatically.",
+                'warning' => "Business hours aren't set yet — chat and SLA schedules may not match when your team actually works.",
                 'url' => route('settings.sla'),
                 'required' => true,
+                'minutes' => 2,
             ],
             [
                 'key' => 'email',
-                'title' => 'Email (inbox & SMTP)',
-                'description' => 'Configure inbound support mail and outbound SMTP so tickets and replies flow end to end.',
-                'warning' => 'Email is not fully configured. Set up inbound receiving and outbound SMTP for ticket replies.',
+                'title' => 'Connect your support inbox',
+                'description' => 'Route customer emails into one shared queue and send replies without leaving the helpdesk.',
+                'warning' => "Email isn't connected yet. Set up inbound mail and outbound SMTP so tickets flow end to end.",
                 'url' => route('settings.email'),
                 'required' => true,
+                'minutes' => 5,
             ],
             [
                 'key' => 'chat_widget',
-                'title' => 'Live chat widget',
-                'description' => 'Copy the embed snippet and add it to your website. The widget key routes visitors to this workspace.',
-                'warning' => 'Live chat widget is not ready. Generate a widget key and embed it on your site.',
+                'title' => 'Add live chat to your site',
+                'description' => 'Drop a snippet on your website and turn visitor chats into tickets in the same inbox.',
+                'warning' => "Live chat isn't live yet. Generate a widget key and embed it on your site.",
                 'url' => route('settings.channels'),
                 'required' => true,
+                'minutes' => 3,
                 'meta' => [
                     'widget_key' => $chatSettings['widget_key'] ?? null,
                     'embed_url' => url('/widget/helpdesk.js'),
@@ -246,19 +258,21 @@ class TenantSetupService
             ],
             [
                 'key' => 'invite_team',
-                'title' => 'Invite your team',
-                'description' => 'Add agents and admins who will respond to tickets and chat.',
-                'warning' => 'No additional team members have been invited. You are the only agent in this workspace.',
+                'title' => 'Bring your team aboard',
+                'description' => 'Invite agents and admins so everyone can pick up tickets from the same queue.',
+                'warning' => "You're flying solo for now. Invite teammates so tickets don't pile up on one person.",
                 'url' => route('settings.members'),
                 'required' => true,
+                'minutes' => 2,
             ],
             [
                 'key' => 'sla_policies',
-                'title' => 'Review SLA policies',
-                'description' => 'Confirm first-response and resolution targets match your support commitments.',
-                'warning' => 'SLA policies are not configured. Response targets and escalations will not run.',
+                'title' => 'Tune your SLA targets',
+                'description' => 'Set first-response and resolution goals so breaches surface before customers have to chase you.',
+                'warning' => "SLA policies aren't configured — response targets and escalations won't run yet.",
                 'url' => route('settings.sla'),
                 'required' => true,
+                'minutes' => 3,
             ],
         ];
     }
@@ -326,6 +340,7 @@ class TenantSetupService
         bool $required,
         bool $complete,
         array $meta = [],
+        ?int $minutes = null,
     ): array {
         return [
             'key' => $key,
@@ -335,6 +350,7 @@ class TenantSetupService
             'required' => $required,
             'complete' => $complete,
             'meta' => $meta,
+            'minutes' => $minutes,
         ];
     }
 

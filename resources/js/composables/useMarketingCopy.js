@@ -51,6 +51,16 @@ export function useMarketingCopy(trialDaysSource = 14) {
         return localizeTree(raw, params);
     };
 
+    const resolveField = (path, params) => {
+        const value = tm(path);
+
+        if (typeof value === 'boolean' || typeof value === 'number') {
+            return value;
+        }
+
+        return t(path, params);
+    };
+
     const localizedList = (messageKey, fields, params = copyParams.value) => {
         const key = unref(messageKey);
         const items = tm(key);
@@ -62,17 +72,33 @@ export function useMarketingCopy(trialDaysSource = 14) {
         return items.map((_, index) => Object.fromEntries(
             fields.map((field) => [
                 field,
-                t(`${key}.${index}.${field}`, params),
+                resolveField(`${key}.${index}.${field}`, params),
             ]),
         ));
     };
 
     const createLocalizedSection = (messageKeySource) => computed(() => {
+        const key = unref(messageKeySource);
         const params = copyParams.value;
-        const raw = tm(unref(messageKeySource));
+        const raw = tm(key);
 
         if (Array.isArray(raw)) {
-            return localizeTree(raw, params);
+            return raw.map((item, index) => {
+                if (typeof item === 'string') {
+                    return resolveField(`${key}.${index}`, params);
+                }
+
+                if (item && typeof item === 'object' && !Array.isArray(item)) {
+                    return Object.fromEntries(
+                        Object.keys(item).map((field) => [
+                            field,
+                            resolveField(`${key}.${index}.${field}`, params),
+                        ]),
+                    );
+                }
+
+                return localizeTree(item, params);
+            });
         }
 
         if (raw && typeof raw === 'object') {

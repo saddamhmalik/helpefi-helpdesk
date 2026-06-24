@@ -95,6 +95,28 @@ const statusTone = (workspace) => {
                 </div>
             </section>
 
+            <section v-if="dashboard.marketing_leads" class="mb-8">
+                <div class="mb-3 flex items-center justify-between gap-3">
+                    <div>
+                        <h2 class="text-sm font-semibold text-slate-900 dark:text-slate-100">{{ $t('central.marketing_leads_dashboard.title') }}</h2>
+                        <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">{{ $t('central.marketing_leads_dashboard.caption') }}</p>
+                    </div>
+                    <Link
+                        v-if="can('leads.view')"
+                        href="/admin/leads"
+                        class="text-sm font-medium text-blue-600 hover:text-blue-700 dark:hover:text-blue-300 dark:text-blue-300"
+                    >
+                        {{ $t('central.marketing_leads_dashboard.view_all') }} →
+                    </Link>
+                </div>
+                <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                    <PlatformStatCard :label="$t('central.marketing_leads_dashboard.new')" :value="dashboard.marketing_leads.new" tone="blue" />
+                    <PlatformStatCard :label="$t('central.marketing_leads_dashboard.last_7_days')" :value="dashboard.marketing_leads.last_7_days" tone="emerald" />
+                    <PlatformStatCard :label="$t('central.marketing_leads_dashboard.with_consent')" :value="dashboard.marketing_leads.with_consent" />
+                    <PlatformStatCard :label="$t('central.marketing_leads_dashboard.total')" :value="dashboard.marketing_leads.total" />
+                </div>
+            </section>
+
             <section v-if="dashboard.marketing_analytics" class="mb-8">
                 <h2 class="mb-3 text-sm font-semibold text-slate-900 dark:text-slate-100">{{ $t('central.marketing_website') }}</h2>
                 <p class="mb-4 text-sm text-slate-500 dark:text-slate-400">{{ $t('central.marketing_website_caption') }}</p>
