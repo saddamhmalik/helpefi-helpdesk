@@ -36,13 +36,22 @@ class HelpCenterPublicCache
 
         $value = Cache::get($key);
 
-        if ($value !== null) {
+        if ($value !== null && self::isValidCachedValue($value)) {
             return $value;
+        }
+
+        if ($value !== null) {
+            Cache::forget($key);
         }
 
         return Cache::lock($key.':lock', 10)->block(5, function () use ($key, $callback) {
             return Cache::remember($key, 300 + random_int(0, 30), $callback);
         });
+    }
+
+    private static function isValidCachedValue(mixed $value): bool
+    {
+        return is_array($value);
     }
 
     public static function forget(): void

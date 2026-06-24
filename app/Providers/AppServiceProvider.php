@@ -176,7 +176,6 @@ class AppServiceProvider extends ServiceProvider
             'rule',
             'webhook',
             'inbox',
-            'brand',
             'channel',
             'department',
             'team',

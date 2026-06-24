@@ -139,10 +139,17 @@ class KnowledgeService
 
     public function publicCollections(?int $brandId = null): Collection
     {
-        return HelpCenterPublicCache::rememberCollections(
+        $rows = HelpCenterPublicCache::rememberCollections(
             $brandId,
-            fn () => $this->collections->publicList($brandId),
+            fn () => $this->collections->publicList($brandId)
+                ->map(fn (KnowledgeCollection $collection) => array_merge(
+                    $collection->attributesToArray(),
+                    ['articles_count' => $collection->articles_count],
+                ))
+                ->all(),
         );
+
+        return $this->hydrateCachedRows($rows, KnowledgeCollection::class);
     }
 
     public function createCollection(array $data): KnowledgeCollection
@@ -209,12 +216,29 @@ class KnowledgeService
     {
         $locale = $this->normalizeLocale($locale);
 
-        return HelpCenterPublicCache::rememberFeatured(
+        $rows = HelpCenterPublicCache::rememberFeatured(
             $brandId,
             $locale,
             $limit,
-            fn () => $this->articles->featuredPublished($limit, $brandId, $locale),
+            fn () => $this->articles->featuredPublished($limit, $brandId, $locale)
+                ->map(fn (KnowledgeArticle $article) => $article->attributesToArray())
+                ->all(),
         );
+
+        return $this->hydrateCachedRows($rows, KnowledgeArticle::class);
+    }
+
+    private function hydrateCachedRows(mixed $rows, string $modelClass): Collection
+    {
+        if ($rows instanceof Collection) {
+            return $rows;
+        }
+
+        if (! is_array($rows)) {
+            return $modelClass::query()->whereRaw('0=1')->get();
+        }
+
+        return $modelClass::hydrate($rows);
     }
 
     public function translations(int $articleId): Collection

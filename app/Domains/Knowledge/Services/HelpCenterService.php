@@ -30,6 +30,9 @@ class HelpCenterService
                 'homeUrl' => route('portal.index', ['brand' => $brand->slug]),
                 'searchUrl' => route('portal.search', ['brand' => $brand->slug]),
                 'trackUrl' => route('portal.track', ['brand' => $brand->slug]),
+                'loginUrl' => route('portal.login', ['brand' => $brand->slug]),
+                'registerUrl' => route('portal.register', ['brand' => $brand->slug]),
+                'submitUrl' => route('portal.submit', ['brand' => $brand->slug]),
                 'articleCount' => $this->knowledge->publishedCount(),
             ];
         } catch (\Throwable) {

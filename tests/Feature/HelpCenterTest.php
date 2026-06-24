@@ -44,8 +44,18 @@ class HelpCenterTest extends TenantTestCase
                 ->has('helpCenter.homeUrl')
                 ->has('helpCenter.searchUrl')
                 ->has('helpCenter.trackUrl')
-                ->where('helpCenter.articleCount', 0)
+                ->has('helpCenter.loginUrl')
+                ->has('helpCenter.registerUrl')
+                ->has('helpCenter.submitUrl')
+                ->has('helpCenter.articleCount')
             );
+    }
+
+    public function test_portal_home_is_public_for_default_brand(): void
+    {
+        $this->tenantGet('/portal/default')
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page->component('Portal/Index'));
     }
 
     public function test_unscoped_portal_track_url_is_rewritten_to_default_brand(): void

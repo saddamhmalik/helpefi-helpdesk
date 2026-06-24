@@ -3,6 +3,7 @@ import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import AuthLayout from '../../Layouts/AuthLayout.vue';
 import HelpCenterSearch from '../../Components/HelpCenterSearch.vue';
+import CustomerPortalLinks from '../../Components/CustomerPortalLinks.vue';
 import { useI18n } from 'vue-i18n';
 import { formInputClass } from '../../composables/useFormControls.js';
 
@@ -41,16 +42,18 @@ const submit = () => form.post('/login', {
         :aside-description="$t('auth.workspace_sign_in_description')"
     >
         <template #aside-footer>
-            <div class="space-y-4">
+            <div v-if="page.props.helpCenter" class="space-y-4">
                 <HelpCenterSearch variant="hero" tone="dark" />
-                <div class="rounded-xl border border-white/10 bg-white/5 p-4 backdrop-blur-sm">
-                    <p class="text-xs font-medium uppercase tracking-wide text-slate-400 dark:text-slate-500">{{ $t('auth.looking_for_help') }}</p>
-                    <p class="mt-1.5 text-sm text-slate-300">{{ $t('auth.customer_portal_description') }}</p>
-                </div>
+                <CustomerPortalLinks :help-center="page.props.helpCenter" tone="dark" />
             </div>
         </template>
 
         <HelpCenterSearch variant="hero" class="mb-8 sm:hidden" />
+        <CustomerPortalLinks
+            v-if="page.props.helpCenter"
+            :help-center="page.props.helpCenter"
+            class="mb-8 lg:hidden"
+        />
 
         <h1 class="text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-100">{{ $t('auth.sign_in') }}</h1>
         <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">{{ $t('auth.access_your_helpdesk') }}</p>
