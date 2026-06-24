@@ -13,6 +13,13 @@ class CentralRegisterTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        config(['helpdesk.inbound_email_token' => null]);
+    }
+
     public function test_register_page_loads(): void
     {
         $this->get('http://'.config('tenancy.central_app_domain').'/register')
@@ -66,6 +73,25 @@ class CentralRegisterTest extends TestCase
         $response->assertRedirect();
         $this->assertStringStartsWith('http://'.$domain.'/welcome?token=', $response->headers->get('Location'));
         $this->assertFalse(PendingRegistration::query()->where('id', $pending->id)->exists());
+    }
+
+    public function test_verification_provisions_tenant_without_global_inbound_email_token(): void
+    {
+        $pending = app(RegistrationVerificationService::class)->register([
+            'organization_name' => 'Prod Token Co',
+            'slug' => 'prod-token-co',
+            'name' => 'Jane Admin',
+            'email' => 'prod-token@acme.test',
+            'password' => 'password123',
+        ]);
+
+        $this->app->detectEnvironment(fn () => 'production');
+        config(['helpdesk.inbound_email_token' => 'short']);
+
+        $this->get('http://'.config('tenancy.central_app_domain').'/register/verify/'.$pending->token)
+            ->assertRedirect();
+
+        $this->assertTrue(Tenant::query()->where('slug', 'prod-token-co')->exists());
     }
 
     public function test_invalid_verification_token_redirects_back_to_register(): void

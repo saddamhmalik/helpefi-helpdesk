@@ -32,7 +32,7 @@ class ChannelSeeder extends Seeder
                 'is_active' => true,
                 'settings' => [
                     'address' => 'support@helpdesk.test',
-                    'inbound_token' => InboundEmailToken::resolve(),
+                    'inbound_token' => InboundEmailToken::generate(),
                 ],
             ],
             [

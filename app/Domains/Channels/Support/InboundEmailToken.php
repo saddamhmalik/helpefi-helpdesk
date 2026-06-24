@@ -2,10 +2,16 @@
 
 namespace App\Domains\Channels\Support;
 
+use Illuminate\Support\Str;
 use RuntimeException;
 
 class InboundEmailToken
 {
+    public static function generate(): string
+    {
+        return Str::random(48);
+    }
+
     public static function resolve(): string
     {
         $token = (string) (config('helpdesk.inbound_email_token') ?? '');

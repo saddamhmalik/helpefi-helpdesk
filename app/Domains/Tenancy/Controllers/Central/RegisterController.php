@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 use Symfony\Component\HttpFoundation\Response as HttpResponse;
+use Throwable;
 
 class RegisterController extends Controller
 {
@@ -67,6 +68,12 @@ class RegisterController extends Controller
             $tenant = $this->verification->verify($token);
         } catch (InvalidRegistrationTokenException $exception) {
             return redirect()->route('central.register')->with('error', $exception->getMessage());
+        } catch (Throwable $exception) {
+            report($exception);
+
+            return redirect()
+                ->route('central.register')
+                ->with('error', 'We could not finish creating your workspace. Please try signing up again or contact support.');
         }
 
         return Inertia::location($this->provisioning->welcomeUrl($tenant, $tenant->admin_email));

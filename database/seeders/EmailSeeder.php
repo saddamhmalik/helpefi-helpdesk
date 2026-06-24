@@ -17,7 +17,7 @@ class EmailSeeder extends Seeder
                 ['address' => BootstrapDemoContent::DEMO_INBOX_ADDRESS],
                 [
                     'name' => 'Support',
-                    'inbound_token' => InboundEmailToken::resolve(),
+                    'inbound_token' => InboundEmailToken::generate(),
                     'is_active' => true,
                 ],
             );
