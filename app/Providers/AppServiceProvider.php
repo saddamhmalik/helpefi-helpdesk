@@ -47,6 +47,7 @@ use Illuminate\Http\Request;
 use App\Support\SlowQueryLogger;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\ServiceProvider;
@@ -63,6 +64,8 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        $this->registerRouteParameterConstraints();
+
         SlowQueryLogger::register();
 
         $bridge = BridgeTicketLifecycleToAutomation::class;
@@ -141,6 +144,60 @@ class AppServiceProvider extends ServiceProvider
             if ($scheme = parse_url($appUrl, PHP_URL_SCHEME)) {
                 URL::forceScheme($scheme);
             }
+        }
+    }
+
+    private function registerRouteParameterConstraints(): void
+    {
+        $numericId = '[0-9]+';
+
+        foreach ([
+            'ticket',
+            'contact',
+            'member',
+            'asset',
+            'organization',
+            'article',
+            'customer',
+            'scan',
+            'view',
+            'report',
+            'notification',
+            'approval',
+            'sideConversation',
+            'entry',
+            'incident',
+            'issue',
+            'user',
+            'role',
+            'status',
+            'policy',
+            'target',
+            'rule',
+            'webhook',
+            'inbox',
+            'brand',
+            'channel',
+            'department',
+            'team',
+            'skill',
+            'category',
+            'item',
+            'businessHours',
+            'cannedResponse',
+            'template',
+            'backup',
+            'feedback',
+            'slowQuery',
+            'registration',
+            'testimonial',
+            'post',
+            'notice',
+            'version',
+            'rating',
+            'collection',
+        ] as $parameter) {
+            Route::pattern($parameter, $numericId);
         }
     }
 }
