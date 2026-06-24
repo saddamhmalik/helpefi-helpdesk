@@ -257,15 +257,16 @@ use Illuminate\Support\Facades\Route;
             Route::get('/contacts/search', [ContactController::class, 'search'])->name('contacts.search');
             Route::get('/contacts/export', [ContactExportController::class, 'csv'])->name('contacts.export');
             Route::get('/contacts', [ContactController::class, 'index'])->name('contacts.index');
-            Route::get('/contacts/{contact}', [ContactController::class, 'show'])->name('contacts.show');
+            Route::get('/contacts/{contact}', [ContactController::class, 'show'])->name('contacts.show')->whereNumber('contact');
         });
 
         Route::middleware('permission:contacts.manage')->group(function () {
+            Route::get('/contacts/create', [ContactController::class, 'create'])->name('contacts.create');
             Route::post('/contacts', [ContactController::class, 'store'])->name('contacts.store');
-            Route::put('/contacts/{contact}', [ContactController::class, 'update'])->name('contacts.update');
-            Route::patch('/contacts/{contact}', [ContactController::class, 'update']);
-            Route::delete('/contacts/{contact}', [ContactController::class, 'destroy'])->name('contacts.destroy');
-            Route::post('/contacts/{contact}/notes', [ContactController::class, 'storeNote'])->name('contacts.notes.store');
+            Route::put('/contacts/{contact}', [ContactController::class, 'update'])->name('contacts.update')->whereNumber('contact');
+            Route::patch('/contacts/{contact}', [ContactController::class, 'update'])->whereNumber('contact');
+            Route::delete('/contacts/{contact}', [ContactController::class, 'destroy'])->name('contacts.destroy')->whereNumber('contact');
+            Route::post('/contacts/{contact}/notes', [ContactController::class, 'storeNote'])->name('contacts.notes.store')->whereNumber('contact');
             Route::get('/organizations/export', [OrganizationExportController::class, 'csv'])->name('organizations.export');
             Route::resource('organizations', OrganizationController::class)->except(['edit']);
         });
