@@ -97,8 +97,8 @@ use Illuminate\Support\Facades\Route;
         Route::middleware('admin')->group(function () {
             Route::get('/settings/members', [MemberController::class, 'index'])->name('settings.members');
             Route::get('/settings/members/export', [MemberExportController::class, 'csv'])->name('settings.members.export');
-            Route::get('/settings/members/{member}', [MemberController::class, 'show'])->name('settings.members.show');
             Route::post('/settings/members/invite', [MemberController::class, 'invite'])->name('settings.members.invite');
+            Route::get('/settings/members/{member}', [MemberController::class, 'show'])->name('settings.members.show');
             Route::put('/settings/members/{member}', [MemberController::class, 'updateRole'])->name('settings.members.update');
             Route::patch('/settings/members/{member}/custom-fields', [MemberController::class, 'updateCustomFields'])->name('settings.members.custom-fields');
         Route::put('/settings/members/{member}/skills', [MemberController::class, 'updateSkills'])->name('settings.members.skills');
@@ -268,7 +268,7 @@ use Illuminate\Support\Facades\Route;
             Route::delete('/contacts/{contact}', [ContactController::class, 'destroy'])->name('contacts.destroy')->whereNumber('contact');
             Route::post('/contacts/{contact}/notes', [ContactController::class, 'storeNote'])->name('contacts.notes.store')->whereNumber('contact');
             Route::get('/organizations/export', [OrganizationExportController::class, 'csv'])->name('organizations.export');
-            Route::resource('organizations', OrganizationController::class)->except(['edit']);
+            Route::resource('organizations', OrganizationController::class)->except(['edit'])->whereNumber('organization');
         });
 
         Route::get('/assets/types', [AssetTypeController::class, 'index'])->name('assets.types.index');
@@ -281,7 +281,7 @@ use Illuminate\Support\Facades\Route;
         Route::post('/assets/discovery/scans', [AssetDiscoveryController::class, 'store'])->name('assets.discovery.store');
         Route::get('/assets/discovery/scans/{scan}', [AssetDiscoveryController::class, 'show'])->name('assets.discovery.show');
         Route::post('/assets/discovery/scans/{scan}/import', [AssetDiscoveryController::class, 'import'])->name('assets.discovery.import');
-        Route::resource('assets', AssetController::class)->except(['edit']);
+        Route::resource('assets', AssetController::class)->except(['edit'])->whereNumber('asset');
         Route::post('/tickets/{ticket}/assets', [AssetController::class, 'attachTicket'])->name('tickets.assets.store');
         Route::delete('/tickets/{ticket}/assets/{asset}', [AssetController::class, 'detachTicket'])->name('tickets.assets.destroy');
 
@@ -337,7 +337,7 @@ use Illuminate\Support\Facades\Route;
         Route::middleware('permission:tickets.view')->group(function () {
         Route::get('/tickets/{ticket}/panels', [TicketController::class, 'panels'])->name('tickets.panels');
         Route::get('/tickets/{ticket}/merge-candidates', [TicketController::class, 'mergeCandidates'])->name('tickets.merge-candidates');
-        Route::resource('tickets', TicketController::class)->except(['edit', 'destroy']);
+        Route::resource('tickets', TicketController::class)->except(['edit', 'destroy'])->whereNumber('ticket');
         Route::get('/tickets/{ticket}/export/pdf', [TicketExportController::class, 'pdf'])->name('tickets.export.pdf');
         Route::get('/tickets/export/csv', [TicketExportController::class, 'csv'])->name('tickets.export.csv');
         });
@@ -376,9 +376,9 @@ use Illuminate\Support\Facades\Route;
         Route::post('/knowledge', [KnowledgeArticleController::class, 'store'])->name('knowledge.store');
         Route::get('/knowledge/{article}/edit', [KnowledgeArticleController::class, 'edit'])->name('knowledge.edit')->whereNumber('article');
         Route::get('/knowledge/{article}', [KnowledgeArticleController::class, 'show'])->name('knowledge.show')->whereNumber('article');
-        Route::put('/knowledge/{article}', [KnowledgeArticleController::class, 'update'])->name('knowledge.update');
-        Route::post('/knowledge/{article}/translations', [KnowledgeArticleController::class, 'storeTranslation'])->name('knowledge.translations.store');
-        Route::post('/knowledge/{article}/versions/{version}/restore', [KnowledgeArticleController::class, 'restoreVersion'])->name('knowledge.versions.restore');
+        Route::put('/knowledge/{article}', [KnowledgeArticleController::class, 'update'])->name('knowledge.update')->whereNumber('article');
+        Route::post('/knowledge/{article}/translations', [KnowledgeArticleController::class, 'storeTranslation'])->name('knowledge.translations.store')->whereNumber('article');
+        Route::post('/knowledge/{article}/versions/{version}/restore', [KnowledgeArticleController::class, 'restoreVersion'])->name('knowledge.versions.restore')->whereNumber(['article', 'version']);
 
         Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
         Route::get('/reports/export', [ReportController::class, 'export'])->name('reports.export');
