@@ -2,12 +2,12 @@
 
 namespace Database\Seeders;
 
+use App\Domains\Auth\Support\AuthorResolver;
 use App\Domains\Brands\Models\Brand;
 use App\Domains\Knowledge\Models\KnowledgeArticle;
 use App\Domains\Knowledge\Models\KnowledgeCategory;
 use App\Domains\Knowledge\Models\KnowledgeCollection;
 use App\Domains\Knowledge\Support\PlatformKnowledge;
-use App\Models\User;
 use Database\Seeders\Support\PlatformHandbookContent;
 use Illuminate\Database\Seeder;
 
@@ -15,7 +15,7 @@ class PlatformHandbookSeeder extends Seeder
 {
     public function run(): void
     {
-        $authorId = User::query()->role('admin')->orderBy('id')->value('id');
+        $authorId = AuthorResolver::firstUserId();
         $brandId = Brand::query()->where('is_default', true)->value('id');
 
         $categoryIds = [];

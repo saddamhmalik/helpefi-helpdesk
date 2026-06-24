@@ -2,18 +2,18 @@
 
 namespace Database\Seeders;
 
+use App\Domains\Auth\Support\AuthorResolver;
 use App\Domains\Brands\Models\Brand;
 use App\Domains\Knowledge\Models\KnowledgeArticle;
 use App\Domains\Knowledge\Models\KnowledgeCategory;
 use App\Domains\Knowledge\Models\KnowledgeCollection;
-use App\Models\User;
 use Illuminate\Database\Seeder;
 
 class ProductKnowledgeSeeder extends Seeder
 {
     public function run(): void
     {
-        $authorId = User::query()->role('admin')->orderBy('id')->value('id');
+        $authorId = AuthorResolver::firstUserId();
 
         $categories = [
             ['name' => 'Product documentation', 'slug' => 'product-documentation'],

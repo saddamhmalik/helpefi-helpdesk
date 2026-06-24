@@ -64,6 +64,8 @@ class TenantReleaseUpgradeTest extends TenantTestCase
 
     public function test_release_upgrade_is_idempotent(): void
     {
+        DB::table('tenant_release_migrations')->delete();
+
         $service = app(TenantReleaseUpgradeService::class);
 
         $first = $service->upgradeTenant($this->tenant);
@@ -100,6 +102,19 @@ class TenantReleaseUpgradeTest extends TenantTestCase
             'slug' => 'handbook-ai-copilot',
             'is_system' => true,
         ]);
+    }
+
+    public function test_release_upgrade_runs_when_admin_role_is_missing(): void
+    {
+        \Spatie\Permission\Models\Role::query()->delete();
+        DB::table('tenant_release_migrations')->delete();
+
+        $result = app(TenantReleaseUpgradeService::class)->upgradeTenant($this->tenant);
+
+        $this->assertContains('1.0.0:sync_agent_permissions', $result['ran_steps']);
+        $this->assertTrue(
+            \Spatie\Permission\Models\Role::query()->where('name', 'admin')->where('guard_name', 'web')->exists(),
+        );
     }
 
     public function test_tenants_upgrade_command_runs_for_current_tenant(): void

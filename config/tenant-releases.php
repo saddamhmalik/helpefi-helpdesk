@@ -16,10 +16,10 @@ return [
         '1.0.0' => [
             'description' => 'Production readiness data upgrades: ticket numbering, handbook metadata, platform handbook, permissions, caches.',
             'steps' => [
+                SyncAgentPermissionsStep::class,
                 BackfillTicketNumberSequencesStep::class,
                 NormalizeHandbookMetadataStep::class,
                 SyncPlatformHandbookStep::class,
-                SyncAgentPermissionsStep::class,
                 ClearWorkspaceCachesStep::class,
             ],
         ],
