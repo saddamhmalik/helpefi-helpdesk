@@ -2,7 +2,6 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -68,14 +67,24 @@ return new class extends Migration
 
     private function indexExists(string $table, string $index): bool
     {
-        if (! $this->isMysqlFamily()) {
-            return false;
-        }
+        $connection = Schema::getConnection();
+        $driver = $connection->getDriverName();
 
-        return DB::table('information_schema.statistics')
-            ->where('table_schema', Schema::getConnection()->getDatabaseName())
-            ->where('table_name', $table)
-            ->where('index_name', $index)
-            ->exists();
+        return match ($driver) {
+            'mysql', 'mariadb' => $connection->table('information_schema.statistics')
+                ->where('table_schema', $connection->getDatabaseName())
+                ->where('table_name', $table)
+                ->where('index_name', $index)
+                ->exists(),
+            'pgsql' => $connection->selectOne(
+                'SELECT 1 FROM pg_indexes WHERE schemaname = current_schema() AND tablename = ? AND indexname = ? LIMIT 1',
+                [$table, $index]
+            ) !== null,
+            'sqlite' => $connection->selectOne(
+                "SELECT 1 FROM sqlite_master WHERE type = 'index' AND tbl_name = ? AND name = ? LIMIT 1",
+                [$table, $index]
+            ) !== null,
+            default => false,
+        };
     }
 };
