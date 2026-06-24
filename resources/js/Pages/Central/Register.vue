@@ -105,8 +105,6 @@ const onboarding = (key, params = {}) => formatMarketingTemplate(registerCopy.va
     ...params,
 });
 
-const platformName = computed(() => props.brand);
-
 const sidebarBenefits = computed(() => [
     onboarding('benefit_inbox'),
     onboarding('benefit_setup'),
