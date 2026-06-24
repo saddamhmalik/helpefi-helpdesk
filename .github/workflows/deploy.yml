@@ -38,6 +38,11 @@ jobs:
               sudo chown -R ubuntu:ubuntu package.json package-lock.json node_modules 2>/dev/null || true
             fi
 
+            # Stash local server changes so pull never fails on dirty working tree.
+            if [ -n "$(git status --porcelain)" ]; then
+              git stash push -u -m "pre-deploy-$(date -u +%Y%m%dT%H%M%SZ)"
+            fi
+
             # Sync the server checkout with the latest main branch.
             git fetch origin main
             git checkout main
@@ -62,7 +67,10 @@ jobs:
 
             # Laravel writable paths for PHP-FPM (www-data).
             sudo chown -R www-data:www-data storage bootstrap/cache
-            sudo chmod -R ug+rwx storage bootstrap/cache
+            sudo find storage -type d -exec chmod 775 {} \;
+            sudo find storage -type f -exec chmod 664 {} \;
+            sudo find bootstrap/cache -type d -exec chmod 775 {} \;
+            sudo find bootstrap/cache -type f -exec chmod 664 {} \;
 
             # Clear stale caches, then rebuild Laravel optimization caches.
             php artisan optimize:clear
