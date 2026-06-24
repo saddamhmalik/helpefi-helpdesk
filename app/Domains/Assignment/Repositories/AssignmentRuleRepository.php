@@ -4,6 +4,7 @@ namespace App\Domains\Assignment\Repositories;
 
 use App\Domains\Assignment\Models\AssignmentRule;
 use App\Domains\Tickets\Models\Ticket;
+use App\Domains\Tickets\Services\TicketStatusLookup;
 use App\Domains\Workforce\Models\Team;
 use App\Domains\Workforce\Repositories\SkillRepository;
 use App\Models\User;
@@ -12,8 +13,10 @@ use Illuminate\Support\Facades\DB;
 
 class AssignmentRuleRepository
 {
-    public function __construct(private SkillRepository $skills)
-    {
+    public function __construct(
+        private SkillRepository $skills,
+        private TicketStatusLookup $statusLookup,
+    ) {
     }
 
     public function all(): Collection
@@ -86,7 +89,7 @@ class AssignmentRuleRepository
             ->select('assigned_to', DB::raw('count(*) as total'))
             ->whereIn('assigned_to', $agentIds)
             ->whereNull('merged_into_ticket_id')
-            ->whereHas('status', fn ($query) => $query->where('is_closed', false))
+            ->tap(fn ($query) => $this->statusLookup->restrictToOpenStatusRelation($query))
             ->groupBy('assigned_to')
             ->pluck('total', 'assigned_to')
             ->map(fn ($count) => (int) $count)

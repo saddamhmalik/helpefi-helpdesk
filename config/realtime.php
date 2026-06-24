@@ -6,4 +6,5 @@ return [
     'ws_port' => (int) env('REALTIME_WS_PORT', 8080),
     'redis_prefix' => env('REALTIME_REDIS_PREFIX', 'helpdesk:realtime:'),
     'token_ttl' => (int) env('REALTIME_TOKEN_TTL', 3600),
+    'enabled' => (bool) env('REALTIME_ENABLED', true),
 ];

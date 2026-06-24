@@ -23,6 +23,7 @@ const navLinkClass = (item) => (
 </script>
 
 <template>
+    <a href="#main-content" class="agent-skip-link">{{ $t('components.skip_to_main_content') }}</a>
     <div class="min-h-screen agent-page-bg">
         <Transition name="slide-over">
             <div v-if="mobileNavOpen" class="fixed inset-0 z-40 lg:hidden">
@@ -138,7 +139,7 @@ const navLinkClass = (item) => (
                     </div>
                 </header>
 
-                <main class="flex-1">
+                <main id="main-content" class="flex-1">
                     <div v-if="flashSuccess" class="border-b border-emerald-200 dark:border-emerald-900/60 bg-emerald-50 dark:bg-emerald-950/40 px-4 py-3 text-sm text-emerald-800 dark:border-emerald-900 dark:bg-emerald-950/50 dark:text-emerald-200 sm:px-6">
                         {{ flashSuccess }}
                     </div>

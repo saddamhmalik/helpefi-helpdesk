@@ -25,6 +25,12 @@ class RazorpayWebhookController extends Controller
                 $request->getContent(),
                 $request->header('X-Razorpay-Signature'),
             );
+        } catch (\RuntimeException $exception) {
+            Log::critical('Razorpay webhook rejected', [
+                'message' => $exception->getMessage(),
+            ]);
+
+            return response('Webhook not configured.', 503);
         } catch (\Throwable $exception) {
             Log::warning('Razorpay webhook failed', [
                 'message' => $exception->getMessage(),

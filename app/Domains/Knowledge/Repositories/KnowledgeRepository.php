@@ -5,6 +5,7 @@ namespace App\Domains\Knowledge\Repositories;
 use App\Domains\Knowledge\Models\KnowledgeArticle;
 use App\Domains\Knowledge\Models\KnowledgeCategory;
 use App\Domains\Knowledge\Models\KnowledgeCollection;
+use App\Domains\Knowledge\Support\KnowledgePortalVisibility;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
@@ -88,16 +89,18 @@ class KnowledgeRepository
 
     public function findPublishedBySlug(string $slug, ?int $brandId = null, ?string $locale = null): KnowledgeArticle
     {
-        return KnowledgeArticle::query()
-            ->with(['category:id,name', 'collection:id,name,slug'])
-            ->where('slug', $slug)
-            ->tap(fn (Builder $query) => $this->applyPortalVisibilityScope($query))
-            ->when($locale, fn ($q) => $q->where('locale', $locale))
-            ->when($brandId, fn ($query) => $query->whereIn(
-                'knowledge_collection_id',
-                KnowledgeCollection::query()->where('brand_id', $brandId)->select('id'),
-            ))
-            ->firstOrFail();
+        $article = $this->publishedBySlugQuery($slug, $brandId, $locale)->first();
+
+        if (! $article && $locale) {
+            $article = $this->publishedBySlugQuery($slug, $brandId, null)->first();
+        }
+
+        if (! $article) {
+            throw (new \Illuminate\Database\Eloquent\ModelNotFoundException)
+                ->setModel(KnowledgeArticle::class, [$slug]);
+        }
+
+        return $article;
     }
 
     public function featuredPublished(int $limit = 6, ?int $brandId = null, ?string $locale = null): Collection
@@ -122,6 +125,34 @@ class KnowledgeRepository
 
         return KnowledgeArticle::query()
             ->where('translation_group_id', $article->translation_group_id)
+            ->orderBy('locale')
+            ->get(['id', 'locale', 'slug', 'title', 'is_published']);
+    }
+
+    public function portalTranslations(KnowledgeArticle $article, ?int $brandId = null): Collection
+    {
+        if (! $article->translation_group_id) {
+            $query = KnowledgeArticle::query()
+                ->where('id', $article->id)
+                ->tap(fn (Builder $query) => $this->applyPortalVisibilityScope($query));
+
+            if ($brandId) {
+                $query->whereIn(
+                    'knowledge_collection_id',
+                    KnowledgeCollection::query()->where('brand_id', $brandId)->select('id'),
+                );
+            }
+
+            return $query->get(['id', 'locale', 'slug', 'title', 'is_published']);
+        }
+
+        return KnowledgeArticle::query()
+            ->where('translation_group_id', $article->translation_group_id)
+            ->tap(fn (Builder $query) => $this->applyPortalVisibilityScope($query))
+            ->when($brandId, fn (Builder $query) => $query->whereIn(
+                'knowledge_collection_id',
+                KnowledgeCollection::query()->where('brand_id', $brandId)->select('id'),
+            ))
             ->orderBy('locale')
             ->get(['id', 'locale', 'slug', 'title', 'is_published']);
     }
@@ -153,19 +184,21 @@ class KnowledgeRepository
         return $slug;
     }
 
+    private function publishedBySlugQuery(string $slug, ?int $brandId = null, ?string $locale = null): Builder
+    {
+        return KnowledgeArticle::query()
+            ->with(['category:id,name', 'collection:id,name,slug'])
+            ->where('slug', $slug)
+            ->tap(fn (Builder $query) => $this->applyPortalVisibilityScope($query))
+            ->when($locale, fn ($q) => $q->where('locale', $locale))
+            ->when($brandId, fn ($query) => $query->whereIn(
+                'knowledge_collection_id',
+                KnowledgeCollection::query()->where('brand_id', $brandId)->select('id'),
+            ));
+    }
+
     private function applyPortalVisibilityScope(Builder $query): void
     {
-        $query
-            ->where('is_published', true)
-            ->where('is_public', true)
-            ->where(function (Builder $query) {
-                $query
-                    ->where(function (Builder $query) {
-                        $query
-                            ->where('is_system', false)
-                            ->whereHas('collection', fn (Builder $collection) => $collection->where('is_public', true));
-                    })
-                    ->orWhere('is_system', true);
-            });
+        KnowledgePortalVisibility::applyPortal($query);
     }
 }

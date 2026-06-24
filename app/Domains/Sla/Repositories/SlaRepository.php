@@ -5,15 +5,16 @@ namespace App\Domains\Sla\Repositories;
 use App\Domains\Sla\Models\SlaPolicy;
 use App\Domains\Sla\Models\SlaTarget;
 use App\Domains\Sla\Models\TicketSlaTimer;
+use App\Domains\Sla\Support\SlaPolicyCache;
 use App\Domains\Tickets\Models\Ticket;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 
 class SlaRepository
 {
     public function defaultPolicy(): ?SlaPolicy
     {
-        return SlaPolicy::query()
-            ->with(['businessHours', 'targets.priority', 'team:id,name'])
+        return $this->policyQuery()
             ->where('is_default', true)
             ->first();
     }
@@ -21,10 +22,37 @@ class SlaRepository
     public function policyForTicket(Ticket $ticket): ?SlaPolicy
     {
         $ticket->loadMissing(['contact.organization', 'team']);
+        $scopeKey = ($ticket->team_id ?? 'none').':'.($ticket->contact?->organization?->customer_tier ?? 'none');
 
+        SlaPolicyCache::trackScopeKey($scopeKey);
+
+        $policyId = SlaPolicyCache::rememberPolicyId(
+            $scopeKey,
+            fn () => $this->resolvePolicyForTicket($ticket)?->id,
+        );
+
+        return $this->findPolicyById($policyId);
+    }
+
+    private function findPolicyById(?int $policyId): ?SlaPolicy
+    {
+        if ($policyId === null) {
+            return null;
+        }
+
+        return $this->policyQuery()->find($policyId);
+    }
+
+    private function policyQuery(): Builder
+    {
+        return SlaPolicy::query()
+            ->with(['businessHours', 'targets.priority', 'team:id,name']);
+    }
+
+    private function resolvePolicyForTicket(Ticket $ticket): ?SlaPolicy
+    {
         if ($ticket->team_id) {
-            $teamPolicy = SlaPolicy::query()
-                ->with(['businessHours', 'targets.priority', 'team:id,name'])
+            $teamPolicy = $this->policyQuery()
                 ->where('team_id', $ticket->team_id)
                 ->first();
 
@@ -36,8 +64,7 @@ class SlaRepository
         $tier = $ticket->contact?->organization?->customer_tier;
 
         if ($tier) {
-            $tierPolicy = SlaPolicy::query()
-                ->with(['businessHours', 'targets.priority', 'team:id,name'])
+            $tierPolicy = $this->policyQuery()
                 ->where('customer_tier', $tier)
                 ->whereNull('team_id')
                 ->first();
@@ -52,12 +79,16 @@ class SlaRepository
 
     public function createPolicy(array $data): SlaPolicy
     {
-        return SlaPolicy::query()->create($data);
+        $policy = SlaPolicy::query()->create($data);
+        SlaPolicyCache::forget();
+
+        return $policy;
     }
 
     public function updatePolicy(SlaPolicy $policy, array $data): SlaPolicy
     {
         $policy->update($data);
+        SlaPolicyCache::forget();
 
         return $policy->fresh(['businessHours', 'targets.priority', 'team:id,name']);
     }
@@ -65,6 +96,7 @@ class SlaRepository
     public function deletePolicy(SlaPolicy $policy): void
     {
         $policy->delete();
+        SlaPolicyCache::forget();
     }
 
     public function copyTargetsFromPolicy(SlaPolicy $source, SlaPolicy $destination): void
@@ -81,6 +113,8 @@ class SlaRepository
                 ],
             );
         }
+
+        SlaPolicyCache::forget();
     }
 
     public function policies(): Collection
@@ -185,6 +219,7 @@ class SlaRepository
     public function updateTarget(SlaTarget $target, array $data): SlaTarget
     {
         $target->update($data);
+        SlaPolicyCache::forget();
 
         return $target->fresh('priority');
     }

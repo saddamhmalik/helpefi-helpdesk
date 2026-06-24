@@ -4,6 +4,7 @@ namespace App\Domains\Integrations\Services;
 
 use App\Domains\Integrations\Models\IntegrationConnection;
 use App\Domains\Integrations\Repositories\IntegrationConnectionRepository;
+use App\Support\IntegrationWebhookUrlValidator;
 use Illuminate\Support\Facades\Http;
 
 class TeamsIntegrationService
@@ -18,6 +19,12 @@ class TeamsIntegrationService
         $webhookUrl = $connection?->config['webhook_url'] ?? null;
 
         if (! $connection?->is_active || ! $webhookUrl) {
+            return false;
+        }
+
+        try {
+            IntegrationWebhookUrlValidator::assertTeamsWebhookUrl($webhookUrl);
+        } catch (\InvalidArgumentException) {
             return false;
         }
 

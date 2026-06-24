@@ -4,6 +4,7 @@ namespace App\Domains\Platform\Services;
 
 use App\Domains\Platform\Mail\PlatformTemplateMail;
 use App\Domains\Platform\Models\PlatformEmailTemplate;
+use App\Domains\Platform\Services\TrialNurtureService;
 use App\Domains\Tenancy\Services\CentralSettingsService;
 use App\Domains\Tenancy\Services\TenantDomainService;
 use App\Models\Tenant;
@@ -53,6 +54,11 @@ class PlatformMailService
         );
     }
 
+    public function sendLifecycleReminder(Tenant $tenant, string $slug, string $adminName, string $adminEmail): void
+    {
+        $this->send($slug, $adminEmail, $this->variables($tenant, $adminName, $adminEmail));
+    }
+
     public function send(string $slug, string $to, array $variables): void
     {
         $this->ensureSystemTemplates();
@@ -95,11 +101,7 @@ class PlatformMailService
 
     private function ensureSystemTemplates(): void
     {
-        $required = [
-            PlatformEmailTemplate::SLUG_REGISTRATION,
-            PlatformEmailTemplate::SLUG_REGISTRATION_VERIFICATION,
-            PlatformEmailTemplate::SLUG_WORKSPACE_WELCOME,
-        ];
+        $required = PlatformEmailTemplate::systemSlugs();
 
         $existingSlugs = PlatformEmailTemplate::query()
             ->whereIn('slug', $required)
@@ -115,15 +117,32 @@ class PlatformMailService
 
     private function variables(Tenant $tenant, string $adminName, string $adminEmail): array
     {
+        $workspaceUrl = app(TenantDomainService::class)->primaryUrl($tenant) ?? '';
+        $subscription = $tenant->subscription;
+        $trialEndsAt = $subscription?->trial_ends_at;
+        $accessEndsAt = $subscription?->access_ends_at;
+        $trialDaysRemaining = $trialEndsAt !== null && $trialEndsAt->isFuture()
+            ? (int) now()->startOfDay()->diffInDays($trialEndsAt->copy()->startOfDay())
+            : 0;
+        $graceDaysRemaining = $accessEndsAt !== null && $accessEndsAt->isFuture()
+            ? max(0, (int) now()->startOfDay()->diffInDays($accessEndsAt->copy()->startOfDay()))
+            : 0;
+
         return [
-            'brand' => config('app.name', 'helpefi'),
+            'brand' => config('app.name', 'Helpefi'),
             'admin_name' => $adminName,
             'admin_email' => $adminEmail,
             'organization_name' => $tenant->name,
             'workspace_slug' => $tenant->slug,
-            'workspace_url' => app(TenantDomainService::class)->primaryUrl($tenant) ?? '',
+            'workspace_url' => $workspaceUrl,
             'welcome_url' => '',
+            'setup_url' => $workspaceUrl !== '' ? rtrim($workspaceUrl, '/').'/setup' : '',
+            'billing_url' => $workspaceUrl !== '' ? rtrim($workspaceUrl, '/').'/settings/billing' : '',
+            'pricing_url' => TrialNurtureService::pricingUrl(),
             'trial_days' => (string) $this->settings->trialDays(),
+            'trial_days_remaining' => (string) $trialDaysRemaining,
+            'access_ends_at' => $accessEndsAt?->format('F j, Y') ?? '',
+            'grace_days_remaining' => (string) $graceDaysRemaining,
             'central_domain' => config('tenancy.central_app_domain'),
         ];
     }

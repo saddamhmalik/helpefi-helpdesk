@@ -7,16 +7,22 @@ use App\Domains\Sla\Models\TicketSlaTimer;
 use App\Domains\Tickets\Models\Ticket;
 use App\Domains\Tickets\Models\TicketPriority;
 use App\Domains\Tickets\Models\TicketStatus;
+use App\Domains\Tickets\Services\TicketStatusLookup;
 use App\Models\User;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\LazyCollection;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection as SupportCollection;
 use Illuminate\Support\Facades\DB;
 
 class ReportRepository
 {
+    public function __construct(private TicketStatusLookup $statusLookup)
+    {
+    }
+
     public function savedForUser(int $userId): Collection
     {
         return SavedReport::query()
@@ -61,11 +67,11 @@ class ReportRepository
             ->withQueryString();
     }
 
-    public function ticketsReportRows(array $filters): Collection
+    public function ticketsReportRows(array $filters): LazyCollection
     {
         return $this->ticketQuery($filters)
             ->orderByDesc('created_at')
-            ->get();
+            ->cursor();
     }
 
     public function slaBreachesReport(array $filters, int $perPage = 50): LengthAwarePaginator
@@ -76,11 +82,11 @@ class ReportRepository
             ->withQueryString();
     }
 
-    public function slaBreachesReportRows(array $filters): Collection
+    public function slaBreachesReportRows(array $filters): LazyCollection
     {
         return $this->slaBreachesQuery($filters)
             ->orderByDesc('created_at')
-            ->get();
+            ->cursor();
     }
 
     public function agentPerformanceReport(array $filters): SupportCollection
@@ -171,7 +177,7 @@ class ReportRepository
     private function dashboardTicketRollup(Carbon $weekStart, int $trendDays = 7): array
     {
         $selects = [
-            'SUM(CASE WHEN ticket_statuses.is_closed = 0 THEN 1 ELSE 0 END) as open_tickets',
+            $this->statusLookup->sumOpenTicketsSelect('tickets.ticket_status_id', 'open_tickets'),
             'SUM(CASE WHEN tickets.created_at >= ? THEN 1 ELSE 0 END) as created_since',
             'SUM(CASE WHEN tickets.closed_at IS NOT NULL AND tickets.closed_at >= ? THEN 1 ELSE 0 END) as resolved_since',
         ];
@@ -184,7 +190,6 @@ class ReportRepository
 
         $row = Ticket::query()
             ->whereNull('tickets.merged_into_ticket_id')
-            ->leftJoin('ticket_statuses', 'ticket_statuses.id', '=', 'tickets.ticket_status_id')
             ->selectRaw(implode(', ', $selects), $bindings)
             ->first();
 

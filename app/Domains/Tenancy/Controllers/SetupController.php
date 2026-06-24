@@ -39,7 +39,11 @@ class SetupController extends Controller
             ]);
         }
 
-        $this->setup->completeStep($step);
+        try {
+            $this->setup->completeStep($step);
+        } catch (\Illuminate\Validation\ValidationException $exception) {
+            return back()->withErrors($exception->errors());
+        }
 
         return back();
     }
@@ -52,7 +56,23 @@ class SetupController extends Controller
             ]);
         }
 
-        $this->setup->finish();
+        if ($this->dummyData->needsChoice()) {
+            return back()->withErrors([
+                'setup' => 'Choose whether to start with sample data or an empty workspace before finishing setup.',
+            ]);
+        }
+
+        if ($this->dummyData->hasBootstrapDemo()) {
+            return back()->withErrors([
+                'setup' => 'Remove default demo content before finishing setup.',
+            ]);
+        }
+
+        try {
+            $this->setup->finish();
+        } catch (\Illuminate\Validation\ValidationException $exception) {
+            return back()->withErrors($exception->errors());
+        }
 
         return redirect()->route('dashboard')->with('success', 'Setup complete. Your helpdesk is ready.');
     }

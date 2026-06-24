@@ -3,6 +3,7 @@
 namespace App\Domains\Platform\Controllers\Central;
 
 use App\Domains\Billing\Repositories\PlanRepository;
+use App\Domains\Platform\Services\PlatformTenantReminderService;
 use App\Domains\Platform\Services\PlatformTenantService;
 use App\Domains\Tenancy\Services\CentralSettingsService;
 use App\Domains\Tenancy\Services\TenantProvisioningService;
@@ -19,6 +20,7 @@ class AdminTenantController extends Controller
         private PlanRepository $plans,
         private TenantProvisioningService $provisioning,
         private CentralSettingsService $settings,
+        private PlatformTenantReminderService $reminders,
     ) {}
 
     public function index(Request $request): Response
@@ -92,6 +94,17 @@ class AdminTenantController extends Controller
         $this->tenants->update($tenant, $data);
 
         return back()->with('success', 'Workspace updated.');
+    }
+
+    public function resendLifecycleEmail(Request $request, string $tenant): RedirectResponse
+    {
+        $data = $request->validate([
+            'template_slug' => ['required', 'string', 'max:80'],
+        ]);
+
+        $this->reminders->resend($this->tenants->find($tenant), $data['template_slug']);
+
+        return back()->with('success', 'Lifecycle email resent.');
     }
 
     public function destroy(Request $request, string $tenant): RedirectResponse

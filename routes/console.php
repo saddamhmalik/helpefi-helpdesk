@@ -18,5 +18,7 @@ Schedule::command('platform:run-backups')
 Schedule::command('platform:check-tenant-infrastructure')->hourly()->withoutOverlapping();
 Schedule::command('platform:run-tenant-infrastructure-backups')->everyMinute()->withoutOverlapping();
 Schedule::command('platform:check-pending-tenant-migrations')->daily()->withoutOverlapping();
+Schedule::command('platform:send-trial-nurture')->dailyAt('09:00')->withoutOverlapping();
+Schedule::command('platform:send-subscription-ending-reminders')->dailyAt('09:15')->withoutOverlapping();
 Schedule::command('telescope:prune')->daily();
 Schedule::command('logs:clear')->dailyAt('03:00')->withoutOverlapping();

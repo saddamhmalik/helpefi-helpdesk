@@ -32,6 +32,14 @@ class PasswordResetService
 
     public function reset(array $credentials): void
     {
+        $user = User::query()->where('email', $credentials['email'] ?? '')->first();
+
+        if ($user?->hasRole('customer')) {
+            throw ValidationException::withMessages([
+                'email' => ['Password reset is not available for customer accounts.'],
+            ]);
+        }
+
         $status = Password::reset(
             $credentials,
             function (User $user, string $password): void {

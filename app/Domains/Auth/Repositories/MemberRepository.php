@@ -2,6 +2,7 @@
 
 namespace App\Domains\Auth\Repositories;
 
+use App\Domains\Tickets\Support\AssignableAgentCache;
 use App\Domains\Workforce\Models\Team;
 use App\Models\User;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -69,6 +70,8 @@ class MemberRepository
 
         $user->assignRole($role);
 
+        AssignableAgentCache::forget();
+
         return $user->load('roles:id,name');
     }
 
@@ -96,6 +99,8 @@ class MemberRepository
     public function updateRole(User $user, string $role): User
     {
         $user->syncRoles([$role]);
+
+        AssignableAgentCache::forget();
 
         return $user->fresh(['roles:id,name']);
     }

@@ -2,7 +2,8 @@
 
 namespace App\Domains\Sla\Services;
 
-use App\Domains\Billing\Services\BillingService;
+use App\Domains\Billing\Contracts\FeatureEntitlementChecker;
+use App\Domains\Reports\Support\DashboardWidgetCache;
 use App\Domains\Notifications\Services\NotificationService;
 use App\Domains\Performance\Services\PerformanceService;
 use App\Domains\Sla\Models\SlaPolicy;
@@ -19,7 +20,7 @@ class SlaService
     public function __construct(
         private SlaRepository $sla,
         private SlaClockService $clock,
-        private BillingService $billing,
+        private FeatureEntitlementChecker $entitlements,
         private NotificationService $notifications,
         private AuditRecorder $audit,
         private PerformanceService $performance,
@@ -38,7 +39,7 @@ class SlaService
 
     public function applyToTicket(Ticket $ticket): ?TicketSlaTimer
     {
-        if (! $this->billing->canUseFeature('sla')) {
+        if (! $this->entitlements->canUseFeature('sla')) {
             return null;
         }
 
@@ -119,6 +120,53 @@ class SlaService
         }
     }
 
+    public function recalculateOnPriorityChange(Ticket $ticket): void
+    {
+        if (! $this->entitlements->canUseFeature('sla')) {
+            return;
+        }
+
+        $timer = $this->sla->timerForTicket($ticket->id);
+
+        if (! $timer || $timer->resolved_at) {
+            return;
+        }
+
+        $timer->loadMissing('policy.businessHours');
+        $policy = $timer->policy ?? $this->sla->policyForTicket($ticket);
+
+        if (! $policy) {
+            return;
+        }
+
+        $target = $this->sla->targetForPolicyAndPriority($policy->id, $ticket->ticket_priority_id);
+
+        if (! $target) {
+            return;
+        }
+
+        $businessHours = $policy->businessHours;
+        $start = $ticket->created_at ?? now();
+        $updates = [];
+
+        if (! $timer->first_responded_at) {
+            $dueAt = $this->clock->addBusinessMinutes($start->copy(), $target->first_response_minutes, $businessHours);
+            $updates['first_response_due_at'] = $dueAt;
+            $updates['first_response_breached'] = $dueAt && now()->gt($dueAt);
+        }
+
+        if (! $timer->resolved_at) {
+            $dueAt = $this->clock->addBusinessMinutes($start->copy(), $target->resolution_minutes, $businessHours);
+            $updates['resolution_due_at'] = $dueAt;
+            $updates['resolution_breached'] = $dueAt && now()->gt($dueAt);
+        }
+
+        if ($updates !== []) {
+            $this->sla->updateTimer($timer, $updates);
+            DashboardWidgetCache::forget();
+        }
+    }
+
     public function timerForTicket(int $ticketId): ?TicketSlaTimer
     {
         return $this->sla->timerForTicket($ticketId);
@@ -140,6 +188,10 @@ class SlaService
             }
         }
 
+        if ($breaches !== []) {
+            DashboardWidgetCache::forget();
+        }
+
         return count($breaches);
     }
 
@@ -150,7 +202,7 @@ class SlaService
 
     public function updateTarget(int $targetId, array $data): SlaTarget
     {
-        $this->billing->assertFeature('sla');
+        $this->entitlements->assertFeature('sla');
 
         $target = SlaTarget::query()->findOrFail($targetId);
         $before = $target->only(array_keys($data));
@@ -287,7 +339,7 @@ class SlaService
 
     public function createScopedPolicy(string $name, ?int $teamId, ?string $customerTier): SlaPolicy
     {
-        $this->billing->assertFeature('sla');
+        $this->entitlements->assertFeature('sla');
 
         $default = $this->sla->defaultPolicy();
 
@@ -324,7 +376,7 @@ class SlaService
 
     public function deletePolicy(int $id): void
     {
-        $this->billing->assertFeature('sla');
+        $this->entitlements->assertFeature('sla');
 
         $policy = $this->sla->findPolicy($id);
 

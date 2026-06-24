@@ -152,8 +152,13 @@ class HandleInertiaRequests extends Middleware
         $preferenceContext ??= $this->preferenceContext($user);
         $user->loadMissing(['roles.permissions', 'permissions']);
 
-        $permissions = $user->permissions->pluck('name')
-            ->merge($user->roles->flatMap->permissions->pluck('name'))
+        $permissions = collect($user->permissions)
+            ->pluck('name')
+            ->merge(
+                collect($user->roles)
+                    ->flatMap(fn ($role) => collect($role->permissions))
+                    ->pluck('name')
+            )
             ->unique()
             ->values()
             ->all();
@@ -165,7 +170,7 @@ class HandleInertiaRequests extends Middleware
             'locale' => $preferenceContext['locale'],
             'timezone' => $preferenceContext['timezone'],
             'appearance' => $preferenceContext['appearance'],
-            'roles' => $user->roles->pluck('name')->values()->all(),
+            'roles' => collect($user->roles)->pluck('name')->values()->all(),
             'permissions' => $permissions,
             'is_admin' => $user->roles->contains('name', 'admin'),
             'is_customer' => $user->roles->contains('name', 'customer'),

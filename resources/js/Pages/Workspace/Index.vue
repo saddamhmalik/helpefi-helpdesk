@@ -4,20 +4,26 @@ import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import AgentLayout from '../../Layouts/AgentLayout.vue';
 import AgentCopilotPanel from '../../Components/AgentCopilotPanel.vue';
 import AppAvatar from '../../Components/AppAvatar.vue';
+import AppBadge from '../../Components/ui/AppBadge.vue';
+import AppDropdown from '../../Components/ui/AppDropdown.vue';
 import TicketComposerDock from '../../Components/TicketComposerDock.vue';
 import TicketConversation from '../../Components/TicketConversation.vue';
 import TicketDetailsSidebar from '../../Components/TicketDetailsSidebar.vue';
 import TicketCollisionBanner from '../../Components/TicketCollisionBanner.vue';
+import OnboardingTooltip from '../../Components/OnboardingTooltip.vue';
 import { isEmptyRichText } from '../../composables/useRichText.js';
 import UnreadBadge from '../../Components/UnreadBadge.vue';
 import { useTicketPolling } from '../../composables/useTicketPolling.js';
-import { useTicketRealtimeMessages } from '../../composables/useTicketRealtimeMessages.js';
 import { applyUnreadCounts, bumpQueueUnread, clearQueueUnread, markTicketRead } from '../../composables/useTicketMarkRead.js';
 import { getSharedRealtimeClient } from '../../lib/realtimeClient.js';
-import { ticketChannel, workspaceChannel } from '../../lib/realtimeChannels.js';
+import { workspaceChannel } from '../../lib/realtimeChannels.js';
+import { fetchTicketRealtimeToken } from '../../lib/realtimeTokens.js';
 import { csrfHeaders } from '../../support/csrf.js';
 import { useI18n } from 'vue-i18n';
+import { useTicketLazyPanels } from '../../composables/useTicketLazyPanels.js';
 import { useDateTime } from '../../composables/useDateTime.js';
+import { useWorkspaceQueueKeyboard } from '../../composables/useWorkspaceQueueKeyboard.js';
+import { ticketPriorityBadgeVariant, ticketPriorityDotClass, ticketStatusBadgeVariant } from '../../composables/useTicketBadgeVariants.js';
 
 const props = defineProps({
     queue: Object,
@@ -33,14 +39,9 @@ const props = defineProps({
     activeViewId: Number,
     currentUserId: Number,
     sla: Object,
-    lifecycle: { type: Array, default: () => [] },
     mergeCandidates: { type: Array, default: () => [] },
     assetOptions: { type: Array, default: () => [] },
-    csat: Object,
     customFieldDefinitions: { type: Array, default: () => [] },
-    sideConversations: { type: Array, default: () => [] },
-    timeTracking: { type: Object, default: null },
-    externalIssues: { type: Array, default: () => [] },
     issueProviders: { type: Array, default: () => [] },
     approval: { type: Object, default: null },
     canDecideApproval: { type: Boolean, default: false },
@@ -59,11 +60,14 @@ const { t } = useI18n();
 const page = usePage();
 const aiEnabled = computed(() => page.props.ai?.enabled ?? false);
 const filtersOpen = ref(true);
+const mobilePanel = ref('queue');
 
 const filterForm = useForm({
     status_id: props.filters?.status_id ?? '',
     priority_id: props.filters?.priority_id ?? '',
     assigned_to: props.filters?.assigned_to ?? '',
+    unassigned: props.filters?.unassigned ?? false,
+    mine: props.filters?.mine ?? false,
     search: props.filters?.search ?? '',
     watching: props.filters?.watching ?? false,
 });
@@ -93,19 +97,47 @@ const jsonHeaders = () => ({
 });
 
 const selectedId = computed(() => ticket.value?.id ?? null);
+const { panels: lazyPanels } = useTicketLazyPanels(selectedId);
 
 const isComposing = computed(() => !isEmptyRichText(composerBody.value) && !sending.value);
 
 const queueCount = computed(() => queueItems.value.length);
 
 const hasFilters = computed(() => {
-    return filterForm.status_id || filterForm.priority_id || filterForm.assigned_to || filterForm.search || filterForm.watching;
+    return filterForm.status_id
+        || filterForm.priority_id
+        || filterForm.assigned_to
+        || filterForm.unassigned
+        || filterForm.mine
+        || filterForm.search
+        || filterForm.watching;
+});
+
+const assigneeScope = computed({
+    get() {
+        if (filterForm.mine) {
+            return 'mine';
+        }
+
+        if (filterForm.unassigned) {
+            return 'unassigned';
+        }
+
+        return filterForm.assigned_to || '';
+    },
+    set(value) {
+        filterForm.mine = value === 'mine';
+        filterForm.unassigned = value === 'unassigned';
+        filterForm.assigned_to = value && value !== 'mine' && value !== 'unassigned' ? Number(value) : '';
+    },
 });
 
 const filterParams = () => ({
     status_id: filterForm.status_id || undefined,
     priority_id: filterForm.priority_id || undefined,
     assigned_to: filterForm.assigned_to || undefined,
+    unassigned: filterForm.unassigned || undefined,
+    mine: filterForm.mine || undefined,
     search: filterForm.search || undefined,
     watching: filterForm.watching || undefined,
     view_id: props.activeViewId || undefined,
@@ -144,6 +176,10 @@ watch(selectedId, (id, previous) => {
         resubscribeTicketRealtime();
     } else {
         unsubscribeTicketRealtime();
+
+        if (typeof window !== 'undefined' && window.innerWidth < 1024) {
+            mobilePanel.value = 'queue';
+        }
     }
 });
 
@@ -152,6 +188,20 @@ watch(isComposing, () => {
 });
 
 watch(() => [props.selectedTicket, props.queue, props.draft], syncFromProps);
+
+watch(
+    () => props.filters,
+    (filters) => {
+        filterForm.status_id = filters?.status_id ?? '';
+        filterForm.priority_id = filters?.priority_id ?? '';
+        filterForm.assigned_to = filters?.assigned_to ?? '';
+        filterForm.unassigned = filters?.unassigned ?? false;
+        filterForm.mine = filters?.mine ?? false;
+        filterForm.search = filters?.search ?? '';
+        filterForm.watching = filters?.watching ?? false;
+    },
+    { deep: true },
+);
 
 watch([composerBody, composerInternal], () => {
     if (!selectedId.value) {
@@ -165,12 +215,39 @@ const selectTicket = (ticketId) => {
     clearQueueUnread(queueItems.value, ticketId);
     markTicketRead(ticketId);
 
+    if (typeof window !== 'undefined' && window.innerWidth < 1024) {
+        mobilePanel.value = 'conversation';
+    }
+
     router.get(`/workspace/tickets/${ticketId}`, filterParams(), {
         preserveState: true,
         preserveScroll: true,
         replace: true,
     });
 };
+
+const mobileTabs = computed(() => [
+    { id: 'queue', label: t('workspace.mobile_tab_queue'), badge: queueCount.value, disabled: false },
+    { id: 'conversation', label: t('workspace.mobile_tab_conversation'), badge: 0, disabled: false },
+    { id: 'details', label: t('workspace.mobile_tab_details'), badge: 0, disabled: !selectedId.value },
+]);
+
+const setMobilePanel = (panelId) => {
+    const tab = mobileTabs.value.find((item) => item.id === panelId);
+
+    if (!tab || tab.disabled) {
+        return;
+    }
+
+    mobilePanel.value = panelId;
+};
+
+useWorkspaceQueueKeyboard({
+    enabled: computed(() => true),
+    items: queueItems,
+    selectedId,
+    onSelect: selectTicket,
+});
 
 const pollQueueUnread = async () => {
     const ticketIds = queueItems.value.map((item) => item.id);
@@ -194,6 +271,10 @@ const pollQueueUnread = async () => {
 
         const data = await response.json();
         applyUnreadCounts(queueItems.value, data.unread_counts ?? {});
+
+        if (data.tickets?.length) {
+            mergeQueueUpdates(data.tickets);
+        }
     } catch {
     }
 };
@@ -225,7 +306,17 @@ const applyTicketUpdate = (snapshot) => {
     mergeQueueUpdates([snapshot]);
 };
 
-const { appendMessage: appendRealtimeMessage } = useTicketRealtimeMessages(selectedId, messages);
+const appendRealtimeMessage = (message) => {
+    if (!message?.id || message.ticket_id !== selectedId.value) {
+        return;
+    }
+
+    if (messages.value.some((item) => item.id === message.id)) {
+        return;
+    }
+
+    messages.value = [...messages.value, message];
+};
 
 const { resetPollCursor } = useTicketPolling(selectedId, messages, {
     viewersRef: viewers,
@@ -267,7 +358,7 @@ const unsubscribeTicketRealtime = () => {
     ticketRealtimeHandler = null;
 };
 
-const resubscribeTicketRealtime = () => {
+const resubscribeTicketRealtime = async () => {
     unsubscribeTicketRealtime();
 
     const client = getSharedRealtimeClient(page.props.realtime);
@@ -277,9 +368,15 @@ const resubscribeTicketRealtime = () => {
         return;
     }
 
-    subscribedTicketChannel = ticketChannel(page.props.tenantId, ticketId);
+    const credentials = await fetchTicketRealtimeToken(ticketId);
+
+    if (!credentials?.token) {
+        return;
+    }
+
+    subscribedTicketChannel = credentials.channel;
     ticketRealtimeHandler = handleRealtimeEvent;
-    client.subscribe(subscribedTicketChannel, ticketRealtimeHandler);
+    client.subscribe(subscribedTicketChannel, ticketRealtimeHandler, credentials.token);
 };
 
 const setupWorkspaceRealtime = () => {
@@ -311,13 +408,31 @@ const teardownWorkspaceRealtime = () => {
     workspaceRealtimeHandler = null;
 };
 
+const shouldRemoveFromQueue = (item) => {
+    if (!item) {
+        return true;
+    }
+
+    const statusSlug = (item.status?.slug || '').toLowerCase();
+    const statusName = (item.status?.name || '').toLowerCase();
+
+    if (item.status?.is_closed || statusSlug === 'closed' || statusName.includes('closed') || statusName.includes('resolved')) {
+        return true;
+    }
+
+    return Boolean(item.snoozed_until && new Date(item.snoozed_until) > new Date());
+};
+
 const mergeQueueUpdates = (updates) => {
     if (!updates?.length) {
         return;
     }
+
     const map = new Map(queueItems.value.map((item) => [item.id, item]));
     updates.forEach((item) => map.set(item.id, { ...map.get(item.id), ...item }));
-    queueItems.value = Array.from(map.values()).sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at));
+    queueItems.value = Array.from(map.values())
+        .filter((item) => !shouldRemoveFromQueue(item))
+        .sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at));
 };
 
 const sendPresence = async () => {
@@ -404,14 +519,10 @@ const quickUpdate = async (field, value) => {
     }
 };
 
-const snoozeOpen = ref(false);
-
 const snoozeTicket = async (minutes) => {
     if (!selectedId.value) {
         return;
     }
-
-    snoozeOpen.value = false;
 
     const res = await fetch(`/workspace/tickets/${selectedId.value}/snooze`, {
         method: 'POST',
@@ -463,33 +574,6 @@ const formatRelative = (value) => {
     return formatDate(date);
 };
 
-const statusBadgeClass = (name) => {
-    const value = (name || '').toLowerCase();
-    if (value.includes('open')) return 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300 ring-emerald-600/10';
-    if (value.includes('pending')) return 'bg-amber-100 text-amber-800 dark:bg-amber-950/50 dark:text-amber-300 ring-amber-600/10';
-    if (value.includes('closed') || value.includes('resolved')) return 'bg-slate-200 text-slate-700 dark:bg-slate-800 dark:text-slate-300 ring-slate-600/10';
-
-    return 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 ring-slate-600/10';
-};
-
-const priorityBadgeClass = (name) => {
-    const value = (name || '').toLowerCase();
-    if (value.includes('urgent') || value.includes('critical')) return 'bg-red-100 text-red-800 dark:bg-red-950/50 dark:text-red-300 ring-red-600/10';
-    if (value.includes('high')) return 'bg-orange-100 text-orange-800 dark:bg-orange-950/50 dark:text-orange-300 ring-orange-600/10';
-    if (value.includes('low')) return 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 ring-slate-600/10';
-
-    return 'bg-blue-100 text-blue-800 dark:bg-blue-950/50 dark:text-blue-300 ring-blue-600/10';
-};
-
-const priorityDotClass = (name) => {
-    const value = (name || '').toLowerCase();
-    if (value.includes('urgent') || value.includes('critical')) return 'bg-red-500';
-    if (value.includes('high')) return 'bg-orange-500';
-    if (value.includes('low')) return 'bg-slate-400';
-
-    return 'bg-blue-500';
-};
-
 onMounted(() => {
     setupWorkspaceRealtime();
     presenceTimer = setInterval(sendPresence, 15000);
@@ -514,8 +598,15 @@ onUnmounted(() => {
 <template>
     <Head :title="$t('workspace.workspace')" />
     <AgentLayout>
-        <div class="flex min-h-0 flex-1 bg-slate-100 dark:bg-slate-900">
-            <aside class="flex w-[min(100%,20rem)] shrink-0 flex-col overflow-hidden border-r agent-border agent-panel lg:w-80">
+        <div class="shrink-0 border-b agent-border-subtle px-3 py-2">
+            <OnboardingTooltip tip-key="workspace-inbox" :message="$t('workspace.onboarding_tip')" />
+        </div>
+        <div class="flex min-h-0 flex-1 flex-col bg-slate-100 dark:bg-slate-900">
+            <div class="flex min-h-0 flex-1">
+            <aside
+                class="shrink-0 flex-col overflow-hidden border-r agent-border agent-panel lg:w-80"
+                :class="mobilePanel === 'queue' ? 'flex w-full' : 'hidden lg:flex'"
+            >
                 <div class="shrink-0 border-b agent-border-subtle agent-panel-muted px-3 py-2.5">
                     <div class="flex items-center justify-between gap-2">
                         <div class="flex items-center gap-2">
@@ -578,9 +669,11 @@ onUnmounted(() => {
                                 </select>
                             </div>
 
-                            <select v-model="filterForm.assigned_to" class="w-full rounded-lg border px-2 py-1.5 text-xs agent-input">
+                            <select v-model="assigneeScope" class="w-full rounded-lg border px-2 py-1.5 text-xs agent-input">
                                 <option value="">{{ $t('workspace.all_assignees') }}</option>
-                                <option v-for="agent in agents" :key="agent.id" :value="agent.id">{{ agent.name }}</option>
+                                <option value="mine">{{ $t('tickets.assigned_to_me') }}</option>
+                                <option value="unassigned">{{ $t('tickets.unassigned') }}</option>
+                                <option v-for="agent in agents" :key="agent.id" :value="String(agent.id)">{{ agent.name }}</option>
                             </select>
 
                             <div class="flex items-center justify-between gap-2">
@@ -606,7 +699,7 @@ onUnmounted(() => {
                         @click="selectTicket(item.id)"
                     >
                         <div class="flex items-start gap-2">
-                            <span class="mt-1.5 h-2 w-2 shrink-0 rounded-full" :class="priorityDotClass(item.priority?.name)" />
+                            <span class="mt-1.5 h-2 w-2 shrink-0 rounded-full" :class="ticketPriorityDotClass(item.priority?.name)" />
                             <div class="min-w-0 flex-1">
                                 <div class="flex items-start justify-between gap-2">
                                     <p class="line-clamp-2 text-sm font-medium leading-snug agent-text">{{ item.subject }}</p>
@@ -616,8 +709,8 @@ onUnmounted(() => {
                                     </div>
                                 </div>
                                 <div class="mt-1.5 flex flex-wrap items-center gap-1">
-                                    <span class="rounded-full px-1.5 py-0.5 text-[10px] font-medium ring-1 ring-inset" :class="statusBadgeClass(item.status?.name)">{{ item.status?.name }}</span>
-                                    <span class="rounded-full px-1.5 py-0.5 text-[10px] font-medium ring-1 ring-inset" :class="priorityBadgeClass(item.priority?.name)">{{ item.priority?.name }}</span>
+                                    <AppBadge size="sm" :variant="ticketStatusBadgeVariant(item.status?.name)">{{ item.status?.name }}</AppBadge>
+                                    <AppBadge size="sm" :variant="ticketPriorityBadgeVariant(item.priority?.name)">{{ item.priority?.name }}</AppBadge>
                                 </div>
                                 <div class="mt-1.5 flex items-center justify-between gap-2">
                                     <span class="truncate text-xs text-slate-500 dark:text-slate-400">{{ item.assignee?.name || 'Unassigned' }}</span>
@@ -633,8 +726,15 @@ onUnmounted(() => {
                 </ul>
             </aside>
 
-            <div class="flex min-h-0 min-w-0 flex-1">
-                <section v-if="ticket" class="flex min-h-0 min-w-0 flex-1 basis-0 flex-col overflow-hidden agent-panel">
+            <div
+                class="flex min-h-0 min-w-0 flex-1"
+                :class="mobilePanel === 'details' ? 'hidden lg:flex' : 'flex'"
+            >
+                <section
+                    v-if="ticket"
+                    class="flex min-h-0 min-w-0 flex-1 basis-0 flex-col overflow-hidden agent-panel"
+                    :class="mobilePanel === 'conversation' ? 'flex' : 'hidden lg:flex'"
+                >
                     <div class="flex shrink-0 flex-wrap items-center gap-2 border-b agent-border px-3 py-2">
                         <span class="shrink-0 font-mono text-xs font-semibold text-blue-600">{{ ticket.number }}</span>
                         <span class="hidden h-3.5 w-px bg-slate-200 dark:bg-slate-700 sm:block" />
@@ -664,30 +764,32 @@ onUnmounted(() => {
                                 <option value="">{{ $t('workspace.unassigned') }}</option>
                                 <option v-for="agent in agents" :key="agent.id" :value="agent.id">{{ agent.name }}</option>
                             </select>
-                            <div class="relative">
-                                <button
-                                    type="button"
-                                    class="rounded-lg border px-2.5 py-1 text-xs font-semibold text-slate-700 agent-hover-surface dark:text-slate-300"
-                                    @click="snoozeOpen = !snoozeOpen"
-                                >
-                                    {{ ticket.snoozed_until ? 'Snoozed' : 'Snooze' }}
-                                </button>
-                                <div
-                                    v-if="snoozeOpen"
-                                    class="absolute right-0 z-20 mt-1 w-40 rounded-lg border agent-border agent-panel py-1 shadow-lg"
-                                >
-                                    <button type="button" class="block w-full px-3 py-1.5 text-left text-xs text-slate-700 agent-hover-surface dark:text-slate-300" @click="snoozeTicket(60)">{{ $t('workspace.1_hour') }}</button>
-                                    <button type="button" class="block w-full px-3 py-1.5 text-left text-xs text-slate-700 agent-hover-surface dark:text-slate-300" @click="snoozeTicket(240)">{{ $t('workspace.4_hours') }}</button>
-                                    <button type="button" class="block w-full px-3 py-1.5 text-left text-xs text-slate-700 agent-hover-surface dark:text-slate-300" @click="snoozeTicket(1440)">{{ $t('workspace.tomorrow') }}</button>
-                                    <button type="button" class="block w-full px-3 py-1.5 text-left text-xs text-slate-700 agent-hover-surface dark:text-slate-300" @click="snoozeTicket(10080)">{{ $t('workspace.1_week') }}</button>
+                            <AppDropdown align="end">
+                                <template #trigger="{ toggle }">
+                                    <button
+                                        type="button"
+                                        class="rounded-lg border px-2.5 py-1 text-xs font-semibold text-slate-700 agent-hover-surface dark:text-slate-300"
+                                        @click="toggle"
+                                    >
+                                        {{ ticket.snoozed_until ? $t('workspace.snoozed') : $t('workspace.snooze') }}
+                                    </button>
+                                </template>
+                                <template #default="{ close }">
+                                    <button type="button" role="menuitem" class="agent-dropdown-item" @click="snoozeTicket(60); close()">{{ $t('workspace.1_hour') }}</button>
+                                    <button type="button" role="menuitem" class="agent-dropdown-item" @click="snoozeTicket(240); close()">{{ $t('workspace.4_hours') }}</button>
+                                    <button type="button" role="menuitem" class="agent-dropdown-item" @click="snoozeTicket(1440); close()">{{ $t('workspace.tomorrow') }}</button>
+                                    <button type="button" role="menuitem" class="agent-dropdown-item" @click="snoozeTicket(10080); close()">{{ $t('workspace.1_week') }}</button>
                                     <button
                                         v-if="ticket.snoozed_until"
                                         type="button"
-                                        class="block w-full border-t agent-border-subtle px-3 py-1.5 text-left text-xs text-red-600 agent-hover-surface"
-                                        @click="unsnoozeTicket"
-                                    >{{ $t('workspace.unsnooze') }}</button>
-                                </div>
-                            </div>
+                                        role="menuitem"
+                                        class="agent-dropdown-item-danger border-t agent-border-subtle"
+                                        @click="unsnoozeTicket(); close()"
+                                    >
+                                        {{ $t('workspace.unsnooze') }}
+                                    </button>
+                                </template>
+                            </AppDropdown>
                             <span v-if="snoozeLabel" class="hidden text-[10px] text-amber-700 dark:text-amber-300 lg:inline">Until {{ snoozeLabel }}</span>
                             <Link
                                 :href="`/tickets/${ticket.id}`"
@@ -737,7 +839,11 @@ onUnmounted(() => {
                     </form>
                 </section>
 
-                <div v-else class="flex min-h-0 flex-1 flex-col items-center justify-center agent-panel px-6 text-center">
+                <div
+                    v-else
+                    class="flex min-h-0 flex-1 flex-col items-center justify-center agent-panel px-6 text-center"
+                    :class="mobilePanel === 'conversation' ? 'flex' : 'hidden lg:flex'"
+                >
                     <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-50 dark:bg-blue-950/40 text-blue-500 dark:bg-blue-950/50 dark:text-blue-400">
                         <svg class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
@@ -747,7 +853,11 @@ onUnmounted(() => {
                     <p class="mt-1 max-w-xs text-sm agent-text-subtle">{{ $t('workspace.choose_a_conversation_from_the_queue_to_read_and_reply') }}</p>
                 </div>
 
-                <aside v-if="ticket" class="hidden min-h-0 w-80 shrink-0 flex-col overflow-hidden border-l agent-border agent-panel xl:flex">
+                <aside
+                    v-if="ticket"
+                    class="min-h-0 shrink-0 flex-col overflow-hidden border-l agent-border agent-panel xl:w-80"
+                    :class="mobilePanel === 'details' ? 'flex w-full' : 'hidden xl:flex'"
+                >
                     <TicketDetailsSidebar
                         embedded
                         :ticket="ticket"
@@ -759,13 +869,13 @@ onUnmounted(() => {
                         :teams="teams"
                         :merge-candidates="mergeCandidates"
                         :asset-options="assetOptions"
-                        :csat="csat"
+                        :csat="lazyPanels.csat"
                         :current-user-id="currentUserId"
                         :custom-field-definitions="customFieldDefinitions"
-                        :lifecycle="lifecycle"
-                        :side-conversations="sideConversations"
-                        :time-tracking="timeTracking ?? { total_minutes: 0, entries: [] }"
-                        :external-issues="externalIssues"
+                        :lifecycle="lazyPanels.lifecycle ?? []"
+                        :side-conversations="lazyPanels.sideConversations"
+                        :time-tracking="lazyPanels.timeTracking ?? { total_minutes: 0, entries: [] }"
+                        :external-issues="lazyPanels.externalIssues"
                         :issue-providers="issueProviders"
                         :approval="approval"
                         :can-decide-approval="canDecideApproval"
@@ -778,6 +888,36 @@ onUnmounted(() => {
                     />
                 </aside>
             </div>
+            </div>
+
+            <nav
+                class="flex shrink-0 border-t agent-border agent-panel lg:hidden"
+                role="tablist"
+                :aria-label="$t('workspace.mobile_panels')"
+            >
+                <button
+                    v-for="tab in mobileTabs"
+                    :key="tab.id"
+                    type="button"
+                    role="tab"
+                    class="relative flex min-h-[3rem] flex-1 flex-col items-center justify-center gap-0.5 px-2 py-2 text-[11px] font-semibold transition-ui"
+                    :class="[
+                        mobilePanel === tab.id ? 'text-blue-600 dark:text-blue-400' : 'agent-text-muted',
+                        tab.disabled ? 'cursor-not-allowed opacity-40' : '',
+                    ]"
+                    :aria-selected="mobilePanel === tab.id"
+                    :disabled="tab.disabled"
+                    @click="setMobilePanel(tab.id)"
+                >
+                    <span>{{ tab.label }}</span>
+                    <span
+                        v-if="tab.badge"
+                        class="absolute right-3 top-2 rounded-full bg-slate-200 px-1.5 py-0.5 text-[10px] tabular-nums text-slate-700 dark:bg-slate-700 dark:text-slate-200"
+                    >
+                        {{ tab.badge }}
+                    </span>
+                </button>
+            </nav>
         </div>
 
         <AgentCopilotPanel

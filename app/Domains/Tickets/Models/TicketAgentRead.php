@@ -12,6 +12,7 @@ class TicketAgentRead extends Model
         'user_id',
         'ticket_id',
         'last_read_message_id',
+        'unread_count',
         'read_at',
     ];
 

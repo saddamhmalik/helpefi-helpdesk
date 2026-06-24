@@ -19,6 +19,7 @@ fi
 php artisan migrate --force
 php artisan db:seed --class=Database\\Seeders\\CentralDatabaseSeeder --force
 php artisan tenants:migrate --force || true
+php artisan tenants:upgrade || true
 php artisan tenants:sync-routes || true
 
 echo "Migrations complete."

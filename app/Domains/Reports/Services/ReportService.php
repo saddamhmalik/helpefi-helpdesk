@@ -7,6 +7,7 @@ use App\Domains\Csat\Services\CsatService;
 use App\Domains\Knowledge\Services\KbDeflectionService;
 use App\Domains\TimeTracking\Services\TimeTrackingService;
 use App\Domains\Reports\Models\SavedReport;
+use App\Domains\Reports\Support\DashboardWidgetCache;
 use App\Domains\Reports\Repositories\ReportRepository;
 use App\Support\TenantCache;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -17,6 +18,8 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ReportService
 {
+    private const PDF_MAX_ROWS = 500;
+
     public function __construct(
         private ReportRepository $reports,
         private CsatService $csat,
@@ -32,11 +35,7 @@ class ReportService
             return $this->loadDashboardWidgets();
         }
 
-        return Cache::remember(
-            TenantCache::key('dashboard_widgets'),
-            300,
-            fn () => $this->loadDashboardWidgets(),
-        );
+        return DashboardWidgetCache::remember(300, fn () => $this->loadDashboardWidgets());
     }
 
     private function loadDashboardWidgets(): array
@@ -313,13 +312,12 @@ class ReportService
     private function pdfViewData(string $type, array $filters, string $reportName): array
     {
         return match ($type) {
-            SavedReport::TYPE_TICKETS => [
-                'reportName' => $reportName,
-                'typeLabel' => $this->typeLabel($type),
-                'generatedAt' => now()->toDayDateTimeString(),
-                'format' => 'table',
-                'headers' => ['Number', 'Subject', 'Contact', 'Status', 'Priority', 'Assignee', 'Created', 'Closed'],
-                'rows' => $this->reports->ticketsReportRows($filters)->map(fn ($ticket) => [
+            SavedReport::TYPE_TICKETS => $this->pdfTableData(
+                $reportName,
+                $type,
+                ['Number', 'Subject', 'Contact', 'Status', 'Priority', 'Assignee', 'Created', 'Closed'],
+                $this->reports->ticketsReportRows($filters),
+                fn ($ticket) => [
                     $ticket->number,
                     $ticket->subject,
                     $ticket->contact?->name,
@@ -328,43 +326,46 @@ class ReportService
                     $ticket->assignee?->name,
                     $ticket->created_at?->toDateTimeString(),
                     $ticket->closed_at?->toDateTimeString(),
-                ])->all(),
-            ],
-            SavedReport::TYPE_SLA_BREACHES => [
-                'reportName' => $reportName,
-                'typeLabel' => $this->typeLabel($type),
-                'generatedAt' => now()->toDayDateTimeString(),
-                'format' => 'table',
-                'headers' => ['Number', 'Subject', 'Assignee', 'First response breached', 'Resolution breached', 'Created'],
-                'rows' => $this->reports->slaBreachesReportRows($filters)->map(fn ($ticket) => [
+                ],
+            ),
+            SavedReport::TYPE_SLA_BREACHES => $this->pdfTableData(
+                $reportName,
+                $type,
+                ['Number', 'Subject', 'Assignee', 'First response breached', 'Resolution breached', 'Created'],
+                $this->reports->slaBreachesReportRows($filters),
+                fn ($ticket) => [
                     $ticket->number,
                     $ticket->subject,
                     $ticket->assignee?->name,
                     $ticket->slaTimer?->first_response_breached ? 'Yes' : 'No',
                     $ticket->slaTimer?->resolution_breached ? 'Yes' : 'No',
                     $ticket->created_at?->toDateTimeString(),
-                ])->all(),
-            ],
-            SavedReport::TYPE_AGENT_PERFORMANCE => [
-                'reportName' => $reportName,
-                'typeLabel' => $this->typeLabel($type),
-                'generatedAt' => now()->toDayDateTimeString(),
-                'format' => 'table',
-                'headers' => ['Agent', 'Open tickets', 'Closed tickets', 'Total tickets'],
-                'rows' => $this->reports->agentPerformanceReport($filters)->map(fn ($row) => [
-                    $row['agent_name'],
-                    $row['open_count'],
-                    $row['closed_count'],
-                    $row['total_count'],
-                ])->all(),
-            ],
-            SavedReport::TYPE_CSAT => [
-                'reportName' => $reportName,
-                'typeLabel' => $this->typeLabel($type),
-                'generatedAt' => now()->toDayDateTimeString(),
-                'format' => 'table',
-                'headers' => ['Ticket', 'Subject', 'Contact', 'Rating', 'Comment', 'Channel', 'Assignee', 'Submitted'],
-                'rows' => collect($this->csat->exportRows($filters)['rows'])->map(fn ($response) => [
+                ],
+            ),
+            SavedReport::TYPE_AGENT_PERFORMANCE => (function () use ($reportName, $type, $filters) {
+                $agents = $this->reports->agentPerformanceReport($filters);
+
+                return [
+                    'reportName' => $reportName,
+                    'typeLabel' => $this->typeLabel($type),
+                    'generatedAt' => now()->toDayDateTimeString(),
+                    'format' => 'table',
+                    'headers' => ['Agent', 'Open tickets', 'Closed tickets', 'Total tickets'],
+                    'rows' => $agents->take(self::PDF_MAX_ROWS)->map(fn ($row) => [
+                        $row['agent_name'],
+                        $row['open_count'],
+                        $row['closed_count'],
+                        $row['total_count'],
+                    ])->all(),
+                    'truncated' => $agents->count() > self::PDF_MAX_ROWS,
+                ];
+            })(),
+            SavedReport::TYPE_CSAT => $this->pdfTableData(
+                $reportName,
+                $type,
+                ['Ticket', 'Subject', 'Contact', 'Rating', 'Comment', 'Channel', 'Assignee', 'Submitted'],
+                collect($this->csat->exportRows($filters)['rows']),
+                fn ($response) => [
                     $response->ticket?->number,
                     $response->ticket?->subject,
                     $response->contact?->name,
@@ -373,10 +374,38 @@ class ReportService
                     $response->channel,
                     $response->ticket?->assignee?->name,
                     $response->created_at?->toDateTimeString(),
-                ])->all(),
-            ],
+                ],
+            ),
             SavedReport::TYPE_TIME_TRACKING => $this->timeTrackingPdfViewData($reportName, $type, $filters),
         };
+    }
+
+    private function pdfTableData(string $reportName, string $type, array $headers, iterable $source, callable $mapper): array
+    {
+        $rows = [];
+        $truncated = false;
+        $count = 0;
+
+        foreach ($source as $item) {
+            $count++;
+
+            if ($count > self::PDF_MAX_ROWS) {
+                $truncated = true;
+                break;
+            }
+
+            $rows[] = $mapper($item);
+        }
+
+        return [
+            'reportName' => $reportName,
+            'typeLabel' => $this->typeLabel($type),
+            'generatedAt' => now()->toDayDateTimeString(),
+            'format' => 'table',
+            'headers' => $headers,
+            'rows' => $rows,
+            'truncated' => $truncated,
+        ];
     }
 
     private function timeTrackingPdfViewData(string $reportName, string $type, array $filters): array

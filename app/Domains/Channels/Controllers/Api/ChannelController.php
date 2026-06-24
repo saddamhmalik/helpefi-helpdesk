@@ -4,6 +4,7 @@ namespace App\Domains\Channels\Controllers\Api;
 
 use App\Domains\Channels\Services\ChannelService;
 use App\Domains\Channels\Services\MessagingInboundService;
+use App\Domains\Tickets\Support\TicketAttachmentRules;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -37,9 +38,9 @@ class ChannelController extends Controller
             'references.*' => ['string', 'max:255'],
             'ticket_number' => ['nullable', 'string', 'max:32'],
             'to_email' => ['nullable', 'email'],
-            'attachments' => ['nullable', 'array'],
+            'attachments' => TicketAttachmentRules::attachmentArrayRules(),
             'attachments.*.filename' => ['required_with:attachments', 'string', 'max:255'],
-            'attachments.*.content' => ['required_with:attachments', 'string'],
+            'attachments.*.content' => ['required_with:attachments', 'string', 'max:14000000'],
             'attachments.*.mime_type' => ['nullable', 'string', 'max:127'],
             'cc_emails' => ['nullable', 'array'],
             'cc_emails.*' => ['email', 'max:255'],
@@ -60,7 +61,7 @@ class ChannelController extends Controller
     public function inboundTwilio(Request $request): Response
     {
         try {
-            $this->messaging->process($request->all(), $request->query('token'));
+            $this->messaging->process($request->all(), $request->query('token'), $request);
         } catch (InvalidArgumentException $exception) {
             return response($exception->getMessage(), 422);
         }

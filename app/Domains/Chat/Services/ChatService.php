@@ -3,7 +3,7 @@
 namespace App\Domains\Chat\Services;
 
 use App\Domains\Ai\Services\AiDeflectionService;
-use App\Domains\Billing\Services\BillingService;
+use App\Domains\Billing\Contracts\FeatureEntitlementChecker;
 use App\Domains\Realtime\Services\RealtimeTokenService;
 use App\Domains\Realtime\Support\RealtimeChannelNames;
 use App\Domains\Channels\Models\Channel;
@@ -13,6 +13,7 @@ use App\Domains\Chat\Repositories\ChatSessionRepository;
 use App\Domains\Contacts\Services\ContactService;
 use App\Domains\Tickets\Models\TicketMessage;
 use App\Domains\Tickets\Services\TicketService;
+use App\Domains\Tickets\Services\TicketStatusLookup;
 use App\Domains\Tickets\Support\MessageBodySanitizer;
 use App\Domains\Workspace\Services\TicketPresenceService;
 use Illuminate\Support\Carbon;
@@ -31,7 +32,8 @@ class ChatService
         private TicketPresenceService $presence,
         private AiDeflectionService $deflection,
         private RealtimeTokenService $realtimeTokens,
-        private BillingService $billing,
+        private FeatureEntitlementChecker $entitlements,
+        private TicketStatusLookup $statusLookup,
     ) {
     }
 
@@ -67,7 +69,7 @@ class ChatService
 
     public function startSession(Channel $channel, array $data, ?string $userAgent = null): array
     {
-        $this->billing->assertFeature('channels');
+        $this->entitlements->assertFeature('channels');
 
         $online = $this->availability->isOnline($channel);
 
@@ -117,7 +119,7 @@ class ChatService
             ]);
         }
 
-        $openStatus = $this->tickets->statuses()->firstWhere('slug', 'open')
+        $openStatus = $this->statusLookup->defaultOpen()
             ?? $this->tickets->statuses()->first();
         $normalPriority = $this->tickets->priorities()->firstWhere('slug', 'normal')
             ?? $this->tickets->priorities()->first();
@@ -220,7 +222,7 @@ class ChatService
         }
 
         $contact = $this->contacts->findOrCreateByEmail($email, $name);
-        $openStatus = $this->tickets->statuses()->firstWhere('slug', 'open')
+        $openStatus = $this->statusLookup->defaultOpen()
             ?? $this->tickets->statuses()->first();
         $normalPriority = $this->tickets->priorities()->firstWhere('slug', 'normal')
             ?? $this->tickets->priorities()->first();

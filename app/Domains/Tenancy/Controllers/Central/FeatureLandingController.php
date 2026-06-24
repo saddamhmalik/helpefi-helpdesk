@@ -10,6 +10,11 @@ use Inertia\Response;
 
 class FeatureLandingController extends Controller
 {
+    public function index(): Response
+    {
+        return Inertia::render('Central/FeaturesIndex', CentralMarketingPresenter::shared());
+    }
+
     public function show(string $feature): Response
     {
         $definition = MarketingFeatureDefinition::find($feature);

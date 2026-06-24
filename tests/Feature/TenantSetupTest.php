@@ -22,6 +22,15 @@ class TenantSetupTest extends TenantTestCase
         $this->seed([TicketLookupSeeder::class, ChannelSeeder::class, SlaSeeder::class]);
     }
 
+    private function completeAllRequiredSetupSteps(): void
+    {
+        $setup = app(TenantSetupService::class);
+
+        foreach (['business_hours', 'email', 'chat_widget', 'invite_team', 'sla_policies'] as $step) {
+            $setup->completeStep($step);
+        }
+    }
+
     public function test_admin_is_redirected_to_setup_after_login(): void
     {
         $admin = User::query()->where('email', 'admin@helpdesk.test')->firstOrFail();
@@ -54,19 +63,36 @@ class TenantSetupTest extends TenantTestCase
     {
         $admin = User::query()->where('email', 'admin@helpdesk.test')->firstOrFail();
 
-        $this->actingAs($admin)
-            ->tenantPost('/setup/finish')
-            ->assertRedirect(route('dashboard'));
+        $this->completeAllRequiredSetupSteps();
+
+        $snapshot = app(TenantSetupService::class)->finish();
+
+        $this->assertTrue($snapshot['completed']);
+    }
+
+    public function test_admin_cannot_finish_setup_with_incomplete_required_steps(): void
+    {
+        $admin = User::query()->where('email', 'admin@helpdesk.test')->firstOrFail();
 
         $this->actingAs($admin)
-            ->tenantGet('/setup')
-            ->assertOk();
+            ->tenantPost('/setup/finish')
+            ->assertSessionHasErrors('setup');
+    }
+
+    public function test_admin_cannot_complete_unknown_setup_step(): void
+    {
+        $admin = User::query()->where('email', 'admin@helpdesk.test')->firstOrFail();
+
+        $this->actingAs($admin)
+            ->tenantPost('/setup/steps/not-a-real-step')
+            ->assertSessionHasErrors('step');
     }
 
     public function test_admin_can_access_dashboard_after_setup_is_dismissed(): void
     {
         $admin = User::query()->where('email', 'admin@helpdesk.test')->firstOrFail();
 
+        $this->completeAllRequiredSetupSteps();
         app(TenantSetupService::class)->finish();
 
         $this->actingAs($admin)
@@ -78,6 +104,7 @@ class TenantSetupTest extends TenantTestCase
     {
         $admin = User::query()->where('email', 'admin@helpdesk.test')->firstOrFail();
 
+        $this->completeAllRequiredSetupSteps();
         app(TenantSetupService::class)->finish();
 
         $this->actingAs($admin)
@@ -108,6 +135,7 @@ class TenantSetupTest extends TenantTestCase
             'from_address' => 'support@company.test',
         ]);
 
+        $this->completeAllRequiredSetupSteps();
         app(TenantSetupService::class)->finish();
 
         $this->actingAs($admin)
@@ -125,6 +153,7 @@ class TenantSetupTest extends TenantTestCase
     {
         $admin = User::query()->where('email', 'admin@helpdesk.test')->firstOrFail();
 
+        $this->completeAllRequiredSetupSteps();
         app(TenantSetupService::class)->finish();
 
         $this->actingAs($admin)
@@ -134,5 +163,27 @@ class TenantSetupTest extends TenantTestCase
                     return collect($warnings)->pluck('key')->contains('invite_team');
                 })
             );
+    }
+
+    public function test_admin_cannot_finish_setup_with_bootstrap_demo_present(): void
+    {
+        $this->seed([
+            \Database\Seeders\PermissionSeeder::class,
+            \Database\Seeders\TenantBootstrapSeeder::class,
+        ]);
+
+        $admin = User::factory()->create();
+        $admin->assignRole('admin');
+
+        app(\App\Domains\Tenancy\Services\TenantDummyDataService::class)->skip();
+
+        $setup = app(TenantSetupService::class);
+        foreach (['business_hours', 'email', 'chat_widget', 'invite_team', 'sla_policies'] as $step) {
+            $setup->completeStep($step);
+        }
+
+        $this->actingAs($admin)
+            ->tenantPost('/setup/finish')
+            ->assertSessionHasErrors('setup');
     }
 }

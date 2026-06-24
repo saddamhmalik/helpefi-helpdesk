@@ -1,11 +1,12 @@
 <script setup>
-import { Head, Link, router } from '@inertiajs/vue3';
+import { Head, router } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import AgentLayout from '../../Layouts/AgentLayout.vue';
 import PageHeader from '../../Components/PageHeader.vue';
 import ListPanel from '../../Components/ListPanel.vue';
 import PaginationLinks from '../../Components/PaginationLinks.vue';
 import NotificationTypeIcon from '../../Components/NotificationTypeIcon.vue';
+import { AppButton, AppEmptyState } from '../../Components/ui';
 import { useI18n } from 'vue-i18n';
 import { formatRelativeTime, notificationMeta, notificationFilterTypes } from '../../composables/useNotificationMeta.js';
 
@@ -40,6 +41,20 @@ const activeTab = computed(() => {
     }
 
     return 'all';
+});
+
+const isEmpty = computed(() => !props.notifications.data?.length);
+
+const emptyDescription = computed(() => {
+    if (props.filters.unread) {
+        return t('notifications.no_unread_notifications');
+    }
+
+    if (props.filters.type) {
+        return t('notifications.no_filtered_notifications');
+    }
+
+    return t('notifications.no_notifications_description');
 });
 
 const applyFilter = (tab) => {
@@ -98,21 +113,21 @@ const hasReadItems = computed(() => props.notifications.data?.some((item) => ite
         >
             <template #actions>
                 <div class="flex flex-wrap items-center gap-2">
-                    <button
+                    <AppButton
                         v-if="hasReadItems"
-                        type="button"
-                        class="inline-flex items-center rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
+                        variant="secondary"
+                        size="sm"
                         @click="clearRead"
                     >
                         {{ $t('notifications.clear_read') }}
-                    </button>
-                    <button
-                        type="button"
-                        class="inline-flex items-center rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
+                    </AppButton>
+                    <AppButton
+                        variant="secondary"
+                        size="sm"
                         @click="markAllRead"
                     >
                         {{ $t('notifications.mark_all_read') }}
-                    </button>
+                    </AppButton>
                 </div>
             </template>
         </PageHeader>
@@ -122,7 +137,7 @@ const hasReadItems = computed(() => props.notifications.data?.some((item) => ite
                 v-for="tab in filterTabs"
                 :key="tab.key"
                 type="button"
-                class="rounded-full px-3 py-1.5 text-xs font-medium transition"
+                class="rounded-full px-3 py-1.5 text-xs font-medium transition focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-950"
                 :class="activeTab === tab.key
                     ? 'bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900'
                     : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 ring-1 ring-slate-200 dark:ring-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800'"
@@ -133,52 +148,62 @@ const hasReadItems = computed(() => props.notifications.data?.some((item) => ite
         </div>
 
         <ListPanel>
-            <div
-                v-for="item in notifications.data"
-                :key="item.id"
-                class="flex items-center gap-4 border-b border-slate-100 dark:border-slate-800 px-4 py-4 last:border-b-0"
-                :class="item.read_at ? '' : 'bg-blue-50/80 dark:bg-blue-950/30'"
-            >
-                <NotificationTypeIcon :type="item.type" />
-                <div class="min-w-0 flex-1">
-                    <div class="flex flex-wrap items-center gap-2">
-                        <span
-                            class="rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide"
-                            :class="notificationMeta(item.type).badgeClass"
-                        >
-                            {{ typeLabel(item.type) }}
-                        </span>
-                        <span v-if="item.ticket_number" class="font-mono text-xs text-slate-500 dark:text-slate-400">{{ item.ticket_number }}</span>
-                        <span v-if="!item.read_at" class="h-2 w-2 rounded-full bg-blue-500" />
+            <template v-if="!isEmpty">
+                <div
+                    v-for="item in notifications.data"
+                    :key="item.id"
+                    class="flex items-center gap-4 border-b border-slate-100 dark:border-slate-800 px-4 py-4 last:border-b-0"
+                    :class="item.read_at ? '' : 'bg-blue-50/80 dark:bg-blue-950/30'"
+                >
+                    <NotificationTypeIcon :type="item.type" />
+                    <div class="min-w-0 flex-1">
+                        <div class="flex flex-wrap items-center gap-2">
+                            <span
+                                class="rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide"
+                                :class="notificationMeta(item.type).badgeClass"
+                            >
+                                {{ typeLabel(item.type) }}
+                            </span>
+                            <span v-if="item.ticket_number" class="font-mono text-xs text-slate-500 dark:text-slate-400">{{ item.ticket_number }}</span>
+                            <span v-if="!item.read_at" class="h-2 w-2 rounded-full bg-blue-500" aria-hidden="true" />
+                        </div>
+                        <p class="mt-1 text-sm font-medium leading-snug text-slate-900 dark:text-slate-100">{{ item.message }}</p>
+                        <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">{{ relativeTime(item.created_at) }}</p>
                     </div>
-                    <p class="mt-1 text-sm font-medium leading-snug text-slate-900 dark:text-slate-100">{{ item.message }}</p>
-                    <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">{{ relativeTime(item.created_at) }}</p>
+                    <div class="flex shrink-0 items-center gap-2">
+                        <AppButton
+                            v-if="!item.read_at"
+                            variant="ghost"
+                            size="xs"
+                            class="hidden sm:inline-flex"
+                            @click="markRead(item.id)"
+                        >
+                            {{ $t('notifications.mark_read') }}
+                        </AppButton>
+                        <AppButton
+                            v-if="item.url"
+                            variant="secondary"
+                            size="xs"
+                            class="border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 dark:border-blue-900/60 dark:bg-blue-950/40 dark:text-blue-300 dark:hover:bg-blue-900/60"
+                            @click="openNotification(item)"
+                        >
+                            {{ $t('common.open') }}
+                        </AppButton>
+                    </div>
                 </div>
-                <div class="flex shrink-0 items-center gap-2">
-                    <button
-                        v-if="!item.read_at"
-                        type="button"
-                        class="hidden rounded-lg px-2.5 py-1.5 text-xs font-medium text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-300 dark:text-slate-300 sm:inline-flex"
-                        @click="markRead(item.id)"
-                    >
-                        {{ $t('notifications.mark_read') }}
-                    </button>
-                    <button
-                        v-if="item.url"
-                        type="button"
-                        class="inline-flex items-center rounded-lg border border-blue-200 dark:border-blue-900/60 bg-blue-50 dark:bg-blue-950/40 px-3 py-1.5 text-xs font-semibold text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/60"
-                        @click="openNotification(item)"
-                    >
-                        {{ $t('common.open') }}
-                    </button>
-                </div>
-            </div>
-            <p v-if="!notifications.data?.length" class="py-12 text-center text-sm text-slate-500 dark:text-slate-400">
-                {{ $t('notifications.no_notifications_yet') }}
-            </p>
+            </template>
+
+            <AppEmptyState
+                v-else
+                icon="inbox"
+                size="compact"
+                :title="$t('notifications.no_notifications_yet')"
+                :description="emptyDescription"
+            />
 
             <template #footer>
                 <PaginationLinks
+                    v-if="!isEmpty"
                     :links="notifications.links"
                     :from="notifications.from"
                     :to="notifications.to"

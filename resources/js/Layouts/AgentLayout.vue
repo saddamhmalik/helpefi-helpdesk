@@ -6,6 +6,7 @@ import AppLogo from '../Components/AppLogo.vue';
 import DummyDataBanner from '../Components/DummyDataBanner.vue';
 import PlatformNoticeModal from '../Components/PlatformNoticeModal.vue';
 import TrialBanner from '../Components/TrialBanner.vue';
+import GlobalPlanLimitBanner from '../Components/GlobalPlanLimitBanner.vue';
 import CancellationGraceBanner from '../Components/CancellationGraceBanner.vue';
 import { Link, usePage } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
@@ -79,6 +80,7 @@ const iconWrapClass = (href, exact = false) => isActive(href, exact)
 </script>
 
 <template>
+    <a href="#main-content" class="agent-skip-link">{{ $t('components.skip_to_main_content') }}</a>
     <div class="h-screen overflow-hidden agent-page-bg lg:flex">
         <aside
             class="sidebar-shell group/sidebar fixed left-0 top-0 z-40 hidden h-screen flex-col overflow-hidden transition-sidebar lg:flex"
@@ -193,17 +195,18 @@ const iconWrapClass = (href, exact = false) => isActive(href, exact)
                 </Link>
             </nav>
 
-            <main class="flex min-h-0 flex-1 flex-col overflow-hidden">
+            <main id="main-content" class="flex min-h-0 flex-1 flex-col overflow-hidden">
                 <div class="mb-1.5 shrink-0 space-y-1 empty:mb-0 empty:hidden px-4 pt-2 sm:px-6">
                     <TrialBanner />
+                    <GlobalPlanLimitBanner />
                     <CancellationGraceBanner />
                     <DummyDataBanner v-if="!isSetupPage" />
                 </div>
                 <PlatformNoticeModal />
                 <div
-                    class="flex min-h-0 flex-1 flex-col overflow-x-hidden pb-4 pt-3 sm:pb-6 sm:pt-4"
+                    class="flex min-h-0 flex-1 flex-col overflow-x-hidden pt-3 sm:pt-4"
                     :class="[
-                        isConstrainedHeightPage ? 'overflow-hidden' : 'overflow-y-auto',
+                        isConstrainedHeightPage ? 'overflow-hidden pb-0' : 'overflow-y-auto pb-4 sm:pb-6',
                         isSettingsPage ? 'px-0' : 'px-4 sm:px-6',
                     ]"
                 >

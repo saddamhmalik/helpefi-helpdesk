@@ -2,9 +2,10 @@
 
 namespace App\Domains\Channels\Services;
 
-use App\Domains\Billing\Services\BillingService;
+use App\Domains\Billing\Contracts\FeatureEntitlementChecker;
 use App\Domains\Channels\Models\EmailInbox;
 use App\Domains\Channels\Repositories\EmailInboxRepository;
+use App\Domains\Channels\Support\InboundEmailToken;
 use App\Domains\Security\Support\AuditRecorder;
 use App\Domains\Tenancy\Services\TenantRouteRegistryService;
 use Illuminate\Database\Eloquent\Collection;
@@ -14,7 +15,7 @@ class EmailInboxService
 {
     public function __construct(
         private EmailInboxRepository $inboxes,
-        private BillingService $billing,
+        private FeatureEntitlementChecker $entitlements,
         private AuditRecorder $audit,
         private TenantRouteRegistryService $tenantRoutes,
     ) {
@@ -46,7 +47,7 @@ class EmailInboxService
 
     public function create(array $data): array
     {
-        $this->billing->assertFeature('channels');
+        $this->entitlements->assertFeature('channels');
 
         $inbox = $this->inboxes->create([
             'name' => $data['name'],
@@ -83,7 +84,7 @@ class EmailInboxService
 
     public function update(int $id, array $data): array
     {
-        $this->billing->assertFeature('channels');
+        $this->entitlements->assertFeature('channels');
 
         $inbox = $this->inboxes->find($id);
         $previous = $this->routeSnapshot($inbox);
@@ -164,7 +165,7 @@ class EmailInboxService
             return $this->inboxes->findByAddress(strtolower($toEmail));
         }
 
-        return $this->inboxes->findByToken(config('helpdesk.inbound_email_token') ?: 'dev-inbound-token')
+        return $this->inboxes->findByToken(InboundEmailToken::resolve())
             ?? $this->inboxes->all()->firstWhere('is_active', true);
     }
 

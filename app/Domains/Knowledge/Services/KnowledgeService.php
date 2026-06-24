@@ -6,6 +6,8 @@ use App\Domains\Knowledge\Jobs\EmbedKnowledgeArticleJob;
 use App\Domains\Knowledge\Models\KnowledgeArticle;
 use App\Domains\Knowledge\Models\KnowledgeArticleVersion;
 use App\Domains\Knowledge\Models\KnowledgeCollection;
+use App\Domains\Knowledge\Support\HelpCenterPublicCache;
+use App\Domains\Reports\Support\DashboardWidgetCache;
 use App\Domains\Knowledge\Repositories\KnowledgeCollectionRepository;
 use App\Domains\Knowledge\Repositories\KnowledgeRepository;
 use App\Domains\Knowledge\Repositories\KnowledgeSettingRepository;
@@ -62,6 +64,8 @@ class KnowledgeService
             EmbedKnowledgeArticleJob::dispatch($article->id)->afterResponse();
         }
 
+        $this->forgetPublicCaches();
+
         return $article;
     }
 
@@ -100,6 +104,8 @@ class KnowledgeService
             EmbedKnowledgeArticleJob::dispatch($article->id)->afterResponse();
         }
 
+        $this->forgetPublicCaches();
+
         return $article;
     }
 
@@ -110,11 +116,15 @@ class KnowledgeService
 
         $this->versions->snapshot($article, $userId);
 
-        return $this->articles->update($article, [
+        $article = $this->articles->update($article, [
             'title' => $version->title,
             'excerpt' => $version->excerpt,
             'body' => $version->body,
         ]);
+
+        $this->forgetPublicCaches();
+
+        return $article;
     }
 
     public function categories(): Collection
@@ -129,12 +139,18 @@ class KnowledgeService
 
     public function publicCollections(?int $brandId = null): Collection
     {
-        return $this->collections->publicList($brandId);
+        return HelpCenterPublicCache::rememberCollections(
+            $brandId,
+            fn () => $this->collections->publicList($brandId),
+        );
     }
 
     public function createCollection(array $data): KnowledgeCollection
     {
-        return $this->collections->create($data);
+        $collection = $this->collections->create($data);
+        $this->forgetPublicCaches();
+
+        return $collection;
     }
 
     public function updateCollection(int $id, array $data): KnowledgeCollection
@@ -145,7 +161,10 @@ class KnowledgeService
             unset($data['slug'], $data['is_public']);
         }
 
-        return $this->collections->update($collection, $data);
+        $collection = $this->collections->update($collection, $data);
+        $this->forgetPublicCaches();
+
+        return $collection;
     }
 
     public function deleteCollection(int $id): void
@@ -157,6 +176,8 @@ class KnowledgeService
         }
 
         $this->collections->delete($collection);
+
+        $this->forgetPublicCaches();
     }
 
     public function collectionBySlug(string $slug): KnowledgeCollection
@@ -186,12 +207,24 @@ class KnowledgeService
 
     public function featuredPublished(int $limit = 6, ?int $brandId = null, ?string $locale = null): Collection
     {
-        return $this->articles->featuredPublished($limit, $brandId, $locale);
+        $locale = $this->normalizeLocale($locale);
+
+        return HelpCenterPublicCache::rememberFeatured(
+            $brandId,
+            $locale,
+            $limit,
+            fn () => $this->articles->featuredPublished($limit, $brandId, $locale),
+        );
     }
 
     public function translations(int $articleId): Collection
     {
         return $this->articles->translations($this->articles->find($articleId));
+    }
+
+    public function portalTranslations(int $articleId, ?int $brandId = null): Collection
+    {
+        return $this->articles->portalTranslations($this->articles->find($articleId), $brandId);
     }
 
     public function createTranslation(int $sourceArticleId, string $locale, array $data, int $authorId): KnowledgeArticle
@@ -254,5 +287,11 @@ class KnowledgeService
         }
 
         return $locale;
+    }
+
+    private function forgetPublicCaches(): void
+    {
+        HelpCenterPublicCache::forgetAll();
+        DashboardWidgetCache::forget();
     }
 }

@@ -4,8 +4,8 @@ namespace App\Domains\Contacts\Services;
 
 use App\Domains\Contacts\Repositories\OrganizationRepository;
 use App\Domains\Contacts\Repositories\TagRepository;
-use App\Domains\Contacts\Support\ContactFormReferenceCache;
 use App\Domains\Settings\Services\HelpdeskSettingService;
+use App\Support\ReferenceCacheInvalidator;
 use App\Support\TenantCache;
 use Illuminate\Support\Facades\Cache;
 
@@ -17,6 +17,7 @@ class ContactFormReferenceService
         private OrganizationRepository $organizations,
         private TagRepository $tags,
         private HelpdeskSettingService $helpdeskSettings,
+        private ReferenceCacheInvalidator $referenceCache,
     ) {
     }
 
@@ -40,7 +41,7 @@ class ContactFormReferenceService
 
     public function forgetCache(): void
     {
-        ContactFormReferenceCache::forget();
+        $this->referenceCache->forgetContactFormReference();
     }
 
     private function loadPayload(): array

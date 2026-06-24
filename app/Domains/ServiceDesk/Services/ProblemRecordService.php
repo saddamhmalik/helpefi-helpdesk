@@ -2,7 +2,7 @@
 
 namespace App\Domains\ServiceDesk\Services;
 
-use App\Domains\Billing\Services\BillingService;
+use App\Domains\Billing\Contracts\FeatureEntitlementChecker;
 use App\Domains\ServiceCatalog\Models\ServiceCatalogItem;
 use App\Domains\ServiceDesk\Models\ProblemRecord;
 use App\Domains\ServiceDesk\Repositories\ProblemRecordRepository;
@@ -17,14 +17,14 @@ class ProblemRecordService
     public function __construct(
         private ProblemRecordRepository $records,
         private TicketRepository $tickets,
-        private BillingService $billing,
+        private FeatureEntitlementChecker $entitlements,
         private AuditRecorder $audit,
     ) {
     }
 
     public function ensureForTicket(Ticket $ticket): ?ProblemRecord
     {
-        if (! $this->billing->canUseFeature('service_desk')) {
+        if (! $this->entitlements->canUseFeature('service_desk')) {
             return null;
         }
 
@@ -37,7 +37,7 @@ class ProblemRecordService
 
     public function snapshotForTicket(Ticket|int $ticketOrId): ?array
     {
-        if (! $this->billing->canUseFeature('service_desk')) {
+        if (! $this->entitlements->canUseFeature('service_desk')) {
             return null;
         }
 
@@ -54,7 +54,7 @@ class ProblemRecordService
 
     public function update(int $ticketId, array $data): array
     {
-        $this->billing->assertFeature('service_desk');
+        $this->entitlements->assertFeature('service_desk');
         $this->assertProblemTicket($ticketId);
         $record = $this->records->findOrCreateForTicket($ticketId);
         $before = $record->only(array_keys($data));
@@ -72,7 +72,7 @@ class ProblemRecordService
 
     public function linkIncident(int $problemTicketId, int $incidentTicketId, ?int $userId): array
     {
-        $this->billing->assertFeature('service_desk');
+        $this->entitlements->assertFeature('service_desk');
         $this->assertProblemTicket($problemTicketId);
         $incident = $this->tickets->find($incidentTicketId);
 
@@ -107,7 +107,7 @@ class ProblemRecordService
 
     public function unlinkIncident(int $problemTicketId, int $incidentTicketId): array
     {
-        $this->billing->assertFeature('service_desk');
+        $this->entitlements->assertFeature('service_desk');
         $problemTicket = $this->assertProblemTicket($problemTicketId);
 
         if (! $this->records->deleteLink($problemTicketId, $incidentTicketId)) {
@@ -133,7 +133,7 @@ class ProblemRecordService
 
     public function incidentCandidates(Ticket|int $ticketOrId): Collection
     {
-        $this->billing->assertFeature('service_desk');
+        $this->entitlements->assertFeature('service_desk');
         $ticket = $this->resolveTicket($ticketOrId);
 
         if ($ticket->type !== ServiceCatalogItem::TYPE_PROBLEM) {

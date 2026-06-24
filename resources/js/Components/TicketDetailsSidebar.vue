@@ -2,6 +2,8 @@
 import { Link, router, useForm } from '@inertiajs/vue3';
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
+import AppBadge from './ui/AppBadge.vue';
+import { ticketPriorityBadgeVariant, ticketStatusBadgeVariant } from '../composables/useTicketBadgeVariants.js';
 import AppConfirmDialog from './AppConfirmDialog.vue';
 import AppAvatar from './AppAvatar.vue';
 import { useAssetDeleteConfirm } from '../composables/useAssetDeleteConfirm.js';
@@ -357,25 +359,6 @@ const saveStatusClass = computed(() => {
 
     return '';
 });
-const statusBadgeClass = (name) => {
-    const value = (name || '').toLowerCase();
-
-    if (value.includes('open')) return 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300';
-    if (value.includes('pending')) return 'bg-amber-100 text-amber-800 dark:bg-amber-950/50 dark:text-amber-300';
-    if (value.includes('closed') || value.includes('resolved')) return 'bg-slate-200 text-slate-700 dark:bg-slate-800 dark:text-slate-300';
-
-    return 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300';
-};
-
-const priorityBadgeClass = (name) => {
-    const value = (name || '').toLowerCase();
-
-    if (value.includes('urgent') || value.includes('critical')) return 'bg-red-100 text-red-800 dark:bg-red-950/50 dark:text-red-300';
-    if (value.includes('high')) return 'bg-orange-100 text-orange-800 dark:bg-orange-950/50 dark:text-orange-300';
-    if (value.includes('low')) return 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400';
-
-    return 'bg-blue-100 text-blue-800 dark:bg-blue-950/50 dark:text-blue-300';
-};
 </script>
 
 <template>
@@ -414,12 +397,9 @@ const priorityBadgeClass = (name) => {
                             />
                             {{ saveStatusLabel }}
                         </span>
-                        <span
-                            class="rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide"
-                            :class="statusBadgeClass(ticket.status?.name)"
-                        >
+                        <AppBadge size="sm" :variant="ticketStatusBadgeVariant(ticket.status?.name)">
                             {{ ticket.status?.name || $t('components.em_dash') }}
-                        </span>
+                        </AppBadge>
                     </div>
                 </div>
             </div>
@@ -466,9 +446,9 @@ const priorityBadgeClass = (name) => {
                                 <div>
                                     <label class="mb-1.5 flex items-center justify-between gap-2 text-[11px] font-medium text-slate-500 dark:text-slate-400">
                                         <span>{{ $t('components.status') }}</span>
-                                        <span class="rounded-full px-1.5 py-0.5 text-[10px] font-semibold" :class="statusBadgeClass(statuses.find((item) => item.id === updateForm.ticket_status_id)?.name)">
+                                        <AppBadge size="sm" :variant="ticketStatusBadgeVariant(statuses.find((item) => item.id === updateForm.ticket_status_id)?.name)">
                                             {{ statuses.find((item) => item.id === updateForm.ticket_status_id)?.name || $t('components.em_dash') }}
-                                        </span>
+                                        </AppBadge>
                                     </label>
                                     <select v-model="updateForm.ticket_status_id" :class="sidebarSelectClass">
                                         <option v-for="status in statuses" :key="status.id" :value="status.id">{{ status.name }}</option>
@@ -477,9 +457,9 @@ const priorityBadgeClass = (name) => {
                                 <div>
                                     <label class="mb-1.5 flex items-center justify-between gap-2 text-[11px] font-medium text-slate-500 dark:text-slate-400">
                                         <span>{{ $t('components.priority') }}</span>
-                                        <span class="rounded-full px-1.5 py-0.5 text-[10px] font-semibold" :class="priorityBadgeClass(priorities.find((item) => item.id === updateForm.ticket_priority_id)?.name)">
+                                        <AppBadge size="sm" :variant="ticketPriorityBadgeVariant(priorities.find((item) => item.id === updateForm.ticket_priority_id)?.name)">
                                             {{ priorities.find((item) => item.id === updateForm.ticket_priority_id)?.name || $t('components.em_dash') }}
-                                        </span>
+                                        </AppBadge>
                                     </label>
                                     <select v-model="updateForm.ticket_priority_id" :class="sidebarSelectClass">
                                         <option v-for="priority in priorities" :key="priority.id" :value="priority.id">{{ priority.name }}</option>

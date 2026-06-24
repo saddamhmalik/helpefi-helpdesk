@@ -4,6 +4,8 @@ import AgentLayout from '../../../Layouts/AgentLayout.vue';
 import ServiceDeskNav from '../../../Components/ServiceDeskNav.vue';
 import PageHeader from '../../../Components/PageHeader.vue';
 import DataTable from '../../../Components/DataTable.vue';
+import DataTableMobileCard from '../../../Components/ui/DataTableMobileCard.vue';
+import AppBadge from '../../../Components/ui/AppBadge.vue';
 import { useI18n } from 'vue-i18n';
 import { useDateTime } from '../../../composables/useDateTime.js';
 
@@ -93,6 +95,23 @@ const formatDate = (value) => {
                         </Link>
                     </td>
                 </tr>
+            </template>
+            <template #mobile>
+                <DataTableMobileCard v-for="entry in entries" :key="`mobile-${entry.id}`" tag="div">
+                    <div class="flex items-start justify-between gap-3">
+                        <div>
+                            <p class="font-medium agent-text">{{ entry.subject }}</p>
+                            <p class="text-xs agent-text-subtle">{{ entry.number }}</p>
+                            <AppBadge class="mt-2 capitalize" :variant="entry.status === 'active' ? 'error' : entry.status === 'resolved' ? 'warning' : 'default'">
+                                {{ entry.status }}
+                            </AppBadge>
+                        </div>
+                        <Link :href="entry.war_room_url" class="rounded-lg bg-red-600 px-3 py-1.5 text-xs font-medium text-white">
+                            {{ entry.status === 'active' ? $t('service_desk.war_room') : $t('service_desk.post-incident_review') }}
+                        </Link>
+                    </div>
+                </DataTableMobileCard>
+                <div v-if="!entries?.length" class="p-6 text-center text-sm agent-text-muted">{{ $t('service_desk.no_major_incidents_or_reviews') }}</div>
             </template>
         </DataTable>
     </AgentLayout>

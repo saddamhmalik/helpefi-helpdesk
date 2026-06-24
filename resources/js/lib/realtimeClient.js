@@ -2,6 +2,7 @@ let socket = null;
 let reconnectTimer = null;
 let config = null;
 const subscriptions = new Map();
+const subscriptionTokens = new Map();
 const connectionListeners = new Set();
 
 function notifyConnection(connected) {
@@ -66,7 +67,7 @@ function connect(nextConfig) {
     return socket;
 }
 
-function subscribe(channel, handler = null) {
+function subscribe(channel, handler = null, channelToken = null) {
     if (handler) {
         if (!subscriptions.has(channel)) {
             subscriptions.set(channel, new Set());
@@ -77,8 +78,19 @@ function subscribe(channel, handler = null) {
         subscriptions.set(channel, new Set());
     }
 
+    if (channelToken !== null) {
+        subscriptionTokens.set(channel, channelToken);
+    }
+
     if (socket?.readyState === WebSocket.OPEN) {
-        socket.send(JSON.stringify({ action: 'subscribe', channel }));
+        const payload = { action: 'subscribe', channel };
+        const token = subscriptionTokens.get(channel);
+
+        if (token) {
+            payload.token = token;
+        }
+
+        socket.send(JSON.stringify(payload));
     }
 }
 
@@ -95,6 +107,7 @@ function unsubscribe(channel, handler = null) {
 
     if (!handler || handlers.size === 0) {
         subscriptions.delete(channel);
+        subscriptionTokens.delete(channel);
     }
 }
 
@@ -106,6 +119,7 @@ function disconnect() {
 
     notifyConnection(false);
     subscriptions.clear();
+    subscriptionTokens.clear();
     socket?.close();
     socket = null;
     config = null;

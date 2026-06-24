@@ -4,6 +4,7 @@ namespace App\Domains\Knowledge\Repositories;
 
 use App\Domains\Knowledge\Models\KnowledgeArticle;
 use App\Domains\Knowledge\Services\KnowledgeEmbeddingService;
+use App\Domains\Knowledge\Support\KnowledgePortalVisibility;
 use App\Domains\Ai\Contracts\AiEmbeddingClient;
 use Illuminate\Database\Eloquent\Collection;
 
@@ -27,6 +28,16 @@ class KnowledgeSearchRepository
 
     public function searchPublished(string $query, int $limit = 5, ?int $brandId = null, ?string $locale = null): Collection
     {
+        return $this->search($query, $limit, $brandId, $locale, portalOnly: false);
+    }
+
+    public function searchPortalPublished(string $query, int $limit = 5, ?int $brandId = null, ?string $locale = null): Collection
+    {
+        return $this->search($query, $limit, $brandId, $locale, portalOnly: true);
+    }
+
+    private function search(string $query, int $limit, ?int $brandId, ?string $locale, bool $portalOnly): Collection
+    {
         $normalized = $this->normalizeQuery($query);
 
         if ($normalized === '') {
@@ -34,17 +45,17 @@ class KnowledgeSearchRepository
         }
 
         if ($this->embeddingClient->available()) {
-            $vectorResults = $this->vectorSearch($normalized, $limit, $brandId, $locale);
+            $vectorResults = $this->vectorSearch($normalized, $limit, $brandId, $locale, $portalOnly);
 
             if ($vectorResults->isNotEmpty()) {
                 return $vectorResults;
             }
         }
 
-        return $this->keywordSearch($normalized, $limit, $brandId, $locale);
+        return $this->keywordSearch($normalized, $limit, $brandId, $locale, $portalOnly);
     }
 
-    private function vectorSearch(string $query, int $limit, ?int $brandId, ?string $locale): Collection
+    private function vectorSearch(string $query, int $limit, ?int $brandId, ?string $locale, bool $portalOnly): Collection
     {
         try {
             $queryVector = $this->embeddingClient->embed($query);
@@ -52,7 +63,7 @@ class KnowledgeSearchRepository
             return new Collection;
         }
 
-        $articles = $this->embeddings->publishedWithEmbeddings($brandId, $locale);
+        $articles = $this->embeddings->publishedWithEmbeddings($brandId, $locale, $portalOnly);
 
         $scored = $articles->map(function (KnowledgeArticle $article) use ($queryVector) {
             $embedding = $article->embedding?->embedding ?? [];
@@ -70,7 +81,7 @@ class KnowledgeSearchRepository
         return new Collection($scored->map(fn (array $row) => $row['article'])->all());
     }
 
-    private function keywordSearch(string $normalized, int $limit, ?int $brandId, ?string $locale): Collection
+    private function keywordSearch(string $normalized, int $limit, ?int $brandId, ?string $locale, bool $portalOnly): Collection
     {
         $terms = $this->extractTerms($normalized);
 
@@ -79,10 +90,12 @@ class KnowledgeSearchRepository
         }
 
         $articles = KnowledgeArticle::query()
-            ->where('is_published', true)
+            ->tap(fn ($query) => $portalOnly
+                ? KnowledgePortalVisibility::applyPortal($query)
+                : KnowledgePortalVisibility::applyPublished($query))
             ->when($locale, fn ($q) => $q->where('locale', $locale))
             ->when($brandId, fn ($q) => $q->whereHas('collection', fn ($c) => $c->where('brand_id', $brandId)))
-            ->get(['id', 'title', 'slug', 'excerpt', 'body', 'locale']);
+            ->get(['id', 'title', 'slug', 'excerpt', 'body', 'locale', 'is_published', 'is_public']);
 
         $scored = $articles->map(function (KnowledgeArticle $article) use ($normalized, $terms) {
             return [

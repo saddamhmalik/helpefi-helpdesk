@@ -48,10 +48,16 @@ const availableTranslationLocales = computed(() => {
     return (props.locales ?? []).filter((locale) => !existing.has(locale.code));
 });
 
-const submit = () => form.put(`/knowledge/${props.article.id}`);
+const reloadHelpCenter = () => router.reload({ only: ['helpCenter'] });
+
+const submit = () => form.put(`/knowledge/${props.article.id}`, {
+    onSuccess: reloadHelpCenter,
+});
 
 const restoreVersion = (versionId) => {
-    router.post(`/knowledge/${props.article.id}/versions/${versionId}/restore`);
+    router.post(`/knowledge/${props.article.id}/versions/${versionId}/restore`, {}, {
+        onSuccess: reloadHelpCenter,
+    });
 };
 
 const openTranslationModal = () => {
@@ -88,7 +94,7 @@ const portalArticleUrl = computed(() => {
             <div class="flex flex-wrap items-center gap-3">
                 <Link :href="`/knowledge/${article.id}`" class="text-sm font-medium text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:text-slate-100 dark:hover:text-slate-100">{{ $t('knowledge.view') }}</Link>
                 <a
-                    v-if="article.is_published && portalArticleUrl"
+                    v-if="article.is_published && article.is_public && portalArticleUrl"
                     :href="portalArticleUrl"
                     target="_blank"
                     rel="noopener noreferrer"

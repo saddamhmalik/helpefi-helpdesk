@@ -19,6 +19,7 @@ const mobileOpen = ref(false);
 
 const verticalPages = computed(() => page.props.verticalPages ?? []);
 const comparePages = computed(() => page.props.comparePages ?? []);
+const migratePages = computed(() => page.props.migratePages ?? []);
 const featurePages = computed(() => page.props.featurePages ?? []);
 const parentCompany = computed(() => page.props.parentCompany ?? null);
 
@@ -46,6 +47,7 @@ useBodyScrollLock(mobileOpen);
 </script>
 
 <template>
+    <a href="#main-content" class="agent-skip-link">{{ $t('components.skip_to_main_content') }}</a>
     <div class="flex min-h-screen flex-col overflow-x-hidden">
         <div
             v-if="showPromoBar && trialDays"
@@ -148,7 +150,7 @@ useBodyScrollLock(mobileOpen);
             </Transition>
         </header>
 
-        <main class="flex-1 overflow-x-hidden agent-page-bg">
+        <main id="main-content" class="flex-1 overflow-x-hidden agent-page-bg">
             <slot />
         </main>
 
@@ -195,13 +197,13 @@ useBodyScrollLock(mobileOpen);
                     </div>
                 </div>
 
-                <div class="grid gap-8 pt-10 sm:grid-cols-2 sm:gap-10 lg:grid-cols-5">
+                <div class="grid gap-8 pt-10 sm:grid-cols-2 sm:gap-10 lg:grid-cols-6">
                     <div>
                         <p class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">{{ $t('layouts.central.footer_product') }}</p>
                         <ul class="mt-4 space-y-2.5 text-sm">
                             <li><a href="/#differentiators" class="transition hover:text-white">{{ $t('layouts.central.why_us') }}</a></li>
-                            <li><a href="/#features" class="transition hover:text-white">{{ $t('layouts.central.features') }}</a></li>
-                            <li><a href="/#product" class="transition hover:text-white">{{ $t('layouts.central.footer_platform_overview') }}</a></li>
+                        <li><Link href="/features" class="transition hover:text-white">{{ $t('layouts.central.features') }}</Link></li>
+                        <li><a href="/#product" class="transition hover:text-white">{{ $t('layouts.central.footer_platform_overview') }}</a></li>
                             <li><a href="/#pricing" class="transition hover:text-white">{{ $t('layouts.central.pricing') }}</a></li>
                             <li><a href="/#faq" class="transition hover:text-white">{{ $t('layouts.central.faq') }}</a></li>
                         </ul>
@@ -232,6 +234,16 @@ useBodyScrollLock(mobileOpen);
                             <li v-for="compare in comparePages" :key="compare.slug">
                                 <Link :href="compare.path" class="transition hover:text-white">
                                     {{ $t('central.compare_vs', { name: $t(`central.comparisons.${compare.slug}.competitor_name`) }) }}
+                                </Link>
+                            </li>
+                        </ul>
+                    </div>
+                    <div>
+                        <p class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">{{ $t('layouts.central.footer_migrate') }}</p>
+                        <ul class="mt-4 space-y-2.5 text-sm">
+                            <li v-for="migrate in migratePages" :key="migrate.slug">
+                                <Link :href="migrate.path" class="transition hover:text-white">
+                                    {{ $t(`central.migrations.${migrate.slug}.source_name`) }}
                                 </Link>
                             </li>
                         </ul>

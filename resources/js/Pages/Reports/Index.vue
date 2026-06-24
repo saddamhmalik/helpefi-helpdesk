@@ -6,6 +6,7 @@ import PageHeader from '../../Components/PageHeader.vue';
 import ListPanel from '../../Components/ListPanel.vue';
 import FilterField from '../../Components/FilterField.vue';
 import DataTable from '../../Components/DataTable.vue';
+import DataTableMobileCard from '../../Components/ui/DataTableMobileCard.vue';
 import StatusBadge from '../../Components/StatusBadge.vue';
 import { useI18n } from 'vue-i18n';
 import { useDateTime } from '../../composables/useDateTime.js';
@@ -445,6 +446,26 @@ const formatDate = (value) => value ? formatDateTime(value) : '—';
                     <td colspan="4" class="px-4 py-12 text-center text-sm agent-text-subtle">No data for this report.</td>
                 </tr>
             </tbody>
+            <template #mobile>
+                <DataTableMobileCard v-for="row in agentRows" :key="`mobile-agent-${row.agent_id}`" tag="div">
+                    <p class="text-sm font-medium agent-text">{{ row.agent_name }}</p>
+                    <div class="mt-2 grid grid-cols-3 gap-2 text-center text-xs">
+                        <div class="rounded-lg agent-panel-muted p-2">
+                            <p class="font-semibold agent-text">{{ row.open_count }}</p>
+                            <p class="agent-text-subtle">{{ $t('reports.open') }}</p>
+                        </div>
+                        <div class="rounded-lg agent-panel-muted p-2">
+                            <p class="font-semibold agent-text">{{ row.closed_count }}</p>
+                            <p class="agent-text-subtle">{{ $t('reports.closed') }}</p>
+                        </div>
+                        <div class="rounded-lg agent-panel-muted p-2">
+                            <p class="font-semibold agent-text">{{ row.total_count }}</p>
+                            <p class="agent-text-subtle">{{ $t('reports.total') }}</p>
+                        </div>
+                    </div>
+                </DataTableMobileCard>
+                <div v-if="!agentRows.length" class="p-6 text-center text-sm agent-text-subtle">No data for this report.</div>
+            </template>
         </DataTable>
 
         <DataTable v-else-if="result && isCsatReport">
@@ -462,7 +483,7 @@ const formatDate = (value) => value ? formatDateTime(value) : '—';
             <tbody class="divide-y agent-table-divider">
                 <tr v-for="row in csatRows" :key="row.id" class="agent-hover-surface">
                     <td class="px-4 py-3 text-sm font-medium">
-                        <Link v-if="row.ticket" :href="`/tickets/${row.ticket.id}`" class="text-blue-600 hover:text-blue-700 dark:hover:text-blue-300 dark:text-blue-300">{{ row.ticket.number }}</Link>
+                        <Link v-if="row.ticket" :href="`/tickets/${row.ticket.id}`" class="text-blue-600 hover:text-blue-700 dark:text-blue-300 dark:hover:text-blue-300">{{ row.ticket.number }}</Link>
                     </td>
                     <td class="px-4 py-3 text-sm agent-text-muted">{{ row.contact?.name || '—' }}</td>
                     <td class="px-4 py-3 text-sm agent-text">{{ row.rating }}/5</td>
@@ -512,6 +533,20 @@ const formatDate = (value) => value ? formatDateTime(value) : '—';
                     <td :colspan="activeType === 'sla_breaches' ? 8 : 7" class="px-4 py-12 text-center text-sm agent-text-subtle">No data for this report.</td>
                 </tr>
             </tbody>
+            <template #mobile>
+                <DataTableMobileCard v-for="ticket in ticketRows" :key="`mobile-ticket-${ticket.id}`" tag="div">
+                    <Link :href="`/tickets/${ticket.id}`" class="block">
+                        <p class="text-sm font-semibold text-blue-600 dark:text-blue-300">{{ ticket.number }}</p>
+                        <p class="mt-1 text-sm agent-text">{{ ticket.subject }}</p>
+                        <div class="mt-2 flex flex-wrap items-center gap-2">
+                            <StatusBadge :label="ticket.status?.name" :color="ticket.status?.color" />
+                            <span class="text-xs agent-text-muted">{{ ticket.priority?.name }}</span>
+                        </div>
+                        <p class="mt-2 text-xs agent-text-subtle">{{ ticket.assignee?.name || '—' }} · {{ formatDate(ticket.created_at) }}</p>
+                    </Link>
+                </DataTableMobileCard>
+                <div v-if="!ticketRows.length" class="p-6 text-center text-sm agent-text-subtle">No data for this report.</div>
+            </template>
         </DataTable>
 
         <div v-else class="rounded-xl border border-dashed agent-border agent-panel px-6 py-12 text-center text-sm agent-text-subtle">

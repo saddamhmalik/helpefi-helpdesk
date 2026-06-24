@@ -5,7 +5,8 @@ namespace App\Domains\Auth\Services;
 use App\Domains\Auth\Models\Invitation;
 use App\Domains\Auth\Repositories\InvitationRepository;
 use App\Domains\Auth\Repositories\MemberRepository;
-use App\Domains\Billing\Services\BillingService;
+use App\Domains\Auth\Repositories\RoleRepository;
+use App\Domains\Billing\Contracts\FeatureEntitlementChecker;
 use App\Domains\Security\Support\AuditRecorder;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Collection;
@@ -18,9 +19,10 @@ class InvitationService
     public function __construct(
         private InvitationRepository $invitations,
         private MemberRepository $members,
-        private BillingService $billing,
+        private FeatureEntitlementChecker $entitlements,
         private AuditRecorder $audit,
         private InvitationMailService $invitationMail,
+        private RoleRepository $roles,
     ) {
     }
 
@@ -47,8 +49,8 @@ class InvitationService
             ]);
         }
 
-        if (in_array($role, ['admin', 'agent'], true)) {
-            $this->billing->assertLimit('agents', 1);
+        if ($this->roles->roleConsumesAgentSeat($role)) {
+            $this->entitlements->assertLimit('agents', 1);
         }
 
         $invitation = $this->invitations->create([
@@ -132,8 +134,8 @@ class InvitationService
             ]);
         }
 
-        if (in_array($invitation->role, ['admin', 'agent'], true)) {
-            $this->billing->assertLimit('agents', 1);
+        if ($this->roles->roleConsumesAgentSeat($invitation->role)) {
+            $this->entitlements->assertLimit('agents', 1);
         }
 
         $user = $this->members->createMember(

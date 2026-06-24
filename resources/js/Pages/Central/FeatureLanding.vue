@@ -3,6 +3,7 @@ import { Link } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import CentralLayout from '../../Layouts/CentralLayout.vue';
+import { useMarketingCopy } from '../../composables/useMarketingCopy.js';
 
 const props = defineProps({
     brand: { type: String, default: 'helpefi' },
@@ -14,33 +15,21 @@ const props = defineProps({
 });
 
 const { t, tm } = useI18n();
-
-const platformName = computed(() => t('app.name'));
+const { platformName, brandParams, createLocalizedSection } = useMarketingCopy(() => props.trialDays);
 const copyPrefix = computed(() => `central.feature_pages.${props.feature}`);
 
 const copy = computed(() => ({
     badge: t(`${copyPrefix.value}.badge`),
     heroTitle: t(`${copyPrefix.value}.hero_title`),
     heroHighlight: t(`${copyPrefix.value}.hero_highlight`),
-    heroSubtitle: t(`${copyPrefix.value}.hero_subtitle`),
-    ctaTitle: t(`${copyPrefix.value}.cta_title`),
-    ctaBody: t(`${copyPrefix.value}.cta_body`),
+    heroSubtitle: t(`${copyPrefix.value}.hero_subtitle`, brandParams.value),
+    ctaTitle: t(`${copyPrefix.value}.cta_title`, brandParams.value),
+    ctaBody: t(`${copyPrefix.value}.cta_body`, brandParams.value),
 }));
 
-const pains = computed(() => {
-    const value = tm(`${copyPrefix.value}.pains`);
-    return Array.isArray(value) ? value : [];
-});
-
-const features = computed(() => {
-    const value = tm(`${copyPrefix.value}.features`);
-    return Array.isArray(value) ? value : [];
-});
-
-const faqs = computed(() => {
-    const value = tm(`${copyPrefix.value}.faq`);
-    return Array.isArray(value) ? value : [];
-});
+const pains = createLocalizedSection(() => `${copyPrefix.value}.pains`);
+const features = createLocalizedSection(() => `${copyPrefix.value}.features`);
+const faqs = createLocalizedSection(() => `${copyPrefix.value}.faq`);
 
 const relatedFeatures = computed(() => props.featurePages.filter((page) => page.slug !== props.feature).slice(0, 3));
 
@@ -77,7 +66,7 @@ const toggleFaq = (index) => {
                     <ol class="flex flex-wrap items-center gap-2">
                         <li><Link href="/" class="transition hover:text-white">{{ platformName }}</Link></li>
                         <li aria-hidden="true">/</li>
-                        <li><Link href="/#features" class="transition hover:text-white">Features</Link></li>
+                        <li><Link href="/features" class="transition hover:text-white">{{ $t('central.features') }}</Link></li>
                         <li aria-hidden="true">/</li>
                         <li class="text-slate-300">{{ copy.badge }}</li>
                     </ol>

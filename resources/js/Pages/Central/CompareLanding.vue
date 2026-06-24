@@ -3,6 +3,7 @@ import { Link } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import CentralLayout from '../../Layouts/CentralLayout.vue';
+import { useMarketingCopy } from '../../composables/useMarketingCopy.js';
 
 const props = defineProps({
     brand: { type: String, default: 'helpefi' },
@@ -13,8 +14,7 @@ const props = defineProps({
 });
 
 const { t, tm } = useI18n();
-
-const platformName = computed(() => t('app.name'));
+const { platformName, brandParams, createLocalizedSection } = useMarketingCopy(() => props.trialDays);
 
 const seoPage = computed(() => props.compareMeta.seo_key ?? `compare_${props.competitor.replace(/-/g, '_')}`);
 
@@ -23,19 +23,15 @@ const copyPrefix = computed(() => `central.comparisons.${props.competitor}`);
 const competitorName = computed(() => t(`${copyPrefix.value}.competitor_name`));
 
 const copy = computed(() => ({
-    badge: t(`${copyPrefix.value}.badge`),
+    badge: t(`${copyPrefix.value}.badge`, brandParams.value),
     heroTitle: t(`${copyPrefix.value}.hero_title`),
     heroHighlight: t(`${copyPrefix.value}.hero_highlight`),
-    heroSubtitle: t(`${copyPrefix.value}.hero_subtitle`),
-    ctaTitle: t(`${copyPrefix.value}.cta_title`),
-    ctaBody: t(`${copyPrefix.value}.cta_body`),
+    heroSubtitle: t(`${copyPrefix.value}.hero_subtitle`, brandParams.value),
+    ctaTitle: t(`${copyPrefix.value}.cta_title`, brandParams.value),
+    ctaBody: t(`${copyPrefix.value}.cta_body`, brandParams.value),
 }));
 
-const reasons = computed(() => {
-    const value = tm(`${copyPrefix.value}.reasons`);
-
-    return Array.isArray(value) ? value : [];
-});
+const reasons = createLocalizedSection(() => `${copyPrefix.value}.reasons`);
 
 const rows = computed(() => {
     const value = tm(`${copyPrefix.value}.rows`);
@@ -43,11 +39,7 @@ const rows = computed(() => {
     return Array.isArray(value) ? value : [];
 });
 
-const faqs = computed(() => {
-    const value = tm(`${copyPrefix.value}.faq`);
-
-    return Array.isArray(value) ? value : [];
-});
+const faqs = createLocalizedSection(() => `${copyPrefix.value}.faq`);
 
 const accent = computed(() => {
     const map = {
@@ -75,6 +67,11 @@ const accent = computed(() => {
             glow: 'bg-amber-600/20',
             badge: 'border-amber-400/30 bg-amber-500/10 text-amber-300',
             highlight: 'from-amber-400 via-orange-300 to-yellow-400',
+        },
+        orange: {
+            glow: 'bg-orange-600/20',
+            badge: 'border-orange-400/30 bg-orange-500/10 text-orange-300',
+            highlight: 'from-orange-400 via-amber-300 to-yellow-400',
         },
     };
 

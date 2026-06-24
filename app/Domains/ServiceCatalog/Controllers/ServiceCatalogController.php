@@ -2,7 +2,7 @@
 
 namespace App\Domains\ServiceCatalog\Controllers;
 
-use App\Domains\Billing\Services\BillingService;
+use App\Domains\Billing\Contracts\FeatureEntitlementChecker;
 use App\Domains\ServiceCatalog\Services\ServiceCatalogService;
 use App\Domains\Tickets\Services\TicketFormReferenceService;
 use App\Http\Controllers\Controller;
@@ -16,7 +16,7 @@ class ServiceCatalogController extends Controller
     public function __construct(
         private ServiceCatalogService $catalogService,
         private TicketFormReferenceService $ticketReferenceData,
-        private BillingService $billing,
+        private FeatureEntitlementChecker $entitlements,
     ) {
     }
 
@@ -31,7 +31,7 @@ class ServiceCatalogController extends Controller
                     collect($reference['priorities']),
                     collect($reference['agents']),
                 ),
-                ['service_desk_available' => $this->billing->canUseFeature('service_desk')],
+                ['service_desk_available' => $this->entitlements->canUseFeature('service_desk')],
             ),
             'agents' => $reference['agents'],
         ]);

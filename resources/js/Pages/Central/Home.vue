@@ -7,28 +7,11 @@ import CentralAiDemoWidget from '../../Components/CentralAiDemoWidget.vue';
 import IntegrationStackIcon from '../../Components/IntegrationStackIcon.vue';
 import { useCurrency } from '../../composables/useCurrency.js';
 import { useBillingInterval } from '../../composables/useBillingInterval.js';
+import { useMarketingCopy } from '../../composables/useMarketingCopy.js';
 
 const { t, tm } = useI18n();
 
 const homeKey = (suffix) => `central.home.${suffix}`;
-
-const centralArray = (suffix) => {
-    const value = tm(`central.${suffix}`);
-
-    return Array.isArray(value) ? value : [];
-};
-
-const homeArray = (suffix) => {
-    const value = tm(homeKey(suffix));
-
-    return Array.isArray(value) ? value : [];
-};
-
-const homeObject = (suffix) => {
-    const value = tm(homeKey(suffix));
-
-    return value && typeof value === 'object' && !Array.isArray(value) ? value : {};
-};
 
 const props = defineProps({
     brand: { type: String, default: 'helpefi' },
@@ -50,7 +33,28 @@ const props = defineProps({
     featurePages: { type: Array, default: () => [] },
 });
 
-const platformName = computed(() => t('app.name'));
+const { platformName, copyParams, localize } = useMarketingCopy(computed(() => props.trialDays));
+
+const centralArray = (suffix) => {
+    const params = copyParams.value;
+    const value = tm(`central.${suffix}`);
+
+    return Array.isArray(value) ? localize(value, params) : [];
+};
+
+const homeArray = (suffix) => {
+    const params = copyParams.value;
+    const value = tm(homeKey(suffix));
+
+    return Array.isArray(value) ? localize(value, params) : [];
+};
+
+const homeObject = (suffix) => {
+    const params = copyParams.value;
+    const value = tm(homeKey(suffix));
+
+    return value && typeof value === 'object' && !Array.isArray(value) ? localize(value, params) : {};
+};
 
 const socialProofLogos = computed(() => centralArray('social_proof_logos'));
 
@@ -304,10 +308,7 @@ const switchMockNav = [
 
 const comparisons = computed(() => homeArray('comparisons'));
 
-const faqs = computed(() => homeArray('faqs').map((item) => ({
-    q: String(item.q).replace(/\{trialDays\}/g, String(props.trialDays)),
-    a: String(item.a).replace(/\{trialDays\}/g, String(props.trialDays)),
-})));
+const faqs = computed(() => homeArray('faqs'));
 
 const planTaglines = computed(() => homeObject('plan_taglines'));
 
@@ -1373,7 +1374,7 @@ const featureGroups = computed(() => {
                 <div class="text-center">
                     <p class="text-sm font-semibold uppercase tracking-wider text-blue-600">{{ $t('central.social_proof_eyebrow') }}</p>
                     <h2 class="mt-3 text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100 sm:text-4xl">{{ $t('central.social_proof_title') }}</h2>
-                    <p class="mx-auto mt-4 max-w-2xl text-lg text-slate-600 dark:text-slate-400">{{ $t('central.social_proof_subtitle') }}</p>
+                    <p class="mx-auto mt-4 max-w-2xl text-lg text-slate-600 dark:text-slate-400">{{ $t('central.social_proof_subtitle', { brand: platformName }) }}</p>
                 </div>
 
                 <div class="mt-10 flex flex-wrap items-center justify-center gap-3">

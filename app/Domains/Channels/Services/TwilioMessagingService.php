@@ -2,7 +2,7 @@
 
 namespace App\Domains\Channels\Services;
 
-use App\Domains\Billing\Services\BillingService;
+use App\Domains\Billing\Contracts\FeatureEntitlementChecker;
 use App\Domains\Channels\Repositories\MessagingSettingRepository;
 use App\Domains\Security\Support\AuditRecorder;
 use Illuminate\Support\Str;
@@ -12,7 +12,7 @@ class TwilioMessagingService
 {
     public function __construct(
         private MessagingSettingRepository $settings,
-        private BillingService $billing,
+        private FeatureEntitlementChecker $entitlements,
     ) {
     }
 
@@ -29,7 +29,7 @@ class TwilioMessagingService
 
     public function send(string $to, string $body, string $channelType): string
     {
-        $this->billing->assertFeature('channels');
+        $this->entitlements->assertFeature('channels');
 
         $setting = $this->settings->current();
         $from = $channelType === 'whatsapp'

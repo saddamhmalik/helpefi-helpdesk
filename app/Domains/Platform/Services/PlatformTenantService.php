@@ -22,6 +22,7 @@ class PlatformTenantService
         private PlatformTenantRepository $tenants,
         private PlanRepository $plans,
         private PlatformTenantAdminResolver $admins,
+        private PlatformTenantReminderService $reminders,
         private PlatformAuditRecorder $audit,
         private CentralSettingsService $centralSettings,
         private TenantByoEligibilityService $byoEligibility,
@@ -228,6 +229,7 @@ class PlatformTenantService
                 'cancellation_pending' => $subscription->cancelled_at !== null && $subscription->isActive(),
                 'has_razorpay' => (bool) $subscription->razorpay_subscription_id,
             ] : null,
+            'lifecycle_emails' => $this->reminders->statusForTenant($tenant),
         ];
     }
 }

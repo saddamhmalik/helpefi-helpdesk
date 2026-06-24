@@ -4,6 +4,7 @@ namespace App\Domains\Workspace\Repositories;
 
 use App\Domains\Tickets\Models\Ticket;
 use App\Domains\Tickets\Models\TicketMessage;
+use App\Domains\Tickets\Support\TicketFilters;
 use App\Domains\Workspace\Models\TicketComposerDraft;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Contracts\Pagination\Paginator;
@@ -19,29 +20,7 @@ class WorkspaceRepository
             ->visibleInQueue()
             ->orderByDesc('updated_at');
 
-        if (! empty($filters['status_id'])) {
-            $query->where('ticket_status_id', $filters['status_id']);
-        }
-
-        if (! empty($filters['priority_id'])) {
-            $query->where('ticket_priority_id', $filters['priority_id']);
-        }
-
-        if (! empty($filters['assigned_to'])) {
-            $query->where('assigned_to', $filters['assigned_to']);
-        }
-
-        if (! empty($filters['search'])) {
-            $search = $filters['search'];
-            $query->where(function ($q) use ($search) {
-                $q->where('subject', 'like', "%{$search}%")
-                    ->orWhere('number', 'like', "%{$search}%");
-            });
-        }
-
-        if (! empty($filters['watching']) && $watchingUserId) {
-            $query->whereHas('watchers', fn ($q) => $q->where('user_id', $watchingUserId));
-        }
+        TicketFilters::applyToQueueQuery($query, $filters, $watchingUserId, searchContacts: false);
 
         return $query->simplePaginate($perPage)->withQueryString();
     }

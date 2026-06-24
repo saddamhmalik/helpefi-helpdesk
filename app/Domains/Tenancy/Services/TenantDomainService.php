@@ -2,7 +2,7 @@
 
 namespace App\Domains\Tenancy\Services;
 
-use App\Domains\Billing\Services\BillingService;
+use App\Domains\Billing\Contracts\FeatureEntitlementChecker;
 use App\Domains\Tenancy\Repositories\TenantDomainRepository;
 use App\Domains\Tenancy\Support\DomainDnsVerifier;
 use App\Models\Tenant;
@@ -15,7 +15,7 @@ class TenantDomainService
     public function __construct(
         private TenantDomainRepository $domains,
         private DomainDnsVerifier $dns,
-        private BillingService $billing,
+        private FeatureEntitlementChecker $entitlements,
     ) {
     }
 
@@ -54,7 +54,7 @@ class TenantDomainService
         $primary = $this->domains->primaryDomain($tenant);
 
         return [
-            'can_manage' => $this->billing->canUseFeature('custom_domain'),
+            'can_manage' => $this->entitlements->canUseFeature('custom_domain'),
             'platform_domain' => $platform?->domain,
             'platform_url' => $platform ? $this->urlForHost($platform->domain) : null,
             'custom_domain' => $this->presentCustom($custom),
@@ -67,7 +67,7 @@ class TenantDomainService
 
     public function requestCustomDomain(string $host): array
     {
-        $this->billing->assertFeature('custom_domain');
+        $this->entitlements->assertFeature('custom_domain');
 
         $tenant = tenant();
         assert($tenant instanceof Tenant);
@@ -90,7 +90,7 @@ class TenantDomainService
 
     public function verifyCustomDomain(): array
     {
-        $this->billing->assertFeature('custom_domain');
+        $this->entitlements->assertFeature('custom_domain');
 
         $tenant = tenant();
         assert($tenant instanceof Tenant);
@@ -118,7 +118,7 @@ class TenantDomainService
 
     public function removeCustomDomain(): array
     {
-        $this->billing->assertFeature('custom_domain');
+        $this->entitlements->assertFeature('custom_domain');
 
         $tenant = tenant();
         assert($tenant instanceof Tenant);
@@ -131,7 +131,7 @@ class TenantDomainService
 
     public function updatePreferences(bool $redirectPlatformDomain): array
     {
-        $this->billing->assertFeature('custom_domain');
+        $this->entitlements->assertFeature('custom_domain');
 
         $tenant = tenant();
         assert($tenant instanceof Tenant);

@@ -2,13 +2,12 @@
 
 namespace App\Domains\Tickets\Controllers\Api;
 
-use App\Domains\Tickets\Models\TicketView;
+use App\Domains\Tickets\Requests\StoreTicketViewRequest;
 use App\Domains\Tickets\Services\TicketViewService;
 use App\Domains\Tickets\Support\TicketFilters;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 
 class TicketViewController extends Controller
 {
@@ -21,9 +20,9 @@ class TicketViewController extends Controller
         return response()->json($this->ticketViewService->forUser($request->user()->id));
     }
 
-    public function store(Request $request): JsonResponse
+    public function store(StoreTicketViewRequest $request): JsonResponse
     {
-        $data = $this->validateView($request);
+        $data = $request->validated();
 
         $view = $this->ticketViewService->create(
             $request->user(),
@@ -42,23 +41,5 @@ class TicketViewController extends Controller
         $this->ticketViewService->delete($view, $request->user()->id);
 
         return response()->json(['message' => 'View deleted.']);
-    }
-
-    private function validateView(Request $request): array
-    {
-        $filterRules = collect(TicketFilters::rules())
-            ->mapWithKeys(fn (array $rules, string $key) => ["filters.{$key}" => $rules])
-            ->all();
-
-        return $request->validate(array_merge([
-            'name' => ['required', 'string', 'max:255'],
-            'filters' => ['nullable', 'array'],
-            'is_default' => ['boolean'],
-            'visibility' => ['required', Rule::in([
-                TicketView::VISIBILITY_PRIVATE,
-                TicketView::VISIBILITY_TEAM,
-            ])],
-            'team_id' => ['nullable', 'required_if:visibility,team', 'integer', 'exists:teams,id'],
-        ], $filterRules));
     }
 }

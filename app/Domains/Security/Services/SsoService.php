@@ -5,7 +5,7 @@ namespace App\Domains\Security\Services;
 use App\Domains\Auth\Repositories\InvitationRepository;
 use App\Domains\Auth\Repositories\MemberRepository;
 use App\Domains\Auth\Services\InvitationService;
-use App\Domains\Billing\Services\BillingService;
+use App\Domains\Billing\Contracts\FeatureEntitlementChecker;
 use App\Domains\Security\Exceptions\TwoFactorRequiredException;
 use App\Domains\Security\Repositories\SecuritySettingRepository;
 use App\Models\User;
@@ -18,7 +18,7 @@ class SsoService
         private SecuritySettingRepository $settings,
         private OidcAuthService $oidc,
         private SamlAuthService $saml,
-        private BillingService $billing,
+        private FeatureEntitlementChecker $entitlements,
         private AuditLogService $audit,
         private MemberRepository $members,
         private InvitationRepository $invitations,
@@ -40,7 +40,7 @@ class SsoService
             'acs_url' => route('sso.acs'),
             'callback_url' => route('sso.callback'),
             'login_url' => route('sso.redirect'),
-            'feature_available' => $this->billing->canUseFeature('sso'),
+            'feature_available' => $this->entitlements->canUseFeature('sso'),
         ];
     }
 
@@ -57,7 +57,7 @@ class SsoService
         }
 
         try {
-            if (! $this->billing->canUseFeature('sso')) {
+            if (! $this->entitlements->canUseFeature('sso')) {
                 return ['enabled' => false];
             }
         } catch (\Throwable) {
@@ -76,7 +76,7 @@ class SsoService
 
     public function update(array $data): array
     {
-        $this->billing->assertFeature('sso');
+        $this->entitlements->assertFeature('sso');
 
         $setting = $this->settings->current();
         $existing = $setting->sso_config ?? [];

@@ -6,6 +6,7 @@ use App\Domains\Tenancy\Support\CompareLandingDefinition;
 use App\Domains\Tenancy\Support\MarketingBlogDefinition;
 use App\Domains\Tenancy\Support\MarketingFeatureDefinition;
 use App\Domains\Tenancy\Support\MarketingStaticPageDefinition;
+use App\Domains\Tenancy\Support\MigrateLandingDefinition;
 use App\Domains\Tenancy\Support\VerticalLandingDefinition;
 use Illuminate\Support\Facades\App;
 
@@ -16,6 +17,7 @@ class CentralSeoService
         'register' => '/register',
         'login' => '/login',
         'blog' => '/blog',
+        'features_index' => '/features',
     ];
 
     private array $stringCache = [];
@@ -30,7 +32,7 @@ class CentralSeoService
     {
         return [
             'siteUrl' => $this->siteUrl(),
-            'siteName' => config('app.name', 'helpefi'),
+            'siteName' => config('app.name', 'Helpefi'),
             'ogImage' => $this->ogImageUrl(),
             'locales' => ['en'],
         ];
@@ -55,7 +57,7 @@ class CentralSeoService
             'robots' => $this->robotsForPage($page),
             'canonical' => $canonical,
             'brand' => $brand,
-            'ogImage' => $this->ogImageUrl(),
+            'ogImage' => $this->ogImageUrl($page),
             'ogLocale' => $this->ogLocale(),
             'ogLocaleAlternates' => [],
             'twitterSite' => config('marketing_seo.twitter.site'),
@@ -89,8 +91,18 @@ class CentralSeoService
         return 'en_US';
     }
 
-    public function ogImageUrl(): ?string
+    public function ogImageUrl(?string $page = null): ?string
     {
+        if (is_string($page) && $page !== '') {
+            $pageImage = config("marketing_seo.og_images.{$page}");
+
+            if (is_string($pageImage) && $pageImage !== '') {
+                return str_starts_with($pageImage, 'http')
+                    ? $pageImage
+                    : $this->siteUrl().'/'.ltrim($pageImage, '/');
+            }
+        }
+
         $configured = config('tenancy.central_og_image');
 
         if (is_string($configured) && $configured !== '') {
@@ -121,6 +133,8 @@ class CentralSeoService
             );
         }
 
+        $entries[] = $this->sitemapEntry($this->siteUrl().'/features', 'monthly', '0.9');
+
         foreach (MarketingFeatureDefinition::all() as $feature) {
             $entries[] = $this->sitemapEntry(
                 $this->siteUrl().$feature['path'],
@@ -140,6 +154,14 @@ class CentralSeoService
         foreach (CompareLandingDefinition::all() as $compare) {
             $entries[] = $this->sitemapEntry(
                 $this->siteUrl().$compare['path'],
+                'monthly',
+                '0.85',
+            );
+        }
+
+        foreach (MigrateLandingDefinition::all() as $migration) {
+            $entries[] = $this->sitemapEntry(
+                $this->siteUrl().$migration['path'],
                 'monthly',
                 '0.85',
             );
@@ -230,6 +252,12 @@ class CentralSeoService
             return $this->siteUrl().CompareLandingDefinition::path($compareSlug);
         }
 
+        $migrateSlug = MigrateLandingDefinition::slugFromSeoKey($page);
+
+        if ($migrateSlug !== null) {
+            return $this->siteUrl().MigrateLandingDefinition::path($migrateSlug);
+        }
+
         return $this->siteUrl().'/';
     }
 
@@ -260,7 +288,7 @@ class CentralSeoService
                 $this->interpolate($strings['trial_offer'] ?? '', ['days' => (string) $trialDays]),
             );
 
-            $faqNode = $this->jsonLd->faqPage($this->homeFaqs($trialDays));
+            $faqNode = $this->jsonLd->faqPage($this->homeFaqs($trialDays, $brand));
 
             if ($faqNode !== null) {
                 $graph[] = $faqNode;
@@ -310,7 +338,7 @@ class CentralSeoService
             ['name' => $title, 'url' => $canonical],
         ]);
 
-        $faqNode = $this->pageFaqs($page, $trialDays);
+        $faqNode = $this->pageFaqs($page, $trialDays, $brand);
 
         if ($faqNode !== null) {
             $graph[] = $faqNode;
@@ -319,7 +347,7 @@ class CentralSeoService
         return $this->jsonLd->encode($graph);
     }
 
-    private function homeFaqs(int $trialDays): array
+    private function homeFaqs(int $trialDays, string $brand): array
     {
         $faqs = $this->centralSection('home.faqs');
 
@@ -329,16 +357,22 @@ class CentralSeoService
 
         return collect($faqs)
             ->map(fn (array $faq) => [
-                'q' => $this->interpolate((string) ($faq['q'] ?? ''), ['trialDays' => (string) $trialDays]),
-                'a' => $this->interpolate((string) ($faq['a'] ?? ''), ['trialDays' => (string) $trialDays]),
+                'q' => $this->interpolate((string) ($faq['q'] ?? ''), $this->marketingReplacements($brand, $trialDays)),
+                'a' => $this->interpolate((string) ($faq['a'] ?? ''), $this->marketingReplacements($brand, $trialDays)),
             ])
             ->filter(fn (array $faq) => $faq['q'] !== '' && $faq['a'] !== '')
             ->values()
             ->all();
     }
 
-    private function pageFaqs(string $page, int $trialDays): ?array
+    private function pageFaqs(string $page, int $trialDays, string $brand): ?array
     {
+        $migrateSlug = MigrateLandingDefinition::slugFromSeoKey($page);
+
+        if ($migrateSlug !== null) {
+            return $this->faqNodeFromSection("migrations.{$migrateSlug}.faq", $brand, $trialDays);
+        }
+
         $slug = VerticalLandingDefinition::slugFromSeoKey($page)
             ?? MarketingFeatureDefinition::slugFromSeoKey($page);
 
@@ -350,22 +384,38 @@ class CentralSeoService
             ? "verticals.{$slug}.faq"
             : "feature_pages.{$slug}.faq";
 
+        return $this->faqNodeFromSection($prefix, $brand, $trialDays);
+    }
+
+    private function faqNodeFromSection(string $prefix, string $brand, int $trialDays): ?array
+    {
         $faqs = $this->centralSection($prefix);
 
         if (! is_array($faqs) || $faqs === []) {
             return null;
         }
 
+        $replacements = $this->marketingReplacements($brand, $trialDays);
+
         $items = collect($faqs)
             ->map(fn ($faq) => is_array($faq) ? [
-                'q' => $this->interpolate((string) ($faq['q'] ?? $faq['question'] ?? ''), ['trialDays' => (string) $trialDays, 'days' => (string) $trialDays]),
-                'a' => $this->interpolate((string) ($faq['a'] ?? $faq['answer'] ?? ''), ['trialDays' => (string) $trialDays, 'days' => (string) $trialDays]),
+                'q' => $this->interpolate((string) ($faq['q'] ?? $faq['question'] ?? ''), $replacements),
+                'a' => $this->interpolate((string) ($faq['a'] ?? $faq['answer'] ?? ''), $replacements),
             ] : null)
             ->filter(fn (?array $faq) => is_array($faq) && $faq['q'] !== '' && $faq['a'] !== '')
             ->values()
             ->all();
 
         return $this->jsonLd->faqPage($items);
+    }
+
+    private function marketingReplacements(string $brand, int $trialDays): array
+    {
+        return [
+            'brand' => $brand,
+            'days' => (string) $trialDays,
+            'trialDays' => (string) $trialDays,
+        ];
     }
 
     private function centralSection(string $path): mixed

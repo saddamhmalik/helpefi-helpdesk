@@ -6,6 +6,7 @@ import AppEditAction from '../../Components/AppEditAction.vue';
 import AppRowActions from '../../Components/AppRowActions.vue';
 import PageHeader from '../../Components/PageHeader.vue';
 import DataTable from '../../Components/DataTable.vue';
+import DataTableMobileCard from '../../Components/ui/DataTableMobileCard.vue';
 import PaginationLinks from '../../Components/PaginationLinks.vue';
 import { useI18n } from 'vue-i18n';
 
@@ -63,6 +64,32 @@ const { t } = useI18n();
                     <td colspan="4" class="px-4 py-12 text-center text-sm text-slate-500 dark:text-slate-400">{{ $t('organizations.no_organizations_yet') }}</td>
                 </tr>
             </tbody>
+            <template #mobile>
+                <DataTableMobileCard
+                    v-for="org in organizations.data"
+                    :key="`mobile-${org.id}`"
+                    tag="div"
+                >
+                    <div class="flex items-start justify-between gap-3">
+                        <div class="min-w-0 flex-1">
+                            <Link :href="`/organizations/${org.id}`" class="font-medium text-blue-600 dark:text-blue-300">{{ org.name }}</Link>
+                            <p class="mt-1 text-xs agent-text-muted">{{ org.domains?.map((d) => d.domain).join(', ') || '—' }}</p>
+                            <p class="mt-2 text-xs agent-text-subtle">{{ org.contacts_count }} {{ $t('organizations.contacts').toLowerCase() }}</p>
+                        </div>
+                        <AppRowActions>
+                            <AppIconAction
+                                icon="view"
+                                variant="primary"
+                                :label="$t('organizations.view_organization')"
+                                :href="`/organizations/${org.id}`"
+                            />
+                        </AppRowActions>
+                    </div>
+                </DataTableMobileCard>
+                <div v-if="!organizations.data?.length" class="p-6 text-center text-sm agent-text-muted">
+                    {{ $t('organizations.no_organizations_yet') }}
+                </div>
+            </template>
             <template #footer>
                 <PaginationLinks
                     :links="organizations.links"

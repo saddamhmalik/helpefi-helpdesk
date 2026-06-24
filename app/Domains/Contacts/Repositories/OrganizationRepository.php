@@ -3,6 +3,7 @@
 namespace App\Domains\Contacts\Repositories;
 
 use App\Domains\Contacts\Models\Organization;
+use App\Domains\Contacts\Support\OrganizationDomainRules;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
 
@@ -73,9 +74,9 @@ class OrganizationRepository
     {
         $organization->domains()->delete();
 
-        foreach (array_unique(array_filter($domains)) as $domain) {
+        foreach (OrganizationDomainRules::normalizeMany($domains) as $domain) {
             $organization->domains()->create([
-                'domain' => strtolower(trim($domain)),
+                'domain' => $domain,
             ]);
         }
     }

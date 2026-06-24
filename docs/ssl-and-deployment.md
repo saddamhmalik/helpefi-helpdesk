@@ -45,7 +45,7 @@ REALTIME_WS_URL=wss://rt.helpdesk.example.com
 | Record | Purpose |
 |--------|---------|
 | `A` `helpdesk.example.com` → server IP | Central app |
-| `A` or `CNAME` `*.helpdesk.example.com` | Tenant workspaces (`acme.helpdesk.example.com`) |
+| `A` or `CNAME` `*.helpdesk.example.com` | Tenant workspaces (`acme.helpefi.com`) |
 | `A` or `CNAME` `rt.helpdesk.example.com` | WebSocket proxy (optional but recommended) |
 | `TXT` `_acme-challenge...` | Only when using wildcard cert (`WILDCARD=true`) |
 

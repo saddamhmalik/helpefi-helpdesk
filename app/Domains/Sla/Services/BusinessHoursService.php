@@ -2,7 +2,7 @@
 
 namespace App\Domains\Sla\Services;
 
-use App\Domains\Billing\Services\BillingService;
+use App\Domains\Billing\Contracts\FeatureEntitlementChecker;
 use App\Domains\Sla\Models\BusinessHours;
 use App\Domains\Sla\Repositories\BusinessHoursRepository;
 use App\Domains\Security\Support\AuditRecorder;
@@ -16,7 +16,7 @@ class BusinessHoursService
 
     public function __construct(
         private BusinessHoursRepository $hours,
-        private BillingService $billing,
+        private FeatureEntitlementChecker $entitlements,
         private AuditRecorder $audit,
     ) {
     }
@@ -59,7 +59,7 @@ class BusinessHoursService
 
     public function update(int $id, array $data): array
     {
-        $this->billing->assertFeature('sla');
+        $this->entitlements->assertFeature('sla');
 
         $hours = $this->hours->find($id);
         $schedule = $this->normalizeSchedule($data['schedule'] ?? []);

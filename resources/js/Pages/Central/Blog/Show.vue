@@ -9,6 +9,7 @@ const props = defineProps({
     trialDays: { type: Number, default: 14 },
     post: { type: Object, required: true },
     relatedPosts: { type: Array, default: () => [] },
+    internalLinks: { type: Array, default: () => [] },
     featurePages: { type: Array, default: () => [] },
     socialLinks: { type: Array, default: () => [] },
 });
@@ -44,6 +45,20 @@ const platformName = computed(() => t('app.name'));
                 <div class="prose prose-slate max-w-none dark:prose-invert">
                     <p v-for="(paragraph, index) in post.body_paragraphs" :key="index" class="mb-6 text-base leading-relaxed text-slate-700 dark:text-slate-300">{{ paragraph }}</p>
                 </div>
+
+                <section v-if="internalLinks.length" class="mt-12 rounded-2xl border border-blue-200 bg-blue-50 p-6 dark:border-blue-900/50 dark:bg-blue-950/30">
+                    <h2 class="text-lg font-semibold text-slate-900 dark:text-slate-100">{{ $t('central.blog.continue_exploring') }}</h2>
+                    <div class="mt-4 flex flex-wrap gap-3">
+                        <Link
+                            v-for="link in internalLinks"
+                            :key="link.path"
+                            :href="link.path"
+                            class="rounded-full border border-blue-200 bg-white px-4 py-2 text-sm font-medium text-blue-800 transition hover:border-blue-400 dark:border-blue-800 dark:bg-slate-900 dark:text-blue-200"
+                        >
+                            {{ $t(link.label_key) }}
+                        </Link>
+                    </div>
+                </section>
 
                 <section v-if="featurePages.length" class="mt-12 rounded-2xl border border-slate-200 bg-slate-50 p-6 dark:border-slate-800 dark:bg-slate-950">
                     <h2 class="text-lg font-semibold text-slate-900 dark:text-slate-100">Related product features</h2>

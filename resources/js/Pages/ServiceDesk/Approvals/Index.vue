@@ -4,6 +4,8 @@ import AgentLayout from '../../../Layouts/AgentLayout.vue';
 import ServiceDeskNav from '../../../Components/ServiceDeskNav.vue';
 import PageHeader from '../../../Components/PageHeader.vue';
 import DataTable from '../../../Components/DataTable.vue';
+import DataTableMobileCard from '../../../Components/ui/DataTableMobileCard.vue';
+import AppBadge from '../../../Components/ui/AppBadge.vue';
 import PaginationLinks from '../../../Components/PaginationLinks.vue';
 import StatusBadge from '../../../Components/StatusBadge.vue';
 import { useI18n } from 'vue-i18n';
@@ -137,6 +139,25 @@ const applyFilter = (mine) => {
                         <Link v-else :href="`/tickets/${approval.ticket_id}`" class="text-sm text-blue-600 hover:text-blue-700 dark:hover:text-blue-300 dark:text-blue-300">{{ $t('service_desk.view_ticket') }}</Link>
                     </td>
                 </tr>
+            </template>
+            <template #mobile>
+                <DataTableMobileCard v-for="approval in approvals.data" :key="`mobile-${approval.id}`" tag="div">
+                    <Link :href="`/tickets/${approval.ticket_id}`" class="block">
+                        <p class="text-sm font-medium agent-text">{{ approval.subject }}</p>
+                        <p class="mt-1 text-xs agent-text-subtle">{{ approval.ticket?.number }}</p>
+                        <div class="mt-2 flex flex-wrap items-center gap-2">
+                            <AppBadge :variant="approval.status === 'approved' ? 'success' : approval.status === 'rejected' ? 'error' : 'warning'" class="capitalize">
+                                {{ approval.status }}
+                            </AppBadge>
+                            <span class="text-xs agent-text-muted">{{ currentApprover(approval) }}</span>
+                        </div>
+                    </Link>
+                    <div v-if="canDecide(approval)" class="mt-3 flex gap-2">
+                        <button type="button" class="rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white" @click="approve(approval.id)">{{ $t('service_desk.approve') }}</button>
+                        <button type="button" class="rounded-lg bg-red-600 px-3 py-1.5 text-xs font-medium text-white" @click="reject(approval.id)">{{ $t('service_desk.reject') }}</button>
+                    </div>
+                </DataTableMobileCard>
+                <div v-if="!approvals.data.length" class="p-6 text-center text-sm agent-text-muted">{{ $t('service_desk.no_approval_requests') }}</div>
             </template>
         </DataTable>
 

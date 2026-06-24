@@ -1,23 +1,23 @@
 <script setup>
-import { computed } from 'vue';
-import { useI18n } from 'vue-i18n';
+import AppEmptyState from './ui/AppEmptyState.vue';
 
-const props = defineProps({
+defineProps({
     empty: { type: Boolean, default: false },
     emptyTitle: { type: String, default: '' },
     emptyDescription: { type: String, default: '' },
+    emptyIcon: { type: String, default: 'default' },
     colspan: { type: Number, default: 1 },
 });
-
-const { t } = useI18n();
-
-const resolvedEmptyTitle = computed(() => props.emptyTitle || t('components.no_results_found'));
 </script>
 
 <template>
     <div class="overflow-hidden rounded-xl border agent-border agent-panel shadow-sm">
-        <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-slate-200 dark:divide-slate-800 dark:divide-slate-700">
+        <div v-if="$slots.mobile" class="divide-y agent-border-subtle md:hidden">
+            <slot name="mobile" />
+        </div>
+
+        <div class="overflow-x-auto" :class="$slots.mobile ? 'hidden md:block' : ''">
+            <table class="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
                 <template v-if="$slots.head || $slots.body">
                     <thead v-if="$slots.head" class="agent-panel-muted">
                         <slot name="head" />
@@ -29,13 +29,17 @@ const resolvedEmptyTitle = computed(() => props.emptyTitle || t('components.no_r
                 <slot v-else />
             </table>
         </div>
-        <div v-if="empty" class="px-4 py-12 text-center">
-            <p class="text-sm font-medium text-slate-700 dark:text-slate-300">{{ resolvedEmptyTitle }}</p>
-            <p v-if="emptyDescription" class="mt-1 text-sm agent-text-subtle">{{ emptyDescription }}</p>
-            <div v-if="$slots.emptyAction" class="mt-4">
-                <slot name="emptyAction" />
-            </div>
-        </div>
+
+        <AppEmptyState
+            v-if="empty"
+            size="compact"
+            :title="emptyTitle"
+            :description="emptyDescription"
+            :icon="emptyIcon"
+        >
+            <slot name="emptyAction" />
+        </AppEmptyState>
+
         <div v-if="$slots.footer" class="border-t agent-border-subtle px-4 py-3">
             <slot name="footer" />
         </div>

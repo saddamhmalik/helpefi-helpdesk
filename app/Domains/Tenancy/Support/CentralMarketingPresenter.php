@@ -72,6 +72,7 @@ class CentralMarketingPresenter
             'addons' => self::addons(),
             'verticalPages' => VerticalLandingDefinition::forNavigation(),
             'comparePages' => CompareLandingDefinition::forNavigation(),
+            'migratePages' => MigrateLandingDefinition::forNavigation(),
             'featurePages' => MarketingFeatureDefinition::forNavigation(),
             'blogPosts' => MarketingBlogDefinition::forIndex(),
             'seo' => app(CentralSeoService::class)->shared(),

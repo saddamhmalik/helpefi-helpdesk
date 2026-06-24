@@ -45,7 +45,7 @@ class KbDeflectionService
             ];
         }
 
-        $articles = $this->search->searchPublished($query, 5, $brandId);
+        $articles = $this->search->searchPortalPublished($query, 5, $brandId);
         $mapped = $this->mapArticles($articles);
 
         if ($mapped !== []) {

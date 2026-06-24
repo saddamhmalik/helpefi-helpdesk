@@ -3,7 +3,7 @@
 namespace App\Domains\ServiceCatalog\Services;
 
 use App\Domains\Brands\Support\BrandContext;
-use App\Domains\Billing\Services\BillingService;
+use App\Domains\Billing\Contracts\FeatureEntitlementChecker;
 use App\Domains\Channels\Services\ChannelService;
 use App\Domains\Contacts\Services\ContactService;
 use App\Domains\ServiceCatalog\Models\ServiceCatalogItem;
@@ -12,6 +12,8 @@ use App\Domains\ServiceCatalog\Repositories\ServiceCategoryRepository;
 use App\Domains\ServiceDesk\Services\ApprovalService;
 use App\Domains\Tickets\Models\Ticket;
 use App\Domains\Tickets\Services\TicketService;
+use App\Domains\Tickets\Services\TicketStatusLookup;
+use App\Domains\Workforce\Support\AssignableAgentValidator;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Validator;
@@ -26,8 +28,10 @@ class ServiceCatalogService
         private TicketService $tickets,
         private ChannelService $channels,
         private BrandContext $brandContext,
-        private BillingService $billing,
+        private FeatureEntitlementChecker $entitlements,
         private ApprovalService $approvals,
+        private TicketStatusLookup $statusLookup,
+        private AssignableAgentValidator $assignableAgents,
     ) {
     }
 
@@ -67,7 +71,7 @@ class ServiceCatalogService
 
     public function createCategory(array $data): Collection
     {
-        $this->billing->assertFeature('service_catalog');
+        $this->entitlements->assertFeature('service_catalog');
 
         $this->categories->create($this->validatedCategory($data));
 
@@ -76,7 +80,7 @@ class ServiceCatalogService
 
     public function updateCategory(int $id, array $data): Collection
     {
-        $this->billing->assertFeature('service_catalog');
+        $this->entitlements->assertFeature('service_catalog');
 
         $this->categories->update($this->categories->find($id), $this->validatedCategory($data));
 
@@ -85,7 +89,7 @@ class ServiceCatalogService
 
     public function deleteCategory(int $id): Collection
     {
-        $this->billing->assertFeature('service_catalog');
+        $this->entitlements->assertFeature('service_catalog');
 
         $this->categories->delete($this->categories->find($id));
 
@@ -94,7 +98,7 @@ class ServiceCatalogService
 
     public function createItem(array $data): Collection
     {
-        $this->billing->assertFeature('service_catalog');
+        $this->entitlements->assertFeature('service_catalog');
 
         $this->items->create($this->validatedItem($data));
 
@@ -103,7 +107,7 @@ class ServiceCatalogService
 
     public function updateItem(int $id, array $data): Collection
     {
-        $this->billing->assertFeature('service_catalog');
+        $this->entitlements->assertFeature('service_catalog');
 
         $this->items->update($this->items->find($id), $this->validatedItem($data));
 
@@ -112,7 +116,7 @@ class ServiceCatalogService
 
     public function deleteItem(int $id): Collection
     {
-        $this->billing->assertFeature('service_catalog');
+        $this->entitlements->assertFeature('service_catalog');
 
         $this->items->delete($this->items->find($id));
 
@@ -121,7 +125,7 @@ class ServiceCatalogService
 
     public function submitRequest(string $slug, array $data, ?User $user = null): Ticket
     {
-        $this->billing->assertFeature('service_catalog');
+        $this->entitlements->assertFeature('service_catalog');
 
         $item = $this->items->findPublicBySlug($slug);
         $payload = $this->validatedSubmission($item, $data, $user);
@@ -134,7 +138,7 @@ class ServiceCatalogService
             $contact = $this->contacts->findOrCreateByEmail($payload['email'], $payload['name']);
         }
 
-        $openStatus = $this->tickets->statuses()->firstWhere('slug', 'open')
+        $openStatus = $this->statusLookup->defaultOpen()
             ?? $this->tickets->statuses()->first();
 
         $priorityId = $item->ticket_priority_id
@@ -155,7 +159,13 @@ class ServiceCatalogService
             'service_catalog_item_id' => $item->id,
         ], $user?->id);
 
-        if ($item->requires_approval && $this->billing->canUseFeature('service_desk')) {
+        if ($item->requires_approval) {
+            if (! $this->entitlements->canUseFeature('service_desk')) {
+                throw ValidationException::withMessages([
+                    'service' => 'This request requires approval but the service desk module is not available.',
+                ]);
+            }
+
             $this->approvals->startFromCatalog($ticket, $item, $user);
         }
 
@@ -211,6 +221,10 @@ class ServiceCatalogService
             ->unique()
             ->values()
             ->all();
+
+        if (($validated['requires_approval'] ?? false) && $validated['approver_user_ids'] !== []) {
+            $this->assignableAgents->assert($validated['approver_user_ids'], 'approver_user_ids');
+        }
 
         if (! ($validated['requires_approval'] ?? false)) {
             $validated['approver_user_ids'] = [];

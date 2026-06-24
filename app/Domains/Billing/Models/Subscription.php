@@ -61,7 +61,8 @@ class Subscription extends Model
     public function isOnTrial(): bool
     {
         return $this->status === self::STATUS_TRIAL
-            && ($this->trial_ends_at === null || $this->trial_ends_at->isFuture());
+            && $this->trial_ends_at !== null
+            && $this->trial_ends_at->isFuture();
     }
 
     public function isTrialExpired(): bool

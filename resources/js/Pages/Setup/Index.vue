@@ -47,6 +47,7 @@ const sampleSummaryLabel = computed(() => t('setup_index.sample_summary', {
 const canFinish = computed(() => (
     !guidePaused.value
     && !props.dummyData?.needs_choice
+    && !showDemoBootstrap.value
     && progress.value.completed >= progress.value.total
     && progress.value.total > 0
 ));

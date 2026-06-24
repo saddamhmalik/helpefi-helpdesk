@@ -5,6 +5,7 @@ import { useI18n } from 'vue-i18n';
 import CentralLayout from '../../Layouts/CentralLayout.vue';
 import { useCurrency } from '../../composables/useCurrency.js';
 import { useBillingInterval } from '../../composables/useBillingInterval.js';
+import { useMarketingCopy } from '../../composables/useMarketingCopy.js';
 
 const props = defineProps({
     brand: { type: String, default: 'helpefi' },
@@ -23,22 +24,14 @@ const props = defineProps({
 });
 
 const { t, tm, te } = useI18n();
+const { platformName, brandParams, interpolate } = useMarketingCopy(computed(() => props.trialDays));
 const copyPrefix = computed(() => `central.static_pages.${props.page}`);
-const platformName = computed(() => t('app.name'));
 const isPricing = computed(() => props.page === 'pricing');
 const isLegalPage = computed(() => ['privacy', 'terms'].includes(props.page));
 
 const effectiveDate = computed(() => (
     te(`${copyPrefix.value}.effective_date`) ? t(`${copyPrefix.value}.effective_date`) : ''
 ));
-
-const copy = computed(() => ({
-    navLabel: t(`${copyPrefix.value}.nav_label`),
-    heroTitle: t(`${copyPrefix.value}.hero_title`),
-    heroSubtitle: t(`${copyPrefix.value}.hero_subtitle`),
-    ctaTitle: t(`${copyPrefix.value}.cta_title`),
-    ctaBody: t(`${copyPrefix.value}.cta_body`),
-}));
 
 const subtitleParams = computed(() => {
     const params = { days: props.trialDays };
@@ -50,14 +43,18 @@ const subtitleParams = computed(() => {
     return params;
 });
 
+const copy = computed(() => ({
+    navLabel: t(`${copyPrefix.value}.nav_label`),
+    heroTitle: t(`${copyPrefix.value}.hero_title`),
+    heroSubtitle: t(`${copyPrefix.value}.hero_subtitle`, { ...brandParams.value, ...subtitleParams.value }),
+    ctaTitle: t(`${copyPrefix.value}.cta_title`, brandParams.value),
+    ctaBody: t(`${copyPrefix.value}.cta_body`, { ...brandParams.value, ...subtitleParams.value }),
+}));
+
 const interpolatePageCopy = (value) => {
-    if (typeof value !== 'string') {
-        return value;
-    }
+    let copy = interpolate(value);
 
-    let copy = value;
-
-    if (props.contactEmail) {
+    if (props.contactEmail && typeof copy === 'string') {
         copy = copy.replaceAll('{contactEmail}', props.contactEmail);
     }
 

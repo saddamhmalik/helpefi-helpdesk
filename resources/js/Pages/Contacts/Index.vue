@@ -11,6 +11,7 @@ import PageHeader from '../../Components/PageHeader.vue';
 import ListPanel from '../../Components/ListPanel.vue';
 import FilterField from '../../Components/FilterField.vue';
 import DataTable from '../../Components/DataTable.vue';
+import DataTableMobileCard from '../../Components/ui/DataTableMobileCard.vue';
 import PaginationLinks from '../../Components/PaginationLinks.vue';
 import { useConfirmDialog } from '../../composables/useConfirmDialog.js';
 import { useI18n } from 'vue-i18n';
@@ -170,6 +171,44 @@ const removePortalAccess = (contact) => {
                     </td>
                 </tr>
             </tbody>
+            <template #mobile>
+                <DataTableMobileCard
+                    v-for="contact in contacts.data"
+                    :key="`mobile-${contact.id}`"
+                    tag="div"
+                >
+                    <div class="flex items-start justify-between gap-3">
+                        <div class="min-w-0 flex-1">
+                            <Link :href="`/contacts/${contact.id}`" class="font-medium text-blue-600 dark:text-blue-300">{{ contact.name }}</Link>
+                            <p v-if="contact.email" class="text-xs agent-text-muted">{{ contact.email }}</p>
+                            <div class="mt-2 flex flex-wrap items-center gap-2">
+                                <span
+                                    v-if="contact.portal_user"
+                                    class="inline-flex rounded-full bg-indigo-50 px-2 py-0.5 text-xs font-medium text-indigo-700 ring-1 ring-inset ring-indigo-600/15 dark:bg-indigo-950/40 dark:text-indigo-300"
+                                >
+                                    {{ $t('contacts.portal') }}
+                                </span>
+                                <span v-else class="inline-flex rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600 dark:bg-slate-900 dark:text-slate-400">
+                                    {{ $t('contacts.guest') }}
+                                </span>
+                                <span class="text-xs agent-text-subtle">{{ contact.organization?.name || '—' }}</span>
+                            </div>
+                            <p class="mt-2 text-xs agent-text-subtle">{{ contact.tickets_count }} {{ $t('contacts.tickets').toLowerCase() }}</p>
+                        </div>
+                        <AppRowActions>
+                            <AppIconAction
+                                icon="view"
+                                variant="primary"
+                                :label="$t('contacts.view_customer')"
+                                :href="`/contacts/${contact.id}`"
+                            />
+                        </AppRowActions>
+                    </div>
+                </DataTableMobileCard>
+                <div v-if="!contacts.data.length" class="p-6 text-center text-sm agent-text-muted">
+                    No customers match your search.
+                </div>
+            </template>
             <template #footer>
                 <PaginationLinks
                     :links="contacts.links"

@@ -2,6 +2,8 @@
 
 namespace App\Domains\Tickets\Controllers\Api;
 
+use App\Domains\Tickets\Requests\StoreTicketStatusRequest;
+use App\Domains\Tickets\Requests\UpdateTicketStatusRequest;
 use App\Domains\Tickets\Services\TicketStatusService;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
@@ -22,18 +24,12 @@ class TicketStatusController extends Controller
         return response()->json($this->statuses->all());
     }
 
-    public function store(Request $request): JsonResponse
+    public function store(StoreTicketStatusRequest $request): JsonResponse
     {
         $this->ensureAdmin($request);
 
-        $data = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'color' => ['nullable', 'string', 'max:50'],
-            'is_closed' => ['boolean'],
-        ]);
-
         try {
-            $status = $this->statuses->create($data);
+            $status = $this->statuses->create($request->validated());
         } catch (InvalidArgumentException $exception) {
             throw ValidationException::withMessages(['name' => $exception->getMessage()]);
         }
@@ -41,19 +37,12 @@ class TicketStatusController extends Controller
         return response()->json($status, 201);
     }
 
-    public function update(Request $request, int $status): JsonResponse
+    public function update(UpdateTicketStatusRequest $request, int $status): JsonResponse
     {
         $this->ensureAdmin($request);
 
-        $data = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'color' => ['nullable', 'string', 'max:50'],
-            'sort_order' => ['nullable', 'integer', 'min:0'],
-            'is_closed' => ['boolean'],
-        ]);
-
         try {
-            $updated = $this->statuses->update($status, $data);
+            $updated = $this->statuses->update($status, $request->validated());
         } catch (InvalidArgumentException $exception) {
             throw ValidationException::withMessages(['name' => $exception->getMessage()]);
         }

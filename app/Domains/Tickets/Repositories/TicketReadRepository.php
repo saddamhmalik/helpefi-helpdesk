@@ -14,26 +14,15 @@ class TicketReadRepository
             return [];
         }
 
-        $rows = DB::table('ticket_messages as tm')
-            ->leftJoin('ticket_agent_reads as tar', function ($join) use ($userId) {
-                $join->on('tar.ticket_id', '=', 'tm.ticket_id')
-                    ->where('tar.user_id', '=', $userId);
-            })
-            ->whereIn('tm.ticket_id', $ticketIds)
-            ->whereNotNull('tm.contact_id')
-            ->where('tm.is_internal', false)
-            ->where(function ($query) {
-                $query->whereNull('tar.last_read_message_id')
-                    ->orWhereColumn('tm.id', '>', 'tar.last_read_message_id');
-            })
-            ->groupBy('tm.ticket_id')
-            ->selectRaw('tm.ticket_id, COUNT(*) as unread_count')
+        $tracked = TicketAgentRead::query()
+            ->where('user_id', $userId)
+            ->whereIn('ticket_id', $ticketIds)
             ->pluck('unread_count', 'ticket_id');
 
         $counts = [];
 
         foreach ($ticketIds as $ticketId) {
-            $counts[$ticketId] = (int) ($rows[$ticketId] ?? 0);
+            $counts[$ticketId] = (int) ($tracked[$ticketId] ?? $this->fallbackUnreadCount($userId, $ticketId));
         }
 
         return $counts;
@@ -58,7 +47,33 @@ class TicketReadRepository
             [
                 'last_read_message_id' => $messageId,
                 'read_at' => now(),
+                'unread_count' => 0,
             ],
         );
+    }
+
+    public function incrementUnreadForCustomerMessage(int $ticketId): void
+    {
+        TicketAgentRead::query()
+            ->where('ticket_id', $ticketId)
+            ->increment('unread_count');
+    }
+
+    private function fallbackUnreadCount(int $userId, int $ticketId): int
+    {
+        return (int) DB::table('ticket_messages as tm')
+            ->leftJoin('ticket_agent_reads as tar', function ($join) use ($userId, $ticketId) {
+                $join->on('tar.ticket_id', '=', 'tm.ticket_id')
+                    ->where('tar.user_id', '=', $userId)
+                    ->where('tar.ticket_id', '=', $ticketId);
+            })
+            ->where('tm.ticket_id', $ticketId)
+            ->whereNotNull('tm.contact_id')
+            ->where('tm.is_internal', false)
+            ->where(function ($query) {
+                $query->whereNull('tar.last_read_message_id')
+                    ->orWhereColumn('tm.id', '>', 'tar.last_read_message_id');
+            })
+            ->count();
     }
 }

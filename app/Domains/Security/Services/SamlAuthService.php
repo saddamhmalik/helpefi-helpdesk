@@ -2,7 +2,7 @@
 
 namespace App\Domains\Security\Services;
 
-use App\Domains\Billing\Services\BillingService;
+use App\Domains\Billing\Contracts\FeatureEntitlementChecker;
 use App\Domains\Security\Repositories\SecuritySettingRepository;
 use Illuminate\Support\Facades\URL;
 use OneLogin\Saml2\Auth as SamlAuth;
@@ -12,20 +12,20 @@ class SamlAuthService
 {
     public function __construct(
         private SecuritySettingRepository $settings,
-        private BillingService $billing,
+        private FeatureEntitlementChecker $entitlements,
     ) {
     }
 
     public function redirectUrl(): string
     {
-        $this->billing->assertFeature('sso');
+        $this->entitlements->assertFeature('sso');
 
         return $this->auth()->login(URL::route('sso.acs'), [], false, false, true);
     }
 
     public function handleAcs(array $payload): array
     {
-        $this->billing->assertFeature('sso');
+        $this->entitlements->assertFeature('sso');
         $auth = $this->auth();
 
         $auth->processResponse();
@@ -54,7 +54,7 @@ class SamlAuthService
 
     public function metadata(): string
     {
-        $this->billing->assertFeature('sso');
+        $this->entitlements->assertFeature('sso');
         $settings = $this->auth()->getSettings();
         $metadata = $settings->getSPMetadata();
         $errors = $settings->validateMetadata($metadata);

@@ -4,6 +4,7 @@ namespace App\Domains\Automation\Listeners;
 
 use App\Domains\Automation\Events\TicketAutomationTrigger;
 use App\Domains\Automation\Services\AutomationService;
+use App\Domains\Automation\Support\AutomationTriggerGuard;
 
 class RunAutomationRules
 {
@@ -13,7 +14,7 @@ class RunAutomationRules
 
     public function handle(TicketAutomationTrigger $event): void
     {
-        if ($event->context['from_automation'] ?? false) {
+        if (AutomationTriggerGuard::shouldSkip($event->context)) {
             return;
         }
 

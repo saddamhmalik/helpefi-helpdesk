@@ -10,4 +10,19 @@ return [
     'agencies' => [
         'accent' => 'violet',
     ],
+    'saas' => [
+        'accent' => 'blue',
+    ],
+    'professional-services' => [
+        'accent' => 'amber',
+    ],
+    'healthcare' => [
+        'accent' => 'emerald',
+    ],
+    'fintech' => [
+        'accent' => 'indigo',
+    ],
+    'education' => [
+        'accent' => 'cyan',
+    ],
 ];

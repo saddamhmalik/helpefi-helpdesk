@@ -2,7 +2,7 @@
 
 namespace App\Domains\Channels\Services;
 
-use App\Domains\Billing\Services\BillingService;
+use App\Domains\Billing\Contracts\FeatureEntitlementChecker;
 use App\Domains\Channels\Models\Channel;
 use App\Domains\Channels\Models\EmailInbox;
 use App\Domains\Channels\Services\Mailbox\EmailQuoteStripper;
@@ -13,8 +13,8 @@ use App\Domains\Settings\Services\HelpdeskSettingService;
 use App\Domains\Tickets\Models\Ticket;
 use App\Domains\SideConversations\Services\SideConversationService;
 use App\Domains\Tickets\Services\TicketCcService;
-use App\Domains\Tickets\Support\TicketFormReferenceCache;
 use App\Domains\Tickets\Services\TicketService;
+use App\Domains\Tickets\Services\TicketStatusLookup;
 use App\Domains\Tenancy\Services\TenantRouteRegistryService;
 use App\Domains\Workspace\Services\TicketPresenceService;
 use Illuminate\Database\Eloquent\Collection;
@@ -37,7 +37,8 @@ class ChannelService
         private SideConversationService $sideConversations,
         private InboundEmailPayloadNormalizer $inboundNormalizer,
         private TenantRouteRegistryService $tenantRoutes,
-        private BillingService $billing,
+        private FeatureEntitlementChecker $entitlements,
+        private TicketStatusLookup $statusLookup,
     ) {
     }
 
@@ -51,7 +52,7 @@ class ChannelService
         $channel = $this->channels->find($id);
 
         if (in_array($channel->type, [Channel::TYPE_CHAT, Channel::TYPE_WHATSAPP, Channel::TYPE_SMS], true)) {
-            $this->billing->assertFeature('channels');
+            $this->entitlements->assertFeature('channels');
         }
 
         $previousWidgetKey = $channel->type === Channel::TYPE_CHAT
@@ -81,7 +82,6 @@ class ChannelService
             }
         }
 
-        TicketFormReferenceCache::forget();
 
         return $channel;
     }
@@ -115,7 +115,7 @@ class ChannelService
 
     public function processInboundEmail(array $payload, ?string $token = null, bool $fromPoll = false): array
     {
-        $this->billing->assertFeature('channels');
+        $this->entitlements->assertFeature('channels');
 
         $inbox = $this->inboxes->resolveForInbound($token, $payload['to_email'] ?? null);
 
@@ -227,7 +227,7 @@ class ChannelService
             ];
         }
 
-        $openStatus = $this->tickets->statuses()->firstWhere('slug', 'open')
+        $openStatus = $this->statusLookup->defaultOpen()
             ?? $this->tickets->statuses()->first();
         $normalPriority = $this->tickets->priorities()->firstWhere('slug', 'normal')
             ?? $this->tickets->priorities()->first();
@@ -294,7 +294,7 @@ class ChannelService
             throw new InvalidArgumentException('Invalid inbound channel token.');
         }
 
-        if ($token !== $inbox->inbound_token) {
+        if (! hash_equals((string) $inbox->inbound_token, $token)) {
             throw new InvalidArgumentException('Invalid inbound channel token.');
         }
     }

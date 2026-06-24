@@ -2,7 +2,7 @@
 
 namespace App\Domains\Channels\Services;
 
-use App\Domains\Billing\Services\BillingService;
+use App\Domains\Billing\Contracts\FeatureEntitlementChecker;
 use App\Domains\Channels\Repositories\MessagingSettingRepository;
 use App\Domains\Security\Support\AuditRecorder;
 use Illuminate\Support\Str;
@@ -11,7 +11,7 @@ class MessagingSettingService
 {
     public function __construct(
         private MessagingSettingRepository $settings,
-        private BillingService $billing,
+        private FeatureEntitlementChecker $entitlements,
         private AuditRecorder $audit,
     ) {
     }
@@ -28,13 +28,13 @@ class MessagingSettingService
             'webhook_token' => $setting->webhook_token,
             'has_auth_token' => ! empty($setting->auth_token),
             'webhook_url' => url('/api/v1/channels/inbound/twilio'),
-            'feature_available' => $this->billing->canUseFeature('channels'),
+            'feature_available' => $this->entitlements->canUseFeature('channels'),
         ];
     }
 
     public function update(array $data): array
     {
-        $this->billing->assertFeature('channels');
+        $this->entitlements->assertFeature('channels');
 
         $setting = $this->settings->current();
         $payload = [

@@ -16,6 +16,9 @@ use App\Domains\Tickets\Services\TicketViewService;
 use App\Domains\Workforce\Services\WorkforceService;
 use App\Domains\Tickets\Services\TicketFormReferenceService;
 use App\Domains\Tickets\Services\TicketShowPageService;
+use App\Domains\Tickets\Support\TicketFilters;
+use App\Domains\Realtime\Services\RealtimeTokenService;
+use App\Domains\Realtime\Support\RealtimeChannelNames;
 use App\Domains\Workspace\Services\WorkspaceService;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
@@ -48,7 +51,7 @@ class WorkspaceController extends Controller
 
     public function index(Request $request, ?int $ticket = null): Response
     {
-        $filters = $request->only(['status_id', 'priority_id', 'assigned_to', 'search', 'watching']);
+        $filters = TicketFilters::normalize($request->only(TicketFilters::KEYS));
 
         if ($request->filled('view_id')) {
             $view = $this->ticketViewService->findForUser(
@@ -123,6 +126,18 @@ class WorkspaceController extends Controller
         $this->workspaceService->leaveTicket($ticket, $request->user()->id);
 
         return response()->json(['ok' => true]);
+    }
+
+    public function realtimeToken(Request $request, int $ticket): JsonResponse
+    {
+        $this->ticketService->show($ticket);
+
+        $channel = RealtimeChannelNames::ticket($ticket);
+
+        return response()->json([
+            'channel' => $channel,
+            'token' => app(RealtimeTokenService::class)->forChannel($channel, $request->user()->id),
+        ]);
     }
 
     public function pollQueue(Request $request): JsonResponse

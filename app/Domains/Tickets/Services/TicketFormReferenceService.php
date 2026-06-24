@@ -7,8 +7,8 @@ use App\Domains\Channels\Repositories\ChannelRepository;
 use App\Domains\Integrations\Services\TicketExternalIssueService;
 use App\Domains\Settings\Services\HelpdeskSettingService;
 use App\Domains\Tickets\Repositories\TicketRepository;
-use App\Domains\Tickets\Support\TicketFormReferenceCache;
 use App\Domains\Workforce\Services\WorkforceService;
+use App\Support\ReferenceCacheInvalidator;
 use App\Support\TenantCache;
 use Illuminate\Support\Facades\Cache;
 
@@ -23,6 +23,7 @@ class TicketFormReferenceService
         private TicketExternalIssueService $externalIssues,
         private HelpdeskSettingService $helpdeskSettings,
         private ChannelRepository $channels,
+        private ReferenceCacheInvalidator $referenceCache,
     ) {
     }
 
@@ -46,7 +47,7 @@ class TicketFormReferenceService
 
     public function forgetCache(): void
     {
-        TicketFormReferenceCache::forget();
+        $this->referenceCache->forgetTicketFormReference();
     }
 
     private function loadPayload(): array

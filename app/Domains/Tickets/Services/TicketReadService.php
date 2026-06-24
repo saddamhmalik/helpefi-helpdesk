@@ -3,7 +3,7 @@
 namespace App\Domains\Tickets\Services;
 
 use App\Domains\Tickets\Repositories\TicketReadRepository;
-use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Contracts\Pagination\Paginator;
 use Illuminate\Support\Collection;
 
 class TicketReadService
@@ -27,7 +27,12 @@ class TicketReadService
         $this->reads->markAsRead($userId, $ticketId, $messageId);
     }
 
-    public function attachUnreadCounts(LengthAwarePaginator $paginator, int $userId): LengthAwarePaginator
+    public function incrementUnreadForCustomerMessage(int $ticketId): void
+    {
+        $this->reads->incrementUnreadForCustomerMessage($ticketId);
+    }
+
+    public function attachUnreadCounts(Paginator $paginator, int $userId): Paginator
     {
         $ticketIds = $paginator->getCollection()->pluck('id')->map(fn ($id) => (int) $id)->all();
         $counts = $this->countsForTickets($userId, $ticketIds);

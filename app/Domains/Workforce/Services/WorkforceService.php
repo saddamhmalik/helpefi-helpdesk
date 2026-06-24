@@ -3,10 +3,10 @@
 namespace App\Domains\Workforce\Services;
 
 use App\Domains\Security\Support\AuditRecorder;
-use App\Domains\Tickets\Support\TicketFormReferenceCache;
 use App\Domains\Workforce\Models\Team;
 use App\Domains\Workforce\Repositories\DepartmentRepository;
 use App\Domains\Workforce\Repositories\TeamRepository;
+use App\Domains\Tickets\Support\AssignableAgentCache;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Collection;
 use InvalidArgumentException;
@@ -45,7 +45,9 @@ class WorkforceService
 
     public function assignableAgentIds(): array
     {
-        return $this->agentOptions()->pluck('id')->all();
+        return AssignableAgentCache::remember(
+            fn () => $this->agentOptions()->pluck('id')->all(),
+        );
     }
 
     public function meta(): array
@@ -66,7 +68,6 @@ class WorkforceService
             'name' => $department->name,
         ]);
 
-        TicketFormReferenceCache::forget();
 
         return $this->catalog();
     }
@@ -82,7 +83,6 @@ class WorkforceService
             'name' => $department->name,
         ]);
 
-        TicketFormReferenceCache::forget();
 
         return $this->catalog();
     }
@@ -96,7 +96,6 @@ class WorkforceService
             'name' => $department->name,
         ]);
 
-        TicketFormReferenceCache::forget();
 
         return $this->catalog();
     }
@@ -114,7 +113,6 @@ class WorkforceService
             'department_id' => $team->department_id,
         ]);
 
-        TicketFormReferenceCache::forget();
 
         return $this->catalog();
     }
@@ -132,7 +130,6 @@ class WorkforceService
             'name' => $team->name,
         ]);
 
-        TicketFormReferenceCache::forget();
 
         return $this->catalog();
     }
@@ -146,7 +143,6 @@ class WorkforceService
             'name' => $team->name,
         ]);
 
-        TicketFormReferenceCache::forget();
 
         return $this->catalog();
     }

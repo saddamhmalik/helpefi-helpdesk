@@ -8,9 +8,11 @@ use App\Domains\Chat\Services\ChatAvailabilityService;
 use App\Domains\Realtime\Services\RealtimePublisher;
 use App\Domains\Realtime\Services\RealtimeTokenService;
 use App\Domains\Realtime\Support\RealtimeChannelNames;
+use App\Domains\Contacts\Models\Contact;
 use App\Domains\Tickets\Models\Ticket;
 use App\Domains\Tickets\Models\TicketPriority;
 use App\Domains\Tickets\Models\TicketStatus;
+use App\Domains\Tickets\Services\TicketService;
 use App\Models\User;
 use Database\Seeders\ChannelSeeder;
 use Database\Seeders\SlaSeeder;
@@ -51,14 +53,28 @@ class RealtimeTest extends TenantTestCase
         $this->assertFalse($service->verify($token, RealtimeChannelNames::ticket(99)));
     }
 
-    public function test_agent_token_verifies_for_any_channel(): void
+    public function test_agent_token_verifies_for_workspace_and_own_user_channel(): void
     {
         $agent = User::factory()->create();
         $service = app(RealtimeTokenService::class);
         $token = $service->agentToken($agent);
 
         $this->assertTrue($service->verify($token, RealtimeChannelNames::workspace()));
-        $this->assertTrue($service->verify($token, RealtimeChannelNames::ticket(1)));
+        $this->assertTrue($service->verify($token, RealtimeChannelNames::user($agent->id)));
+        $this->assertFalse($service->verify($token, RealtimeChannelNames::ticket(1)));
+        $this->assertFalse($service->verify($token, RealtimeChannelNames::user($agent->id + 1)));
+    }
+
+    public function test_ticket_channel_token_verifies_only_for_matching_ticket(): void
+    {
+        $agent = User::factory()->create();
+        $service = app(RealtimeTokenService::class);
+        $channel = RealtimeChannelNames::ticket(42);
+        $token = $service->forChannel($channel, $agent->id);
+
+        $this->assertTrue($service->verify($token, $channel));
+        $this->assertFalse($service->verify($token, RealtimeChannelNames::ticket(99)));
+        $this->assertFalse($service->verify($token, RealtimeChannelNames::workspace()));
     }
 
     public function test_ticket_reply_publishes_realtime_message(): void
@@ -162,6 +178,40 @@ class RealtimeTest extends TenantTestCase
             'id' => $ticket->id,
             'subject' => $ticket->subject,
         ]);
+
+        $this->assertTrue($queuePublished);
+    }
+
+    public function test_ticket_creation_publishes_queue_update(): void
+    {
+        $user = User::factory()->create();
+        $status = TicketStatus::query()->where('slug', 'open')->firstOrFail();
+        $priority = TicketPriority::query()->where('slug', 'normal')->firstOrFail();
+        $contact = Contact::query()->create([
+            'name' => 'Queue Test',
+            'email' => 'queue-test@example.com',
+        ]);
+
+        $realtimeRedis = $this->mockRealtimeRedis();
+        $queuePublished = false;
+        $realtimeRedis->shouldReceive('publish')->zeroOrMoreTimes()->andReturnUsing(function (string $channel, string $payload) use (&$queuePublished) {
+            if (! str_contains($channel, 'workspace')) {
+                return 1;
+            }
+
+            $data = json_decode($payload, true);
+            $queuePublished = ($data['event'] ?? null) === 'queue.updated'
+                && ($data['data']['ticket']['subject'] ?? null) === 'Realtime queue ticket';
+
+            return 1;
+        });
+
+        app(TicketService::class)->create([
+            'subject' => 'Realtime queue ticket',
+            'contact_id' => $contact->id,
+            'ticket_status_id' => $status->id,
+            'ticket_priority_id' => $priority->id,
+        ], $user->id);
 
         $this->assertTrue($queuePublished);
     }

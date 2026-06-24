@@ -6,6 +6,7 @@ import ServiceDeskNav from '../../Components/ServiceDeskNav.vue';
 import PageHeader from '../../Components/PageHeader.vue';
 import FilterField from '../../Components/FilterField.vue';
 import DataTable from '../../Components/DataTable.vue';
+import DataTableMobileCard from '../../Components/ui/DataTableMobileCard.vue';
 import PaginationLinks from '../../Components/PaginationLinks.vue';
 import StatusBadge from '../../Components/StatusBadge.vue';
 import UnreadBadge from '../../Components/UnreadBadge.vue';
@@ -157,6 +158,25 @@ watch(
                     <td class="px-4 py-3 text-sm text-slate-700 dark:text-slate-300">{{ ticket.assignee?.name || 'Unassigned' }}</td>
                     <td class="px-4 py-3 text-sm text-slate-500 dark:text-slate-400">{{ ticket.updated_at }}</td>
                 </tr>
+            </template>
+            <template #mobile>
+                <DataTableMobileCard v-for="ticket in tickets.data" :key="`mobile-${ticket.id}`" tag="div">
+                    <Link :href="`/tickets/${ticket.id}`" class="block">
+                        <div class="flex items-center gap-2">
+                            <p class="text-sm font-medium agent-text">{{ ticket.subject }}</p>
+                            <UnreadBadge v-if="ticket.unread_count" :count="ticket.unread_count" />
+                        </div>
+                        <p class="mt-1 text-xs agent-text-subtle">{{ ticket.number }}</p>
+                        <div class="mt-2 flex flex-wrap items-center gap-2">
+                            <StatusBadge :label="ticket.status?.name" :color="ticket.status?.color" />
+                            <span class="text-xs agent-text-muted">{{ ticket.priority?.name || '—' }}</span>
+                        </div>
+                        <p class="mt-2 text-xs agent-text-subtle">{{ ticket.assignee?.name || 'Unassigned' }}</p>
+                    </Link>
+                </DataTableMobileCard>
+                <div v-if="!tickets.data.length" class="p-6 text-center text-sm agent-text-muted">
+                    {{ $t('service_desk.no_matches_filters', { type: type.label.toLowerCase() }) }}
+                </div>
             </template>
         </DataTable>
 

@@ -1,4 +1,6 @@
 <script setup>
+import { useI18n } from 'vue-i18n';
+
 defineProps({
     size: {
         type: String,
@@ -13,6 +15,8 @@ defineProps({
         default: 'none',
     },
 });
+
+const { t } = useI18n();
 
 const sizeClasses = {
     sm: 'h-7',
@@ -35,14 +39,14 @@ const imageClass = (size, markOnly) => [
     >
         <img
             :src="markOnly ? '/icon.png' : '/logo.png'"
-            alt="helpefi"
+            :alt="t('app.name')"
             :class="imageClass(size, markOnly)"
         />
     </span>
     <img
         v-else
         :src="markOnly ? '/icon.png' : '/logo.png'"
-        alt="helpefi"
+        :alt="t('app.name')"
         :class="imageClass(size, markOnly)"
     />
 </template>

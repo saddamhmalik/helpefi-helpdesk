@@ -18,6 +18,9 @@
 <body>
     <h1>{{ $reportName }}</h1>
     <p class="meta">{{ $typeLabel }} · Generated {{ $generatedAt }}</p>
+    @if(!empty($truncated))
+        <p class="meta">Showing the first 500 rows. Export CSV for the full dataset.</p>
+    @endif
 
     @if(($format ?? 'table') === 'sections')
         @foreach($sections as $section)

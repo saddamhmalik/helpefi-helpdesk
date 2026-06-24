@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Domains\Tenancy\Support\MarketingBlogDefinition;
 use App\Domains\Tenancy\Support\MarketingFeatureDefinition;
 use App\Domains\Tenancy\Support\MarketingStaticPageDefinition;
+use App\Domains\Tenancy\Support\MigrateLandingDefinition;
 use Database\Seeders\MarketingBlogPostSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -74,6 +75,13 @@ class MarketingSeoTest extends TestCase
         }
     }
 
+    public function test_features_index_page_renders(): void
+    {
+        $this->get($this->centralUrl('/features'))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page->component('Central/FeaturesIndex'));
+    }
+
     public function test_sitemap_includes_marketing_pages(): void
     {
         $response = $this->get($this->centralUrl('/sitemap.xml'));
@@ -84,6 +92,8 @@ class MarketingSeoTest extends TestCase
             $response->assertSee(MarketingStaticPageDefinition::path($slug), false);
         }
 
+        $response->assertSee('/features', false);
+
         foreach (MarketingFeatureDefinition::slugs() as $slug) {
             $response->assertSee(MarketingFeatureDefinition::path($slug), false);
         }
@@ -92,6 +102,10 @@ class MarketingSeoTest extends TestCase
 
         foreach (MarketingBlogDefinition::slugs() as $slug) {
             $response->assertSee(MarketingBlogDefinition::path($slug), false);
+        }
+
+        foreach (MigrateLandingDefinition::slugs() as $slug) {
+            $response->assertSee(MigrateLandingDefinition::path($slug), false);
         }
     }
 
@@ -116,7 +130,7 @@ class MarketingSeoTest extends TestCase
         $response->assertSee('rel="canonical"', false);
         $response->assertSee('https://helpefi.com/', false);
         $response->assertSee('application/ld+json', false);
-        $response->assertSee('AI Helpdesk Software for Modern Teams', false);
+        $response->assertSee('AI Helpdesk Software — Tickets, Chat, KB', false);
     }
 
     public function test_feature_page_has_canonical_and_json_ld(): void

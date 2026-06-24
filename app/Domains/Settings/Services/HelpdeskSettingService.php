@@ -3,10 +3,8 @@
 namespace App\Domains\Settings\Services;
 
 use App\Domains\Channels\Support\EmailSettingsPageCache;
-use App\Domains\Contacts\Support\ContactFormReferenceCache;
 use App\Domains\Security\Support\AuditRecorder;
 use App\Domains\Settings\Repositories\HelpdeskSettingRepository;
-use App\Domains\Tickets\Support\TicketFormReferenceCache;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use InvalidArgumentException;
@@ -89,8 +87,6 @@ class HelpdeskSettingService
             'sync_ticket_status_from_external_issues' => (bool) ($setting->sync_ticket_status_from_external_issues ?? false),
         ]);
 
-        TicketFormReferenceCache::forget();
-        ContactFormReferenceCache::forget();
 
         return $this->snapshot();
     }

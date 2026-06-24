@@ -5,7 +5,7 @@ namespace App\Domains\Automation\Services;
 use App\Domains\Automation\Models\AutomationRule;
 use App\Domains\Automation\Repositories\AutomationRepository;
 use App\Domains\Automation\Repositories\AutomationScheduledActionRepository;
-use App\Domains\Billing\Services\BillingService;
+use App\Domains\Billing\Contracts\FeatureEntitlementChecker;
 use App\Domains\Security\Support\AuditRecorder;
 use App\Domains\Tickets\Models\Ticket;
 use App\Domains\Tickets\Repositories\TicketRepository;
@@ -19,7 +19,7 @@ class AutomationService
         private AutomationScheduledActionRepository $scheduled,
         private AutomationActionExecutor $executor,
         private TicketRepository $tickets,
-        private BillingService $billing,
+        private FeatureEntitlementChecker $entitlements,
         private AuditRecorder $audit,
     ) {
     }
@@ -31,7 +31,7 @@ class AutomationService
 
     public function create(array $data): AutomationRule
     {
-        $this->billing->assertFeature('automation');
+        $this->entitlements->assertFeature('automation');
         $this->assertValidRule($data);
 
         $rule = $this->rules->create($data);
@@ -83,15 +83,14 @@ class AutomationService
 
     public function runScheduled(int $scheduledId): void
     {
-        $scheduled = $this->scheduled->due()->firstWhere('id', $scheduledId);
+        $scheduled = $this->scheduled->claimDue($scheduledId);
 
-        if (! $scheduled || $scheduled->processed_at) {
+        if (! $scheduled) {
             return;
         }
 
         $ticket = $this->tickets->find($scheduled->ticket_id);
         $this->runActionSequence($ticket, $scheduled->actions ?? [], $scheduled->automation_rule_id, $scheduled->context ?? []);
-        $this->scheduled->markProcessed($scheduled);
     }
 
     public function processDueScheduled(): int

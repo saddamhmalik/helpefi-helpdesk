@@ -30,15 +30,17 @@ All metadata is server-rendered in `app.blade.php` before Inertia hydrates. Do n
 | `/privacy` | `static_privacy` | Yes |
 | `/terms` | `static_terms` | Yes |
 | `/features/{slug}` | `feature_{slug}` | Yes |
+| `/features` | `features_index` | Yes |
 | `/blog` | `blog` | Yes |
 | `/blog/{slug}` | `blog_{slug}` | Yes |
 | `/for/{vertical}` | `vertical_{slug}` | Yes |
 | `/vs/{competitor}` | `compare_{slug}` | Yes |
+| `/migrate/from-{source}` | `migrate_{slug}` | Yes |
 
 ## Structured data
 
 - **Home**: Organization, WebSite, SoftwareApplication, FAQPage
-- **Feature / vertical pages**: Organization, WebSite, WebPage, BreadcrumbList, FAQPage (when FAQs exist)
+- **Feature / vertical / compare / migrate pages**: Organization, WebSite, WebPage, BreadcrumbList, FAQPage (when FAQs exist)
 - **Blog index**: Organization, WebSite, WebPage, BreadcrumbList
 - **Blog posts**: Organization, WebSite, WebPage, BlogPosting, BreadcrumbList
 
@@ -53,7 +55,28 @@ BING_SITE_VERIFICATION=your-token
 MARKETING_TWITTER_SITE=@helpefi
 MARKETING_ORG_NAME=Helpefi
 CENTRAL_OG_IMAGE_URL=https://helpefi.com/og-image.png
+MARKETING_OG_IMAGE_HOME=/og-image.png
+MARKETING_OG_IMAGE_FEATURES=/og-image.png
+MARKETING_OG_IMAGE_PRICING=/og-image.png
+MARKETING_OG_IMAGE_AI=/og/ai-helpdesk.png
+MARKETING_OG_IMAGE_COMPARE_ZENDESK=/og/vs-zendesk.png
+MARKETING_OG_IMAGE_MIGRATE_ZENDESK=/og/migrate-zendesk.png
 ```
+
+Per-page OG images fall back to `CENTRAL_OG_IMAGE_URL` when a page key is not configured in `config/marketing_seo.php` → `og_images`.
+
+## Deploy automation
+
+Production deploy runs:
+
+```bash
+php artisan marketing:sync-content
+php artisan marketing:ping-sitemap || true
+```
+
+`marketing:sync-content` seeds blog posts and trial nurture email templates, then clears marketing cache.
+
+`marketing:ping-sitemap` notifies Google and Bing after sitemap changes. Use `--dry-run` locally to preview ping URLs.
 
 ## Adding content
 
@@ -83,16 +106,24 @@ php artisan db:seed --class=MarketingBlogPostSeeder
 2. Add `central.static_pages.{page}` and SEO strings
 3. Register route in `routes/web.php`
 
+### New migration landing page
+
+1. Add slug to `config/marketing_migrations.php`
+2. Add `central.migrations.{slug}` and `central.seo.migrate_{slug}_title/description` to `central.json`
+3. Route is automatic via `/migrate/from-{source}`
+
 ## SEO checklist
 
+- [ ] Set `APP_NAME=Helpefi` in production `.env`
 - [ ] Set `MARKETING_SITE_URL` to production domain
-- [ ] Upload `public/og-image.png` (1200×630) or set `CENTRAL_OG_IMAGE_URL`
+- [ ] Upload `public/og-image.png` (1200×630) and per-page images under `public/og/`, or set `CENTRAL_OG_IMAGE_URL` / `MARKETING_OG_IMAGE_*`
 - [ ] Configure GA4 and Search Console / Bing verification env vars
-- [ ] Submit `https://helpefi.com/sitemap.xml` in Google Search Console
+- [ ] Deploy triggers `marketing:sync-content` and `marketing:ping-sitemap`; submit `https://helpefi.com/sitemap.xml` in Google Search Console
 - [ ] Verify canonical URLs on staging vs production
 - [ ] Confirm `robots.txt` blocks `/admin`, `/login`, `/api/`
 - [ ] Run Lighthouse on `/`, `/pricing`, `/features/ai` (target SEO 95+, Performance 90+)
-- [ ] Add new blog posts with internal links to feature pages
+- [ ] Add real testimonials via `/admin/testimonials` (disabled by default until published)
+- [ ] Add new blog posts with internal links to feature, compare, vertical, and migrate pages
 
 ## Keyword focus (semantic, not stuffed)
 
@@ -137,12 +168,12 @@ npx lighthouse https://helpefi.com --only-categories=seo,performance,best-practi
 | JSON-LD | Organization, SoftwareApplication, FAQ, Breadcrumbs, BlogPosting |
 | HTTPS / security headers | `MarketingSecurityHeaders` middleware |
 | Analytics | GA4 when `GOOGLE_ANALYTICS_ID` set |
-| Internal linking | Footer feature/company links, related features on landing pages |
+| Internal linking | Footer feature/compare/migrate/company links, related features on landing pages |
 | Blog architecture | `/blog`, `/blog/{slug}` with Article schema |
 
 ## Recommended next steps
 
-1. Publish 2–4 blog posts linking to feature pages
-2. Add FAQ schema to pricing and about pages if content expands
-3. Create per-page OG images for top landing pages
-4. Monitor Search Console for index coverage after launch
+1. Upload unique 1200×630 OG images for home, pricing, AI, top compare, and migrate pages
+2. Add real customer logos and testimonials via platform admin
+3. Monitor Search Console for index coverage after launch
+4. Extend `/migrate/from-*` and `/for/*` programmatic pages as migration demand grows

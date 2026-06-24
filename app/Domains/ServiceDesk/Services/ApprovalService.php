@@ -2,16 +2,17 @@
 
 namespace App\Domains\ServiceDesk\Services;
 
-use App\Domains\Automation\Events\TicketAutomationTrigger;
-use App\Domains\Automation\Models\AutomationRule;
-use App\Domains\Billing\Services\BillingService;
+use App\Domains\Billing\Contracts\FeatureEntitlementChecker;
 use App\Domains\Notifications\Services\NotificationService;
+use App\Domains\ServiceDesk\Events\TicketApprovalApproved;
+use App\Domains\ServiceDesk\Events\TicketApprovalRejected;
 use App\Domains\ServiceCatalog\Models\ServiceCatalogItem;
 use App\Domains\ServiceDesk\Models\ApprovalRequest;
 use App\Domains\ServiceDesk\Models\ApprovalRequestStep;
 use App\Domains\ServiceDesk\Repositories\ApprovalRequestRepository;
 use App\Domains\Tickets\Models\Ticket;
 use App\Domains\Tickets\Repositories\TicketRepository;
+use App\Domains\Tickets\Services\TicketStatusLookup;
 use App\Domains\Security\Support\AuditRecorder;
 use App\Models\User;
 use Illuminate\Auth\Access\AuthorizationException;
@@ -23,16 +24,17 @@ class ApprovalService
     public function __construct(
         private ApprovalRequestRepository $requests,
         private TicketRepository $tickets,
-        private BillingService $billing,
+        private FeatureEntitlementChecker $entitlements,
         private NotificationService $notifications,
         private ApprovalMailer $mailer,
         private AuditRecorder $audit,
+        private TicketStatusLookup $statusLookup,
     ) {
     }
 
     public function startFromCatalog(Ticket $ticket, ServiceCatalogItem $item, ?User $requestedBy = null): ApprovalRequest
     {
-        $this->billing->assertFeature('service_desk');
+        $this->entitlements->assertFeature('service_desk');
 
         $approverIds = collect($item->approver_user_ids ?? [])
             ->filter()
@@ -52,7 +54,7 @@ class ApprovalService
 
     public function evaluateForNewTicket(Ticket $ticket, ?int $requesterUserId = null): ?ApprovalRequest
     {
-        if (! $this->billing->canUseFeature('service_desk')) {
+        if (! $this->entitlements->canUseFeature('service_desk')) {
             return null;
         }
 
@@ -92,7 +94,7 @@ class ApprovalService
 
     public function settingsSnapshot(): array
     {
-        $this->billing->assertFeature('service_desk');
+        $this->entitlements->assertFeature('service_desk');
         $settings = $this->requests->settings();
 
         return [
@@ -107,7 +109,7 @@ class ApprovalService
 
     public function updateSettings(array $data): array
     {
-        $this->billing->assertFeature('service_desk');
+        $this->entitlements->assertFeature('service_desk');
 
         $approverIds = collect($data['change_approver_user_ids'] ?? [])
             ->map(fn ($id) => (int) $id)
@@ -131,7 +133,7 @@ class ApprovalService
 
     public function approve(int $requestId, int $userId, ?string $note = null): ApprovalRequest
     {
-        $this->billing->assertFeature('service_desk');
+        $this->entitlements->assertFeature('service_desk');
 
         return DB::transaction(function () use ($requestId, $userId, $note) {
             $request = $this->requests->find($requestId);
@@ -169,9 +171,7 @@ class ApprovalService
             $request = $this->finalize($request, ApprovalRequest::STATUS_APPROVED, $note);
             $ticket = $this->openApprovedTicket($request->ticket_id);
 
-            TicketAutomationTrigger::dispatch($ticket, AutomationRule::TRIGGER_APPROVAL_APPROVED, [
-                'approval_request_id' => $request->id,
-            ]);
+            TicketApprovalApproved::dispatch($ticket, $request);
 
             $this->notifications->approvalDecided($request, true);
 
@@ -192,7 +192,7 @@ class ApprovalService
 
     public function reject(int $requestId, int $userId, ?string $note = null): ApprovalRequest
     {
-        $this->billing->assertFeature('service_desk');
+        $this->entitlements->assertFeature('service_desk');
 
         return DB::transaction(function () use ($requestId, $userId, $note) {
             $request = $this->requests->find($requestId);
@@ -207,9 +207,7 @@ class ApprovalService
             $request = $this->finalize($request, ApprovalRequest::STATUS_REJECTED, $note);
             $ticket = $this->closeRejectedTicket($request->ticket_id);
 
-            TicketAutomationTrigger::dispatch($ticket, AutomationRule::TRIGGER_APPROVAL_REJECTED, [
-                'approval_request_id' => $request->id,
-            ]);
+            TicketApprovalRejected::dispatch($ticket, $request);
 
             $this->notifications->approvalDecided($request, false);
 
@@ -230,7 +228,7 @@ class ApprovalService
 
     public function snapshotForTicket(int $ticketId): ?array
     {
-        if (! $this->billing->canUseFeature('service_desk')) {
+        if (! $this->entitlements->canUseFeature('service_desk')) {
             return null;
         }
 
@@ -245,14 +243,14 @@ class ApprovalService
 
     public function list(array $filters, int $perPage = 15)
     {
-        $this->billing->assertFeature('service_desk');
+        $this->entitlements->assertFeature('service_desk');
 
         return $this->requests->paginate($filters, $perPage);
     }
 
     public function pendingCountForUser(int $userId): int
     {
-        if (! $this->billing->canUseFeature('service_desk')) {
+        if (! $this->entitlements->canUseFeature('service_desk')) {
             return 0;
         }
 
@@ -261,7 +259,7 @@ class ApprovalService
 
     public function pendingCount(): int
     {
-        if (! $this->billing->canUseFeature('service_desk')) {
+        if (! $this->entitlements->canUseFeature('service_desk')) {
             return 0;
         }
 
@@ -270,7 +268,7 @@ class ApprovalService
 
     public function pendingCounts(int $userId): array
     {
-        if (! $this->billing->canUseFeature('service_desk')) {
+        if (! $this->entitlements->canUseFeature('service_desk')) {
             return ['pending' => 0, 'pending_mine' => 0];
         }
 
@@ -351,7 +349,7 @@ class ApprovalService
 
     private function openApprovedTicket(int $ticketId): Ticket
     {
-        $openStatus = $this->tickets->statuses()->firstWhere('slug', 'open')
+        $openStatus = $this->statusLookup->defaultOpen()
             ?? $this->tickets->statuses()->first();
 
         $ticket = $this->tickets->update($this->tickets->find($ticketId), [
@@ -364,9 +362,7 @@ class ApprovalService
 
     private function closeRejectedTicket(int $ticketId): Ticket
     {
-        $closedStatus = $this->tickets->statuses()->firstWhere('slug', 'closed')
-            ?? $this->tickets->statuses()->firstWhere('is_closed', true)
-            ?? $this->tickets->statuses()->first();
+        $closedStatus = $this->statusLookup->defaultClosed();
 
         $ticket = $this->tickets->update($this->tickets->find($ticketId), [
             'ticket_status_id' => $closedStatus->id,

@@ -136,12 +136,10 @@ class TicketExportTest extends TestCase
         $ticket = $this->seedTicket($user);
 
         $this->actingAs($user)
-            ->get("/tickets/{$ticket->id}")
+            ->getJson("/tickets/{$ticket->id}/panels")
             ->assertOk()
-            ->assertInertia(fn ($page) => $page
-                ->component('Tickets/Show')
-                ->has('lifecycle', 3)
-                ->where('lifecycle.0.description', 'Ticket created'));
+            ->assertJsonPath('lifecycle.0.description', 'Ticket created')
+            ->assertJsonCount(3, 'lifecycle');
     }
 
     public function test_audit_repository_excludes_events_for_ticket(): void

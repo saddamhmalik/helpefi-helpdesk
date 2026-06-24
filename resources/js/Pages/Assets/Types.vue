@@ -6,6 +6,7 @@ import AssetsNav from '../../Components/AssetsNav.vue';
 import AppConfirmDialog from '../../Components/AppConfirmDialog.vue';
 import AppModal from '../../Components/AppModal.vue';
 import DataTable from '../../Components/DataTable.vue';
+import DataTableMobileCard from '../../Components/ui/DataTableMobileCard.vue';
 import PageHeader from '../../Components/PageHeader.vue';
 import AppRowActions from '../../Components/AppRowActions.vue';
 import AppEditAction from '../../Components/AppEditAction.vue';
@@ -124,6 +125,21 @@ const destroy = (type) => {
                     <td colspan="4" class="px-4 py-12 text-center text-sm text-slate-500 dark:text-slate-400">No asset types yet.</td>
                 </tr>
             </tbody>
+            <template #mobile>
+                <DataTableMobileCard v-for="type in types" :key="`mobile-${type.id}`" tag="div">
+                    <div class="flex items-start justify-between gap-3">
+                        <div>
+                            <p class="text-sm font-medium agent-text">{{ type.name }}</p>
+                            <p class="mt-1 text-xs agent-text-subtle">{{ type.slug }}</p>
+                            <p class="mt-2 text-xs agent-text-muted">{{ type.assets_count }} assets</p>
+                        </div>
+                        <AppRowActions>
+                            <AppEditAction :label="$t('assets.edit')" @click="openEdit(type)" />
+                        </AppRowActions>
+                    </div>
+                </DataTableMobileCard>
+                <div v-if="!types?.length" class="p-6 text-center text-sm agent-text-muted">No asset types yet.</div>
+            </template>
         </DataTable>
 
         <AppModal :show="showForm" @close="showForm = false">

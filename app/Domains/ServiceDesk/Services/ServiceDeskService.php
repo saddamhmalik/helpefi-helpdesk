@@ -2,7 +2,7 @@
 
 namespace App\Domains\ServiceDesk\Services;
 
-use App\Domains\Billing\Services\BillingService;
+use App\Domains\Billing\Contracts\FeatureEntitlementChecker;
 use App\Domains\ServiceDesk\Repositories\ServiceDeskRepository;
 use App\Domains\ServiceDesk\Support\TicketTypes;
 
@@ -10,18 +10,18 @@ class ServiceDeskService
 {
     public function __construct(
         private ServiceDeskRepository $repository,
-        private BillingService $billing,
+        private FeatureEntitlementChecker $entitlements,
     ) {
     }
 
     public function isAvailable(): bool
     {
-        return $this->billing->canUseFeature('service_desk');
+        return $this->entitlements->canUseFeature('service_desk');
     }
 
     public function assertAvailable(): void
     {
-        $this->billing->assertFeature('service_desk');
+        $this->entitlements->assertFeature('service_desk');
     }
 
     public function overview(): array
@@ -68,7 +68,7 @@ class ServiceDeskService
 
     public function upgradeContext(): array
     {
-        $snapshot = $this->billing->snapshot();
+        $snapshot = $this->entitlements->snapshot();
         $addon = collect($snapshot['available_addons'] ?? [])->firstWhere('key', 'service_desk');
 
         $canPurchase = ($snapshot['on_trial'] ?? false)

@@ -11,7 +11,9 @@ import TicketExportMenu from '../../Components/TicketExportMenu.vue';
 import TicketCollisionBanner from '../../Components/TicketCollisionBanner.vue';
 import { useTicketPresence } from '../../composables/useTicketPresence.js';
 import { useTicketRealtimeMessages } from '../../composables/useTicketRealtimeMessages.js';
+import { useTicketRealtimeSnapshot } from '../../composables/useTicketRealtimeSnapshot.js';
 import { useTicketPolling } from '../../composables/useTicketPolling.js';
+import { useTicketLazyPanels } from '../../composables/useTicketLazyPanels.js';
 import { useI18n } from 'vue-i18n';
 
 const props = defineProps({
@@ -25,12 +27,7 @@ const props = defineProps({
     mergeCandidates: Array,
     assetOptions: Array,
     currentUserId: Number,
-    csat: Object,
-    lifecycle: Array,
     customFieldDefinitions: { type: Array, default: () => [] },
-    sideConversations: { type: Array, default: () => [] },
-    timeTracking: { type: Object, default: () => ({ total_minutes: 0, entries: [] }) },
-    externalIssues: { type: Array, default: () => [] },
     issueProviders: { type: Array, default: () => [] },
     approval: { type: Object, default: null },
     canDecideApproval: { type: Boolean, default: false },
@@ -72,14 +69,28 @@ const replyForm = useForm({
 });
 
 const ticketId = computed(() => props.ticket.id);
+const { panels: lazyPanels } = useTicketLazyPanels(ticketId);
+const ticketOverrides = ref({});
+const ticket = computed(() => ({ ...props.ticket, ...ticketOverrides.value }));
 const messages = ref([...(props.ticket.messages ?? [])]);
 const composing = computed(() => !isReplyEmpty(replyForm.body) && !replyForm.processing);
 const { viewers } = useTicketPresence(ticketId, composing);
 
 useTicketRealtimeMessages(ticketId, messages);
 
+useTicketRealtimeSnapshot(ticketId, (snapshot) => {
+    ticketOverrides.value = { ...ticketOverrides.value, ...snapshot };
+});
+
 const { resetPollCursor } = useTicketPolling(ticketId, messages, {
     viewersRef: viewers,
+    onTicketUpdate: (snapshot) => {
+        ticketOverrides.value = { ...ticketOverrides.value, ...snapshot };
+    },
+});
+
+watch(() => props.ticket.id, () => {
+    ticketOverrides.value = {};
 });
 
 watch(() => props.ticket.messages, (next) => {
@@ -92,7 +103,7 @@ const reply = () => {
         return;
     }
 
-    replyForm.post(`/tickets/${props.ticket.id}/reply`, {
+    replyForm.post(`/tickets/${ticket.value.id}/reply`, {
         forceFormData: replyForm.attachments.length > 0,
         onSuccess: () => {
             replyForm.reset('body', 'attachments');
@@ -110,7 +121,7 @@ const onReplyKeydown = (event) => {
 };
 
 const sidebarProps = computed(() => ({
-    ticket: props.ticket,
+    ticket: ticket.value,
     sla: props.sla,
     statuses: props.statuses,
     priorities: props.priorities,
@@ -119,13 +130,13 @@ const sidebarProps = computed(() => ({
     teams: props.teams,
     mergeCandidates: props.mergeCandidates,
     assetOptions: props.assetOptions,
-    csat: props.csat,
+    csat: lazyPanels.value.csat,
     currentUserId: props.currentUserId,
     customFieldDefinitions: props.customFieldDefinitions,
-    lifecycle: props.lifecycle ?? [],
-    sideConversations: props.sideConversations,
-    timeTracking: props.timeTracking,
-    externalIssues: props.externalIssues,
+    lifecycle: lazyPanels.value.lifecycle ?? [],
+    sideConversations: lazyPanels.value.sideConversations,
+    timeTracking: lazyPanels.value.timeTracking,
+    externalIssues: lazyPanels.value.externalIssues,
     issueProviders: props.issueProviders,
     approval: props.approval,
     canDecideApproval: props.canDecideApproval,

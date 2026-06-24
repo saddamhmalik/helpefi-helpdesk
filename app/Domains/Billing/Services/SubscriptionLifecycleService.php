@@ -83,6 +83,7 @@ class SubscriptionLifecycleService
                 'renews_at' => $periodEnd,
                 'razorpay_subscription_id' => $razorpaySubscription->id,
                 'razorpay_plan_id' => $planId,
+                'access_ends_at' => $this->graceEndsAt(now()),
             ]);
         }
 

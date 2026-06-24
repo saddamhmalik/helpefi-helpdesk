@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Domains\Channels\Models\Channel;
+use App\Domains\Channels\Support\InboundEmailToken;
 use Illuminate\Database\Seeder;
 
 class ChannelSeeder extends Seeder
@@ -31,7 +32,7 @@ class ChannelSeeder extends Seeder
                 'is_active' => true,
                 'settings' => [
                     'address' => 'support@helpdesk.test',
-                    'inbound_token' => config('helpdesk.inbound_email_token') ?: 'dev-inbound-token',
+                    'inbound_token' => InboundEmailToken::resolve(),
                 ],
             ],
             [

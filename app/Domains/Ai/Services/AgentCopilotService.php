@@ -7,8 +7,7 @@ use App\Domains\Ai\Repositories\AiCopilotRepository;
 use App\Domains\Ai\Repositories\AiSettingRepository;
 use App\Domains\Ai\Repositories\KnowledgeAiRepository;
 use App\Domains\Ai\Repositories\TicketAiRepository;
-use App\Domains\Billing\Services\BillingService;
-use App\Domains\Brands\Services\BrandService;
+use App\Domains\Billing\Contracts\FeatureEntitlementChecker;
 use App\Domains\Tickets\Models\Ticket;
 use App\Models\User;
 use Illuminate\Auth\Access\AuthorizationException;
@@ -23,8 +22,7 @@ class AgentCopilotService
         private TicketAiRepository $tickets,
         private KnowledgeAiRepository $knowledge,
         private AiCompletionClient $client,
-        private BillingService $billing,
-        private BrandService $brands,
+        private FeatureEntitlementChecker $entitlements,
     ) {
     }
 
@@ -221,15 +219,14 @@ class AgentCopilotService
 
     private function mapArticles(Collection $articles): array
     {
-        return $articles->map(fn ($article) => [
-            'id' => $article->id,
-            'title' => $article->title,
-            'slug' => $article->slug,
-            'url' => route('portal.article', [
-                'brand' => $this->brands->defaultSlug(),
-                'articleSlug' => $article->slug,
-            ]),
-        ])->values()->all();
+        return $articles
+            ->filter(fn ($article) => $article->is_published)
+            ->map(fn ($article) => [
+                'id' => $article->id,
+                'title' => $article->title,
+                'slug' => $article->slug,
+                'url' => '/knowledge/'.$article->id,
+            ])->values()->all();
     }
 
     private function localReply(Ticket $ticket, string $message, Collection $articles): string
@@ -265,7 +262,7 @@ class AgentCopilotService
 
     private function assertEnabled(): void
     {
-        $this->billing->assertFeature('ai');
+        $this->entitlements->assertFeature('ai');
 
         if (! $this->settings->current()->enabled) {
             throw new AuthorizationException('AI assistance is disabled.');

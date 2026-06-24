@@ -122,6 +122,35 @@ class AiTest extends TestCase
             ->assertJsonFragment(['title' => 'Billing and invoices FAQ']);
     }
 
+    public function test_kb_assist_ignores_unpublished_articles(): void
+    {
+        $ticket = $this->seedTicketWithMessage();
+        AiSetting::query()->create(['enabled' => true]);
+
+        KnowledgeArticle::query()->create([
+            'title' => 'Secret billing draft',
+            'slug' => 'secret-billing-draft',
+            'excerpt' => 'How billing works',
+            'body' => 'Details about invoices and duplicate charges.',
+            'is_published' => false,
+        ]);
+
+        KnowledgeArticle::query()->create([
+            'title' => 'Billing and invoices FAQ',
+            'slug' => 'billing-invoices-faq-published',
+            'excerpt' => 'How billing works',
+            'body' => 'Details about invoices and duplicate charges.',
+            'is_published' => true,
+            'published_at' => now(),
+        ]);
+
+        $response = $this->getJson("/workspace/tickets/{$ticket->id}/ai/kb-assist");
+
+        $response->assertOk()
+            ->assertJsonMissing(['title' => 'Secret billing draft'])
+            ->assertJsonFragment(['title' => 'Billing and invoices FAQ']);
+    }
+
     public function test_openai_mode_used_when_api_key_configured(): void
     {
         config([

@@ -5,7 +5,6 @@ namespace App\Domains\Tickets\Services;
 use App\Domains\Security\Support\AuditRecorder;
 use App\Domains\Tickets\Models\TicketStatus;
 use App\Domains\Tickets\Repositories\TicketStatusRepository;
-use App\Domains\Tickets\Support\TicketFormReferenceCache;
 use Illuminate\Database\Eloquent\Collection;
 use InvalidArgumentException;
 
@@ -39,7 +38,6 @@ class TicketStatusService
 
         $this->audit->record('ticket_status.created', $status, ['name' => $status->name]);
 
-        TicketFormReferenceCache::forget();
 
         return $status;
     }
@@ -61,7 +59,6 @@ class TicketStatusService
 
         $this->audit->record('ticket_status.updated', $status, ['name' => $status->name]);
 
-        TicketFormReferenceCache::forget();
 
         return $status;
     }
@@ -82,6 +79,5 @@ class TicketStatusService
 
         $this->audit->record('ticket_status.deleted', $status, ['name' => $status->name]);
 
-        TicketFormReferenceCache::forget();
     }
 }

@@ -5,6 +5,8 @@ import AgentLayout from '../../Layouts/AgentLayout.vue';
 import AppIconAction from '../../Components/AppIconAction.vue';
 import AppRowActions from '../../Components/AppRowActions.vue';
 import DataTable from '../../Components/DataTable.vue';
+import DataTableMobileCard from '../../Components/ui/DataTableMobileCard.vue';
+import AppBadge from '../../Components/ui/AppBadge.vue';
 import ServiceDeskNav from '../../Components/ServiceDeskNav.vue';
 import PageHeader from '../../Components/PageHeader.vue';
 import { useI18n } from 'vue-i18n';
@@ -121,6 +123,20 @@ const formatRange = (entry) => {
                     <td colspan="6" class="px-4 py-12 text-center text-sm text-slate-500 dark:text-slate-400">{{ $t('service_desk.no_scheduled_changes') }}</td>
                 </tr>
             </tbody>
+            <template #mobile>
+                <DataTableMobileCard v-for="entry in entries" :key="`mobile-${entry.id}`" tag="div">
+                    <Link :href="`/tickets/${entry.ticket_id}`" class="block">
+                        <p class="font-medium text-blue-600 dark:text-blue-300">{{ entry.number }}</p>
+                        <p class="mt-1 text-sm agent-text">{{ entry.subject }}</p>
+                        <div class="mt-2 flex flex-wrap items-center gap-2">
+                            <AppBadge class="capitalize" :variant="entry.risk === 'high' ? 'error' : entry.risk === 'medium' ? 'warning' : 'default'">{{ entry.risk }}</AppBadge>
+                            <span class="text-xs agent-text-muted">{{ entry.status || '—' }}</span>
+                        </div>
+                        <p class="mt-2 text-xs agent-text-subtle">{{ formatRange(entry) }}</p>
+                    </Link>
+                </DataTableMobileCard>
+                <div v-if="!entries?.length" class="p-6 text-center text-sm agent-text-muted">{{ $t('service_desk.no_scheduled_changes') }}</div>
+            </template>
         </DataTable>
     </AgentLayout>
 </template>

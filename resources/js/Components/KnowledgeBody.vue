@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from 'vue';
+import DOMPurify from 'dompurify';
 import { marked } from 'marked';
 
 marked.setOptions({
@@ -66,11 +67,12 @@ const html = computed(() => {
         return '';
     }
 
-    if (isHtml.value) {
-        return props.content;
-    }
+    const raw = isHtml.value ? props.content : marked.parse(formatContent(props.content));
 
-    return marked.parse(formatContent(props.content));
+    return DOMPurify.sanitize(raw, {
+        ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'b', 'i', 'u', 'a', 'ul', 'ol', 'li', 'img', 'blockquote', 'span', 'div', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'table', 'thead', 'tbody', 'tr', 'th', 'td', 'code', 'pre'],
+        ALLOWED_ATTR: ['href', 'src', 'alt', 'class', 'target', 'rel', 'colspan', 'rowspan'],
+    });
 });
 
 const proseClass = 'kb-prose prose prose-slate dark:prose-invert max-w-none prose-headings:font-semibold prose-headings:tracking-tight prose-h2:mt-8 prose-h2:mb-4 prose-h2:border-b prose-h2:border-slate-100 prose-h2:pb-2 prose-h2:text-xl dark:prose-h2:border-slate-800 prose-p:leading-7 prose-li:my-1 prose-ul:my-4 prose-ol:my-4 prose-a:text-blue-600 dark:prose-a:text-blue-400 prose-a:no-underline hover:prose-a:underline prose-code:rounded-md prose-code:bg-slate-100 prose-code:px-1.5 prose-code:py-0.5 prose-code:text-sm prose-code:font-medium prose-code:text-slate-800 prose-code:before:content-none prose-code:after:content-none dark:prose-code:bg-slate-800 dark:prose-code:text-slate-200 prose-strong:text-slate-900 dark:prose-strong:text-slate-100 prose-table:my-6 prose-th:bg-slate-50 prose-th:px-4 prose-th:py-2 prose-td:px-4 prose-td:py-2 dark:prose-th:bg-slate-800';

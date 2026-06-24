@@ -121,6 +121,12 @@ class TenantDummyDataService
             ]);
         }
 
+        if ($setting->setup_completed_at !== null) {
+            throw ValidationException::withMessages([
+                'dummy_data' => 'Sample data can only be loaded during initial workspace setup.',
+            ]);
+        }
+
         $manifest = DB::transaction(fn () => $this->seed($admin));
 
         $this->settings->update($setting, [

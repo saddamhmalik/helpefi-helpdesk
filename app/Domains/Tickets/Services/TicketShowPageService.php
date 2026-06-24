@@ -37,16 +37,24 @@ class TicketShowPageService
                 'ticket' => $ticket,
                 'sla' => $this->slaService->snapshotForTicket($ticket),
                 'currentUserId' => $userId,
-                'csat' => $this->csatService->promptForTicket($ticket),
-                'lifecycle' => $this->lifecycleService->timeline($ticket->id),
-                'sideConversations' => $this->sideConversationService->listForTicket($ticket->id),
-                'timeTracking' => $this->timeTracking->snapshotForTicket($ticket->id),
-                'externalIssues' => $this->externalIssues->listForTicket($ticket->id),
                 'mergeCandidates' => [],
             ],
             $this->referenceData->payload(),
             $this->itsmContext->forTicket($ticket, $userId),
         );
+    }
+
+    public function lazyPanels(int $ticketId): array
+    {
+        $ticket = $this->ticketService->show($ticketId);
+
+        return [
+            'csat' => $this->csatService->promptForTicket($ticket),
+            'lifecycle' => $this->lifecycleService->timeline($ticketId),
+            'sideConversations' => $this->sideConversationService->listForTicket($ticketId),
+            'timeTracking' => $this->timeTracking->snapshotForTicket($ticketId),
+            'externalIssues' => $this->externalIssues->listForTicket($ticketId),
+        ];
     }
 
     public function mergeCandidates(int $userId, int $ticketId): array
@@ -63,12 +71,7 @@ class TicketShowPageService
         return array_merge(
             [
                 'sla' => $this->slaService->snapshotForTicket($ticket),
-                'lifecycle' => $this->lifecycleService->timeline($ticket->id),
                 'mergeCandidates' => [],
-                'csat' => $this->csatService->promptForTicket($ticket),
-                'sideConversations' => $this->sideConversationService->listForTicket($ticket->id),
-                'timeTracking' => $this->timeTracking->snapshotForTicket($ticket->id),
-                'externalIssues' => $this->externalIssues->listForTicket($ticket->id),
             ],
             $this->itsmContext->forTicket($ticket, $userId),
         );

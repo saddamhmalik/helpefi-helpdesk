@@ -6,6 +6,7 @@ use App\Domains\Integrations\Models\IntegrationConnection;
 use App\Domains\Integrations\Models\Webhook;
 use App\Domains\Integrations\Repositories\IntegrationConnectionRepository;
 use App\Domains\Tickets\Models\Ticket;
+use App\Support\IntegrationWebhookUrlValidator;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 use Throwable;
@@ -28,6 +29,12 @@ class SlackIntegrationService
         $webhookUrl = $config['webhook_url'] ?? null;
 
         if (! $webhookUrl) {
+            return false;
+        }
+
+        try {
+            IntegrationWebhookUrlValidator::assertSlackWebhookUrl($webhookUrl);
+        } catch (\InvalidArgumentException) {
             return false;
         }
 

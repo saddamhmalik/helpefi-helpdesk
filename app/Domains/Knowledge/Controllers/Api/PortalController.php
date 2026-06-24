@@ -64,6 +64,6 @@ class PortalController extends Controller
             return response()->json(['message' => 'Ticket not found.'], 404);
         }
 
-        return response()->json($ticket);
+        return response()->json($this->portalService->publicTrackedTicket($ticket));
     }
 }

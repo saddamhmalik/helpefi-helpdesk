@@ -2,7 +2,7 @@
 
 namespace App\Domains\Sla\Services;
 
-use App\Domains\Billing\Services\BillingService;
+use App\Domains\Billing\Contracts\FeatureEntitlementChecker;
 use App\Domains\Notifications\Services\NotificationService;
 use App\Domains\Sla\Models\SlaEscalationRule;
 use App\Domains\Sla\Models\TicketSlaTimer;
@@ -14,7 +14,7 @@ class SlaEscalationService
 {
     public function __construct(
         private SlaEscalationRepository $escalations,
-        private BillingService $billing,
+        private FeatureEntitlementChecker $entitlements,
         private TicketActionService $actions,
         private NotificationService $notifications,
     ) {
@@ -86,7 +86,7 @@ class SlaEscalationService
 
     public function saveRule(array $data): SlaEscalationRule
     {
-        $this->billing->assertFeature('sla');
+        $this->entitlements->assertFeature('sla');
 
         return $this->escalations->upsertRule([
             'sla_policy_id' => $data['sla_policy_id'],
@@ -100,29 +100,40 @@ class SlaEscalationService
 
     public function deleteRule(int $id): void
     {
-        $this->billing->assertFeature('sla');
+        $this->entitlements->assertFeature('sla');
 
         $this->escalations->deleteRule($this->escalations->findRule($id));
     }
 
     public function processEscalations(): int
     {
+        $timers = $this->escalations->timersEligibleForEscalation();
+        $loggedRuleKeys = $this->escalations->loggedRuleKeysForTimers(
+            $timers->pluck('id')->map(fn ($id) => (int) $id)->all(),
+        );
+        $rulesByPolicy = $this->escalations->activeRulesGroupedByPolicy(
+            $timers->pluck('sla_policy_id')->unique()->all(),
+        );
         $processed = 0;
 
-        foreach ($this->escalations->timersEligibleForEscalation() as $timer) {
-            $processed += $this->processTimer($timer);
+        foreach ($timers as $timer) {
+            $processed += $this->processTimer(
+                $timer,
+                $loggedRuleKeys[$timer->id] ?? [],
+                $rulesByPolicy->get($timer->sla_policy_id, collect()),
+            );
         }
 
         return $processed;
     }
 
-    public function processTimer(TicketSlaTimer $timer): int
+    public function processTimer(TicketSlaTimer $timer, ?array $loggedRuleKeys = null, ?Collection $rules = null): int
     {
         $processed = 0;
-        $rules = $this->escalations->rulesForPolicy($timer->sla_policy_id);
+        $rules = $rules ?? $this->escalations->rulesForPolicy($timer->sla_policy_id);
 
         foreach ($rules as $rule) {
-            if ($this->shouldTrigger($timer, $rule) && $this->trigger($timer, $rule)) {
+            if ($this->shouldTrigger($timer, $rule, $loggedRuleKeys) && $this->trigger($timer, $rule)) {
                 $processed++;
             }
         }
@@ -130,9 +141,15 @@ class SlaEscalationService
         return $processed;
     }
 
-    private function shouldTrigger(TicketSlaTimer $timer, SlaEscalationRule $rule): bool
+    private function shouldTrigger(TicketSlaTimer $timer, SlaEscalationRule $rule, ?array $loggedRuleKeys = null): bool
     {
-        if ($this->escalations->logExists($timer->id, $rule->level, $rule->breach_type)) {
+        $ruleKey = SlaEscalationRepository::ruleKey($rule->level, $rule->breach_type);
+
+        if ($loggedRuleKeys !== null) {
+            if (isset($loggedRuleKeys[$ruleKey])) {
+                return false;
+            }
+        } elseif ($this->escalations->logExists($timer->id, $rule->level, $rule->breach_type)) {
             return false;
         }
 

@@ -3,7 +3,9 @@ import { Head, Link, usePage } from '@inertiajs/vue3';
 import AgentLayout from '../../Layouts/AgentLayout.vue';
 import PageHeader from '../../Components/PageHeader.vue';
 import DataTable from '../../Components/DataTable.vue';
+import DataTableMobileCard from '../../Components/ui/DataTableMobileCard.vue';
 import PaginationLinks from '../../Components/PaginationLinks.vue';
+import AppBadge from '../../Components/ui/AppBadge.vue';
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useDateTime } from '../../composables/useDateTime.js';
@@ -53,12 +55,9 @@ const portalUrl = computed(() => usePage().props.helpCenter?.homeUrl ?? '/portal
                     <td class="px-4 py-3 text-sm agent-text-muted">{{ article.collection?.name || '—' }}</td>
                     <td class="px-4 py-3 text-sm agent-text-muted">{{ article.category?.name || '—' }}</td>
                     <td class="px-4 py-3">
-                        <span
-                            class="inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium"
-                            :class="article.is_published ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 ring-1 ring-inset ring-emerald-600/15' : 'bg-slate-100 dark:bg-slate-900 agent-text-muted'"
-                        >
+                        <AppBadge :variant="article.is_published ? 'success' : 'default'">
                             {{ article.is_published ? $t('knowledge.published') : $t('knowledge.draft') }}
-                        </span>
+                        </AppBadge>
                     </td>
                     <td class="px-4 py-3 text-sm agent-text-subtle">{{ formatDate(article.updated_at) }}</td>
                     <td class="px-4 py-3 text-right text-sm">
@@ -71,6 +70,22 @@ const portalUrl = computed(() => usePage().props.helpCenter?.homeUrl ?? '/portal
                     <td colspan="7" class="px-4 py-12 text-center text-sm agent-text-subtle">No articles yet.</td>
                 </tr>
             </tbody>
+            <template #mobile>
+                <DataTableMobileCard v-for="article in articles.data" :key="`mobile-${article.id}`" tag="div">
+                    <Link :href="`/knowledge/${article.id}`" class="block">
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs font-semibold uppercase agent-text-subtle">{{ article.locale || 'en' }}</span>
+                            <AppBadge :variant="article.is_published ? 'success' : 'default'">
+                                {{ article.is_published ? $t('knowledge.published') : $t('knowledge.draft') }}
+                            </AppBadge>
+                        </div>
+                        <p class="mt-2 text-sm font-medium agent-text">{{ article.title }}</p>
+                        <p v-if="article.excerpt" class="mt-1 line-clamp-2 text-xs agent-text-muted">{{ article.excerpt }}</p>
+                        <p class="mt-2 text-xs agent-text-subtle">{{ article.collection?.name || '—' }} · {{ formatDate(article.updated_at) }}</p>
+                    </Link>
+                </DataTableMobileCard>
+                <div v-if="!articles.data?.length" class="p-6 text-center text-sm agent-text-subtle">No articles yet.</div>
+            </template>
             <template #footer>
                 <PaginationLinks
                     :links="articles.links"

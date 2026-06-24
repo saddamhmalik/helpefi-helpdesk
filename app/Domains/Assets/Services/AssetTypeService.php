@@ -4,7 +4,7 @@ namespace App\Domains\Assets\Services;
 
 use App\Domains\Assets\Models\AssetType;
 use App\Domains\Assets\Repositories\AssetTypeRepository;
-use App\Domains\Billing\Services\BillingService;
+use App\Domains\Billing\Contracts\FeatureEntitlementChecker;
 use App\Domains\Security\Support\AuditRecorder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Str;
@@ -14,7 +14,7 @@ class AssetTypeService
 {
     public function __construct(
         private AssetTypeRepository $types,
-        private BillingService $billing,
+        private FeatureEntitlementChecker $entitlements,
         private AuditRecorder $audit,
     ) {
     }
@@ -26,7 +26,7 @@ class AssetTypeService
 
     public function create(string $name): AssetType
     {
-        $this->billing->assertFeature('assets');
+        $this->entitlements->assertFeature('assets');
 
         $name = trim($name);
 

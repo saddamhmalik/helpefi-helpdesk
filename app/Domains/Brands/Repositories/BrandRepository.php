@@ -10,7 +10,11 @@ class BrandRepository
 {
     public function all(): Collection
     {
-        return Brand::query()->orderByDesc('is_default')->orderBy('name')->get();
+        return Brand::query()
+            ->withCount(['collections', 'inboxes'])
+            ->orderByDesc('is_default')
+            ->orderBy('name')
+            ->get();
     }
 
     public function active(): Collection

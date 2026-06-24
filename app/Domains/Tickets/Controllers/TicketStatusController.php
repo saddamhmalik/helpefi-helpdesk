@@ -2,10 +2,11 @@
 
 namespace App\Domains\Tickets\Controllers;
 
+use App\Domains\Tickets\Requests\StoreTicketStatusRequest;
+use App\Domains\Tickets\Requests\UpdateTicketStatusRequest;
 use App\Domains\Tickets\Services\TicketStatusService;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -24,16 +25,10 @@ class TicketStatusController extends Controller
         ]);
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(StoreTicketStatusRequest $request): RedirectResponse
     {
-        $data = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'color' => ['nullable', 'string', 'max:50'],
-            'is_closed' => ['boolean'],
-        ]);
-
         try {
-            $this->statuses->create($data);
+            $this->statuses->create($request->validated());
         } catch (InvalidArgumentException $exception) {
             throw ValidationException::withMessages(['name' => $exception->getMessage()]);
         }
@@ -41,17 +36,10 @@ class TicketStatusController extends Controller
         return back()->with('success', 'Status created.');
     }
 
-    public function update(Request $request, int $status): RedirectResponse
+    public function update(UpdateTicketStatusRequest $request, int $status): RedirectResponse
     {
-        $data = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'color' => ['nullable', 'string', 'max:50'],
-            'sort_order' => ['nullable', 'integer', 'min:0'],
-            'is_closed' => ['boolean'],
-        ]);
-
         try {
-            $this->statuses->update($status, $data);
+            $this->statuses->update($status, $request->validated());
         } catch (InvalidArgumentException $exception) {
             throw ValidationException::withMessages(['name' => $exception->getMessage()]);
         }

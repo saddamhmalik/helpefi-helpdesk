@@ -10,6 +10,7 @@ use App\Domains\Contacts\Services\ContactService;
 use App\Domains\Settings\Services\HelpdeskSettingService;
 use App\Domains\Tickets\Models\Ticket;
 use App\Domains\Tickets\Services\TicketService;
+use App\Domains\Tickets\Services\TicketStatusLookup;
 use App\Models\User;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -26,6 +27,7 @@ class PortalService
         private BrandContext $brandContext,
         private BrandService $brandService,
         private HelpdeskSettingService $helpdeskSettings,
+        private TicketStatusLookup $statusLookup,
     ) {
     }
 
@@ -68,7 +70,7 @@ class PortalService
 
         return [
             'article' => $article,
-            'translations' => $this->knowledgeService->translations($article->id),
+            'translations' => $this->knowledgeService->portalTranslations($article->id, $brandId),
             'locale' => $locale,
             'locales' => $this->knowledgeSettings->localeOptions(),
         ];
@@ -98,7 +100,7 @@ class PortalService
             $contact = $this->contactService->findOrCreateByEmail($data['email'], $data['name']);
         }
 
-        $openStatus = $this->ticketService->statuses()->firstWhere('slug', 'open')
+        $openStatus = $this->statusLookup->defaultOpen()
             ?? $this->ticketService->statuses()->first();
 
         $priorityId = $brand->default_ticket_priority_id
@@ -131,6 +133,21 @@ class PortalService
     public function trackTicket(string $number, string $email): ?Ticket
     {
         return $this->findTicketForContactEmail($number, $email);
+    }
+
+    public function publicTrackedTicket(Ticket $ticket): array
+    {
+        return [
+            'number' => $ticket->number,
+            'subject' => $ticket->subject,
+            'status' => $ticket->status,
+            'priority' => $ticket->priority,
+            'sla_timer' => $ticket->slaTimer,
+            'csat_response' => $ticket->csatResponse,
+            'messages' => $ticket->messages,
+            'created_at' => $ticket->created_at?->toIso8601String(),
+            'updated_at' => $ticket->updated_at?->toIso8601String(),
+        ];
     }
 
     public function ticketsForUser(User $user, int $perPage = 15): LengthAwarePaginator

@@ -55,7 +55,10 @@ jobs:
             php artisan migrate --force
             php artisan tenants:migrate --force
 
-            php artisan helpdesk:seed-handbook
+            php artisan tenants:upgrade
+
+            php artisan marketing:sync-content
+            php artisan marketing:ping-sitemap || true
 
             # Laravel writable paths for PHP-FPM (www-data).
             sudo chown -R www-data:www-data storage bootstrap/cache

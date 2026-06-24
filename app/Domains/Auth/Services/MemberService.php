@@ -3,7 +3,8 @@
 namespace App\Domains\Auth\Services;
 
 use App\Domains\Auth\Repositories\MemberRepository;
-use App\Domains\Billing\Services\BillingService;
+use App\Domains\Auth\Repositories\RoleRepository;
+use App\Domains\Billing\Contracts\FeatureEntitlementChecker;
 use App\Domains\Security\Support\AuditRecorder;
 use App\Domains\Settings\Services\HelpdeskSettingService;
 use App\Domains\Workforce\Models\Team;
@@ -16,9 +17,10 @@ class MemberService
 {
     public function __construct(
         private MemberRepository $members,
-        private BillingService $billing,
+        private FeatureEntitlementChecker $entitlements,
         private AuditRecorder $audit,
         private HelpdeskSettingService $helpdeskSettings,
+        private RoleRepository $roles,
     ) {
     }
 
@@ -52,8 +54,8 @@ class MemberService
             ]);
         }
 
-        if (in_array($role, ['admin', 'agent'], true)) {
-            $this->billing->assertLimit('agents', 1);
+        if ($this->roles->roleConsumesAgentSeat($role)) {
+            $this->entitlements->assertLimit('agents', 1);
         }
 
         $member = $this->members->createMember(
@@ -99,8 +101,8 @@ class MemberService
             ]);
         }
 
-        if (in_array($role, ['admin', 'agent'], true) && ! $member->hasAnyRole(['admin', 'agent'])) {
-            $this->billing->assertLimit('agents', 1);
+        if ($this->roles->roleConsumesAgentSeat($role) && ! $member->hasAnyRole(['admin', 'agent']) && ! $member->can('access.agent')) {
+            $this->entitlements->assertLimit('agents', 1);
         }
 
         $updated = $this->members->updateRole($member, $role);

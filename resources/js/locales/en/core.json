@@ -1,6 +1,6 @@
 {
     "app": {
-        "name": "helpefi"
+        "name": "Helpefi"
     },
     "common": {
         "save": "Save",
@@ -76,6 +76,7 @@
         "knowledge_base": "Knowledge base",
         "how_to_use": "How to use helpefi",
         "reports": "Reports",
+        "growth_hub": "Growth hub",
         "service_desk": "Service Desk",
         "service_desk_overview": "Overview",
         "service_desk_approvals": "Approvals",
@@ -98,6 +99,7 @@
             "knowledge_base": "Help articles",
             "how_to_use": "Setup and daily workflows",
             "reports": "Analytics and exports",
+            "growth_hub": "Trial progress, setup health, AI usage, and deflection",
             "service_desk": "ITSM queues and workflows",
             "service_desk_overview": "Service Desk dashboard and stats",
             "service_desk_approvals": "Review and decide approval requests",
@@ -299,5 +301,75 @@
     },
     "user_menu": {
         "profile_settings": "Profile settings"
+    },
+    "growth": {
+        "page_title": "Growth hub",
+        "page_description": "Track trial progress, workspace health, AI adoption, and customer deflection.",
+        "trial_hub_link": "Growth hub",
+        "tabs": {
+            "overview": "Overview",
+            "health": "Setup health",
+            "ai": "AI usage",
+            "deflection": "Deflection"
+        },
+        "trial_status": "Trial",
+        "trial_days_left": "{days} days left on trial",
+        "trial_plan": "Current experience: {plan}",
+        "trial_ends": "Ends {date}",
+        "upgrade_cta": "View plans & upgrade",
+        "milestones": {
+            "channel": "Email connected",
+            "first_ticket": "First ticket",
+            "first_reply": "First agent reply",
+            "team": "Team invited",
+            "kb": "KB article published"
+        },
+        "stats": {
+            "setup": "Setup progress",
+            "setup_hint": "Required onboarding steps",
+            "tickets_30d": "Tickets (30d)",
+            "replies_30d": "Agent replies (30d)",
+            "team": "Team members"
+        },
+        "usage_limits": "Plan usage",
+        "view_billing": "Billing settings",
+        "limit_agents": "Team members",
+        "limit_tickets": "Tickets this month",
+        "health_status": {
+            "healthy": "Healthy",
+            "warning": "Needs attention",
+            "error": "Action required"
+        },
+        "health_summary": "{issues} errors · {warnings} warnings",
+        "fix_issue": "Fix",
+        "setup_steps": "Setup checklist",
+        "optional": "optional",
+        "review": "Review",
+        "complete": "Complete",
+        "open_setup_wizard": "Open setup wizard",
+        "date_from": "From",
+        "date_to": "To",
+        "apply_filter": "Apply",
+        "onboarding_tip_title": "Quick tip",
+        "onboarding_dismiss": "Got it",
+        "ai": {
+            "user_messages": "Copilot prompts",
+            "assistant_messages": "Copilot replies",
+            "agents": "Agents using AI",
+            "tickets": "Tickets with copilot",
+            "trend": "Daily copilot usage (30d)",
+            "top_agents": "Top copilot users"
+        },
+        "deflection": {
+            "ai_title": "AI bot (portal & chat)",
+            "kb_title": "KB suggestions (portal submit)",
+            "queries": "Queries",
+            "helpful": "Marked helpful",
+            "tickets": "Tickets created",
+            "rate": "Deflection rate",
+            "suggestions": "Suggestions shown",
+            "deflected": "Deflected",
+            "continued": "Continued to ticket"
+        }
     }
 }
