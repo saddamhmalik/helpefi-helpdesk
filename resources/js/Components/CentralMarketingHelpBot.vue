@@ -1,7 +1,7 @@
 <script setup>
-import { Link } from '@inertiajs/vue3';
+import { Link, usePage } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
-import { useI18n } from 'vue-i18n';
+import { formatMarketingTemplate } from '../composables/useMarketingEnglish.js';
 import { csrfHeaders } from '../support/csrf.js';
 
 const props = defineProps({
@@ -9,7 +9,17 @@ const props = defineProps({
     brand: { type: String, default: '' },
 });
 
-const { t, tm } = useI18n();
+const page = usePage();
+const widgets = computed(() => page.props.marketingWidgets ?? {});
+const aiDemo = computed(() => widgets.value.aiDemo ?? {});
+const marketingBot = computed(() => widgets.value.marketingBot ?? {});
+const leads = computed(() => widgets.value.leads ?? {});
+const layout = computed(() => widgets.value.layout ?? {});
+
+const demoText = (key, params = {}) => formatMarketingTemplate(aiDemo.value[key] ?? key, { brand: props.brand, ...params });
+const botText = (key, params = {}) => formatMarketingTemplate(marketingBot.value[key] ?? key, { brand: props.brand, ...params });
+const leadText = (key, params = {}) => formatMarketingTemplate(leads.value[key] ?? key, params);
+const layoutText = (key, params = {}) => formatMarketingTemplate(layout.value[key] ?? key, params);
 
 const open = ref(false);
 const query = ref('');
@@ -24,7 +34,7 @@ const leadError = ref('');
 const leadCaptured = ref(false);
 const leadDismissed = ref(false);
 
-const platformName = computed(() => props.brand || t('app.name'));
+const platformName = computed(() => props.brand || 'helpefi');
 
 const userMessageCount = computed(() => messages.value.filter((message) => message.role === 'user').length);
 
@@ -36,7 +46,7 @@ const showLeadCapture = computed(() => (
 ));
 
 const samplePrompts = computed(() => {
-    const items = tm('central.home.ai_demo.sample_prompts');
+    const items = aiDemo.value.sample_prompts;
 
     return Array.isArray(items) ? items.slice(0, 3) : [];
 });
@@ -73,7 +83,7 @@ const ask = async (text) => {
         const data = await response.json();
 
         if (!response.ok) {
-            error.value = data.message || data.errors?.query?.[0] || t('central.home.ai_demo.error_generic');
+            error.value = data.message || data.errors?.query?.[0] || demoText('error_generic');
             return;
         }
 
@@ -83,7 +93,7 @@ const ask = async (text) => {
             articles: data.articles ?? [],
         });
     } catch {
-        error.value = t('central.home.ai_demo.error_network');
+        error.value = demoText('error_network');
     } finally {
         loading.value = false;
     }
@@ -123,14 +133,14 @@ const submitLead = async () => {
             leadError.value = data.errors?.email?.[0]
                 || data.errors?.marketing_consent?.[0]
                 || data.errors?.rate_limit?.[0]
-                || t('central.marketing_leads.capture_error');
+                || leadText('capture_error');
 
             return;
         }
 
         leadCaptured.value = true;
     } catch {
-        leadError.value = t('central.marketing_leads.capture_error');
+        leadError.value = leadText('capture_error');
     } finally {
         leadLoading.value = false;
     }
@@ -158,13 +168,13 @@ const toggle = () => {
             >
                 <div class="flex items-start justify-between gap-3 border-b border-violet-100 bg-gradient-to-r from-violet-600 to-indigo-600 px-4 py-3 text-white dark:border-violet-900/60">
                     <div class="min-w-0">
-                        <p class="text-sm font-semibold">{{ $t('central.home.marketing_bot.title') }}</p>
-                        <p class="text-[11px] text-violet-100">{{ $t('central.home.marketing_bot.subtitle', { brand: platformName }) }}</p>
+                        <p class="text-sm font-semibold">{{ botText('title') }}</p>
+                        <p class="text-[11px] text-violet-100">{{ botText('subtitle') }}</p>
                     </div>
                     <button
                         type="button"
                         class="shrink-0 rounded-lg p-1 text-violet-100 transition hover:bg-white/15 hover:text-white"
-                        :aria-label="$t('central.home.marketing_bot.close')"
+                        :aria-label="botText('close')"
                         @click="open = false"
                     >
                         <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -178,8 +188,8 @@ const toggle = () => {
                         v-if="!messages.length && !loading"
                         class="rounded-xl border border-dashed border-violet-200 bg-white px-4 py-5 text-center dark:border-violet-900/60 dark:bg-slate-900"
                     >
-                        <p class="text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('central.home.ai_demo.empty_title') }}</p>
-                        <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">{{ $t('central.home.marketing_bot.empty_body') }}</p>
+                        <p class="text-sm font-medium text-slate-700 dark:text-slate-300">{{ demoText('empty_title') }}</p>
+                        <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">{{ botText('empty_body') }}</p>
                         <div class="mt-4 flex flex-wrap justify-center gap-2">
                             <button
                                 v-for="prompt in samplePrompts"
@@ -209,7 +219,7 @@ const toggle = () => {
                                 v-if="message.articles?.length"
                                 class="rounded-xl border border-slate-200 bg-white p-3 dark:border-slate-800 dark:bg-slate-900"
                             >
-                                <p class="text-[10px] font-semibold uppercase tracking-wider text-slate-400">{{ $t('central.home.ai_demo.sources') }}</p>
+                                <p class="text-[10px] font-semibold uppercase tracking-wider text-slate-400">{{ demoText('sources') }}</p>
                                 <ul class="mt-2 space-y-1">
                                     <li
                                         v-for="article in message.articles"
@@ -228,7 +238,7 @@ const toggle = () => {
                             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
                             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                         </svg>
-                        {{ $t('central.home.ai_demo.loading') }}
+                        {{ demoText('loading') }}
                     </div>
 
                     <p v-if="error" class="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700 dark:border-red-900/60 dark:bg-red-950/40 dark:text-red-300">
@@ -240,25 +250,25 @@ const toggle = () => {
                     v-if="showLeadCapture"
                     class="border-t border-violet-100 bg-violet-50/80 p-3 dark:border-violet-900/60 dark:bg-violet-950/30"
                 >
-                    <p class="text-xs font-semibold text-violet-900 dark:text-violet-100">{{ $t('central.marketing_leads.chat_title') }}</p>
-                    <p class="mt-1 text-[11px] text-violet-800 dark:text-violet-200">{{ $t('central.marketing_leads.chat_subtitle') }}</p>
+                    <p class="text-xs font-semibold text-violet-900 dark:text-violet-100">{{ leadText('chat_title') }}</p>
+                    <p class="mt-1 text-[11px] text-violet-800 dark:text-violet-200">{{ leadText('chat_subtitle') }}</p>
                     <form class="mt-3 space-y-2" @submit.prevent="submitLead">
                         <input
                             v-model="leadEmail"
                             type="email"
                             required
-                            :placeholder="$t('central.marketing_leads.email_placeholder')"
+                            :placeholder="leadText('email_placeholder')"
                             class="w-full rounded-lg border border-violet-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-violet-400 focus:outline-none focus:ring-2 focus:ring-violet-400/20 dark:border-violet-900/60 dark:bg-slate-900 dark:text-slate-100"
                         />
                         <input
                             v-model="leadName"
                             type="text"
-                            :placeholder="$t('central.marketing_leads.name_label')"
+                            :placeholder="leadText('name_label')"
                             class="w-full rounded-lg border border-violet-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-violet-400 focus:outline-none focus:ring-2 focus:ring-violet-400/20 dark:border-violet-900/60 dark:bg-slate-900 dark:text-slate-100"
                         />
                         <label class="flex items-start gap-2 text-[11px] text-violet-900 dark:text-violet-200">
                             <input v-model="leadConsent" type="checkbox" required class="mt-0.5 rounded border-violet-300 text-violet-600 focus:ring-violet-500" />
-                            <span>{{ $t('central.marketing_leads.consent_short') }}</span>
+                            <span>{{ leadText('consent_short') }}</span>
                         </label>
                         <p v-if="leadError" class="text-[11px] text-red-600 dark:text-red-400">{{ leadError }}</p>
                         <div class="flex gap-2">
@@ -267,14 +277,14 @@ const toggle = () => {
                                 class="flex-1 rounded-lg bg-violet-600 px-3 py-2 text-xs font-semibold text-white transition hover:bg-violet-700 disabled:opacity-60"
                                 :disabled="leadLoading || !leadConsent"
                             >
-                                {{ leadLoading ? $t('central.marketing_leads.submitting') : $t('central.marketing_leads.chat_submit') }}
+                                {{ leadLoading ? leadText('submitting') : leadText('chat_submit') }}
                             </button>
                             <button
                                 type="button"
                                 class="rounded-lg px-3 py-2 text-xs font-medium text-violet-800 transition hover:bg-violet-100 dark:text-violet-200 dark:hover:bg-violet-900/40"
                                 @click="leadDismissed = true"
                             >
-                                {{ $t('central.marketing_leads.chat_skip') }}
+                                {{ leadText('chat_skip') }}
                             </button>
                         </div>
                     </form>
@@ -284,7 +294,7 @@ const toggle = () => {
                     v-else-if="leadCaptured"
                     class="border-t border-emerald-100 bg-emerald-50 px-4 py-3 text-xs text-emerald-800 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-200"
                 >
-                    {{ $t('central.marketing_leads.chat_success') }}
+                    {{ leadText('chat_success') }}
                 </div>
 
                 <div class="border-t border-violet-100 bg-white p-3 dark:border-slate-800 dark:bg-slate-900">
@@ -294,7 +304,7 @@ const toggle = () => {
                             type="text"
                             maxlength="500"
                             :disabled="loading"
-                            :placeholder="$t('central.home.ai_demo.placeholder')"
+                            :placeholder="demoText('placeholder')"
                             class="min-w-0 flex-1 rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-violet-400 focus:outline-none focus:ring-2 focus:ring-violet-400/20 disabled:opacity-60 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
                         />
                         <button
@@ -302,13 +312,13 @@ const toggle = () => {
                             :disabled="loading || !query.trim()"
                             class="shrink-0 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-md shadow-violet-600/25 transition hover:from-violet-500 hover:to-indigo-500 disabled:cursor-not-allowed disabled:opacity-50"
                         >
-                            {{ $t('central.home.ai_demo.ask') }}
+                            {{ demoText('ask') }}
                         </button>
                     </form>
                     <p class="mt-2 text-center text-[11px] text-slate-500 dark:text-slate-400">
-                        {{ $t('central.home.marketing_bot.trial_hint') }}
+                        {{ botText('trial_hint') }}
                         <Link href="/register" class="font-medium text-violet-600 hover:text-violet-500 dark:text-violet-400">
-                            {{ $t('layouts.central.start_free_trial') }}
+                            {{ layoutText('start_free_trial') }}
                         </Link>
                     </p>
                 </div>
@@ -319,14 +329,14 @@ const toggle = () => {
             type="button"
             class="pointer-events-auto group flex flex-col items-end gap-2"
             :aria-expanded="open"
-            :aria-label="$t('central.home.marketing_bot.launcher_label')"
+            :aria-label="botText('launcher_label')"
             @click="toggle"
         >
             <span
                 class="rounded-full bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-lg ring-1 ring-slate-200 transition group-hover:scale-105 dark:bg-slate-800 dark:text-slate-200 dark:ring-slate-700"
                 :class="open ? 'opacity-0' : 'animate-[bounce_2s_ease-in-out_infinite]'"
             >
-                {{ $t('central.home.marketing_bot.launcher_label') }}
+                {{ botText('launcher_label') }}
             </span>
             <span
                 class="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-violet-600 to-indigo-600 text-white shadow-lg shadow-violet-600/35 transition hover:from-violet-500 hover:to-indigo-500 hover:shadow-violet-600/45"

@@ -1,22 +1,20 @@
 <script setup>
 import { Link } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
-import { useI18n } from 'vue-i18n';
 import CentralLayout from '../../Layouts/CentralLayout.vue';
 import CentralAiDemoWidget from '../../Components/CentralAiDemoWidget.vue';
 import CentralMarketingLeadCapture from '../../Components/CentralMarketingLeadCapture.vue';
 import IntegrationStackIcon from '../../Components/IntegrationStackIcon.vue';
 import { useCurrency } from '../../composables/useCurrency.js';
 import { useBillingInterval } from '../../composables/useBillingInterval.js';
-import { useMarketingCopy } from '../../composables/useMarketingCopy.js';
-
-const { t, tm } = useI18n();
-
-const homeKey = (suffix) => `central.home.${suffix}`;
+import { formatMarketingTemplate, useMarketingEnglish } from '../../composables/useMarketingEnglish.js';
 
 const props = defineProps({
     brand: { type: String, default: 'helpefi' },
     trialDays: { type: Number, default: 14 },
+    homeContent: { type: Object, default: () => ({}) },
+    marketingLabels: { type: Object, default: () => ({}) },
+    marketingChrome: { type: Object, default: () => ({}) },
     plans: { type: Array, default: () => [] },
     addons: { type: Array, default: () => [] },
     currency: { type: Object, default: () => ({ code: 'USD', symbol: '$', name: 'US Dollar' }) },
@@ -34,30 +32,47 @@ const props = defineProps({
     featurePages: { type: Array, default: () => [] },
 });
 
-const { platformName, copyParams, localize } = useMarketingCopy(computed(() => props.trialDays));
+const platformName = computed(() => props.brand || 'helpefi');
+const { label } = useMarketingEnglish(platformName, computed(() => props.marketingLabels));
+const home = computed(() => props.homeContent ?? {});
 
-const centralArray = (suffix) => {
-    const params = copyParams.value;
-    const value = tm(`central.${suffix}`);
+const resolveLabelKey = (key) => {
+    if (!key) {
+        return '';
+    }
 
-    return Array.isArray(value) ? localize(value, params) : [];
+    if (key.startsWith('central.')) {
+        return label(key.slice('central.'.length));
+    }
+
+    if (key.startsWith('settings.groups.')) {
+        return label(key.slice('settings.groups.'.length));
+    }
+
+    if (key.startsWith('settings.')) {
+        return label(key.slice('settings.'.length));
+    }
+
+    if (key.startsWith('nav.')) {
+        return label(key.slice('nav.'.length));
+    }
+
+    return label(key);
 };
 
-const homeArray = (suffix) => {
-    const params = copyParams.value;
-    const value = tm(homeKey(suffix));
+const homePath = (path) => path.split('.').reduce((value, key) => (value && typeof value === 'object' ? value[key] : undefined), home.value);
 
-    return Array.isArray(value) ? localize(value, params) : [];
+const homeArray = (suffix) => {
+    const value = homePath(suffix);
+    return Array.isArray(value) ? value : [];
 };
 
 const homeObject = (suffix) => {
-    const params = copyParams.value;
-    const value = tm(homeKey(suffix));
-
-    return value && typeof value === 'object' && !Array.isArray(value) ? localize(value, params) : {};
+    const value = homePath(suffix);
+    return value && typeof value === 'object' && !Array.isArray(value) ? value : {};
 };
 
-const socialProofLogos = computed(() => centralArray('social_proof_logos'));
+const socialProofLogos = computed(() => props.marketingChrome.social_proof_logos ?? []);
 
 const workspaceDomainExample = computed(() => {
     const domain = props.centralDomain || 'helpefi.com';
@@ -105,11 +120,11 @@ const openFaq = ref(null);
 const featureLabels = computed(() => homeObject('feature_labels'));
 
 const previewTabs = computed(() => [
-    { id: 'ai', label: t(homeKey('preview_tab_ai')) },
-    { id: 'inbox', label: t('central.shared_inbox') },
-    { id: 'chat', label: t('central.live_chat') },
-    { id: 'servicedesk', label: t('nav.service_desk') },
-    { id: 'analytics', label: t('central.analytics') },
+    { id: 'ai', label: (homePath('preview_tab_ai') ?? '') },
+    { id: 'inbox', label: label('shared_inbox') },
+    { id: 'chat', label: label('live_chat') },
+    { id: 'servicedesk', label: label('service_desk') },
+    { id: 'analytics', label: label('analytics') },
 ]);
 
 const aiCapabilityMeta = [
@@ -144,7 +159,7 @@ const aiStats = computed(() => homeArray('ai_stats'));
 
 const aiHighlights = computed(() => homeArray('ai_highlights'));
 
-const aiSectionSubtitle = computed(() => t(homeKey('ai_section.subtitle'), { brand: platformName.value }));
+const aiSectionSubtitle = computed(() => (homePath('ai_section.subtitle') ?? ''));
 
 const featureCategoryDefs = [
     { id: 'operations', labelKey: 'central.ticket_operations', icon: 'M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4' },
@@ -157,7 +172,7 @@ const featureCategoryDefs = [
 
 const featureCategories = computed(() => featureCategoryDefs.map((category) => ({
     ...category,
-    label: t(category.labelKey),
+    label: resolveLabelKey(category.labelKey),
 })));
 
 const categoryMeta = {
@@ -194,30 +209,30 @@ const categoryContent = computed(() => {
         const highlights = highlightsByCategory[id];
 
         return [id, {
-            title: t(meta.titleKey),
-            description: t(meta.descriptionKey),
+            title: resolveLabelKey(meta.titleKey),
+            description: resolveLabelKey(meta.descriptionKey),
             highlights: Array.isArray(highlights) ? highlights : [],
         }];
     }));
 });
 
 const allFeatures = computed(() => [
-    { title: t('central.shared_inbox_tickets'), description: t('central.manage_email_chat_sms_and_portal_requests_in_one_workspace_with_merge_'), icon: 'M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4' },
-    { title: t('central.agent_workspace'), description: t('central.split-pane_queue_conversation_and_details_sidebar_with_real-time_updat'), icon: 'M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z' },
-    { title: t('central.live_chat_sms'), description: t('central.embed_a_chat_widget_on_your_site_and_receive_sms_via_twilio_every_conv'), icon: 'M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z' },
-    { title: t('central.knowledge_base_portal'), description: t('central.publish_help_articles_with_semantic_search_locale_support_and_a_brande'), icon: 'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253' },
-    { title: t('settings.service_catalog'), description: t('central.structured_request_types_on_your_portal_with_per-item_approval_workflo'), icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01' },
-    { title: t('central.service_desk_itsm'), description: t('central.itil_type_queues_change_calendar_problem_linking_catalog_approvals_and'), icon: 'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z' },
-    { title: t('settings.sla_business_hours'), description: t('central.set_response_targets_escalation_rules_team_slas_and_operating_hours_wi'), icon: 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z' },
-    { title: t('central.automation_macros'), description: t('central.multi-step_automation_chains_canned_responses_auto-assignment_webhooks'), icon: 'M13 10V3L4 14h7v7l9-11h-7z' },
-    { title: t('central.ai_assist_deflection'), description: t('central.draft_replies_summarize_threads_surface_kb_articles_for_agents_and_def'), icon: 'M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z' },
-    { title: t('central.csat_reporting'), description: t('central.measure_satisfaction_on_portal_and_email_build_saved_reports_and_sched'), icon: 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z' },
-    { title: t('central.multi-brand_workspaces'), description: t('central.run_multiple_brands_with_separate_portals_inboxes_kb_skins_and_routing'), icon: 'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4' },
-    { title: t('central.integrations_crm'), description: t('central.connect_slack_jira_linear_hubspot_salesforce_shopify_teams_and_custom_'), icon: 'M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z' },
-    { title: t('central.asset_management'), description: t('central.track_hardware_and_software_assets_link_them_to_contacts_and_tickets_a'), icon: 'M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z' },
-    { title: t('central.contacts_organizations'), description: t('central.track_customers_companies_vip_tags_activity_timelines_and_crm_context_'), icon: 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z' },
-    { title: t('central.security_sso'), description: t('central.two-factor_authentication_saml_oidc_single_sign-on_role_permissions_au'), icon: 'M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z' },
-    { title: t('central.workforce_management'), description: t('central.organize_agents_into_teams_and_departments_with_skills_routing_perform'), icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2' },
+    { title: label('shared_inbox_tickets'), description: label('manage_email_chat_sms_and_portal_requests_in_one_workspace_with_merge_'), icon: 'M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4' },
+    { title: label('agent_workspace'), description: label('split-pane_queue_conversation_and_details_sidebar_with_real-time_updat'), icon: 'M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z' },
+    { title: label('live_chat_sms'), description: label('embed_a_chat_widget_on_your_site_and_receive_sms_via_twilio_every_conv'), icon: 'M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z' },
+    { title: label('knowledge_base_portal'), description: label('publish_help_articles_with_semantic_search_locale_support_and_a_brande'), icon: 'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253' },
+    { title: label('service_catalog'), description: label('structured_request_types_on_your_portal_with_per-item_approval_workflo'), icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01' },
+    { title: label('service_desk_itsm'), description: label('itil_type_queues_change_calendar_problem_linking_catalog_approvals_and'), icon: 'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z' },
+    { title: label('sla_business_hours'), description: label('set_response_targets_escalation_rules_team_slas_and_operating_hours_wi'), icon: 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z' },
+    { title: label('automation_macros'), description: label('multi-step_automation_chains_canned_responses_auto-assignment_webhooks'), icon: 'M13 10V3L4 14h7v7l9-11h-7z' },
+    { title: label('ai_assist_deflection'), description: label('draft_replies_summarize_threads_surface_kb_articles_for_agents_and_def'), icon: 'M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z' },
+    { title: label('csat_reporting'), description: label('measure_satisfaction_on_portal_and_email_build_saved_reports_and_sched'), icon: 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z' },
+    { title: label('multi-brand_workspaces'), description: label('run_multiple_brands_with_separate_portals_inboxes_kb_skins_and_routing'), icon: 'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4' },
+    { title: label('integrations_crm'), description: label('connect_slack_jira_linear_hubspot_salesforce_shopify_teams_and_custom_'), icon: 'M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z' },
+    { title: label('asset_management'), description: label('track_hardware_and_software_assets_link_them_to_contacts_and_tickets_a'), icon: 'M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z' },
+    { title: label('contacts_organizations'), description: label('track_customers_companies_vip_tags_activity_timelines_and_crm_context_'), icon: 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z' },
+    { title: label('security_sso'), description: label('two-factor_authentication_saml_oidc_single_sign-on_role_permissions_au'), icon: 'M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z' },
+    { title: label('workforce_management'), description: label('organize_agents_into_teams_and_departments_with_skills_routing_perform'), icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2' },
 ]);
 
 const featurePalette = [
@@ -248,10 +263,10 @@ const bentoDefs = [
 ];
 
 const bentoItems = computed(() => bentoDefs.map((item) => ({
-    title: t(item.titleKey),
+    title: resolveLabelKey(item.titleKey),
     body: item.bodyKey
-        ? t(homeKey(`bento_bodies.${item.bodyKey}`))
-        : t('central.service_desk_itsm_card_body'),
+        ? (homePath(`bento_bodies.${item.bodyKey}`) ?? '')
+        : resolveLabelKey('service_desk_itsm_card_body'),
     span: item.span,
     accent: item.accent,
     icon: item.icon,
@@ -271,15 +286,17 @@ const differentiatorDefs = [
 ];
 
 const differentiators = computed(() => differentiatorDefs.map((item, index) => ({
-    title: t(`central.${item.titleKey}`),
-    body: t(`central.${item.bodyKey}`),
-    badge: item.badgeKey ? t(`central.${item.badgeKey}`) : null,
+    title: label(item.titleKey),
+    body: label(item.bodyKey),
+    badge: item.badgeKey ? label(item.badgeKey) : null,
     accent: item.accent,
     icon: item.icon,
     featured: index === differentiatorDefs.length - 1,
 })));
 
-const builtDifferentSubtitle = computed(() => t('central.built_different_subtitle', { brand: platformName.value }));
+const builtDifferentSubtitle = computed(() => label('built_different_subtitle'));
+const socialProofSubtitle = computed(() => label('social_proof_subtitle'));
+const compareLinkLabel = (page) => `${platformName.value} vs ${page.nav_label}`;
 
 const painPointMeta = [
     { icon: 'M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4' },
@@ -315,29 +332,15 @@ const integrationGroups = computed(() => homeArray('integration_groups'));
 
 const categoryHints = computed(() => homeObject('category_hints'));
 
-const switchSectionSubtitle = computed(() => t(homeKey('switch_section.subtitle'), { brand: platformName.value }));
+const switchSectionSubtitle = computed(() => (homePath('switch_section.subtitle') ?? ''));
 
-const compareSectionTitle = computed(() => t(homeKey('compare_section.title'), { brand: platformName.value }));
+const compareSectionTitle = computed(() => (homePath('compare_section.title') ?? ''));
 
-const productSectionSubtitle = computed(() => t(homeKey('product_section.subtitle'), { brand: platformName.value }));
+const productSectionSubtitle = computed(() => (homePath('product_section.subtitle') ?? ''));
 
-const featuresSectionSubtitle = computed(() => t(homeKey('features_section.subtitle'), { brand: platformName.value }));
+const featuresSectionSubtitle = computed(() => (homePath('features_section.subtitle') ?? ''));
 
-const stepDefs = [
-    { titleKey: 'central.create_your_workspace' },
-    { titleKey: 'central.connect_your_channels' },
-    { titleKey: 'central.invite_your_team_go_live', detailKey: 'central.invite_your_team_go_live_detail' },
-];
-
-const steps = computed(() => {
-    const copy = homeArray('steps');
-
-    return stepDefs.map((def, index) => ({
-        title: t(def.titleKey),
-        body: copy[index]?.body ?? '',
-        detail: def.detailKey ? t(def.detailKey) : (copy[index]?.detail ?? ''),
-    }));
-});
+const steps = computed(() => homeArray('steps'));
 
 const heroAvatars = [
     { initials: 'SC', color: 'from-blue-500 to-indigo-600' },
@@ -446,7 +449,7 @@ const primaryHighlightItems = computed(() => {
 
 const formatLimit = (value) => (
     value === null || value === 'unlimited'
-        ? t(homeKey('plan_limits.unlimited'))
+        ? (homePath('plan_limits.unlimited') ?? '')
         : value
 );
 
@@ -455,8 +458,8 @@ const planHighlights = (plan) => {
     const agents = formatLimit(plan.limits?.agents);
     const tickets = formatLimit(plan.limits?.tickets_monthly);
     const items = [
-        t(homeKey('plan_limits.team_members'), { count: agents }),
-        t(homeKey('plan_limits.tickets_per_month'), { count: tickets }),
+        formatMarketingTemplate(homePath('plan_limits.team_members') ?? '', { count: agents }),
+        formatMarketingTemplate(homePath('plan_limits.tickets_per_month') ?? '', { count: tickets }),
     ];
 
     (plan.features ?? []).forEach((key) => {
@@ -487,7 +490,7 @@ const featureGroups = computed(() => {
 </script>
 
 <template>
-    <CentralLayout :brand="platformName" :trial-days="trialDays" :social-links="socialLinks">
+    <CentralLayout :brand="brand" :trial-days="trialDays" :social-links="socialLinks">
         <section class="relative overflow-hidden bg-slate-950 text-white">
             <div class="pointer-events-none absolute inset-0">
                 <div class="absolute -left-40 top-0 h-[36rem] w-[36rem] rounded-full bg-blue-600/30 blur-3xl" />
@@ -507,32 +510,32 @@ const featureGroups = computed(() => {
                                     <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
                                     <span class="relative inline-flex h-2 w-2 rounded-full bg-emerald-400" />
                                 </span>
-                                {{ $t('central.home.hero_trial_badge', { days: trialDays }) }}
+                                {{ home.hero_trial_badge }}
                             </div>
                             <a
                                 href="#ai"
                                 class="inline-flex items-center gap-1.5 rounded-full border border-violet-400/40 bg-gradient-to-r from-violet-600/25 to-fuchsia-600/20 px-3 py-1.5 text-[11px] font-bold text-violet-200 shadow-lg shadow-violet-900/20 backdrop-blur transition hover:border-violet-300/50 hover:text-white sm:px-4 sm:text-xs"
                             >
                                 <svg class="h-3.5 w-3.5 text-violet-300" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>
-                                {{ $t('central.home.hero_ai_badge') }}
+                                {{ home.hero_ai_badge }}
                             </a>
                         </div>
 
                         <h1 class="mt-6 text-3xl font-extrabold leading-[1.08] tracking-tight sm:mt-8 sm:text-[2.75rem] sm:leading-[1.05] lg:text-5xl xl:text-[3.5rem]">
-                            {{ $t('central.home.hero_title_line1') }}
+                            {{ home.hero_title_line1 }}
                             <span class="mt-1 block bg-gradient-to-r from-blue-400 via-indigo-300 to-violet-400 bg-clip-text text-transparent">
-                                {{ $t('central.home.hero_title_line2') }}
+                                {{ home.hero_title_line2 }}
                             </span>
                         </h1>
 
                         <p class="mt-5 text-base leading-relaxed text-slate-300 sm:mt-6 sm:text-lg lg:text-xl">
-                            {{ $t('central.home.hero_subtitle') }}
+                            {{ home.hero_subtitle }}
                         </p>
 
                         <div class="mt-6 rounded-2xl border border-violet-500/25 bg-gradient-to-br from-violet-950/50 via-slate-900/80 to-indigo-950/50 p-4 ring-1 ring-violet-400/10 sm:mt-7 sm:p-5">
                             <div class="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
-                                <p class="text-xs font-bold uppercase tracking-wider text-violet-300">{{ $t('central.home.hero_ai_heading') }}</p>
-                                <a href="#ai" class="shrink-0 text-[11px] font-semibold text-violet-300 underline-offset-2 hover:text-white hover:underline sm:text-xs">{{ $t('central.home.hero_ai_link') }}</a>
+                                <p class="text-xs font-bold uppercase tracking-wider text-violet-300">{{ home.hero_ai_heading }}</p>
+                                <a href="#ai" class="shrink-0 text-[11px] font-semibold text-violet-300 underline-offset-2 hover:text-white hover:underline sm:text-xs">{{ home.hero_ai_link }}</a>
                             </div>
                             <div class="mt-3 flex flex-wrap gap-2">
                                 <span
@@ -558,8 +561,8 @@ const featureGroups = computed(() => {
                                 href="/register"
                                 class="group relative inline-flex items-center justify-center gap-2 overflow-hidden rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-3.5 text-sm font-bold text-white shadow-2xl shadow-blue-600/40 transition hover:from-blue-500 hover:to-indigo-500 hover:shadow-blue-500/50 sm:px-8 sm:py-4 sm:text-base"
                             >
-                                <span class="sm:hidden">{{ $t('central.home.hero_cta_short') }}</span>
-                                <span class="hidden sm:inline">{{ $t('central.home.hero_cta_long') }}</span>
+                                <span class="sm:hidden">{{ home.hero_cta_short }}</span>
+                                <span class="hidden sm:inline">{{ home.hero_cta_long }}</span>
                                 <svg class="h-5 w-5 transition group-hover:translate-x-1 rtl:rotate-180 rtl:group-hover:-translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
                             </Link>
                             <a
@@ -567,7 +570,7 @@ const featureGroups = computed(() => {
                                 class="inline-flex items-center justify-center gap-2 rounded-2xl border border-white/20 bg-white/5 px-6 py-4 text-sm font-semibold text-white backdrop-blur transition hover:bg-white/10"
                             >
                                 <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                                {{ $t('central.home.hero_try_ai') }}
+                                {{ home.hero_try_ai }}
                             </a>
                         </div>
 
@@ -594,8 +597,8 @@ const featureGroups = computed(() => {
                                     <svg v-for="n in 5" :key="n" class="h-4 w-4 text-amber-400" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>
                                 </div>
                                 <p class="mt-0.5 text-sm leading-snug text-slate-400 dark:text-slate-500">
-                                    <span class="font-semibold text-white">{{ $t('central.home.hero_trusted_emphasis') }}</span>
-                                    {{ ' ' }}{{ $t('central.home.hero_trusted_suffix') }}
+                                    <span class="font-semibold text-white">{{ home.hero_trusted_emphasis }}</span>
+                                    {{ ' ' }}{{ home.hero_trusted_suffix }}
                                 </p>
                             </div>
                         </div>
@@ -608,8 +611,8 @@ const featureGroups = computed(() => {
                                     <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg>
                                 </span>
                                 <div>
-                                    <p class="text-sm font-semibold text-white">{{ $t('central.home.hero_mobile_ai_title') }}</p>
-                                    <p class="text-xs text-violet-200">{{ $t('central.home.hero_mobile_ai_body') }}</p>
+                                    <p class="text-sm font-semibold text-white">{{ home.hero_mobile_ai_title }}</p>
+                                    <p class="text-xs text-violet-200">{{ home.hero_mobile_ai_body }}</p>
                                 </div>
                             </div>
                             <ul class="mt-4 space-y-2.5 text-sm text-slate-300">
@@ -619,7 +622,7 @@ const featureGroups = computed(() => {
                                 </li>
                             </ul>
                             <a href="#ai" class="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-violet-300 hover:text-white">
-                                {{ $t('central.home.hero_try_ai') }}
+                                {{ home.hero_try_ai }}
                                 <svg class="h-4 w-4 rtl:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
                             </a>
                         </div>
@@ -630,7 +633,7 @@ const featureGroups = computed(() => {
                                     <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-white dark:bg-slate-900 opacity-75" />
                                     <span class="relative inline-flex h-1.5 w-1.5 rounded-full bg-white dark:bg-slate-900" />
                                 </span>
-                                {{ $t('central.home.hero_mockup_badge') }}
+                                {{ home.hero_mockup_badge }}
                             </div>
                             <div class="pointer-events-none absolute -inset-4 rounded-3xl bg-gradient-to-r from-blue-600/20 via-indigo-500/20 to-violet-600/20 blur-2xl" />
                             <div class="relative rounded-2xl border border-white/15 bg-white/5 p-2 shadow-2xl shadow-black/60 backdrop-blur-xl ring-1 ring-white/10">
@@ -656,58 +659,58 @@ const featureGroups = computed(() => {
 
                                 <div v-if="previewTab === 'inbox'" class="grid grid-cols-5">
                                     <div class="col-span-2 border-r border-white/10 bg-slate-950/90 p-4">
-                                        <p class="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">{{ $t('central.open_tickets_12') }}</p>
+                                        <p class="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">{{ marketingLabels.open_tickets_12 }}</p>
                                         <div class="mt-3 space-y-2">
                                             <div class="rounded-lg bg-blue-500/20 px-3 py-2 ring-1 ring-blue-500/40">
-                                                <p class="text-xs font-medium text-white">{{ $t('central.payment_failed_need_help') }}</p>
-                                                <p class="mt-0.5 text-[10px] text-slate-400 dark:text-slate-500">{{ $t('central.sarah_sla_18m_assigned_to_you') }}</p>
+                                                <p class="text-xs font-medium text-white">{{ marketingLabels.payment_failed_need_help }}</p>
+                                                <p class="mt-0.5 text-[10px] text-slate-400 dark:text-slate-500">{{ marketingLabels.sarah_sla_18m_assigned_to_you }}</p>
                                             </div>
                                             <div class="rounded-lg px-3 py-2 hover:bg-white/5">
-                                                <p class="text-xs text-slate-300">{{ $t('central.chat_shipping_question') }}</p>
-                                                <p class="mt-0.5 text-[10px] text-emerald-400">{{ $t('central.live_waiting') }}</p>
+                                                <p class="text-xs text-slate-300">{{ marketingLabels.chat_shipping_question }}</p>
+                                                <p class="mt-0.5 text-[10px] text-emerald-400">{{ marketingLabels.live_waiting }}</p>
                                             </div>
                                             <div class="rounded-lg px-3 py-2 hover:bg-white/5">
-                                                <p class="text-xs text-slate-300">{{ $t('central.api_rate_limit_error') }}</p>
-                                                <p class="mt-0.5 text-[10px] text-slate-500 dark:text-slate-400">{{ $t('central.dev_team_14m_ago') }}</p>
+                                                <p class="text-xs text-slate-300">{{ marketingLabels.api_rate_limit_error }}</p>
+                                                <p class="mt-0.5 text-[10px] text-slate-500 dark:text-slate-400">{{ marketingLabels.dev_team_14m_ago }}</p>
                                             </div>
                                         </div>
                                     </div>
                                     <div class="col-span-3 p-4">
                                         <div class="flex items-center justify-between">
-                                            <p class="text-sm font-medium">{{ $t('central.payment_failed_need_help') }}</p>
-                                            <span class="rounded-full bg-amber-500/20 px-2 py-0.5 text-[10px] font-medium text-amber-300">{{ $t('central.high_sla_18m') }}</span>
+                                            <p class="text-sm font-medium">{{ marketingLabels.payment_failed_need_help }}</p>
+                                            <span class="rounded-full bg-amber-500/20 px-2 py-0.5 text-[10px] font-medium text-amber-300">{{ marketingLabels.high_sla_18m }}</span>
                                         </div>
                                         <div class="mt-4 space-y-3">
-                                            <div class="rounded-lg bg-white/5 p-3"><p class="text-xs text-slate-300">{{ $t('central.hi_my_subscription_payment_failed_but_i_was_still_charged') }}</p></div>
-                                            <div class="rounded-lg bg-blue-600/25 p-3 ring-1 ring-blue-500/30"><p class="text-xs text-blue-100">{{ $t('central.i_can_see_the_duplicate_charge_refunding_now_and_extending_your_plan_b') }}</p></div>
+                                            <div class="rounded-lg bg-white/5 p-3"><p class="text-xs text-slate-300">{{ marketingLabels.hi_my_subscription_payment_failed_but_i_was_still_charged }}</p></div>
+                                            <div class="rounded-lg bg-blue-600/25 p-3 ring-1 ring-blue-500/30"><p class="text-xs text-blue-100">{{ marketingLabels.i_can_see_the_duplicate_charge_refunding_now_and_extending_your_plan_b }}</p></div>
                                         </div>
                                         <div class="mt-4 flex flex-wrap gap-2">
-                                            <span class="rounded-md bg-violet-500/20 px-2 py-1 text-[10px] text-violet-200">{{ $t('central.ai_draft_ready') }}</span>
-                                            <span class="rounded-md bg-white/5 px-2 py-1 text-[10px] text-slate-400 dark:text-slate-500">{{ $t('central.billing') }}</span>
+                                            <span class="rounded-md bg-violet-500/20 px-2 py-1 text-[10px] text-violet-200">{{ marketingLabels.ai_draft_ready }}</span>
+                                            <span class="rounded-md bg-white/5 px-2 py-1 text-[10px] text-slate-400 dark:text-slate-500">{{ marketingLabels.billing }}</span>
                                         </div>
                                     </div>
                                 </div>
 
                                 <div v-else-if="previewTab === 'ai'" class="grid grid-cols-5">
                                     <div class="col-span-2 border-r border-white/10 bg-slate-950/90 p-4">
-                                        <p class="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">{{ $t('central.home.mockup_ai_ticket_id') }}</p>
-                                        <p class="mt-2 text-xs font-medium text-white">{{ $t('central.payment_failed_need_help') }}</p>
+                                        <p class="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">{{ home.mockup_ai_ticket_id }}</p>
+                                        <p class="mt-2 text-xs font-medium text-white">{{ marketingLabels.payment_failed_need_help }}</p>
                                         <div class="mt-4 space-y-2">
-                                            <div class="rounded-lg bg-white/5 px-3 py-2"><p class="text-[10px] text-slate-300">{{ $t('central.home.mockup_ai_customer_msg') }}</p></div>
-                                            <div class="rounded-lg bg-blue-600/20 px-3 py-2 ring-1 ring-blue-500/30"><p class="text-[10px] text-blue-100">{{ $t('central.home.mockup_ai_agent_msg') }}</p></div>
+                                            <div class="rounded-lg bg-white/5 px-3 py-2"><p class="text-[10px] text-slate-300">{{ home.mockup_ai_customer_msg }}</p></div>
+                                            <div class="rounded-lg bg-blue-600/20 px-3 py-2 ring-1 ring-blue-500/30"><p class="text-[10px] text-blue-100">{{ home.mockup_ai_agent_msg }}</p></div>
                                         </div>
-                                        <span class="mt-4 inline-flex rounded-md bg-violet-500/20 px-2 py-1 text-[10px] text-violet-200">{{ $t('central.ai_draft_ready') }}</span>
+                                        <span class="mt-4 inline-flex rounded-md bg-violet-500/20 px-2 py-1 text-[10px] text-violet-200">{{ marketingLabels.ai_draft_ready }}</span>
                                     </div>
                                     <div class="col-span-3 flex flex-col bg-gradient-to-b from-violet-950/40 to-slate-950/90 p-4">
                                         <div class="flex items-center justify-between border-b border-violet-500/20 pb-3">
-                                            <p class="text-xs font-semibold text-violet-200">{{ $t('central.home.mockup_ai_copilot_title') }}</p>
-                                            <span class="rounded-full bg-violet-500/20 px-2 py-0.5 text-[9px] text-violet-300">{{ $t('central.home.mockup_ai_live') }}</span>
+                                            <p class="text-xs font-semibold text-violet-200">{{ home.mockup_ai_copilot_title }}</p>
+                                            <span class="rounded-full bg-violet-500/20 px-2 py-0.5 text-[9px] text-violet-300">{{ home.mockup_ai_live }}</span>
                                         </div>
                                         <div class="mt-3 flex-1 space-y-2">
-                                            <div class="ml-auto max-w-[90%] rounded-xl rounded-br-sm bg-violet-600/50 px-3 py-2"><p class="text-[10px] text-violet-50">{{ $t('central.home.mockup_ai_user_prompt') }}</p></div>
-                                            <div class="max-w-[95%] rounded-xl rounded-bl-sm border border-violet-500/20 bg-white/5 px-3 py-2"><p class="text-[10px] leading-relaxed text-slate-200">{{ $t('central.home.mockup_ai_copilot_reply') }}</p></div>
+                                            <div class="ml-auto max-w-[90%] rounded-xl rounded-br-sm bg-violet-600/50 px-3 py-2"><p class="text-[10px] text-violet-50">{{ home.mockup_ai_user_prompt }}</p></div>
+                                            <div class="max-w-[95%] rounded-xl rounded-bl-sm border border-violet-500/20 bg-white/5 px-3 py-2"><p class="text-[10px] leading-relaxed text-slate-200">{{ home.mockup_ai_copilot_reply }}</p></div>
                                         </div>
-                                        <p class="mt-3 text-[9px] text-violet-300/70">{{ $t('central.home.mockup_ai_kb_matched') }}</p>
+                                        <p class="mt-3 text-[9px] text-violet-300/70">{{ home.mockup_ai_kb_matched }}</p>
                                     </div>
                                 </div>
 
@@ -715,62 +718,62 @@ const featureGroups = computed(() => {
                                     <div class="flex items-center gap-3 border-b border-white/10 pb-4">
                                         <span class="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-500/20 text-xs text-emerald-300">V</span>
                                         <div>
-                                            <p class="text-sm font-medium">{{ $t('central.visitor_on_pricing') }}</p>
-                                            <p class="text-[10px] text-emerald-400">{{ $t('central.online_san_francisco') }}</p>
+                                            <p class="text-sm font-medium">{{ marketingLabels.visitor_on_pricing }}</p>
+                                            <p class="text-[10px] text-emerald-400">{{ marketingLabels.online_san_francisco }}</p>
                                         </div>
                                     </div>
                                     <div class="mt-4 space-y-3">
-                                        <div class="max-w-[80%] rounded-2xl rounded-bl-md bg-white/10 px-3 py-2"><p class="text-xs text-slate-200">{{ $t('central.home.mockup_chat_visitor_question') }}</p></div>
-                                        <div class="ml-auto max-w-[80%] rounded-2xl rounded-br-md bg-blue-600/40 px-3 py-2"><p class="text-xs text-blue-50">{{ $t('central.yes_annual_plans_save_20_i_can_send_details_to_your_email') }}</p></div>
-                                        <div class="max-w-[80%] rounded-2xl rounded-bl-md bg-white/10 px-3 py-2"><p class="text-xs text-slate-200">{{ $t('central.perfect_please_do') }}</p></div>
+                                        <div class="max-w-[80%] rounded-2xl rounded-bl-md bg-white/10 px-3 py-2"><p class="text-xs text-slate-200">{{ home.mockup_chat_visitor_question }}</p></div>
+                                        <div class="ml-auto max-w-[80%] rounded-2xl rounded-br-md bg-blue-600/40 px-3 py-2"><p class="text-xs text-blue-50">{{ marketingLabels.yes_annual_plans_save_20_i_can_send_details_to_your_email }}</p></div>
+                                        <div class="max-w-[80%] rounded-2xl rounded-bl-md bg-white/10 px-3 py-2"><p class="text-xs text-slate-200">{{ marketingLabels.perfect_please_do }}</p></div>
                                     </div>
-                                    <p class="mt-4 text-center text-[10px] text-slate-500 dark:text-slate-400">{{ $t('central.conversation_saved_as_ticket_1042') }}</p>
+                                    <p class="mt-4 text-center text-[10px] text-slate-500 dark:text-slate-400">{{ marketingLabels.conversation_saved_as_ticket_1042 }}</p>
                                 </div>
 
                                 <div v-else-if="previewTab === 'servicedesk'" class="p-4">
                                     <div class="mb-3 flex items-center justify-between">
-                                        <p class="text-xs font-semibold text-red-300">{{ $t('central.major_incident_active') }}</p>
-                                        <span class="rounded-full bg-red-500/20 px-2 py-0.5 text-[10px] font-medium text-red-200">{{ $t('central.war_room') }}</span>
+                                        <p class="text-xs font-semibold text-red-300">{{ marketingLabels.major_incident_active }}</p>
+                                        <span class="rounded-full bg-red-500/20 px-2 py-0.5 text-[10px] font-medium text-red-200">{{ marketingLabels.war_room }}</span>
                                     </div>
                                     <div class="grid grid-cols-2 gap-2">
                                         <div class="rounded-lg bg-red-500/10 p-2 ring-1 ring-red-500/20">
-                                            <p class="text-[10px] text-slate-400 dark:text-slate-500">{{ $t('central.incidents') }}</p>
+                                            <p class="text-[10px] text-slate-400 dark:text-slate-500">{{ marketingLabels.incidents }}</p>
                                             <p class="text-lg font-bold text-white">8</p>
-                                            <p class="text-[10px] text-red-300">{{ $t('central.2_major') }}</p>
+                                            <p class="text-[10px] text-red-300">{{ label('2_major') }}</p>
                                         </div>
                                         <div class="rounded-lg bg-violet-500/10 p-2 ring-1 ring-violet-500/20">
-                                            <p class="text-[10px] text-slate-400 dark:text-slate-500">{{ $t('central.changes') }}</p>
+                                            <p class="text-[10px] text-slate-400 dark:text-slate-500">{{ marketingLabels.changes }}</p>
                                             <p class="text-lg font-bold text-white">3</p>
-                                            <p class="text-[10px] text-violet-300">{{ $t('central.1_pending_approval') }}</p>
+                                            <p class="text-[10px] text-violet-300">{{ label('1_pending_approval') }}</p>
                                         </div>
                                         <div class="rounded-lg bg-amber-500/10 p-2 ring-1 ring-amber-500/20">
-                                            <p class="text-[10px] text-slate-400 dark:text-slate-500">{{ $t('central.problems') }}</p>
+                                            <p class="text-[10px] text-slate-400 dark:text-slate-500">{{ marketingLabels.problems }}</p>
                                             <p class="text-lg font-bold text-white">2</p>
                                         </div>
                                         <div class="rounded-lg bg-blue-500/10 p-2 ring-1 ring-blue-500/20">
-                                            <p class="text-[10px] text-slate-400 dark:text-slate-500">{{ $t('central.approvals') }}</p>
+                                            <p class="text-[10px] text-slate-400 dark:text-slate-500">{{ marketingLabels.approvals }}</p>
                                             <p class="text-lg font-bold text-white">4</p>
-                                            <p class="text-[10px] text-blue-300">{{ $t('central.awaiting_you') }}</p>
+                                            <p class="text-[10px] text-blue-300">{{ marketingLabels.awaiting_you }}</p>
                                         </div>
                                     </div>
                                     <div class="mt-3 rounded-lg border border-red-500/30 bg-red-950/40 px-3 py-2">
-                                        <p class="text-xs font-medium text-red-100">{{ $t('central.hd-93001_email_outage') }}</p>
-                                        <p class="mt-0.5 text-[10px] text-slate-400 dark:text-slate-500">{{ $t('central.coordinators_3_declared_12m_ago') }}</p>
+                                        <p class="text-xs font-medium text-red-100">{{ label('hd-93001_email_outage') }}</p>
+                                        <p class="mt-0.5 text-[10px] text-slate-400 dark:text-slate-500">{{ marketingLabels.coordinators_3_declared_12m_ago }}</p>
                                     </div>
                                 </div>
 
                                 <div v-else class="p-4">
                                     <div class="grid grid-cols-3 gap-3">
-                                        <div class="rounded-lg bg-white/5 p-3"><p class="text-[10px] text-slate-500 dark:text-slate-400">{{ $t('central.first_response') }}</p><p class="mt-1 text-lg font-bold text-emerald-400">{{ $t('central.4_2m') }}</p><p class="text-[10px] text-emerald-400/80">{{ $t('central.18_vs_last_week') }}</p></div>
-                                        <div class="rounded-lg bg-white/5 p-3"><p class="text-[10px] text-slate-500 dark:text-slate-400">{{ $t('central.csat_score') }}</p><p class="mt-1 text-lg font-bold text-white">94%</p><p class="text-[10px] text-slate-400 dark:text-slate-500">{{ $t('central.128_responses') }}</p></div>
-                                        <div class="rounded-lg bg-white/5 p-3"><p class="text-[10px] text-slate-500 dark:text-slate-400">{{ $t('central.resolved_today') }}</p><p class="mt-1 text-lg font-bold text-white">47</p><p class="text-[10px] text-slate-400 dark:text-slate-500">{{ $t('central.6_open') }}</p></div>
+                                        <div class="rounded-lg bg-white/5 p-3"><p class="text-[10px] text-slate-500 dark:text-slate-400">{{ marketingLabels.first_response }}</p><p class="mt-1 text-lg font-bold text-emerald-400">{{ label('4_2m') }}</p><p class="text-[10px] text-emerald-400/80">{{ label('18_vs_last_week') }}</p></div>
+                                        <div class="rounded-lg bg-white/5 p-3"><p class="text-[10px] text-slate-500 dark:text-slate-400">{{ marketingLabels.csat_score }}</p><p class="mt-1 text-lg font-bold text-white">94%</p><p class="text-[10px] text-slate-400 dark:text-slate-500">{{ label('128_responses') }}</p></div>
+                                        <div class="rounded-lg bg-white/5 p-3"><p class="text-[10px] text-slate-500 dark:text-slate-400">{{ marketingLabels.resolved_today }}</p><p class="mt-1 text-lg font-bold text-white">47</p><p class="text-[10px] text-slate-400 dark:text-slate-500">{{ label('6_open') }}</p></div>
                                     </div>
                                     <div class="mt-4 h-24 rounded-lg bg-gradient-to-t from-blue-600/20 to-transparent p-3">
                                         <div class="flex h-full items-end gap-1">
                                             <div v-for="(h, i) in [40, 55, 35, 70, 50, 85, 60, 75, 90, 65]" :key="i" class="flex-1 rounded-t bg-blue-500/60" :style="{ height: `${h}%` }" />
                                         </div>
                                     </div>
-                                    <p class="mt-2 text-center text-[10px] text-slate-500 dark:text-slate-400">{{ $t('central.ticket_volume_last_10_days') }}</p>
+                                    <p class="mt-2 text-center text-[10px] text-slate-500 dark:text-slate-400">{{ marketingLabels.ticket_volume_last_10_days }}</p>
                                 </div>
                             </div>
                             </div>
@@ -800,9 +803,9 @@ const featureGroups = computed(() => {
             <div class="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-50 via-white to-white" />
             <div class="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                 <div class="mx-auto max-w-3xl text-center">
-                    <p class="text-sm font-semibold uppercase tracking-wider text-blue-600">{{ $t('central.home.switch_section.eyebrow') }}</p>
+                    <p class="text-sm font-semibold uppercase tracking-wider text-blue-600">{{ home.switch_section.eyebrow }}</p>
                     <h2 class="mt-3 text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100 sm:text-4xl lg:text-5xl">
-                        {{ $t('central.home.switch_section.title') }}
+                        {{ home.switch_section.title }}
                     </h2>
                     <p class="mt-4 text-lg text-slate-600 dark:text-slate-400">
                         {{ switchSectionSubtitle }}
@@ -814,13 +817,13 @@ const featureGroups = computed(() => {
                         <div class="relative flex flex-col border-b border-slate-200 bg-gradient-to-b from-slate-50 to-white p-8 sm:p-10 lg:border-b-0 lg:border-e dark:border-slate-800 dark:from-slate-950 dark:to-slate-900">
                             <span class="inline-flex items-center gap-2 rounded-full bg-red-50 px-3 py-1 text-xs font-bold uppercase tracking-wide text-red-600 ring-1 ring-red-100 dark:bg-red-950/40 dark:text-red-300 dark:ring-red-900/50">
                                 <span class="h-1.5 w-1.5 rounded-full bg-red-500" />
-                                {{ $t('central.home.switch_section.old_way_badge') }}
+                                {{ home.switch_section.old_way_badge }}
                             </span>
                             <h3 class="mt-5 text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100 sm:text-[1.65rem]">
-                                {{ $t('central.home.switch_section.old_way_title') }}
+                                {{ home.switch_section.old_way_title }}
                             </h3>
                             <p class="mt-3 max-w-md text-sm leading-relaxed text-slate-600 dark:text-slate-400">
-                                {{ $t('central.home.switch_section.old_way_body') }}
+                                {{ home.switch_section.old_way_body }}
                             </p>
 
                             <div class="mt-auto rounded-2xl border border-dashed border-red-200/80 bg-white p-5 dark:border-red-900/40 dark:bg-slate-950/60">
@@ -845,13 +848,13 @@ const featureGroups = computed(() => {
                                         <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
                                         <span class="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-400" />
                                     </span>
-                                    {{ $t('central.home.switch_section.with_brand_badge', { brand: platformName }) }}
+                                    {{ home.switch_section.with_brand_badge }}
                                 </span>
                                 <h3 class="mt-5 text-2xl font-bold tracking-tight sm:text-[1.65rem]">
-                                    {{ $t('central.home.switch_section.new_way_title') }}
+                                    {{ home.switch_section.new_way_title }}
                                 </h3>
                                 <p class="mt-3 max-w-md text-sm leading-relaxed text-blue-100">
-                                    {{ $t('central.home.switch_section.new_way_body') }}
+                                    {{ home.switch_section.new_way_body }}
                                 </p>
 
                                 <div class="mt-auto overflow-hidden rounded-2xl border border-white/20 bg-slate-950/50 shadow-2xl shadow-indigo-950/30 backdrop-blur-md">
@@ -861,7 +864,7 @@ const featureGroups = computed(() => {
                                             <span class="h-2.5 w-2.5 rounded-full bg-amber-400/70" />
                                             <span class="h-2.5 w-2.5 rounded-full bg-emerald-400/70" />
                                         </span>
-                                        <span class="mx-auto truncate text-[10px] font-medium text-white/55">{{ $t('central.home.switch_section.helpdesk_label', { brand: platformName }) }}</span>
+                                        <span class="mx-auto truncate text-[10px] font-medium text-white/55">{{ home.switch_section.helpdesk_label }}</span>
                                     </div>
                                     <div class="grid grid-cols-[2.75rem_1fr]">
                                         <div class="flex flex-col gap-1.5 border-e border-white/10 bg-[#111827]/80 p-2">
@@ -880,15 +883,15 @@ const featureGroups = computed(() => {
                                             <div class="grid grid-cols-3 gap-1.5">
                                                 <div class="rounded-lg bg-white/10 px-1.5 py-2.5 text-center ring-1 ring-white/10">
                                                     <p class="text-lg font-bold leading-none">12</p>
-                                                    <p class="mt-1 text-[8px] font-semibold uppercase tracking-wide text-white/50">{{ $t('central.home.switch_section.stat_open') }}</p>
+                                                    <p class="mt-1 text-[8px] font-semibold uppercase tracking-wide text-white/50">{{ home.switch_section.stat_open }}</p>
                                                 </div>
                                                 <div class="rounded-lg bg-emerald-500/25 px-1.5 py-2.5 text-center ring-1 ring-emerald-400/35">
                                                     <p class="text-lg font-bold leading-none text-emerald-200">4m</p>
-                                                    <p class="mt-1 text-[8px] font-semibold uppercase tracking-wide text-emerald-100/65">{{ $t('central.home.switch_section.stat_avg_reply') }}</p>
+                                                    <p class="mt-1 text-[8px] font-semibold uppercase tracking-wide text-emerald-100/65">{{ home.switch_section.stat_avg_reply }}</p>
                                                 </div>
                                                 <div class="rounded-lg bg-white/10 px-1.5 py-2.5 text-center ring-1 ring-white/10">
                                                     <p class="text-lg font-bold leading-none">94%</p>
-                                                    <p class="mt-1 text-[8px] font-semibold uppercase tracking-wide text-white/50">{{ $t('central.home.switch_section.stat_csat') }}</p>
+                                                    <p class="mt-1 text-[8px] font-semibold uppercase tracking-wide text-white/50">{{ home.switch_section.stat_csat }}</p>
                                                 </div>
                                             </div>
                                             <div class="mt-3 space-y-1.5">
@@ -914,9 +917,9 @@ const featureGroups = computed(() => {
 
                     <div class="mt-8 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
                         <div class="hidden border-b border-slate-100 bg-slate-50 px-6 py-3 text-xs font-semibold uppercase tracking-wider text-slate-500 sm:grid sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] sm:gap-6 dark:border-slate-800 dark:bg-slate-950/50 dark:text-slate-400">
-                            <span>{{ $t('central.home.switch_section.comparison_before') }}</span>
+                            <span>{{ home.switch_section.comparison_before }}</span>
                             <span class="w-9" />
-                            <span>{{ $t('central.home.switch_section.comparison_after', { brand: platformName }) }}</span>
+                            <span>{{ home.switch_section.comparison_after }}</span>
                         </div>
                         <div
                             v-for="(item, index) in painPoints"
@@ -965,10 +968,10 @@ const featureGroups = computed(() => {
                         href="/register"
                         class="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 px-8 py-4 text-sm font-bold text-white shadow-xl shadow-blue-600/30 transition hover:from-blue-500 hover:to-indigo-500"
                     >
-                        {{ $t('central.home.switch_section.cta') }}
+                        {{ home.switch_section.cta }}
                         <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
                     </Link>
-                    <p class="mt-3 text-sm text-slate-500 dark:text-slate-400">{{ $t('central.home.switch_section.cta_footnote', { days: trialDays }) }}</p>
+                    <p class="mt-3 text-sm text-slate-500 dark:text-slate-400">{{ home.switch_section.cta_footnote }}</p>
                 </div>
             </div>
         </section>
@@ -985,12 +988,12 @@ const featureGroups = computed(() => {
                     <div>
                         <p class="inline-flex items-center gap-2 rounded-full border border-violet-400/30 bg-violet-500/10 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-violet-300">
                             <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg>
-                            {{ $t('central.home.ai_section.badge') }}
+                            {{ home.ai_section.badge }}
                         </p>
                         <h2 class="mt-5 text-3xl font-bold tracking-tight sm:text-4xl lg:text-5xl">
-                            {{ $t('central.home.ai_section.title_line1') }}
+                            {{ home.ai_section.title_line1 }}
                             <span class="mt-1 block bg-gradient-to-r from-violet-400 via-fuchsia-300 to-indigo-400 bg-clip-text text-transparent">
-                                {{ $t('central.home.ai_section.title_line2') }}
+                                {{ home.ai_section.title_line2 }}
                             </span>
                         </h2>
                         <p class="mt-5 text-lg leading-relaxed text-slate-300">
@@ -1030,15 +1033,15 @@ const featureGroups = computed(() => {
                                 href="/register"
                                 class="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-violet-600 to-indigo-600 px-6 py-3.5 text-sm font-bold text-white shadow-xl shadow-violet-600/30 transition hover:from-violet-500 hover:to-indigo-500"
                             >
-                                {{ $t('central.home.ai_section.cta') }}
+                                {{ home.ai_section.cta }}
                                 <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
                             </Link>
-                            <p class="text-sm text-slate-400">{{ $t('central.home.ai_section.footnote') }}</p>
+                            <p class="text-sm text-slate-400">{{ home.ai_section.footnote }}</p>
                         </div>
                     </div>
 
                     <div class="lg:sticky lg:top-24 lg:self-start">
-                        <CentralAiDemoWidget :enabled="aiDemoEnabled" :brand="platformName" />
+                        <CentralAiDemoWidget :enabled="aiDemoEnabled" :brand="brand" />
 
                         <dl class="mt-5 grid grid-cols-3 gap-3">
                             <div
@@ -1053,7 +1056,7 @@ const featureGroups = computed(() => {
 
                         <p class="mt-4 flex items-center justify-center gap-2 text-xs text-slate-500">
                             <svg class="h-3.5 w-3.5 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
-                            {{ $t('central.home.ai_section.privacy_note') }}
+                            {{ home.ai_section.privacy_note }}
                         </p>
                     </div>
                 </div>
@@ -1062,7 +1065,7 @@ const featureGroups = computed(() => {
 
         <section class="border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 py-10 sm:py-12">
             <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-                <p class="text-center text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">{{ $t('central.works_with_your_stack') }}</p>
+                <p class="text-center text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">{{ marketingLabels.works_with_your_stack }}</p>
                 <div class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                     <div
                         v-for="group in integrationGroups"
@@ -1088,9 +1091,9 @@ const featureGroups = computed(() => {
         <section id="product" class="bg-slate-50 dark:bg-slate-950 py-16 sm:py-24">
             <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                 <div class="max-w-3xl">
-                    <p class="text-sm font-semibold uppercase tracking-wider text-blue-600">{{ $t('central.platform_overview') }}</p>
+                    <p class="text-sm font-semibold uppercase tracking-wider text-blue-600">{{ marketingLabels.platform_overview }}</p>
                     <h2 class="mt-3 text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100 sm:text-4xl">
-                        {{ $t('central.home.product_section.title') }}
+                        {{ home.product_section.title }}
                     </h2>
                     <p class="mt-4 text-lg leading-relaxed text-slate-600 dark:text-slate-400">
                         {{ productSectionSubtitle }}
@@ -1120,9 +1123,9 @@ const featureGroups = computed(() => {
             <div class="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-blue-50 via-white to-white" />
             <div class="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                 <div class="mx-auto max-w-3xl text-center">
-                    <p class="text-sm font-semibold uppercase tracking-wider text-blue-600">{{ $t('central.built_different_eyebrow') }}</p>
+                    <p class="text-sm font-semibold uppercase tracking-wider text-blue-600">{{ marketingLabels.built_different_eyebrow }}</p>
                     <h2 class="mt-3 text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100 sm:text-4xl lg:text-5xl">
-                        {{ $t('central.built_different_title') }}
+                        {{ marketingLabels.built_different_title }}
                     </h2>
                     <p class="mt-4 text-lg leading-relaxed text-slate-600 dark:text-slate-400">
                         {{ builtDifferentSubtitle }}
@@ -1167,10 +1170,10 @@ const featureGroups = computed(() => {
                         href="/register"
                         class="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 px-8 py-4 text-sm font-bold text-white shadow-xl shadow-blue-600/25 transition hover:from-blue-500 hover:to-indigo-500"
                     >
-                        {{ $t('central.home.differentiators_cta') }}
+                        {{ home.differentiators_cta }}
                         <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
                     </Link>
-                    <p class="mt-3 text-sm text-slate-500 dark:text-slate-400">{{ $t('central.home.differentiators_footnote', { days: trialDays }) }}</p>
+                    <p class="mt-3 text-sm text-slate-500 dark:text-slate-400">{{ home.differentiators_footnote }}</p>
                 </div>
             </div>
         </section>
@@ -1178,8 +1181,8 @@ const featureGroups = computed(() => {
         <section id="features" class="overflow-x-clip border-y border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 py-16 sm:py-24">
             <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                 <div class="max-w-3xl">
-                    <p class="text-sm font-semibold uppercase tracking-wider text-blue-600">{{ $t('central.deep_dive') }}</p>
-                    <h2 class="mt-3 text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100 sm:text-4xl">{{ $t('central.explore_by_capability') }}</h2>
+                    <p class="text-sm font-semibold uppercase tracking-wider text-blue-600">{{ marketingLabels.deep_dive }}</p>
+                    <h2 class="mt-3 text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100 sm:text-4xl">{{ marketingLabels.explore_by_capability }}</h2>
                     <p class="mt-4 text-lg leading-relaxed text-slate-600 dark:text-slate-400">
                         {{ featuresSectionSubtitle }}
                     </p>
@@ -1225,7 +1228,7 @@ const featureGroups = computed(() => {
                                 <div class="pointer-events-none absolute -right-8 -top-8 h-40 w-40 rounded-full bg-white/10 blur-2xl" />
                                 <div class="relative">
                                     <span v-if="featureCategory === 'itsm'" class="mb-3 inline-flex rounded-full bg-white/15 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-white/90 ring-1 ring-white/20">
-                                        {{ $t('central.built_different_badge_itsm') }}
+                                        {{ marketingLabels.built_different_badge_itsm }}
                                     </span>
                                     <h3 class="text-2xl font-bold tracking-tight sm:text-3xl">{{ activeCategory.title }}</h3>
                                     <p class="mt-3 max-w-2xl text-base leading-relaxed text-white/85">{{ activeCategory.description }}</p>
@@ -1252,7 +1255,7 @@ const featureGroups = computed(() => {
                                 </div>
 
                                 <div v-if="secondaryHighlights.length" class="mt-5 border-t border-slate-100 dark:border-slate-800 pt-5">
-                                    <p class="mb-3 text-[11px] font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500">{{ $t('central.home.features_section.also_included') }}</p>
+                                    <p class="mb-3 text-[11px] font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500">{{ home.features_section.also_included }}</p>
                                     <div class="flex flex-wrap gap-2">
                                         <span
                                             v-for="item in secondaryHighlights"
@@ -1284,7 +1287,7 @@ const featureGroups = computed(() => {
                 </div>
 
                 <div v-if="featurePages.length" class="mt-12 text-center">
-                    <p class="text-sm font-medium text-slate-600 dark:text-slate-400">{{ $t('central.feature_landing_links') }}</p>
+                    <p class="text-sm font-medium text-slate-600 dark:text-slate-400">{{ marketingLabels.feature_landing_links }}</p>
                     <div class="mt-4 flex flex-wrap items-center justify-center gap-2">
                         <Link
                             v-for="page in featurePages"
@@ -1292,7 +1295,7 @@ const featureGroups = computed(() => {
                             :href="page.path"
                             class="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-blue-300 hover:text-blue-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
                         >
-                            {{ $t(`central.feature_pages.${page.slug}.nav_label`) }}
+                            {{ page.nav_label }}
                         </Link>
                     </div>
                 </div>
@@ -1305,22 +1308,22 @@ const featureGroups = computed(() => {
                         <div>
                             <span class="inline-flex items-center gap-2 rounded-full bg-blue-50 dark:bg-blue-950/40 px-3 py-1 text-xs font-bold uppercase tracking-wide text-blue-700 dark:text-blue-300 ring-1 ring-blue-100">
                                 <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
-                                {{ $t('central.home.features_section.everything_included') }}
+                                {{ home.features_section.everything_included }}
                             </span>
-                            <h3 class="mt-4 text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100 sm:text-4xl">{{ $t('central.home.features_section.full_platform_title') }}</h3>
+                            <h3 class="mt-4 text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100 sm:text-4xl">{{ home.features_section.full_platform_title }}</h3>
                             <p class="mt-3 max-w-xl text-base leading-relaxed text-slate-600 dark:text-slate-400">
-                                {{ $t('central.home.features_section.full_platform_body') }}
+                                {{ home.features_section.full_platform_body }}
                             </p>
                         </div>
                         <div class="mt-5 flex w-full flex-wrap justify-center gap-4 sm:mt-8 sm:w-auto sm:shrink-0 sm:gap-6 rounded-2xl border border-slate-200 dark:border-slate-800/80 bg-white dark:bg-slate-900/80 px-4 py-3 backdrop-blur-sm sm:px-6 sm:py-4">
                             <div class="text-center">
                                 <p class="text-2xl font-extrabold text-slate-900 dark:text-slate-100">{{ allFeatures.length }}</p>
-                                <p class="text-xs font-medium text-slate-500 dark:text-slate-400">{{ $t('central.home.features_section.capabilities_label') }}</p>
+                                <p class="text-xs font-medium text-slate-500 dark:text-slate-400">{{ home.features_section.capabilities_label }}</p>
                             </div>
                             <div class="w-px bg-slate-200" />
                             <div class="text-center">
                                 <p class="text-2xl font-extrabold text-slate-900 dark:text-slate-100">4</p>
-                                <p class="text-xs font-medium text-slate-500 dark:text-slate-400">{{ $t('central.home.features_section.workflow_areas_label') }}</p>
+                                <p class="text-xs font-medium text-slate-500 dark:text-slate-400">{{ home.features_section.workflow_areas_label }}</p>
                             </div>
                         </div>
                     </div>
@@ -1333,7 +1336,7 @@ const featureGroups = computed(() => {
                                     <p class="mt-0.5 text-sm text-slate-500 dark:text-slate-400">{{ group.hint }}</p>
                                 </div>
                                 <span class="rounded-full bg-slate-100 dark:bg-slate-900 px-3 py-1 text-xs font-semibold text-slate-600 dark:text-slate-400">
-                                    {{ $t('central.home.features_section.features_count', { count: group.features.length }) }}
+                                    {{ home.features_section.features_count }}
                                 </span>
                             </div>
                             <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -1371,9 +1374,9 @@ const featureGroups = computed(() => {
         <section v-if="testimonialsEnabled && testimonials.length" id="social-proof" class="border-y border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 py-16 sm:py-20">
             <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                 <div class="text-center">
-                    <p class="text-sm font-semibold uppercase tracking-wider text-blue-600">{{ $t('central.social_proof_eyebrow') }}</p>
-                    <h2 class="mt-3 text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100 sm:text-4xl">{{ $t('central.social_proof_title') }}</h2>
-                    <p class="mx-auto mt-4 max-w-2xl text-lg text-slate-600 dark:text-slate-400">{{ $t('central.social_proof_subtitle', { brand: platformName }) }}</p>
+                    <p class="text-sm font-semibold uppercase tracking-wider text-blue-600">{{ marketingLabels.social_proof_eyebrow }}</p>
+                    <h2 class="mt-3 text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100 sm:text-4xl">{{ marketingLabels.social_proof_title }}</h2>
+                    <p class="mx-auto mt-4 max-w-2xl text-lg text-slate-600 dark:text-slate-400">{{ socialProofSubtitle }}</p>
                 </div>
 
                 <div class="mt-10 flex flex-wrap items-center justify-center gap-3">
@@ -1410,9 +1413,9 @@ const featureGroups = computed(() => {
         <section id="compare" class="bg-slate-900 py-16 sm:py-24 text-white">
             <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                 <div class="text-center">
-                    <p class="text-sm font-semibold uppercase tracking-wider text-blue-400">{{ $t('central.why_teams_switch') }}</p>
+                    <p class="text-sm font-semibold uppercase tracking-wider text-blue-400">{{ marketingLabels.why_teams_switch }}</p>
                     <h2 class="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">{{ compareSectionTitle }}</h2>
-                    <p class="mx-auto mt-4 max-w-2xl text-base text-slate-400 dark:text-slate-500">{{ $t('central.home.compare_section.subtitle') }}</p>
+                    <p class="mx-auto mt-4 max-w-2xl text-base text-slate-400 dark:text-slate-500">{{ home.compare_section.subtitle }}</p>
                 </div>
                 <div class="mt-12 space-y-3 lg:hidden">
                     <article
@@ -1430,7 +1433,7 @@ const featureGroups = computed(() => {
                                 </p>
                             </div>
                             <div class="rounded-xl bg-white/5 px-3 py-2 ring-1 ring-white/10">
-                                <p class="font-semibold text-slate-400 dark:text-slate-500">{{ $t('central.typical_stack') }}</p>
+                                <p class="font-semibold text-slate-400 dark:text-slate-500">{{ marketingLabels.typical_stack }}</p>
                                 <p class="mt-1 text-lg">
                                     <span v-if="row.them === false" class="text-slate-600 dark:text-slate-400">—</span>
                                     <span v-else-if="row.them === true" class="text-emerald-400">✓</span>
@@ -1444,9 +1447,9 @@ const featureGroups = computed(() => {
                     <table class="w-full text-sm">
                         <thead>
                             <tr class="border-b border-white/10 bg-white/5">
-                                <th class="px-6 py-4 text-left font-medium text-slate-400 dark:text-slate-500">{{ $t('central.capability') }}</th>
+                                <th class="px-6 py-4 text-left font-medium text-slate-400 dark:text-slate-500">{{ marketingLabels.capability }}</th>
                                 <th class="px-6 py-4 text-center font-semibold text-blue-400">{{ platformName }}</th>
-                                <th class="px-6 py-4 text-center font-medium text-slate-400 dark:text-slate-500">{{ $t('central.typical_stack') }}</th>
+                                <th class="px-6 py-4 text-center font-medium text-slate-400 dark:text-slate-500">{{ marketingLabels.typical_stack }}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -1466,7 +1469,7 @@ const featureGroups = computed(() => {
                     </table>
                 </div>
                 <div v-if="comparePages.length" class="mt-12 text-center">
-                    <p class="text-sm font-medium text-slate-400">{{ $t('central.compare_detailed_pages') }}</p>
+                    <p class="text-sm font-medium text-slate-400">{{ marketingLabels.compare_detailed_pages }}</p>
                     <div class="mt-4 flex flex-wrap items-center justify-center gap-2">
                         <Link
                             v-for="page in comparePages"
@@ -1474,7 +1477,7 @@ const featureGroups = computed(() => {
                             :href="page.path"
                             class="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/5 px-4 py-2 text-sm font-medium text-slate-200 transition hover:border-blue-400/40 hover:bg-blue-500/10 hover:text-white"
                         >
-                            {{ platformName }} vs {{ page.nav_label }}
+                            {{ compareLinkLabel(page) }}
                             <svg class="h-3.5 w-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
                         </Link>
                     </div>
@@ -1484,10 +1487,10 @@ const featureGroups = computed(() => {
                         href="/register"
                         class="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 px-8 py-4 text-sm font-bold text-white shadow-xl shadow-blue-600/30 transition hover:from-blue-500 hover:to-indigo-500"
                     >
-                        {{ $t('central.home.compare_section.cta') }}
+                        {{ home.compare_section.cta }}
                         <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
                     </Link>
-                    <p class="mt-3 text-sm text-slate-500 dark:text-slate-400">{{ $t('central.home.compare_section.cta_footnote', { days: trialDays }) }}</p>
+                    <p class="mt-3 text-sm text-slate-500 dark:text-slate-400">{{ home.compare_section.cta_footnote }}</p>
                 </div>
             </div>
         </section>
@@ -1495,25 +1498,25 @@ const featureGroups = computed(() => {
         <section id="how-it-works" class="bg-white dark:bg-slate-900 py-16 sm:py-24">
             <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                 <div class="text-center">
-                    <p class="text-sm font-semibold uppercase tracking-wider text-blue-600">{{ $t('central.how_it_works') }}</p>
-                    <h2 class="mt-3 text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100 sm:text-4xl">{{ $t('central.go_live_in_three_steps') }}</h2>
-                    <p class="mx-auto mt-4 max-w-2xl text-lg text-slate-600 dark:text-slate-400">{{ $t('central.home.how_it_works_subtitle', { days: trialDays }) }}</p>
+                    <p class="text-sm font-semibold uppercase tracking-wider text-blue-600">{{ marketingLabels.how_it_works }}</p>
+                    <h2 class="mt-3 text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100 sm:text-4xl">{{ marketingLabels.go_live_in_three_steps }}</h2>
+                    <p class="mx-auto mt-4 max-w-2xl text-lg text-slate-600 dark:text-slate-400">{{ home.how_it_works_subtitle }}</p>
                 </div>
-                <div class="mt-16 grid gap-8 lg:grid-cols-3 lg:gap-6">
+                <div class="mt-16 grid gap-8 sm:grid-cols-2 lg:grid-cols-3 lg:gap-6 lg:items-stretch">
                     <article
                         v-for="(step, index) in steps"
-                        :key="step.title"
-                        class="relative rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 p-8 transition hover:border-blue-200 dark:border-blue-900/60 hover:shadow-lg"
+                        :key="step.title ?? index"
+                        class="relative flex h-full min-h-[18rem] flex-col rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 p-8 transition hover:border-blue-200 dark:hover:border-blue-900/60 hover:shadow-lg"
                     >
                         <div
                             v-if="index < steps.length - 1"
                             class="pointer-events-none absolute left-[calc(50%+2rem)] top-14 hidden h-px w-[calc(100%-4rem)] bg-gradient-to-r from-blue-300 to-blue-100 lg:block"
                             aria-hidden="true"
                         />
-                        <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-600 text-lg font-bold text-white shadow-lg shadow-blue-600/30">{{ index + 1 }}</div>
+                        <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-blue-600 text-lg font-bold text-white shadow-lg shadow-blue-600/30">{{ index + 1 }}</div>
                         <h3 class="mt-6 text-xl font-semibold text-slate-900 dark:text-slate-100">{{ step.title }}</h3>
-                        <p class="mt-3 text-sm leading-relaxed text-slate-600 dark:text-slate-400">{{ step.body }}</p>
-                        <p class="mt-4 rounded-lg bg-white dark:bg-slate-900 px-3 py-2 text-xs leading-relaxed text-slate-500 dark:text-slate-400 ring-1 ring-slate-200 dark:ring-slate-700">{{ step.detail }}</p>
+                        <p class="mt-3 flex-1 text-sm leading-relaxed text-slate-600 dark:text-slate-400">{{ step.body }}</p>
+                        <p class="mt-4 shrink-0 rounded-lg bg-white dark:bg-slate-900 px-3 py-2 text-xs leading-relaxed text-slate-500 dark:text-slate-400 ring-1 ring-slate-200 dark:ring-slate-700">{{ step.detail }}</p>
                     </article>
                 </div>
             </div>
@@ -1525,12 +1528,12 @@ const featureGroups = computed(() => {
             </div>
             <div class="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                 <div class="text-center">
-                    <p class="text-sm font-semibold uppercase tracking-wider text-blue-400">{{ $t('central.pricing') }}</p>
+                    <p class="text-sm font-semibold uppercase tracking-wider text-blue-400">{{ marketingLabels.pricing }}</p>
                     <h2 class="mt-3 text-3xl font-bold tracking-tight sm:text-4xl lg:text-5xl">
-                        {{ $t('central.home.pricing_section.title') }}
+                        {{ home.pricing_section.title }}
                     </h2>
                     <p class="mx-auto mt-4 max-w-2xl text-lg text-slate-400 dark:text-slate-500">
-                        {{ $t('central.home.pricing_section.subtitle', { days: trialDays }) }}
+                        {{ home.pricing_section.subtitle }}
                     </p>
                     <div class="mt-8 flex justify-center">
                         <div class="inline-flex rounded-xl border border-white/10 bg-white/5 p-1 backdrop-blur">
@@ -1539,22 +1542,22 @@ const featureGroups = computed(() => {
                                 class="rounded-lg px-5 py-2.5 text-sm font-semibold transition"
                                 :class="billingInterval === 'month' ? 'bg-white text-slate-900 shadow-lg' : 'text-slate-300 hover:text-white'"
                                 @click="billingInterval = 'month'"
-                            >{{ $t('central.monthly') }}</button>
+                            >{{ marketingLabels.monthly }}</button>
                             <button
                                 type="button"
                                 class="rounded-lg px-5 py-2.5 text-sm font-semibold transition"
                                 :class="billingInterval === 'year' ? 'bg-white text-slate-900 shadow-lg' : 'text-slate-300 hover:text-white'"
                                 @click="billingInterval = 'year'"
-                            >{{ $t('central.yearly') }}</button>
+                            >{{ marketingLabels.yearly }}</button>
                         </div>
                     </div>
-                    <p v-if="billingInterval === 'year'" class="mt-3 text-sm font-semibold text-emerald-400">{{ $t('central.save_up_to_2_months_with_annual_billing') }}</p>
+                    <p v-if="billingInterval === 'year'" class="mt-3 text-sm font-semibold text-emerald-400">{{ marketingLabels.save_up_to_2_months_with_annual_billing }}</p>
                     <div v-if="indiaEnabled" class="mt-4 flex items-center justify-center gap-2 text-sm text-slate-400 dark:text-slate-500">
                         <svg class="h-4 w-4 text-slate-500" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24">
                             <circle cx="12" cy="12" r="9" />
                             <path stroke-linecap="round" d="M3 12h18M12 3c2.5 2.7 2.5 15.3 0 18M12 3c-2.5 2.7-2.5 15.3 0 18" />
                         </svg>
-                        <span>{{ $t('central.show_prices_in') }}</span>
+                        <span>{{ marketingLabels.show_prices_in }}</span>
                         <div class="inline-flex overflow-hidden rounded-lg border border-white/10">
                             <button
                                 type="button"
@@ -1580,7 +1583,7 @@ const featureGroups = computed(() => {
                             ? 'border-blue-500/50 bg-gradient-to-b from-blue-600/20 to-slate-900/80 shadow-2xl shadow-blue-600/20 ring-2 ring-blue-500/40 lg:scale-105'
                             : 'border-white/10 bg-white/5 backdrop-blur hover:border-white/20'"
                     >
-                        <span v-if="plan.slug === 'professional'" class="absolute -top-3.5 left-1/2 -translate-x-1/2 rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 px-4 py-1 text-xs font-bold text-white shadow-lg">{{ $t('central.most_popular') }}</span>
+                        <span v-if="plan.slug === 'professional'" class="absolute -top-3.5 left-1/2 -translate-x-1/2 rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 px-4 py-1 text-xs font-bold text-white shadow-lg">{{ marketingLabels.most_popular }}</span>
                         <h3 class="text-xl font-bold text-white">{{ plan.name }}</h3>
                         <p v-if="planTaglines[plan.slug]" class="mt-1 text-sm text-slate-400 dark:text-slate-500">{{ planTaglines[plan.slug] }}</p>
                         <p class="mt-5 flex items-baseline gap-1">
@@ -1588,7 +1591,7 @@ const featureGroups = computed(() => {
                             <span class="text-slate-400 dark:text-slate-500">{{ intervalSuffix }}</span>
                         </p>
                         <p v-if="billingInterval === 'year' && yearlySavingsPercent(plan, isIndia) > 0" class="mt-2 text-sm font-semibold text-emerald-400">
-                            {{ $t('central.home.pricing_section.save_vs_monthly', { percent: yearlySavingsPercent(plan, isIndia) }) }}
+                            {{ home.pricing_section.save_vs_monthly }}
                         </p>
                         <ul class="mt-8 flex-1 space-y-3">
                             <li v-for="item in planHighlights(plan)" :key="item" class="flex items-start gap-2.5 text-sm text-slate-300">
@@ -1603,9 +1606,9 @@ const featureGroups = computed(() => {
                                 ? 'bg-white text-slate-900 shadow-xl hover:bg-slate-100'
                                 : 'border border-white/20 text-white hover:bg-white/10'"
                         >
-                            {{ $t('central.home.pricing_section.start_trial', { days: trialDays }) }}
+                            {{ home.pricing_section.start_trial }}
                         </Link>
-                        <p class="mt-3 text-center text-xs text-slate-500 dark:text-slate-400">{{ $t('central.no_credit_card_required') }}</p>
+                        <p class="mt-3 text-center text-xs text-slate-500 dark:text-slate-400">{{ marketingLabels.no_credit_card_required }}</p>
                     </article>
                 </div>
 
@@ -1618,7 +1621,7 @@ const featureGroups = computed(() => {
                         <div class="lg:max-w-2xl">
                             <div class="flex flex-wrap items-center gap-3">
                                 <h3 class="text-2xl font-bold text-white">{{ plan.name }}</h3>
-                                <span class="rounded-full border border-white/20 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-slate-200">{{ $t('central.custom_pricing_price') }}</span>
+                                <span class="rounded-full border border-white/20 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-slate-200">{{ marketingLabels.custom_pricing_price }}</span>
                             </div>
                             <p v-if="planTaglines[plan.slug]" class="mt-2 text-sm text-slate-400 dark:text-slate-500">{{ planTaglines[plan.slug] }}</p>
                             <ul class="mt-5 grid gap-x-6 gap-y-2 sm:grid-cols-2">
@@ -1633,19 +1636,19 @@ const featureGroups = computed(() => {
                                 :href="contactHref"
                                 class="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-white px-8 py-3.5 text-sm font-bold text-slate-900 shadow-xl transition hover:bg-slate-100 sm:w-auto"
                             >
-                                {{ $t('central.contact_us') }}
+                                {{ marketingLabels.contact_us }}
                                 <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
                             </a>
-                            <p class="mt-3 text-xs text-slate-400 dark:text-slate-500">{{ $t('central.custom_pricing_cta_hint') }}</p>
+                            <p class="mt-3 text-xs text-slate-400 dark:text-slate-500">{{ marketingLabels.custom_pricing_cta_hint }}</p>
                         </div>
                     </div>
                 </div>
 
                 <div v-if="addons.length" class="mx-auto mt-16 max-w-5xl">
                     <div class="text-center">
-                        <p class="text-sm font-semibold uppercase tracking-wider text-violet-400">{{ $t('central.pricing_addons_label') }}</p>
-                        <h3 class="mt-2 text-2xl font-bold text-white sm:text-3xl">{{ $t('central.pricing_addons_title') }}</h3>
-                        <p class="mx-auto mt-3 max-w-2xl text-sm text-slate-400">{{ $t('central.pricing_addons_subtitle') }}</p>
+                        <p class="text-sm font-semibold uppercase tracking-wider text-violet-400">{{ marketingLabels.pricing_addons_label }}</p>
+                        <h3 class="mt-2 text-2xl font-bold text-white sm:text-3xl">{{ marketingLabels.pricing_addons_title }}</h3>
+                        <p class="mx-auto mt-3 max-w-2xl text-sm text-slate-400">{{ marketingLabels.pricing_addons_subtitle }}</p>
                     </div>
                     <div class="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                         <article
@@ -1657,13 +1660,13 @@ const featureGroups = computed(() => {
                             <p class="mt-2 flex-1 text-sm leading-relaxed text-slate-400">{{ addon.description }}</p>
                             <p class="mt-5 text-2xl font-extrabold text-white">
                                 {{ formatPrice(addonPrice(addon)) }}
-                                <span class="text-sm font-medium text-slate-400">{{ $t('central.pricing_addon_per_month') }}</span>
+                                <span class="text-sm font-medium text-slate-400">{{ marketingLabels.pricing_addon_per_month }}</span>
                             </p>
                         </article>
                     </div>
                     <p class="mt-8 text-center text-sm text-slate-400">
                         <Link href="/features/data-residency" class="font-semibold text-sky-300 transition hover:text-sky-200">
-                            {{ $t('central.feature_pages.data-residency.nav_label') }} →
+                            {{ featurePages.find((page) => page.slug === 'data-residency')?.nav_label ?? 'Data Residency' }} →
                         </Link>
                     </p>
                 </div>
@@ -1675,8 +1678,8 @@ const featureGroups = computed(() => {
         <section id="faq" class="bg-white dark:bg-slate-900 py-16 sm:py-24">
             <div class="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
                 <div class="text-center">
-                    <p class="text-sm font-semibold uppercase tracking-wider text-blue-600">{{ $t('central.faq') }}</p>
-                    <h2 class="mt-3 text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100">{{ $t('central.common_questions') }}</h2>
+                    <p class="text-sm font-semibold uppercase tracking-wider text-blue-600">{{ marketingLabels.faq }}</p>
+                    <h2 class="mt-3 text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100">{{ marketingLabels.common_questions }}</h2>
                 </div>
                 <div class="mt-12 space-y-3">
                     <div v-for="(item, index) in faqs" :key="item.q" class="overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 transition hover:border-slate-300 dark:hover:border-slate-600 dark:border-slate-700">
@@ -1699,26 +1702,26 @@ const featureGroups = computed(() => {
             </div>
             <div class="relative mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
                 <div class="overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-b from-white/10 to-white/5 p-6 text-center backdrop-blur-xl sm:p-10 lg:p-14">
-                    <p class="text-sm font-semibold uppercase tracking-wider text-blue-300">{{ $t('central.home.final_cta.eyebrow') }}</p>
+                    <p class="text-sm font-semibold uppercase tracking-wider text-blue-300">{{ home.final_cta.eyebrow }}</p>
                     <h2 class="mt-4 text-3xl font-extrabold tracking-tight text-white sm:text-4xl lg:text-5xl">
-                        {{ $t('central.home.final_cta.title_line1') }}<br class="hidden sm:block" />
-                        <span class="bg-gradient-to-r from-blue-400 to-violet-400 bg-clip-text text-transparent">{{ $t('central.home.final_cta.title_highlight') }}</span>
+                        {{ home.final_cta.title_line1 }}<br class="hidden sm:block" />
+                        <span class="bg-gradient-to-r from-blue-400 to-violet-400 bg-clip-text text-transparent">{{ home.final_cta.title_highlight }}</span>
                     </h2>
                     <p class="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-slate-300">
-                        {{ $t('central.home.final_cta.body') }}
+                        {{ home.final_cta.body }}
                     </p>
                     <div class="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
                         <Link
                             href="/register"
                             class="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 px-10 py-4 text-base font-bold text-white shadow-2xl shadow-blue-600/40 transition hover:from-blue-500 hover:to-indigo-500 sm:w-auto"
                         >
-                            {{ $t('central.home.final_cta.start_trial', { days: trialDays }) }}
+                            {{ home.final_cta.start_trial }}
                         </Link>
                         <Link
                             href="/login"
                             class="inline-flex w-full items-center justify-center rounded-2xl border border-white/20 px-10 py-4 text-sm font-semibold text-white transition hover:bg-white/10 sm:w-auto"
                         >
-                            {{ $t('central.home.final_cta.sign_in') }}
+                            {{ home.final_cta.sign_in }}
                         </Link>
                     </div>
                     <div class="mt-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-slate-400 dark:text-slate-500">

@@ -1,24 +1,31 @@
 <script setup>
 import { Link, useForm, usePage } from '@inertiajs/vue3';
 import { computed, onMounted, ref, watch } from 'vue';
-import { useI18n } from 'vue-i18n';
 import CentralLayout from '../../Layouts/CentralLayout.vue';
 import ContactTurnstile from '../../Components/Central/ContactTurnstile.vue';
 import { useClipboard } from '../../composables/useClipboard.js';
+
+import { formatMarketingTemplate } from '../../composables/useMarketingEnglish.js';
 
 const props = defineProps({
     brand: { type: String, default: 'helpefi' },
     trialDays: { type: Number, default: 14 },
     contactEmail: { type: String, default: '' },
+    content: { type: Object, default: () => ({}) },
     socialLinks: { type: Array, default: () => [] },
     turnstileSiteKey: { type: String, default: null },
 });
 
-const { t } = useI18n();
+const copy = (key, extra = {}) => formatMarketingTemplate(props.content[key] ?? key, {
+    days: props.trialDays,
+    contactEmail: props.contactEmail || 'hello@helpefi.com',
+    email: extra.email ?? props.contactEmail,
+    ...extra,
+});
 const page = usePage();
 const { copied, copy } = useClipboard();
 
-const platformName = computed(() => t('app.name'));
+const platformName = computed(() => props.brand);
 const submitted = computed(() => Boolean(page.props.flash?.contactSubmitted));
 const replyEmail = computed(() => page.props.flash?.contactReplyEmail || form.email || props.contactEmail);
 
@@ -111,9 +118,9 @@ const rateLimitError = computed(() => form.errors.rate_limit ?? page.props.error
 const turnstileError = computed(() => form.errors.cf_turnstile_response ?? null);
 
 const sidebarLinks = computed(() => [
-    { href: '/register', label: t('central.static_pages.contact.link_trial', { days: props.trialDays }) },
-    { href: '/pricing', label: t('central.static_pages.contact.link_pricing') },
-    { href: '/login', label: t('central.static_pages.contact.link_login') },
+    { href: '/register', label: copy('link_trial') },
+    { href: '/pricing', label: copy('link_pricing') },
+    { href: '/login', label: copy('link_login') },
 ]);
 </script>
 
@@ -126,14 +133,14 @@ const sidebarLinks = computed(() => [
                     <ol class="flex flex-wrap items-center gap-2">
                         <li><Link href="/" class="transition hover:text-white">{{ platformName }}</Link></li>
                         <li aria-hidden="true">/</li>
-                        <li class="text-slate-300">{{ $t('central.static_pages.contact.nav_label') }}</li>
+                        <li class="text-slate-300">{{ copy('nav_label') }}</li>
                     </ol>
                 </nav>
 
                 <div class="max-w-2xl">
-                    <h1 class="text-3xl font-extrabold tracking-tight sm:text-5xl">{{ $t('central.static_pages.contact.hero_title') }}</h1>
+                    <h1 class="text-3xl font-extrabold tracking-tight sm:text-5xl">{{ copy('hero_title') }}</h1>
                     <p class="mt-5 text-lg leading-relaxed text-slate-300">
-                        {{ $t('central.static_pages.contact.hero_subtitle', { contactEmail: contactEmail || 'hello@helpefi.com' }) }}
+                        {{ copy('hero_subtitle') }}
                     </p>
                 </div>
             </div>
@@ -146,19 +153,19 @@ const sidebarLinks = computed(() => [
                     class="mb-8 rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4 dark:border-emerald-900/60 dark:bg-emerald-950/40"
                     role="status"
                 >
-                    <p class="text-sm font-semibold text-emerald-900 dark:text-emerald-100">{{ $t('central.static_pages.contact.success_title') }}</p>
+                    <p class="text-sm font-semibold text-emerald-900 dark:text-emerald-100">{{ copy('success_title') }}</p>
                     <p class="mt-1 text-sm text-emerald-800 dark:text-emerald-200">
-                        {{ $t('central.static_pages.contact.success_body', { email: replyEmail }) }}
+                        {{ copy('success_body', { email: replyEmail }) }}
                     </p>
                 </div>
 
                 <div class="grid gap-8 lg:grid-cols-5 lg:gap-10">
                     <div class="lg:col-span-3">
                         <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-8">
-                            <h2 class="text-xl font-bold text-slate-900 dark:text-slate-100">{{ $t('central.static_pages.contact.form_title') }}</h2>
-                            <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">{{ $t('central.static_pages.contact.form_subtitle') }}</p>
+                            <h2 class="text-xl font-bold text-slate-900 dark:text-slate-100">{{ copy('form_title') }}</h2>
+                            <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">{{ copy('form_subtitle') }}</p>
 
-                            <div class="mt-6 flex flex-wrap gap-2" role="group" :aria-label="$t('central.static_pages.contact.topic_group_label')">
+                            <div class="mt-6 flex flex-wrap gap-2" role="group" :aria-label="copy('topic_group_label')">
                                 <button
                                     v-for="topic in topics"
                                     :key="topic.key"
@@ -169,7 +176,7 @@ const sidebarLinks = computed(() => [
                                         : 'border-slate-200 bg-white text-slate-700 hover:border-blue-300 hover:text-blue-700 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200 dark:hover:border-blue-500'"
                                     @click="selectTopic(topic.key)"
                                 >
-                                    {{ $t(`central.static_pages.contact.${topic.labelKey}`) }}
+                                    {{ copy(topic.labelKey) }}
                                 </button>
                             </div>
 
@@ -187,7 +194,7 @@ const sidebarLinks = computed(() => [
                                 <div class="grid gap-5 sm:grid-cols-2">
                                     <div>
                                         <label for="contact-name" class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">
-                                            {{ $t('central.static_pages.contact.name_label') }}
+                                            {{ copy('name_label') }}
                                         </label>
                                         <input
                                             id="contact-name"
@@ -203,7 +210,7 @@ const sidebarLinks = computed(() => [
 
                                     <div>
                                         <label for="contact-email" class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">
-                                            {{ $t('central.static_pages.contact.email_label') }}
+                                            {{ copy('email_label') }}
                                         </label>
                                         <input
                                             id="contact-email"
@@ -220,7 +227,7 @@ const sidebarLinks = computed(() => [
 
                                 <div>
                                     <label for="contact-company" class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">
-                                        {{ $t('central.static_pages.contact.company_label') }}
+                                        {{ copy('company_label') }}
                                     </label>
                                     <input
                                         id="contact-company"
@@ -233,7 +240,7 @@ const sidebarLinks = computed(() => [
 
                                 <div>
                                     <label for="contact-message" class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">
-                                        {{ $t('central.static_pages.contact.message_label') }}
+                                        {{ copy('message_label') }}
                                     </label>
                                     <textarea
                                         id="contact-message"
@@ -242,14 +249,14 @@ const sidebarLinks = computed(() => [
                                         rows="6"
                                         class="w-full rounded-xl border px-4 py-3 text-sm transition focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:bg-slate-950"
                                         :class="fieldError('message') ? 'border-red-300 dark:border-red-800' : 'border-slate-200 dark:border-slate-700'"
-                                        :placeholder="$t('central.static_pages.contact.message_placeholder')"
+                                        :placeholder="copy('message_placeholder')"
                                     />
                                     <p v-if="fieldError('message')" class="mt-1 text-xs text-red-600 dark:text-red-400">{{ fieldError('message') }}</p>
                                 </div>
 
                                 <label class="flex items-start gap-3 text-sm text-slate-600 dark:text-slate-400">
                                     <input v-model="form.marketing_consent" type="checkbox" class="mt-1 rounded border-slate-300 text-blue-600 focus:ring-blue-500" />
-                                    <span>{{ $t('central.marketing_leads.consent_short') }}</span>
+                                    <span>{{ page.props.marketingWidgets?.leads?.consent_short ?? copy('consent_short') }}</span>
                                 </label>
 
                                 <div v-if="turnstileSiteKey">
@@ -269,14 +276,14 @@ const sidebarLinks = computed(() => [
                                         class="inline-flex items-center justify-center rounded-xl bg-blue-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
                                         :disabled="!canSubmit"
                                     >
-                                        {{ form.processing ? $t('central.static_pages.contact.submitting') : $t('central.static_pages.contact.submit') }}
+                                        {{ form.processing ? copy('submitting') : copy('submit') }}
                                     </button>
                                     <a
                                         v-if="contactEmail"
                                         :href="`mailto:${contactEmail}`"
                                         class="text-sm font-medium text-slate-600 underline-offset-2 hover:text-blue-600 hover:underline dark:text-slate-400 dark:hover:text-blue-400"
                                     >
-                                        {{ $t('central.static_pages.contact.mailto_fallback') }}
+                                        {{ copy('mailto_fallback') }}
                                     </a>
                                 </div>
                             </form>
@@ -286,7 +293,7 @@ const sidebarLinks = computed(() => [
                     <aside class="space-y-5 lg:col-span-2">
                         <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
                             <h3 class="text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
-                                {{ $t('central.static_pages.contact.sidebar_email_title') }}
+                                {{ copy('sidebar_email_title') }}
                             </h3>
                             <div v-if="contactEmail" class="mt-4 flex items-center gap-2">
                                 <a :href="`mailto:${contactEmail}`" class="min-w-0 flex-1 truncate text-base font-semibold text-blue-600 hover:text-blue-700 dark:text-blue-400">
@@ -297,17 +304,17 @@ const sidebarLinks = computed(() => [
                                     class="shrink-0 rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
                                     @click="copyEmail"
                                 >
-                                    {{ copied ? $t('central.static_pages.contact.sidebar_copied') : $t('central.static_pages.contact.sidebar_copy') }}
+                                    {{ copied ? copy('sidebar_copied') : copy('sidebar_copy') }}
                                 </button>
                             </div>
                             <p class="mt-4 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
-                                {{ $t('central.static_pages.contact.sidebar_response_body') }}
+                                {{ copy('sidebar_response_body') }}
                             </p>
                         </div>
 
                         <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
                             <h3 class="text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
-                                {{ $t('central.static_pages.contact.sidebar_links_title') }}
+                                {{ copy('sidebar_links_title') }}
                             </h3>
                             <ul class="mt-4 space-y-2">
                                 <li v-for="link in sidebarLinks" :key="link.href">
@@ -319,9 +326,9 @@ const sidebarLinks = computed(() => [
                         </div>
 
                         <div class="rounded-2xl border border-dashed border-slate-300 bg-slate-100/70 p-6 dark:border-slate-700 dark:bg-slate-900/50">
-                            <h3 class="text-sm font-semibold text-slate-900 dark:text-slate-100">{{ $t('central.static_pages.contact.existing_customer_title') }}</h3>
+                            <h3 class="text-sm font-semibold text-slate-900 dark:text-slate-100">{{ copy('existing_customer_title') }}</h3>
                             <p class="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
-                                {{ $t('central.static_pages.contact.existing_customer_body', { contactEmail: contactEmail || 'hello@helpefi.com' }) }}
+                                {{ copy('existing_customer_body') }}
                             </p>
                         </div>
                     </aside>
@@ -331,10 +338,10 @@ const sidebarLinks = computed(() => [
 
         <section class="border-t border-slate-200 bg-white py-14 dark:border-slate-800 dark:bg-slate-900">
             <div class="mx-auto max-w-4xl px-4 text-center">
-                <h2 class="text-2xl font-bold text-slate-900 dark:text-slate-100">{{ $t('central.static_pages.contact.cta_title') }}</h2>
-                <p class="mt-3 text-base text-slate-600 dark:text-slate-400">{{ $t('central.static_pages.contact.cta_body') }}</p>
+                <h2 class="text-2xl font-bold text-slate-900 dark:text-slate-100">{{ copy('cta_title') }}</h2>
+                <p class="mt-3 text-base text-slate-600 dark:text-slate-400">{{ copy('cta_body') }}</p>
                 <Link href="/register" class="mt-8 inline-flex rounded-2xl bg-slate-900 px-8 py-3.5 text-sm font-bold text-white transition hover:bg-slate-800 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100">
-                    {{ $t('central.static_pages.contact.link_trial', { days: trialDays }) }}
+                    {{ copy('link_trial') }}
                 </Link>
             </div>
         </section>

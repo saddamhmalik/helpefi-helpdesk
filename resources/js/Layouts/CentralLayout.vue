@@ -1,12 +1,12 @@
 <script setup>
 import { Link, usePage } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
-import { useI18n } from 'vue-i18n';
 import AppLogo from '../Components/AppLogo.vue';
 import CentralMarketingHelpBot from '../Components/CentralMarketingHelpBot.vue';
+import { formatMarketingTemplate } from '../composables/useMarketingEnglish.js';
 import { useBodyScrollLock } from '../composables/useModal.js';
 
-defineProps({
+const props = defineProps({
     brand: { type: String, default: 'helpefi' },
     trialDays: { type: Number, default: 14 },
     showFooter: { type: Boolean, default: true },
@@ -15,21 +15,30 @@ defineProps({
     socialLinks: { type: Array, default: () => [] },
 });
 
-const { t } = useI18n();
 const page = usePage();
 const mobileOpen = ref(false);
 
+const chrome = computed(() => page.props.marketingChrome ?? {});
+const widgets = computed(() => page.props.marketingWidgets ?? {});
+const layout = computed(() => widgets.value.layout ?? chrome.value.layout ?? {});
+const staticPages = computed(() => page.props.staticPages ?? []);
 const verticalPages = computed(() => page.props.verticalPages ?? []);
 const comparePages = computed(() => page.props.comparePages ?? []);
+const migratePages = computed(() => page.props.migratePages ?? []);
+const featurePages = computed(() => page.props.featurePages ?? []);
+const parentCompany = computed(() => page.props.parentCompany ?? null);
+const aiDemoEnabled = computed(() => page.props.aiDemoEnabled ?? true);
+
+const layoutText = (key, params = {}) => formatMarketingTemplate(layout.value[key] ?? key, params);
+const chromeText = (key, params = {}) => formatMarketingTemplate(chrome.value[key] ?? key, { brand: props.brand, days: props.trialDays, ...params });
+const promoText = (key, params = {}) => formatMarketingTemplate(widgets.value.promo?.[key] ?? key, { days: props.trialDays, ...params });
+const staticNavLabel = (slug) => staticPages.value.find((entry) => entry.slug === slug)?.nav_label ?? slug;
+const blogText = (key, params = {}) => formatMarketingTemplate(chrome.value.blog?.[key] ?? key, { days: props.trialDays, ...params });
 
 const compareLinkLabel = (compare) => (
     compare.footer_label
     || `vs ${compare.competitor_name || compare.nav_label || compare.slug}`
 );
-const migratePages = computed(() => page.props.migratePages ?? []);
-const featurePages = computed(() => page.props.featurePages ?? []);
-const parentCompany = computed(() => page.props.parentCompany ?? null);
-const aiDemoEnabled = computed(() => page.props.aiDemoEnabled ?? true);
 
 const socialIcons = {
     x: 'M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z',
@@ -42,29 +51,29 @@ const socialIcons = {
 const iconPath = (key) => socialIcons[key] ?? '';
 
 const navLinks = computed(() => [
-    { href: '/#product', label: t('layouts.central.product') },
-    { href: '/#ai', label: t('layouts.central.ai') },
-    { href: '/#differentiators', label: t('layouts.central.why_us') },
-    { href: '/#features', label: t('layouts.central.features') },
-    { href: '/#how-it-works', label: t('layouts.central.how_it_works') },
-    { href: '/#pricing', label: t('layouts.central.pricing') },
-    { href: '/#faq', label: t('layouts.central.faq') },
+    { href: '/#product', label: layoutText('product') },
+    { href: '/#ai', label: layoutText('ai') },
+    { href: '/#differentiators', label: layoutText('why_us') },
+    { href: '/#features', label: layoutText('features') },
+    { href: '/#how-it-works', label: layoutText('how_it_works') },
+    { href: '/#pricing', label: layoutText('pricing') },
+    { href: '/#faq', label: layoutText('faq') },
 ]);
 
 useBodyScrollLock(mobileOpen);
 </script>
 
 <template>
-    <a href="#main-content" class="agent-skip-link">{{ $t('components.skip_to_main_content') }}</a>
+    <a href="#main-content" class="agent-skip-link">{{ chrome.skip_to_main_content ?? 'Skip to main content' }}</a>
     <div class="flex min-h-screen flex-col overflow-x-hidden">
         <div
             v-if="showPromoBar && trialDays"
             class="relative z-50 bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 px-4 py-2.5 text-center text-xs font-medium text-white sm:text-sm"
         >
             <div class="mx-auto flex max-w-4xl flex-col items-center justify-center gap-1 sm:flex-row sm:gap-2">
-                <span>{{ $t('central.home.promo_trial', { days: trialDays }) }}</span>
+                <span>{{ promoText('trial') }}</span>
                 <Link href="/register" class="font-bold underline underline-offset-2 hover:text-blue-100">
-                    {{ $t('central.home.promo_start') }}
+                    {{ promoText('start') }}
                 </Link>
             </div>
         </div>
@@ -79,7 +88,7 @@ useBodyScrollLock(mobileOpen);
                         href="/login"
                         class="rounded-lg px-3 py-2 text-sm font-medium agent-text-muted transition hover:text-slate-900 dark:hover:text-slate-100"
                     >
-                        {{ $t('layouts.central.sign_in') }}
+                        {{ layoutText('sign_in') }}
                     </Link>
                 </div>
 
@@ -99,13 +108,13 @@ useBodyScrollLock(mobileOpen);
                         href="/login"
                         class="rounded-lg px-3 py-2 text-sm font-medium agent-text-muted transition hover:text-slate-900 dark:text-slate-100 dark:hover:text-slate-100"
                     >
-                        {{ $t('layouts.central.sign_in') }}
+                        {{ layoutText('sign_in') }}
                     </Link>
                     <Link
                         href="/register"
                         class="rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-2 text-sm font-bold text-white shadow-lg shadow-blue-600/30 transition hover:from-blue-500 hover:to-indigo-500"
                     >
-                        {{ $t('layouts.central.start_free_trial') }}
+                        {{ layoutText('start_free_trial') }}
                     </Link>
                 </div>
 
@@ -157,10 +166,10 @@ useBodyScrollLock(mobileOpen);
                             {{ link.label }}
                         </a>
                         <Link href="/login" class="rounded-lg px-3 py-3 text-sm font-medium agent-text-muted active:bg-slate-100 dark:bg-slate-900 dark:active:bg-slate-800" @click="mobileOpen = false">
-                            {{ $t('layouts.central.sign_in') }}
+                            {{ layoutText('sign_in') }}
                         </Link>
                         <Link href="/register" class="mt-2 rounded-xl bg-blue-600 px-3 py-3 text-center text-sm font-semibold text-white" @click="mobileOpen = false">
-                            {{ $t('layouts.central.start_free_trial') }}
+                            {{ layoutText('start_free_trial') }}
                         </Link>
                     </nav>
                 </div>
@@ -181,7 +190,7 @@ useBodyScrollLock(mobileOpen);
                     <div class="max-w-md">
                         <AppLogo size="md" surface="light" />
                         <p class="mt-3 text-sm leading-relaxed text-slate-400 dark:text-slate-500">
-                            {{ $t('layouts.central.footer_tagline') }}
+                            {{ layoutText('footer_tagline') }}
                         </p>
                         <div v-if="socialLinks.length" class="mt-5 flex flex-wrap gap-2.5">
                             <a
@@ -200,19 +209,19 @@ useBodyScrollLock(mobileOpen);
                     </div>
 
                     <div class="w-full rounded-2xl border border-white/10 bg-gradient-to-br from-white/[0.07] to-white/[0.02] p-5 sm:p-6 lg:max-w-sm lg:shrink-0">
-                        <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">{{ $t('layouts.central.footer_get_started') }}</p>
+                        <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">{{ layoutText('footer_get_started') }}</p>
                         <Link
                             href="/register"
                             class="mt-4 flex w-full items-center justify-center rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-5 py-3 text-sm font-bold text-white shadow-lg shadow-blue-900/30 transition hover:from-blue-500 hover:to-indigo-500"
                         >
-                            {{ $t('layouts.central.start_free_trial') }}
+                            {{ layoutText('start_free_trial') }}
                         </Link>
                         <div class="mt-4 flex flex-col gap-2.5 border-t border-white/10 pt-4 text-sm sm:flex-row sm:flex-wrap sm:gap-x-5 sm:gap-y-2">
                             <Link href="/login" class="text-slate-300 transition hover:text-white">
-                                {{ $t('layouts.central.footer_sign_in_workspace') }}
+                                {{ layoutText('footer_sign_in_workspace') }}
                             </Link>
                             <a href="/#how-it-works" class="text-slate-400 transition hover:text-white">
-                                {{ $t('layouts.central.how_it_works') }}
+                                {{ layoutText('how_it_works') }}
                             </a>
                         </div>
                     </div>
@@ -220,37 +229,37 @@ useBodyScrollLock(mobileOpen);
 
                 <div class="grid gap-8 pt-10 sm:grid-cols-2 sm:gap-10 lg:grid-cols-6">
                     <div>
-                        <p class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">{{ $t('layouts.central.footer_product') }}</p>
+                        <p class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">{{ layoutText('footer_product') }}</p>
                         <ul class="mt-4 space-y-2.5 text-sm">
-                            <li><a href="/#differentiators" class="transition hover:text-white">{{ $t('layouts.central.why_us') }}</a></li>
-                        <li><Link href="/features" class="transition hover:text-white">{{ $t('layouts.central.features') }}</Link></li>
-                        <li><a href="/#product" class="transition hover:text-white">{{ $t('layouts.central.footer_platform_overview') }}</a></li>
-                            <li><a href="/#pricing" class="transition hover:text-white">{{ $t('layouts.central.pricing') }}</a></li>
-                            <li><a href="/#faq" class="transition hover:text-white">{{ $t('layouts.central.faq') }}</a></li>
+                            <li><a href="/#differentiators" class="transition hover:text-white">{{ layoutText('why_us') }}</a></li>
+                        <li><Link href="/features" class="transition hover:text-white">{{ layoutText('features') }}</Link></li>
+                        <li><a href="/#product" class="transition hover:text-white">{{ layoutText('footer_platform_overview') }}</a></li>
+                            <li><a href="/#pricing" class="transition hover:text-white">{{ layoutText('pricing') }}</a></li>
+                            <li><a href="/#faq" class="transition hover:text-white">{{ layoutText('faq') }}</a></li>
                         </ul>
                     </div>
                     <div>
-                        <p class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">{{ $t('layouts.central.footer_features') }}</p>
+                        <p class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">{{ layoutText('footer_features') }}</p>
                         <ul class="mt-4 space-y-2.5 text-sm">
                             <li v-for="feature in featurePages" :key="feature.slug">
                                 <Link :href="feature.path" class="transition hover:text-white">
-                                    {{ $t(`central.feature_pages.${feature.slug}.nav_label`) }}
+                                    {{ feature.nav_label }}
                                 </Link>
                             </li>
                         </ul>
                     </div>
                     <div>
-                        <p class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">{{ $t('layouts.central.footer_solutions') }}</p>
+                        <p class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">{{ layoutText('footer_solutions') }}</p>
                         <ul class="mt-4 space-y-2.5 text-sm">
                             <li v-for="vertical in verticalPages" :key="vertical.slug">
                                 <Link :href="vertical.path" class="transition hover:text-white">
-                                    {{ $t(`central.verticals.${vertical.slug}.nav_label`) }}
+                                    {{ vertical.nav_label }}
                                 </Link>
                             </li>
                         </ul>
                     </div>
                     <div>
-                        <p class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">{{ $t('layouts.central.footer_compare') }}</p>
+                        <p class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">{{ layoutText('footer_compare') }}</p>
                         <ul class="mt-4 space-y-2.5 text-sm">
                             <li v-for="compare in comparePages" :key="compare.slug">
                                 <Link :href="compare.path" class="transition hover:text-white">
@@ -260,24 +269,24 @@ useBodyScrollLock(mobileOpen);
                         </ul>
                     </div>
                     <div>
-                        <p class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">{{ $t('layouts.central.footer_migrate') }}</p>
+                        <p class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">{{ layoutText('footer_migrate') }}</p>
                         <ul class="mt-4 space-y-2.5 text-sm">
                             <li v-for="migrate in migratePages" :key="migrate.slug">
                                 <Link :href="migrate.path" class="transition hover:text-white">
-                                    {{ $t(`central.migrations.${migrate.slug}.source_name`) }}
+                                    {{ migrate.source_name ?? migrate.nav_label }}
                                 </Link>
                             </li>
                         </ul>
                     </div>
                     <div>
-                        <p class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">{{ $t('layouts.central.footer_company') }}</p>
+                        <p class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">{{ layoutText('footer_company') }}</p>
                         <ul class="mt-4 space-y-2.5 text-sm">
-                            <li><Link href="/about" class="transition hover:text-white">{{ $t('central.static_pages.about.nav_label') }}</Link></li>
-                            <li><Link href="/contact" class="transition hover:text-white">{{ $t('central.static_pages.contact.nav_label') }}</Link></li>
-                            <li><Link href="/blog" class="transition hover:text-white">{{ $t('central.blog.index_nav_label') }}</Link></li>
-                            <li><Link href="/pricing" class="transition hover:text-white">{{ $t('central.static_pages.pricing.nav_label') }}</Link></li>
-                            <li><Link href="/privacy" class="transition hover:text-white">{{ $t('central.static_pages.privacy.nav_label') }}</Link></li>
-                            <li><Link href="/terms" class="transition hover:text-white">{{ $t('central.static_pages.terms.nav_label') }}</Link></li>
+                            <li><Link href="/about" class="transition hover:text-white">{{ staticNavLabel('about') }}</Link></li>
+                            <li><Link href="/contact" class="transition hover:text-white">{{ staticNavLabel('contact') }}</Link></li>
+                            <li><Link href="/blog" class="transition hover:text-white">{{ blogText('index_nav_label') }}</Link></li>
+                            <li><Link href="/pricing" class="transition hover:text-white">{{ staticNavLabel('pricing') }}</Link></li>
+                            <li><Link href="/privacy" class="transition hover:text-white">{{ staticNavLabel('privacy') }}</Link></li>
+                            <li><Link href="/terms" class="transition hover:text-white">{{ staticNavLabel('terms') }}</Link></li>
                         </ul>
                     </div>
                 </div>
@@ -285,9 +294,9 @@ useBodyScrollLock(mobileOpen);
                     class="mt-8 flex flex-col items-start gap-2 border-t border-white/10 pt-6 sm:mt-12 sm:flex-row sm:items-center sm:justify-between sm:pt-8"
                     :class="aiDemoEnabled ? 'pr-[4.75rem] sm:pr-0' : ''"
                 >
-                    <p class="text-xs text-slate-500 dark:text-slate-400">© {{ new Date().getFullYear() }} {{ brand }}. {{ $t('layouts.central.footer_rights') }}</p>
+                    <p class="text-xs text-slate-500 dark:text-slate-400">© {{ new Date().getFullYear() }} {{ brand }}. {{ layoutText('footer_rights') }}</p>
                     <p v-if="parentCompany" class="text-xs text-slate-500 dark:text-slate-400 sm:text-right">
-                        {{ $t('layouts.central.footer_product_of') }}
+                        {{ layoutText('footer_product_of') }}
                         <a
                             :href="parentCompany.url"
                             target="_blank"

@@ -2,10 +2,10 @@
 
 namespace App\Domains\Tenancy\Services;
 
-use App\Domains\Tenancy\Support\CompareLandingDefinition;
 use App\Domains\Tenancy\Support\MarketingContentInterpolator;
+use App\Domains\Tenancy\Support\VerticalLandingDefinition;
 
-class CompareLandingContentService
+class VerticalLandingContentService
 {
     public function __construct(private MarketingContentInterpolator $interpolator)
     {
@@ -13,7 +13,7 @@ class CompareLandingContentService
 
     public function forSlug(string $slug): ?array
     {
-        $content = config("marketing_comparison_content.{$slug}");
+        $content = config("marketing_vertical_content.{$slug}");
 
         if (! is_array($content)) {
             return null;
@@ -24,7 +24,7 @@ class CompareLandingContentService
 
     public function navigation(): array
     {
-        return collect(CompareLandingDefinition::slugs())
+        return collect(VerticalLandingDefinition::slugs())
             ->map(function (string $slug) {
                 $content = $this->forSlug($slug);
 
@@ -34,10 +34,8 @@ class CompareLandingContentService
 
                 return [
                     'slug' => $slug,
-                    'path' => CompareLandingDefinition::path($slug),
-                    'nav_label' => (string) ($content['nav_label'] ?? $content['competitor_name'] ?? $slug),
-                    'competitor_name' => (string) ($content['competitor_name'] ?? $slug),
-                    'footer_label' => 'vs '.(string) ($content['competitor_name'] ?? $content['nav_label'] ?? $slug),
+                    'path' => VerticalLandingDefinition::path($slug),
+                    'nav_label' => (string) ($content['nav_label'] ?? $slug),
                 ];
             })
             ->filter()

@@ -18,6 +18,8 @@ class VerticalLandingTest extends TestCase
                 ->assertInertia(fn ($page) => $page
                     ->component('Central/VerticalLanding')
                     ->where('vertical', $slug)
+                    ->has('content.pains')
+                    ->has('content.features')
                 );
         }
     }

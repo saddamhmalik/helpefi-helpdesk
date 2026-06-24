@@ -1,17 +1,18 @@
 <script setup>
 import { Link } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
-import { useI18n } from 'vue-i18n';
 import CentralLayout from '../../Layouts/CentralLayout.vue';
 import { useCurrency } from '../../composables/useCurrency.js';
 import { useBillingInterval } from '../../composables/useBillingInterval.js';
-import { useMarketingCopy } from '../../composables/useMarketingCopy.js';
+import { formatMarketingTemplate, useMarketingEnglish } from '../../composables/useMarketingEnglish.js';
 
 const props = defineProps({
     brand: { type: String, default: 'helpefi' },
     trialDays: { type: Number, default: 14 },
     page: { type: String, required: true },
     pageMeta: { type: Object, default: () => ({}) },
+    content: { type: Object, required: true },
+    pricingMeta: { type: Object, default: null },
     plans: { type: Array, default: () => [] },
     addons: { type: Array, default: () => [] },
     featurePages: { type: Array, default: () => [] },
@@ -21,65 +22,26 @@ const props = defineProps({
     currency: { type: Object, default: () => ({}) },
     baseCurrency: { type: Object, default: () => ({}) },
     indiaCurrency: { type: Object, default: () => ({}) },
+    marketingChrome: { type: Object, default: () => ({}) },
+    marketingLabels: { type: Object, default: () => ({}) },
 });
 
-const { t, tm, te } = useI18n();
-const { platformName, brandParams, interpolate } = useMarketingCopy(computed(() => props.trialDays));
-const copyPrefix = computed(() => `central.static_pages.${props.page}`);
+const platformName = computed(() => props.brand || 'helpefi');
+const { label } = useMarketingEnglish(platformName, computed(() => props.marketingLabels));
 const isPricing = computed(() => props.page === 'pricing');
 const isLegalPage = computed(() => ['privacy', 'terms'].includes(props.page));
 
-const effectiveDate = computed(() => (
-    te(`${copyPrefix.value}.effective_date`) ? t(`${copyPrefix.value}.effective_date`) : ''
-));
-
-const subtitleParams = computed(() => {
-    const params = { days: props.trialDays };
-
-    if (props.contactEmail) {
-        params.contactEmail = props.contactEmail;
-    }
-
-    return params;
-});
+const effectiveDate = computed(() => props.content.effective_date ?? '');
 
 const copy = computed(() => ({
-    navLabel: t(`${copyPrefix.value}.nav_label`),
-    heroTitle: t(`${copyPrefix.value}.hero_title`),
-    heroSubtitle: t(`${copyPrefix.value}.hero_subtitle`, { ...brandParams.value, ...subtitleParams.value }),
-    ctaTitle: t(`${copyPrefix.value}.cta_title`, brandParams.value),
-    ctaBody: t(`${copyPrefix.value}.cta_body`, { ...brandParams.value, ...subtitleParams.value }),
+    navLabel: props.content.nav_label ?? '',
+    heroTitle: props.content.hero_title ?? '',
+    heroSubtitle: props.content.hero_subtitle ?? '',
+    ctaTitle: props.content.cta_title ?? '',
+    ctaBody: props.content.cta_body ?? '',
 }));
 
-const interpolatePageCopy = (value) => {
-    let copy = interpolate(value);
-
-    if (props.contactEmail && typeof copy === 'string') {
-        copy = copy.replaceAll('{contactEmail}', props.contactEmail);
-    }
-
-    return copy;
-};
-
-const sections = computed(() => {
-    const value = tm(`${copyPrefix.value}.sections`);
-
-    if (!Array.isArray(value)) {
-        return [];
-    }
-
-    return value.map((section) => ({
-        ...section,
-        title: interpolatePageCopy(section.title),
-        body: interpolatePageCopy(section.body),
-        paragraphs: Array.isArray(section.paragraphs)
-            ? section.paragraphs.map(interpolatePageCopy)
-            : section.paragraphs,
-        items: Array.isArray(section.items)
-            ? section.items.map(interpolatePageCopy)
-            : section.items,
-    }));
-});
+const sections = computed(() => props.content.sections ?? []);
 
 const selectedCurrencyCode = ref(props.currency?.code ?? props.baseCurrency.code);
 
@@ -103,19 +65,13 @@ const contactHref = computed(() => (props.contactEmail ? `mailto:${props.contact
 const { formatPrice } = useCurrency(() => activeCurrency.value);
 const { billingInterval, intervalSuffix, planPrice, yearlySavingsPercent } = useBillingInterval();
 
-const planTaglines = computed(() => {
-    const value = tm('central.home.plan_taglines');
-    return value && typeof value === 'object' ? value : {};
-});
-
-const featureLabels = computed(() => {
-    const value = tm('central.home.feature_labels');
-    return value && typeof value === 'object' ? value : {};
-});
+const planTaglines = computed(() => props.pricingMeta?.plan_taglines ?? {});
+const featureLabels = computed(() => props.pricingMeta?.feature_labels ?? {});
+const planLimits = computed(() => props.pricingMeta?.plan_limits ?? {});
 
 const formatLimit = (value) => (
     value === null || value === 'unlimited'
-        ? t('central.home.plan_limits.unlimited')
+        ? (planLimits.value.unlimited ?? 'Unlimited')
         : value
 );
 
@@ -124,8 +80,8 @@ const planHighlights = (plan) => {
     const agents = formatLimit(plan.limits?.agents);
     const tickets = formatLimit(plan.limits?.tickets_monthly);
     const items = [
-        t('central.home.plan_limits.team_members', { count: agents }),
-        t('central.home.plan_limits.tickets_per_month', { count: tickets }),
+        formatMarketingTemplate(planLimits.value.team_members ?? '', { count: agents }),
+        formatMarketingTemplate(planLimits.value.tickets_per_month ?? '', { count: tickets }),
     ];
 
     (plan.features ?? []).forEach((key) => {
@@ -145,6 +101,8 @@ const addonPrice = (addon) => (
         ? (addon.price_monthly_india ?? addon.price_monthly ?? 0)
         : (addon.price_monthly ?? 0)
 );
+
+const pricingSection = computed(() => props.pricingMeta?.pricing_section ?? {});
 </script>
 
 <template>
@@ -161,7 +119,7 @@ const addonPrice = (addon) => (
 
                 <div class="max-w-3xl">
                     <h1 class="text-3xl font-extrabold tracking-tight sm:text-5xl">{{ copy.heroTitle }}</h1>
-                    <p class="mt-6 text-lg leading-relaxed text-slate-300">{{ $t(`${copyPrefix}.hero_subtitle`, subtitleParams) }}</p>
+                    <p class="mt-6 text-lg leading-relaxed text-slate-300">{{ copy.heroSubtitle }}</p>
                     <p v-if="effectiveDate" class="mt-4 text-sm text-slate-400">{{ effectiveDate }}</p>
                     <div v-if="isPricing" class="mt-8 flex flex-col gap-3 sm:flex-row">
                         <Link href="/register" class="inline-flex items-center justify-center rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 px-8 py-4 text-sm font-bold text-white">Start {{ trialDays }}-day free trial</Link>
@@ -180,21 +138,21 @@ const addonPrice = (addon) => (
                             class="rounded-lg px-5 py-2.5 text-sm font-semibold transition"
                             :class="billingInterval === 'month' ? 'bg-white text-slate-900 shadow-lg' : 'text-slate-300 hover:text-white'"
                             @click="billingInterval = 'month'"
-                        >{{ $t('central.monthly') }}</button>
+                        >{{ label('monthly') }}</button>
                         <button
                             type="button"
                             class="rounded-lg px-5 py-2.5 text-sm font-semibold transition"
                             :class="billingInterval === 'year' ? 'bg-white text-slate-900 shadow-lg' : 'text-slate-300 hover:text-white'"
                             @click="billingInterval = 'year'"
-                        >{{ $t('central.yearly') }}</button>
+                        >{{ label('yearly') }}</button>
                     </div>
-                    <p v-if="billingInterval === 'year'" class="mt-3 text-sm font-semibold text-emerald-400">{{ $t('central.save_up_to_2_months_with_annual_billing') }}</p>
+                    <p v-if="billingInterval === 'year'" class="mt-3 text-sm font-semibold text-emerald-400">{{ label('save_up_to_2_months_with_annual_billing') }}</p>
                     <div v-if="indiaEnabled" class="mt-4 flex items-center justify-center gap-2 text-sm text-slate-400">
                         <svg class="h-4 w-4 text-slate-500" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24">
                             <circle cx="12" cy="12" r="9" />
                             <path stroke-linecap="round" d="M3 12h18M12 3c2.5 2.7 2.5 15.3 0 18M12 3c-2.5 2.7-2.5 15.3 0 18" />
                         </svg>
-                        <span>{{ $t('central.show_prices_in') }}</span>
+                        <span>{{ label('show_prices_in') }}</span>
                         <div class="inline-flex overflow-hidden rounded-lg border border-white/10">
                             <button
                                 type="button"
@@ -221,7 +179,7 @@ const addonPrice = (addon) => (
                             ? 'border-blue-500/50 bg-gradient-to-b from-blue-600/20 to-slate-900/80 shadow-2xl shadow-blue-600/20 ring-2 ring-blue-500/40 lg:scale-105'
                             : 'border-white/10 bg-white/5 backdrop-blur hover:border-white/20'"
                     >
-                        <span v-if="plan.slug === 'professional'" class="absolute -top-3.5 left-1/2 -translate-x-1/2 rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 px-4 py-1 text-xs font-bold text-white shadow-lg">{{ $t('central.most_popular') }}</span>
+                        <span v-if="plan.slug === 'professional'" class="absolute -top-3.5 left-1/2 -translate-x-1/2 rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 px-4 py-1 text-xs font-bold text-white shadow-lg">{{ label('most_popular') }}</span>
                         <h2 class="text-xl font-bold text-white">{{ plan.name }}</h2>
                         <p v-if="planTaglines[plan.slug]" class="mt-1 text-sm text-slate-400">{{ planTaglines[plan.slug] }}</p>
                         <p class="mt-5 flex items-baseline gap-1">
@@ -229,7 +187,7 @@ const addonPrice = (addon) => (
                             <span class="text-slate-400">{{ intervalSuffix }}</span>
                         </p>
                         <p v-if="billingInterval === 'year' && yearlySavingsPercent(plan, isIndia) > 0" class="mt-2 text-sm font-semibold text-emerald-400">
-                            {{ $t('central.home.pricing_section.save_vs_monthly', { percent: yearlySavingsPercent(plan, isIndia) }) }}
+                            {{ formatMarketingTemplate(pricingSection.save_vs_monthly ?? '', { percent: yearlySavingsPercent(plan, isIndia) }) }}
                         </p>
                         <ul class="mt-8 flex-1 space-y-3">
                             <li v-for="item in planHighlights(plan)" :key="item" class="flex items-start gap-2.5 text-sm text-slate-300">
@@ -244,9 +202,9 @@ const addonPrice = (addon) => (
                                 ? 'bg-white text-slate-900 shadow-xl hover:bg-slate-100'
                                 : 'border border-white/20 text-white hover:bg-white/10'"
                         >
-                            {{ $t('central.home.pricing_section.start_trial', { days: trialDays }) }}
+                            {{ pricingSection.start_trial ?? `Start ${trialDays}-day free trial` }}
                         </Link>
-                        <p class="mt-3 text-center text-xs text-slate-500">{{ $t('central.no_credit_card_required') }}</p>
+                        <p class="mt-3 text-center text-xs text-slate-500">{{ label('no_credit_card_required') }}</p>
                     </article>
                 </div>
 
@@ -259,7 +217,7 @@ const addonPrice = (addon) => (
                         <div class="lg:max-w-2xl">
                             <div class="flex flex-wrap items-center gap-3">
                                 <h3 class="text-2xl font-bold text-white">{{ plan.name }}</h3>
-                                <span class="rounded-full border border-white/20 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-slate-200">{{ $t('central.custom_pricing_price') }}</span>
+                                <span class="rounded-full border border-white/20 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-slate-200">{{ label('custom_pricing_price') }}</span>
                             </div>
                             <p v-if="planTaglines[plan.slug]" class="mt-2 text-sm text-slate-400">{{ planTaglines[plan.slug] }}</p>
                             <ul class="mt-5 grid gap-x-6 gap-y-2 sm:grid-cols-2">
@@ -274,19 +232,19 @@ const addonPrice = (addon) => (
                                 :href="contactHref"
                                 class="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-white px-8 py-3.5 text-sm font-bold text-slate-900 shadow-xl transition hover:bg-slate-100 sm:w-auto"
                             >
-                                {{ $t('central.contact_us') }}
+                                {{ label('contact_us') }}
                                 <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
                             </a>
-                            <p class="mt-3 text-xs text-slate-400">{{ $t('central.custom_pricing_cta_hint') }}</p>
+                            <p class="mt-3 text-xs text-slate-400">{{ label('custom_pricing_cta_hint') }}</p>
                         </div>
                     </div>
                 </div>
 
                 <div v-if="addons.length" class="mx-auto mt-16 max-w-5xl">
                     <div class="text-center">
-                        <p class="text-sm font-semibold uppercase tracking-wider text-violet-400">{{ $t('central.pricing_addons_label') }}</p>
-                        <h3 class="mt-2 text-2xl font-bold text-white sm:text-3xl">{{ $t('central.pricing_addons_title') }}</h3>
-                        <p class="mx-auto mt-3 max-w-2xl text-sm text-slate-400">{{ $t('central.pricing_addons_subtitle') }}</p>
+                        <p class="text-sm font-semibold uppercase tracking-wider text-violet-400">{{ label('pricing_addons_label') }}</p>
+                        <h3 class="mt-2 text-2xl font-bold text-white sm:text-3xl">{{ label('pricing_addons_title') }}</h3>
+                        <p class="mx-auto mt-3 max-w-2xl text-sm text-slate-400">{{ label('pricing_addons_subtitle') }}</p>
                     </div>
                     <div class="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                         <article
@@ -298,13 +256,13 @@ const addonPrice = (addon) => (
                             <p class="mt-2 flex-1 text-sm leading-relaxed text-slate-400">{{ addon.description }}</p>
                             <p class="mt-5 text-2xl font-extrabold text-white">
                                 {{ formatPrice(addonPrice(addon)) }}
-                                <span class="text-sm font-medium text-slate-400">{{ $t('central.pricing_addon_per_month') }}</span>
+                                <span class="text-sm font-medium text-slate-400">{{ label('pricing_addon_per_month') }}</span>
                             </p>
                         </article>
                     </div>
                     <p class="mt-8 text-center text-sm text-slate-400">
                         <Link href="/features/data-residency" class="font-semibold text-sky-300 transition hover:text-sky-200">
-                            {{ $t('central.feature_pages.data-residency.nav_label') }} →
+                            {{ featurePages.find((page) => page.slug === 'data-residency')?.nav_label ?? 'Data Residency' }} →
                         </Link>
                     </p>
                 </div>
@@ -332,7 +290,7 @@ const addonPrice = (addon) => (
 
         <section v-if="featurePages.length && !isPricing && !isLegalPage" class="border-t border-slate-200 bg-slate-50 py-12 dark:border-slate-800 dark:bg-slate-950">
             <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-                <h2 class="text-lg font-semibold text-slate-900 dark:text-slate-100">{{ $t('central.explore_product_features') }}</h2>
+                <h2 class="text-lg font-semibold text-slate-900 dark:text-slate-100">{{ marketingChrome.explore_product_features ?? 'Explore product features' }}</h2>
                 <div class="mt-4 flex flex-wrap gap-3">
                     <Link
                         v-for="feature in featurePages"
@@ -340,7 +298,7 @@ const addonPrice = (addon) => (
                         :href="feature.path"
                         class="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-blue-300 hover:text-blue-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
                     >
-                        {{ $t(`central.feature_pages.${feature.slug}.nav_label`) }}
+                        {{ feature.nav_label }}
                     </Link>
                 </div>
             </div>

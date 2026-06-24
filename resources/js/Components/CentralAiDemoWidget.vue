@@ -1,6 +1,7 @@
 <script setup>
+import { usePage } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
-import { useI18n } from 'vue-i18n';
+import { formatMarketingTemplate } from '../composables/useMarketingEnglish.js';
 import { csrfHeaders } from '../support/csrf.js';
 
 const props = defineProps({
@@ -8,12 +9,13 @@ const props = defineProps({
     brand: { type: String, default: '' },
 });
 
-const { t, tm } = useI18n();
-
-const platformName = computed(() => props.brand || t('app.name'));
+const page = usePage();
+const aiDemo = computed(() => page.props.marketingWidgets?.aiDemo ?? {});
+const demoText = (key, params = {}) => formatMarketingTemplate(aiDemo.value[key] ?? key, { brand: props.brand, ...params });
+const platformName = computed(() => props.brand || 'helpefi');
 
 const samplePrompts = computed(() => {
-    const items = tm('central.home.ai_demo.sample_prompts');
+    const items = aiDemo.value.sample_prompts;
 
     return Array.isArray(items) ? items : [];
 });
@@ -53,7 +55,7 @@ const ask = async (text) => {
         const data = await response.json();
 
         if (!response.ok) {
-            error.value = data.message || data.errors?.query?.[0] || t('central.home.ai_demo.error_generic');
+            error.value = data.message || data.errors?.query?.[0] || demoText('error_generic');
             return;
         }
 
@@ -61,7 +63,7 @@ const ask = async (text) => {
         articles.value = data.articles ?? [];
         source.value = data.source ?? '';
     } catch {
-        error.value = t('central.home.ai_demo.error_network');
+        error.value = demoText('error_network');
     } finally {
         loading.value = false;
     }
@@ -72,8 +74,8 @@ const ask = async (text) => {
     <div class="overflow-hidden rounded-2xl border border-violet-200 dark:border-violet-900/60 bg-white dark:bg-slate-900 shadow-2xl shadow-violet-900/10 ring-1 ring-violet-100 dark:ring-violet-900/40">
         <div class="flex flex-col gap-2 border-b border-violet-100 bg-gradient-to-r from-violet-600 to-indigo-600 px-4 py-3 text-white sm:flex-row sm:items-center sm:justify-between sm:px-5 sm:py-4">
             <div class="min-w-0">
-                <p class="text-sm font-semibold">{{ $t('central.home.ai_demo.title') }}</p>
-                <p class="text-[11px] text-violet-100">{{ $t('central.home.ai_demo.subtitle', { brand: platformName }) }}</p>
+                <p class="text-sm font-semibold">{{ demoText('title') }}</p>
+                <p class="text-[11px] text-violet-100">{{ demoText('subtitle') }}</p>
             </div>
             <span
                 v-if="source"
@@ -85,8 +87,8 @@ const ask = async (text) => {
 
         <div class="space-y-4 bg-slate-50 dark:bg-slate-950/80 p-4 sm:p-5">
             <div v-if="!answer && !loading && !error" class="rounded-xl border border-dashed border-violet-200 dark:border-violet-900/60 bg-white dark:bg-slate-900 px-4 py-6 text-center">
-                <p class="text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('central.home.ai_demo.empty_title') }}</p>
-                <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">{{ $t('central.home.ai_demo.empty_body') }}</p>
+                <p class="text-sm font-medium text-slate-700 dark:text-slate-300">{{ demoText('empty_title') }}</p>
+                <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">{{ demoText('empty_body') }}</p>
                 <div class="mt-4 flex flex-wrap justify-center gap-2">
                     <button
                         v-for="prompt in samplePrompts"
@@ -107,7 +109,7 @@ const ask = async (text) => {
                         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                     </svg>
                 </span>
-                <p class="text-sm text-slate-600 dark:text-slate-400">{{ $t('central.home.ai_demo.loading') }}</p>
+                <p class="text-sm text-slate-600 dark:text-slate-400">{{ demoText('loading') }}</p>
             </div>
 
             <div v-if="error" class="rounded-xl border border-red-200 dark:border-red-900/60 bg-red-50 dark:bg-red-950/40 px-4 py-3 text-sm text-red-700 dark:text-red-300">
@@ -121,12 +123,12 @@ const ask = async (text) => {
                     </div>
                 </div>
                 <div class="flex justify-start">
-                    <div class="max-w-[90%] rounded-2xl rounded-bl-md border border-violet-100 bg-white dark:bg-slate-900 px-4 py-3 text-sm leading-relaxed text-slate-800 dark:text-slate-200 shadow-sm whitespace-pre-wrap">
+                    <div class="max-w-[90%] whitespace-pre-wrap rounded-2xl rounded-bl-md border border-violet-100 bg-white px-4 py-3 text-sm leading-relaxed text-slate-800 shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200">
                         {{ answer }}
                     </div>
                 </div>
-                <div v-if="articles.length" class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-3">
-                    <p class="text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">{{ $t('central.home.ai_demo.sources') }}</p>
+                <div v-if="articles.length" class="rounded-xl border border-slate-200 bg-white p-3 dark:border-slate-800 dark:bg-slate-900">
+                    <p class="text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">{{ demoText('sources') }}</p>
                     <ul class="mt-2 space-y-1.5">
                         <li
                             v-for="article in articles"
@@ -146,15 +148,15 @@ const ask = async (text) => {
                     type="text"
                     maxlength="500"
                     :disabled="loading || !enabled"
-                    :placeholder="$t('central.home.ai_demo.placeholder')"
-                    class="min-w-0 flex-1 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-3 text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:text-slate-500 focus:border-violet-400 focus:outline-none focus:ring-2 focus:ring-violet-400/20 disabled:opacity-60"
+                    :placeholder="demoText('placeholder')"
+                    class="min-w-0 flex-1 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-violet-400 focus:outline-none focus:ring-2 focus:ring-violet-400/20 disabled:opacity-60 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100"
                 />
                 <button
                     type="submit"
                     :disabled="loading || !query.trim() || !enabled"
                     class="shrink-0 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 px-5 py-3 text-sm font-semibold text-white shadow-md shadow-violet-600/25 transition hover:from-violet-500 hover:to-indigo-500 disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                    {{ $t('central.home.ai_demo.ask') }}
+                    {{ demoText('ask') }}
                 </button>
             </form>
         </div>

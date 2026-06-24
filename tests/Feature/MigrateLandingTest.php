@@ -23,6 +23,8 @@ class MigrateLandingTest extends TestCase
                 ->assertInertia(fn ($page) => $page
                     ->component('Central/MigrateLanding')
                     ->where('source', $slug)
+                    ->has('content.steps')
+                    ->has('content.checklist')
                 );
         }
     }

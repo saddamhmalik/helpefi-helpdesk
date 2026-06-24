@@ -1,8 +1,8 @@
 <script setup>
-import { Link } from '@inertiajs/vue3';
+import { Link, usePage } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
-import { useI18n } from 'vue-i18n';
 import CentralLayout from '../../Layouts/CentralLayout.vue';
+import { formatMarketingTemplate } from '../../composables/useMarketingEnglish.js';
 
 const props = defineProps({
     brand: { type: String, default: 'helpefi' },
@@ -13,7 +13,9 @@ const props = defineProps({
     socialLinks: { type: Array, default: () => [] },
 });
 
-const { t } = useI18n();
+const page = usePage();
+const chrome = computed(() => page.props.marketingChrome ?? {});
+const chromeText = (key, params = {}) => formatMarketingTemplate(chrome.value[key] ?? key, { brand: props.brand, ...params });
 
 const platformName = computed(() => props.brand);
 
@@ -86,7 +88,7 @@ const isDash = (value) => value === false;
                     <ol class="flex flex-wrap items-center gap-2">
                         <li><Link href="/" class="transition hover:text-white">{{ platformName }}</Link></li>
                         <li aria-hidden="true">/</li>
-                        <li><Link href="/#compare" class="transition hover:text-white">{{ $t('central.compare_nav') }}</Link></li>
+                        <li><Link href="/#compare" class="transition hover:text-white">{{ chromeText('compare_nav') }}</Link></li>
                         <li aria-hidden="true">/</li>
                         <li class="text-slate-300">{{ competitorName }}</li>
                     </ol>
@@ -116,7 +118,7 @@ const isDash = (value) => value === false;
                             href="/#pricing"
                             class="inline-flex items-center justify-center rounded-2xl border border-white/20 px-8 py-4 text-sm font-semibold text-white transition hover:bg-white/10"
                         >
-                            {{ $t('central.view_pricing') }}
+                            {{ chromeText('view_pricing') }}
                         </Link>
                     </div>
                 </div>
@@ -126,9 +128,9 @@ const isDash = (value) => value === false;
         <section class="bg-white py-16 dark:bg-slate-900 sm:py-20">
             <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                 <div class="max-w-2xl">
-                    <p class="text-sm font-semibold uppercase tracking-wider text-blue-600">{{ $t('central.why_teams_switch') }}</p>
+                    <p class="text-sm font-semibold uppercase tracking-wider text-blue-600">{{ chromeText('why_teams_switch') }}</p>
                     <h2 class="mt-3 text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
-                        {{ $t('central.compare_why_switch_title', { competitor: competitorName }) }}
+                        {{ chromeText('compare_why_switch_title', { competitor: competitorName }) }}
                     </h2>
                 </div>
                 <div class="mt-10 grid gap-6 md:grid-cols-3">
@@ -147,12 +149,12 @@ const isDash = (value) => value === false;
         <section class="bg-slate-950 py-16 sm:py-24">
             <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                 <div class="text-center">
-                    <p class="text-sm font-semibold uppercase tracking-wider text-blue-400">{{ $t('central.feature_comparison') }}</p>
+                    <p class="text-sm font-semibold uppercase tracking-wider text-blue-400">{{ chromeText('feature_comparison') }}</p>
                     <h2 class="mt-3 text-3xl font-bold tracking-tight text-white sm:text-4xl">
                         {{ platformName }} vs {{ competitorName }}
                     </h2>
                     <p class="mx-auto mt-4 max-w-2xl text-sm text-slate-400">
-                        {{ $t('central.compare_disclaimer') }}
+                        {{ chromeText('compare_disclaimer') }}
                     </p>
                 </div>
 
@@ -188,7 +190,7 @@ const isDash = (value) => value === false;
                     <table class="w-full text-sm">
                         <thead>
                             <tr class="border-b border-white/10 bg-white/5">
-                                <th class="px-6 py-4 text-left font-medium text-slate-400">{{ $t('central.capability') }}</th>
+                                <th class="px-6 py-4 text-left font-medium text-slate-400">{{ chromeText('capability') }}</th>
                                 <th class="px-6 py-4 text-center font-semibold text-blue-400">{{ platformName }}</th>
                                 <th class="px-6 py-4 text-center font-medium text-slate-400">{{ competitorName }}</th>
                             </tr>
@@ -220,8 +222,8 @@ const isDash = (value) => value === false;
         <section class="bg-white py-16 dark:bg-slate-900 sm:py-20">
             <div class="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
                 <div class="text-center">
-                    <p class="text-sm font-semibold uppercase tracking-wider text-blue-600">{{ $t('central.faq') }}</p>
-                    <h2 class="mt-3 text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100">{{ $t('central.common_questions') }}</h2>
+                    <p class="text-sm font-semibold uppercase tracking-wider text-blue-600">{{ chromeText('faq') }}</p>
+                    <h2 class="mt-3 text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100">{{ chromeText('common_questions') }}</h2>
                 </div>
                 <div class="mt-10 space-y-3">
                     <div
@@ -260,7 +262,7 @@ const isDash = (value) => value === false;
                         href="/"
                         class="inline-flex w-full items-center justify-center rounded-2xl border border-white/20 px-10 py-4 text-sm font-semibold text-white transition hover:bg-white/10 sm:w-auto"
                     >
-                        {{ $t('central.explore_product') }}
+                        {{ chromeText('explore_product') }}
                     </Link>
                 </div>
             </div>

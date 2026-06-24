@@ -9,23 +9,23 @@ class MarketingBlogInternalLinks
         return match ($slug) {
             'zendesk-pricing-alternatives-2026' => [
                 self::compareLink('zendesk'),
-                ['path' => '/features/ai', 'label_key' => 'central.feature_pages.ai.nav_label'],
-                ['path' => '/pricing', 'label_key' => 'central.static_pages.pricing.nav_label'],
+                self::featureLink('ai'),
+                ['path' => '/pricing', 'label' => (string) (config('marketing_static_content.pricing.nav_label') ?? 'Pricing')],
             ],
             'freshdesk-vs-freshservice-do-you-need-both' => [
                 self::compareLink('freshdesk'),
                 self::compareLink('freshservice'),
-                ['path' => '/for/it-teams', 'label_key' => 'central.verticals.it-teams.nav_label'],
+                self::verticalLink('it-teams'),
             ],
             'intercom-fin-pricing-explained' => [
                 self::compareLink('intercom'),
-                ['path' => '/features/live-chat', 'label_key' => 'central.feature_pages.live-chat.nav_label'],
-                ['path' => '/features/ai', 'label_key' => 'central.feature_pages.ai.nav_label'],
+                self::featureLink('live-chat'),
+                self::featureLink('ai'),
             ],
             'helpdesk-for-shopify-stores' => [
-                ['path' => '/for/ecommerce', 'label_key' => 'central.verticals.ecommerce.nav_label'],
-                ['path' => '/features/integrations', 'label_key' => 'central.feature_pages.integrations.nav_label'],
-                ['path' => '/features/knowledge-base', 'label_key' => 'central.feature_pages.knowledge-base.nav_label'],
+                self::verticalLink('ecommerce'),
+                self::featureLink('integrations'),
+                self::featureLink('knowledge-base'),
             ],
             default => [],
         };
@@ -37,6 +37,26 @@ class MarketingBlogInternalLinks
 
         return [
             'path' => CompareLandingDefinition::path($slug),
+            'label' => (string) ($content['nav_label'] ?? $slug),
+        ];
+    }
+
+    private static function featureLink(string $slug): array
+    {
+        $content = config("marketing_feature_content.{$slug}");
+
+        return [
+            'path' => MarketingFeatureDefinition::path($slug),
+            'label' => (string) ($content['nav_label'] ?? $slug),
+        ];
+    }
+
+    private static function verticalLink(string $slug): array
+    {
+        $content = config("marketing_vertical_content.{$slug}");
+
+        return [
+            'path' => VerticalLandingDefinition::path($slug),
             'label' => (string) ($content['nav_label'] ?? $slug),
         ];
     }

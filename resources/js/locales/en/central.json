@@ -1718,12 +1718,19 @@
             },
             "steps": [
                 {
+                    "title": "Create your workspace",
                     "body": "Pick a subdomain, register in seconds, and get a dedicated environment for your team — no credit card required.",
                     "detail": "Your workspace lives on its own subdomain with isolated data, roles, and admin access."
                 },
                 {
+                    "title": "Connect your channels",
                     "body": "Follow the guided setup wizard to configure email, chat widget, SMS, portal branding, SLA policies, and service catalog.",
                     "detail": "Inbound email, outbound SMTP, chat embed code, and Twilio SMS — configured step by step."
+                },
+                {
+                    "title": "Invite your team & go live",
+                    "body": "Add agents, define roles, publish your help center, and embed the chat widget when you are ready for customers.",
+                    "detail": "Full platform access during your free trial. Upgrade to Pro for AI, SSO, and integrations — add Service Desk ITSM when you need it."
                 }
             ],
             "integration_groups": [
@@ -2006,247 +2013,6 @@
         "compare_disclaimer": "Comparison based on publicly available product information. Competitor plans and packaging change — verify current details on their websites.",
         "compare_why_switch_title": "Why teams switch from {competitor}",
         "compare_vs": "vs {name}",
-        "feature_pages": {
-            "ai": {
-                "nav_label": "AI Features",
-                "badge": "AI customer support",
-                "hero_title": "AI helpdesk software that resolves tickets faster",
-                "hero_highlight": "Copilot, deflection, and smart routing",
-                "hero_subtitle": "Use AI across your helpdesk to draft replies, deflect repetitive questions, and route complex tickets to the right agent — without replacing human judgment.",
-                "features": [
-                    {
-                        "title": "AI Copilot for agents",
-                        "body": "Draft replies, summarize threads, and suggest next steps inside the agent workspace."
-                    },
-                    {
-                        "title": "Semantic knowledge search",
-                        "body": "Surface relevant articles and past tickets so customers and agents find answers faster."
-                    },
-                    {
-                        "title": "AI deflection on portal and chat",
-                        "body": "Answer common questions before a ticket is created, reducing queue volume."
-                    }
-                ],
-                "faq": [
-                    {
-                        "q": "Does AI replace support agents?",
-                        "a": "No. Helpefi AI assists agents and deflects repetitive questions. Your team stays in control of every customer conversation."
-                    },
-                    {
-                        "q": "Can AI use our knowledge base?",
-                        "a": "Yes. AI features can reference published articles and approved content to keep answers accurate and on-brand."
-                    }
-                ],
-                "cta_title": "Try AI-powered support today",
-                "cta_body": "Start your free trial and see how AI reduces handle time while improving customer satisfaction."
-            },
-            "ticket-management": {
-                "nav_label": "Ticket Management",
-                "badge": "Ticket management system",
-                "hero_title": "Modern ticket management for support teams",
-                "hero_highlight": "Shared inbox, SLA, and collaboration",
-                "hero_subtitle": "Manage email, chat, SMS, and portal requests in one ticket management system with SLA policies, internal notes, and skills-based routing.",
-                "features": [
-                    {
-                        "title": "Unified shared inbox",
-                        "body": "Every channel creates a ticket in one workspace with full conversation history."
-                    },
-                    {
-                        "title": "SLA and escalation rules",
-                        "body": "Set response and resolution targets with business hours, tiers, and automated escalations."
-                    },
-                    {
-                        "title": "Collaboration built in",
-                        "body": "Private notes, {'@'}mentions, and linked incidents keep teams aligned on complex issues."
-                    }
-                ],
-                "faq": [
-                    {
-                        "q": "Which channels create tickets?",
-                        "a": "Email, live chat, SMS, and your customer portal all route into the same shared inbox."
-                    },
-                    {
-                        "q": "Can we route tickets by skill or team?",
-                        "a": "Yes. Use assignment rules, skills routing, and tier-based SLA policies to match tickets to the right agents."
-                    }
-                ],
-                "cta_title": "Upgrade your ticket workflow",
-                "cta_body": "Launch a dedicated workspace in minutes and give your team a faster, clearer way to manage support volume."
-            },
-            "knowledge-base": {
-                "nav_label": "Knowledge Base",
-                "badge": "Self-service knowledge base",
-                "hero_title": "Help customers help themselves",
-                "hero_highlight": "Articles, portal, and deflection",
-                "hero_subtitle": "Publish a branded knowledge base that powers your customer portal, reduces ticket volume, and feeds AI deflection across chat and email.",
-                "features": [
-                    {
-                        "title": "Branded customer portal",
-                        "body": "Host help content on your domain with categories, search, and ticket submission."
-                    },
-                    {
-                        "title": "Semantic search",
-                        "body": "Customers and agents find answers by meaning, not just keywords."
-                    },
-                    {
-                        "title": "Article analytics",
-                        "body": "See which articles deflect tickets and where content gaps remain."
-                    }
-                ],
-                "faq": [
-                    {
-                        "q": "Can we restrict articles by audience?",
-                        "a": "Yes. Control visibility by brand, portal, or customer segment."
-                    },
-                    {
-                        "q": "Does the knowledge base work with AI?",
-                        "a": "Published articles power AI deflection and Copilot suggestions in the agent workspace."
-                    }
-                ],
-                "cta_title": "Launch your knowledge base",
-                "cta_body": "Reduce repeat questions and give customers 24/7 self-service without adding headcount."
-            },
-            "automation": {
-                "nav_label": "Automation",
-                "badge": "Support automation",
-                "hero_title": "Automate repetitive support work",
-                "hero_highlight": "Rules, macros, and workflows",
-                "hero_subtitle": "Build support automation with triggers, SLA policies, macros, and approval workflows so agents focus on complex customer issues.",
-                "features": [
-                    {
-                        "title": "Trigger-based automation",
-                        "body": "Assign, tag, notify, and escalate tickets automatically based on conditions you define."
-                    },
-                    {
-                        "title": "Macros and canned responses",
-                        "body": "Speed up replies with reusable templates and multi-action macros."
-                    },
-                    {
-                        "title": "Service catalog approvals",
-                        "body": "Route service requests through approval chains before fulfillment."
-                    }
-                ],
-                "faq": [
-                    {
-                        "q": "Do I need developers to automate?",
-                        "a": "No. Most automations are configured in the admin UI with visual rule builders."
-                    },
-                    {
-                        "q": "Can automation work with SLA policies?",
-                        "a": "Yes. Combine SLA timers, business hours, and automation rules for reliable escalations."
-                    }
-                ],
-                "cta_title": "Automate your support queue",
-                "cta_body": "Start a free trial and configure your first automation rules in the setup wizard."
-            },
-            "live-chat": {
-                "nav_label": "Live Chat",
-                "badge": "Live chat support",
-                "hero_title": "Live chat that converts and resolves",
-                "hero_highlight": "Widget, routing, and context",
-                "hero_subtitle": "Embed live chat on your site, route conversations to available agents, and convert chats into tracked tickets with full customer context.",
-                "features": [
-                    {
-                        "title": "Embeddable chat widget",
-                        "body": "Customize colors, placement, and pre-chat forms to match your brand."
-                    },
-                    {
-                        "title": "Real-time agent workspace",
-                        "body": "Handle multiple chats alongside email and portal tickets in one inbox."
-                    },
-                    {
-                        "title": "Chat-to-ticket continuity",
-                        "body": "Every chat becomes a ticket with history, SLA tracking, and follow-up via email."
-                    }
-                ],
-                "faq": [
-                    {
-                        "q": "Can chat hand off to email?",
-                        "a": "Yes. Offline messages and follow-ups continue as email tickets with the same thread."
-                    },
-                    {
-                        "q": "Does live chat support AI deflection?",
-                        "a": "Yes. Suggest knowledge base articles before connecting visitors to an agent."
-                    }
-                ],
-                "cta_title": "Add live chat to your site",
-                "cta_body": "Install the widget during setup and start engaging visitors in real time."
-            },
-            "integrations": {
-                "nav_label": "Integrations",
-                "badge": "Helpdesk integrations",
-                "hero_title": "Connect your helpdesk to your stack",
-                "hero_highlight": "CRM, commerce, and dev tools",
-                "hero_subtitle": "Integrate Helpefi with Slack, HubSpot, Salesforce, Shopify, Jira, Linear, and more — with customer context surfaced directly in tickets.",
-                "features": [
-                    {
-                        "title": "CRM and commerce context",
-                        "body": "View HubSpot, Salesforce, and Shopify data in the ticket sidebar."
-                    },
-                    {
-                        "title": "Dev tool sync",
-                        "body": "Link Jira and Linear issues to support tickets for engineering handoffs."
-                    },
-                    {
-                        "title": "SSO and webhooks",
-                        "body": "SAML/OIDC sign-in, REST API, and webhooks for custom integrations."
-                    }
-                ],
-                "faq": [
-                    {
-                        "q": "Is there a REST API?",
-                        "a": "Yes. Helpefi exposes a documented REST API and webhooks for custom workflows."
-                    },
-                    {
-                        "q": "Which integrations are included?",
-                        "a": "Core integrations include Slack, HubSpot, Salesforce, Shopify, Jira, Linear, Twilio SMS, and SSO."
-                    }
-                ],
-                "cta_title": "Connect your tools",
-                "cta_body": "Start your trial and enable integrations from the admin setup wizard."
-            },
-            "data-residency": {
-                "nav_label": "Data Residency",
-                "badge": "Data residency & BYO cloud",
-                "hero_title": "Keep workspace data in your cloud",
-                "hero_highlight": "BYO database & object storage",
-                "hero_subtitle": "Store tickets, contacts, and attachments in your own MySQL (RDS, Aurora, or self-hosted) and S3 or Cloudflare R2 buckets — with guided migration, connection testing, and same-region performance best practices.",
-                "features": [
-                    {
-                        "title": "Bring your own database",
-                        "body": "Connect MySQL on AWS RDS, Aurora, or your infrastructure. We validate credentials, migrate existing workspace data, and run tenant migrations against your database."
-                    },
-                    {
-                        "title": "Bring your own storage",
-                        "body": "Point attachments and avatars to your AWS S3 or Cloudflare R2 bucket with prefix-scoped access. Files migrate automatically from helpefi-managed storage."
-                    },
-                    {
-                        "title": "Test before you save",
-                        "body": "Test database and storage connections independently before committing. Clear status in Settings → Data residency so your team knows when each resource is verified."
-                    }
-                ],
-                "faq": [
-                    {
-                        "q": "What data stays on helpefi?",
-                        "a": "Control-plane metadata remains in our central database: workspace slug, subscription, domain mappings, and encrypted BYO credentials. Application logs and queue metadata may also include tenant-scoped tags. Workspace ticket and contact data lives in your database when BYO database is enabled."
-                    },
-                    {
-                        "q": "Which cloud providers are supported?",
-                        "a": "MySQL-compatible databases including Amazon RDS and Aurora, plus object storage on AWS S3 or Cloudflare R2. Use the same region as your workspace for lowest latency."
-                    },
-                    {
-                        "q": "Can I enable database and storage separately?",
-                        "a": "Yes. Purchase and configure BYO database and BYO storage as separate add-ons. Test and save each resource independently from Settings → Data residency."
-                    },
-                    {
-                        "q": "Is this available on the free trial?",
-                        "a": "Data residency add-ons require a paid plan. Enable the add-on from billing, then configure your external resources."
-                    }
-                ],
-                "cta_title": "Meet your residency requirements",
-                "cta_body": "Start a paid plan, enable BYO add-ons, and configure your database and storage in minutes — with automatic migration from helpefi-managed resources."
-            }
-        },
         "static_pages": {
             "pricing": {
                 "nav_label": "Pricing",
@@ -2272,19 +2038,71 @@
             "about": {
                 "nav_label": "About",
                 "hero_title": "About Helpefi",
-                "hero_subtitle": "We build modern helpdesk and ITSM software for teams that want AI, automation, and customer context without enterprise complexity. helpefi is a product of Codikal.",
+                "hero_subtitle": "We build modern helpdesk and ITSM software for teams that want AI, automation, and customer context without enterprise complexity. Helpefi is a product of Codikal — built for support and IT leaders who have outgrown inbox tools but are not ready for legacy enterprise suites.",
                 "sections": [
                     {
                         "title": "Our mission",
-                        "body": "Helpefi helps growing support and IT teams deliver faster, clearer customer service with one platform for tickets, chat, knowledge base, and optional Service Desk workflows."
+                        "body": "Support and IT teams deserve software that feels fast, clear, and connected — not a patchwork of inbox, wiki, CRM sidebar, and a separate ITSM product.",
+                        "paragraphs": [
+                            "Helpefi brings tickets, live chat, knowledge base, automation, and optional Service Desk workflows into one platform so agents spend less time switching tabs and more time resolving issues.",
+                            "We design for teams from first hire through scale-up: transparent pricing, a generous free trial, and add-ons you enable only when you need them."
+                        ]
                     },
                     {
-                        "title": "Built for operators",
-                        "body": "Product, support, and IT leaders use Helpefi to unify channels, measure SLA performance, and scale self-service."
+                        "title": "Who we build for",
+                        "body": "Helpefi is for operators who own the customer and employee experience:",
+                        "items": [
+                            "Customer support leaders unifying email, chat, and portal in one queue",
+                            "IT teams rolling out service catalog, change management, and asset tracking",
+                            "SaaS and ecommerce companies connecting Shopify, CRM, and ticket history at the agent's fingertips",
+                            "Multi-brand organizations routing by product line with separate SLAs and help centers"
+                        ]
+                    },
+                    {
+                        "title": "What makes us different",
+                        "items": [
+                            "Support and ITSM in one workspace — not two products stitched together",
+                            "Customer 360 beside every ticket — orders, CRM profile, and activity timeline without tab switching",
+                            "AI that assists agents and deflects common questions — with controls you can trust",
+                            "Modular add-ons for Service Desk, AI Copilot, integrations, and data residency",
+                            "Multi-tenant architecture with workspace isolation, audit logs, and optional BYO database and storage"
+                        ]
+                    },
+                    {
+                        "title": "Built by Codikal",
+                        "body": "Helpefi is developed by Codikal, a software company focused on practical tools for growing businesses.",
+                        "paragraphs": [
+                            "We ship continuously, listen closely to customers in trial and production, and prioritize reliability and clarity over feature checklists.",
+                            "Our team has built customer-facing products across SaaS, ecommerce, and internal tools — Helpefi is the helpdesk we wish our own support stacks had been built on."
+                        ]
+                    },
+                    {
+                        "title": "How we work with customers",
+                        "body": "From trial to production, we aim to be straightforward partners:",
+                        "items": [
+                            "Self-serve signup with full platform access during the trial — no sales call required",
+                            "Guided setup wizard, sample data, and knowledge base templates to get value on day one",
+                            "Migration landing pages and support for teams moving from Zendesk, Freshdesk, and similar tools",
+                            "Enterprise options for SSO, custom domains, data residency, and dedicated onboarding when you need them"
+                        ]
+                    },
+                    {
+                        "title": "Security and trust",
+                        "body": "We treat workspace data with care and publish clear policies on this site.",
+                        "items": [
+                            "Tenant isolation with role-based access control and platform audit logging",
+                            "Encryption in transit and industry-standard hosting practices",
+                            "Optional data residency — bring your own MySQL and object storage on AWS or Cloudflare",
+                            "Privacy Policy and Terms of Service kept up to date for transparency"
+                        ]
+                    },
+                    {
+                        "title": "Get in touch",
+                        "body": "Questions about pricing, enterprise plans, migration, or partnerships? Visit our contact page or start a free trial — we typically respond within one business day."
                     }
                 ],
                 "cta_title": "Join teams on Helpefi",
-                "cta_body": "Start a free trial and see why teams choose Helpefi over legacy helpdesk tools."
+                "cta_body": "Start a free trial and see why growing support and IT teams choose Helpefi over legacy helpdesk tools."
             },
             "contact": {
                 "nav_label": "Contact",

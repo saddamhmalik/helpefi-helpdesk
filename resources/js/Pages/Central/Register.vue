@@ -2,7 +2,7 @@
 import { Link, router, useForm, usePage } from '@inertiajs/vue3';
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import CentralLayout from '../../Layouts/CentralLayout.vue';
-import { useI18n } from 'vue-i18n';
+import { formatMarketingTemplate, useMarketingEnglish } from '../../composables/useMarketingEnglish.js';
 
 const props = defineProps({
     brand: { type: String, default: 'helpefi' },
@@ -11,10 +11,13 @@ const props = defineProps({
     seo: { type: Object, default: () => ({}) },
     verificationSent: { type: Boolean, default: false },
     verificationEmail: { type: String, default: '' },
+    registerContent: { type: Object, default: () => ({}) },
+    marketingLabels: { type: Object, default: () => ({}) },
 });
 
-const { t } = useI18n();
 const page = usePage();
+const platformName = computed(() => props.brand || 'helpefi');
+const { label } = useMarketingEnglish(platformName, computed(() => page.props.marketingLabels ?? props.marketingLabels));
 
 const WORKSPACE_FIELDS = ['organization_name', 'slug'];
 const PROFILE_FIELDS = ['name', 'email'];
@@ -94,9 +97,15 @@ const slugCheckSlug = ref('');
 let slugCheckTimer = null;
 let slugCheckRequestId = 0;
 
-const platformName = computed(() => t('app.name'));
+const registerCopy = computed(() => page.props.registerContent ?? props.registerContent ?? {});
 
-const onboarding = (key, params = {}) => t(`central.register_onboarding.${key}`, { days: props.trialDays, ...params });
+const onboarding = (key, params = {}) => formatMarketingTemplate(registerCopy.value[key] ?? key, {
+    days: props.trialDays,
+    brand: props.brand,
+    ...params,
+});
+
+const platformName = computed(() => props.brand);
 
 const sidebarBenefits = computed(() => [
     onboarding('benefit_inbox'),
@@ -239,7 +248,7 @@ const stepMeta = computed(() => {
     const map = {
         1: {
             title: onboarding('form_step_workspace'),
-            subtitle: t('central.name_and_url_for_your_team'),
+            subtitle: label('name_and_url_for_your_team'),
         },
         2: {
             title: onboarding('form_step_profile'),
@@ -733,17 +742,17 @@ const inputClass = (field) => {
                                         </div>
                                         <div class="register-form-fields space-y-5">
                                             <div>
-                                                <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('central.organization_name') }}</label>
+                                                <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ label('organization_name') }}</label>
                                                 <div class="relative">
                                                     <span class="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400">
                                                         <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
                                                     </span>
-                                                    <input v-model="form.organization_name" type="text" required autofocus :class="`${inputClass('organization_name')} pl-10`" :placeholder="$t('central.acme_support')" />
+                                                    <input v-model="form.organization_name" type="text" required autofocus :class="`${inputClass('organization_name')} pl-10`" :placeholder="label('acme_support')" />
                                                 </div>
                                                 <p v-if="fieldError('organization_name')" class="mt-1.5 text-xs text-red-600 dark:text-red-400">{{ fieldError('organization_name') }}</p>
                                             </div>
                                             <div>
-                                                <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('central.workspace_url') }}</label>
+                                                <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ label('workspace_url') }}</label>
                                                 <div
                                                     class="flex overflow-hidden rounded-xl border bg-white shadow-sm transition focus-within:ring-2 dark:bg-slate-900"
                                                     :class="slugFieldState === 'error'
@@ -757,7 +766,7 @@ const inputClass = (field) => {
                                                     <span class="pointer-events-none flex items-center pl-3.5 text-slate-400">
                                                         <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9" /></svg>
                                                     </span>
-                                                    <input v-model="form.slug" type="text" required pattern="[a-z0-9]+(?:-[a-z0-9]+)*" class="min-w-0 flex-1 border-0 bg-transparent px-2 py-2.5 text-sm focus:outline-none dark:text-slate-100" :placeholder="$t('central.acme')" @input="onSlugInput" />
+                                                    <input v-model="form.slug" type="text" required pattern="[a-z0-9]+(?:-[a-z0-9]+)*" class="min-w-0 flex-1 border-0 bg-transparent px-2 py-2.5 text-sm focus:outline-none dark:text-slate-100" :placeholder="label('acme')" @input="onSlugInput" />
                                                     <span class="flex min-w-0 shrink items-center bg-slate-50 px-2 text-xs text-slate-500 dark:bg-slate-950 dark:text-slate-400 sm:px-3 sm:text-sm">.{{ workspaceDomainSuffix }}</span>
                                                 </div>
                                                 <p v-if="slugFeedbackMessage" class="mt-1.5 flex items-center gap-1 text-xs" :class="slugFieldState === 'error'
@@ -821,13 +830,13 @@ const inputClass = (field) => {
                                         </div>
                                         <div class="register-form-fields space-y-4">
                                             <div>
-                                                <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('central.full_name') }}</label>
-                                                <input v-model="form.name" type="text" required autofocus :class="inputClass('name')" :placeholder="$t('central.jane_admin')" />
+                                                <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ label('full_name') }}</label>
+                                                <input v-model="form.name" type="text" required autofocus :class="inputClass('name')" :placeholder="label('jane_admin')" />
                                                 <p v-if="fieldError('name')" class="mt-1.5 text-xs text-red-600 dark:text-red-400">{{ fieldError('name') }}</p>
                                             </div>
                                             <div>
-                                                <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('central.work_email') }}</label>
-                                                <input v-model="form.email" type="email" required :class="inputClass('email')" :placeholder="$t('central.you_company_com')" />
+                                                <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ label('work_email') }}</label>
+                                                <input v-model="form.email" type="email" required :class="inputClass('email')" :placeholder="label('you_company_com')" />
                                                 <p v-if="fieldError('email')" class="mt-1.5 text-xs text-red-600 dark:text-red-400">{{ fieldError('email') }}</p>
                                             </div>
                                         </div>
@@ -843,14 +852,14 @@ const inputClass = (field) => {
                                             <h2 class="mt-1 text-xl font-semibold text-slate-900 dark:text-slate-100">{{ onboarding('form_step_security') }}</h2>
                                             <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">{{ onboarding('form_step_security_sub') }}</p>
                                             <div class="mt-3 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm dark:border-slate-700 dark:bg-slate-800/80">
-                                                <p class="font-medium text-slate-800 dark:text-slate-200">{{ form.name || $t('central.jane_admin') }}</p>
-                                                <p class="text-xs text-slate-500 dark:text-slate-400">{{ form.email || $t('central.you_company_com') }} · {{ workspacePreviewUrl }}</p>
+                                                <p class="font-medium text-slate-800 dark:text-slate-200">{{ form.name || label('jane_admin') }}</p>
+                                                <p class="text-xs text-slate-500 dark:text-slate-400">{{ form.email || label('you_company_com') }} · {{ workspacePreviewUrl }}</p>
                                             </div>
                                         </div>
                                         <div class="register-form-fields space-y-4">
                                             <div>
-                                                <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('settings.password') }}</label>
-                                                <input v-model="form.password" type="password" required minlength="8" autofocus :class="inputClass('password')" :placeholder="$t('central.at_least_8_characters')" />
+                                                <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ label('password') }}</label>
+                                                <input v-model="form.password" type="password" required minlength="8" autofocus :class="inputClass('password')" :placeholder="label('at_least_8_characters')" />
                                                 <p v-if="fieldError('password')" class="mt-1.5 text-xs text-red-600 dark:text-red-400">{{ fieldError('password') }}</p>
                                                 <div v-if="form.password" class="mt-2.5">
                                                     <div class="h-1.5 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
@@ -860,7 +869,7 @@ const inputClass = (field) => {
                                                 </div>
                                             </div>
                                             <div>
-                                                <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('profile.confirm_password_disable') }}</label>
+                                                <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ label('confirm_password') }}</label>
                                                 <input v-model="form.password_confirmation" type="password" required :class="inputClass('password_confirmation')" />
                                                 <p v-if="fieldError('password_confirmation')" class="mt-1.5 text-xs text-red-600 dark:text-red-400">{{ fieldError('password_confirmation') }}</p>
                                             </div>
@@ -911,7 +920,7 @@ const inputClass = (field) => {
 
                                 <p class="text-center text-xs text-slate-500 dark:text-slate-400">
                                     {{ onboarding('already_have_workspace') }}
-                                    <Link href="/login" class="font-medium text-blue-600 hover:text-blue-700 dark:text-blue-300">{{ $t('central.sign_in') }}</Link>
+                                    <Link href="/login" class="font-medium text-blue-600 hover:text-blue-700 dark:text-blue-300">{{ label('sign_in') }}</Link>
                                 </p>
                                 </div>
                             </form>

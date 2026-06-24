@@ -1,39 +1,21 @@
 <script setup>
 import { Link } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
-import { useI18n } from 'vue-i18n';
 import CentralLayout from '../../Layouts/CentralLayout.vue';
-import { useMarketingCopy } from '../../composables/useMarketingCopy.js';
 
 const props = defineProps({
     brand: { type: String, default: 'helpefi' },
     trialDays: { type: Number, default: 14 },
     vertical: { type: String, required: true },
     verticalMeta: { type: Object, default: () => ({}) },
+    content: { type: Object, required: true },
     socialLinks: { type: Array, default: () => [] },
 });
 
-const { t, tm } = useI18n();
-const { platformName, brandParams, createLocalizedSection } = useMarketingCopy(() => props.trialDays);
-
-const seoPage = computed(() => props.verticalMeta.seo_key ?? `vertical_${props.vertical.replace(/-/g, '_')}`);
-
-const copyPrefix = computed(() => `central.verticals.${props.vertical}`);
-
-const copy = computed(() => ({
-    badge: t(`${copyPrefix.value}.badge`),
-    heroTitle: t(`${copyPrefix.value}.hero_title`),
-    heroHighlight: t(`${copyPrefix.value}.hero_highlight`),
-    heroSubtitle: t(`${copyPrefix.value}.hero_subtitle`, brandParams.value),
-    ctaTitle: t(`${copyPrefix.value}.cta_title`),
-    ctaBody: t(`${copyPrefix.value}.cta_body`, brandParams.value),
-}));
-
-const pains = createLocalizedSection(() => `${copyPrefix.value}.pains`);
-
-const features = createLocalizedSection(() => `${copyPrefix.value}.features`);
-
-const faqs = createLocalizedSection(() => `${copyPrefix.value}.faq`);
+const platformName = computed(() => props.brand);
+const pains = computed(() => props.content.pains ?? []);
+const features = computed(() => props.content.features ?? []);
+const faqs = computed(() => props.content.faq ?? []);
 
 const accent = computed(() => {
     const map = {
@@ -89,22 +71,22 @@ const trustBadges = [
                     <ol class="flex flex-wrap items-center gap-2">
                         <li><Link href="/" class="transition hover:text-white">{{ platformName }}</Link></li>
                         <li aria-hidden="true">/</li>
-                        <li class="text-slate-300">{{ copy.badge }}</li>
+                        <li class="text-slate-300">{{ content.badge }}</li>
                     </ol>
                 </nav>
 
                 <div class="max-w-3xl">
                     <span class="inline-flex rounded-full border px-4 py-1.5 text-xs font-semibold backdrop-blur" :class="accent.badge">
-                        {{ copy.badge }}
+                        {{ content.badge }}
                     </span>
                     <h1 class="mt-6 text-3xl font-extrabold leading-tight tracking-tight sm:text-5xl">
-                        {{ copy.heroTitle }}
+                        {{ content.hero_title }}
                         <span class="mt-2 block bg-gradient-to-r bg-clip-text text-transparent" :class="accent.highlight">
-                            {{ copy.heroHighlight }}
+                            {{ content.hero_highlight }}
                         </span>
                     </h1>
                     <p class="mt-6 text-lg leading-relaxed text-slate-300">
-                        {{ copy.heroSubtitle }}
+                        {{ content.hero_subtitle }}
                     </p>
                     <div class="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
                         <Link
@@ -135,9 +117,7 @@ const trustBadges = [
             <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                 <div class="max-w-2xl">
                     <p class="text-sm font-semibold uppercase tracking-wider text-blue-600">Pain points</p>
-                    <h2 class="mt-3 text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
-                        Sound familiar?
-                    </h2>
+                    <h2 class="mt-3 text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100">Sound familiar?</h2>
                 </div>
                 <div class="mt-10 grid gap-6 md:grid-cols-3">
                     <article
@@ -156,10 +136,8 @@ const trustBadges = [
         <section class="bg-slate-50 py-16 dark:bg-slate-950 sm:py-20">
             <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                 <div class="max-w-2xl">
-                    <p class="text-sm font-semibold uppercase tracking-wider text-blue-600">Why teams choose helpefi</p>
-                    <h2 class="mt-3 text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
-                        Built for your workflow
-                    </h2>
+                    <p class="text-sm font-semibold uppercase tracking-wider text-blue-600">Why teams choose {{ platformName }}</p>
+                    <h2 class="mt-3 text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100">Built for your workflow</h2>
                 </div>
                 <div class="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                     <article
@@ -206,8 +184,8 @@ const trustBadges = [
 
         <section class="bg-slate-950 py-16 sm:py-24">
             <div class="mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-8">
-                <h2 class="text-3xl font-bold tracking-tight text-white sm:text-4xl">{{ copy.ctaTitle }}</h2>
-                <p class="mx-auto mt-4 max-w-2xl text-lg text-slate-400">{{ copy.ctaBody }}</p>
+                <h2 class="text-3xl font-bold tracking-tight text-white sm:text-4xl">{{ content.cta_title }}</h2>
+                <p class="mx-auto mt-4 max-w-2xl text-lg text-slate-400">{{ content.cta_body }}</p>
                 <div class="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
                     <Link
                         href="/register"

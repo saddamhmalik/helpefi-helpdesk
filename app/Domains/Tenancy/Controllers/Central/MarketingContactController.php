@@ -5,6 +5,7 @@ namespace App\Domains\Tenancy\Controllers\Central;
 use App\Domains\Tenancy\Services\MarketingContactBotGuard;
 use App\Domains\Tenancy\Services\MarketingContactRateLimiter;
 use App\Domains\Tenancy\Services\MarketingContactService;
+use App\Domains\Tenancy\Services\MarketingStaticContentService;
 use App\Domains\Tenancy\Support\CentralMarketingPresenter;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
@@ -27,6 +28,7 @@ class MarketingContactController extends Controller
 
         return Inertia::render('Central/Contact', [
             ...CentralMarketingPresenter::shared(),
+            'content' => app(MarketingStaticContentService::class)->contact(config('marketing_seo.organization.contact_email')),
             'turnstileSiteKey' => $this->botGuard->turnstileSiteKey(),
         ]);
     }

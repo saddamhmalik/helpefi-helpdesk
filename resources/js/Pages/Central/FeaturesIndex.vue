@@ -1,18 +1,21 @@
 <script setup>
-import { Link } from '@inertiajs/vue3';
+import { Link, usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
-import { useI18n } from 'vue-i18n';
 import CentralLayout from '../../Layouts/CentralLayout.vue';
 
 const props = defineProps({
     brand: { type: String, default: 'Helpefi' },
     trialDays: { type: Number, default: 14 },
     featurePages: { type: Array, default: () => [] },
+    featuresHub: { type: Object, default: () => ({}) },
+    marketingLabels: { type: Object, default: () => ({}) },
     socialLinks: { type: Array, default: () => [] },
 });
 
-const { t } = useI18n();
-const platformName = computed(() => t('app.name'));
+const page = usePage();
+const chrome = computed(() => page.props.marketingChrome ?? {});
+
+const platformName = computed(() => props.brand);
 
 const accentMap = {
     ai: 'border-violet-500/20 bg-violet-500/5 hover:border-violet-400/40',
@@ -39,24 +42,24 @@ const cardClass = (slug) => accentMap[slug] ?? accentMap.ai;
                     <ol class="flex flex-wrap items-center gap-2">
                         <li><Link href="/" class="transition hover:text-white">{{ platformName }}</Link></li>
                         <li aria-hidden="true">/</li>
-                        <li class="text-slate-300">{{ $t('central.features_hub.nav_label') }}</li>
+                        <li class="text-slate-300">{{ featuresHub.nav_label ?? 'Features' }}</li>
                     </ol>
                 </nav>
-                <p class="text-sm font-semibold uppercase tracking-wider text-violet-300">{{ $t('central.features_hub.badge') }}</p>
+                <p class="text-sm font-semibold uppercase tracking-wider text-violet-300">{{ featuresHub.badge }}</p>
                 <h1 class="mt-4 max-w-3xl text-3xl font-extrabold tracking-tight sm:text-5xl">
-                    {{ $t('central.features_hub.hero_title') }}
-                    <span class="bg-gradient-to-r from-violet-400 via-blue-300 to-cyan-300 bg-clip-text text-transparent">{{ $t('central.features_hub.hero_highlight') }}</span>
+                    {{ featuresHub.hero_title }}
+                    <span class="bg-gradient-to-r from-violet-400 via-blue-300 to-cyan-300 bg-clip-text text-transparent">{{ featuresHub.hero_highlight }}</span>
                 </h1>
-                <p class="mt-6 max-w-2xl text-lg text-slate-300">{{ $t('central.features_hub.hero_subtitle', { brand: platformName }) }}</p>
+                <p class="mt-6 max-w-2xl text-lg text-slate-300">{{ featuresHub.hero_subtitle }}</p>
                 <div class="mt-10 flex flex-wrap gap-4">
                     <Link
                         href="/register"
                         class="rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-3 text-sm font-bold text-white shadow-lg shadow-blue-900/30 transition hover:from-blue-500 hover:to-indigo-500"
                     >
-                        {{ $t('central.home.hero_cta_long') }}
+                        {{ marketingLabels.hero_cta_long ?? 'Start free trial' }}
                     </Link>
                     <Link href="/pricing" class="rounded-xl border border-white/20 px-6 py-3 text-sm font-semibold text-white transition hover:bg-white/10">
-                        {{ $t('central.view_pricing') }}
+                        {{ marketingLabels.view_pricing ?? 'View pricing' }}
                     </Link>
                 </div>
             </div>
@@ -73,16 +76,16 @@ const cardClass = (slug) => accentMap[slug] ?? accentMap.ai;
                         :class="cardClass(feature.slug)"
                     >
                         <p class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                            {{ $t(`central.feature_pages.${feature.slug}.badge`) }}
+                            {{ feature.badge }}
                         </p>
                         <h2 class="mt-3 text-xl font-bold text-slate-900 transition group-hover:text-blue-600 dark:text-slate-100 dark:group-hover:text-blue-400">
-                            {{ $t(`central.feature_pages.${feature.slug}.nav_label`) }}
+                            {{ feature.nav_label }}
                         </h2>
                         <p class="mt-3 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
-                            {{ $t(`central.feature_pages.${feature.slug}.hero_subtitle`) }}
+                            {{ feature.hero_subtitle }}
                         </p>
                         <span class="mt-4 inline-flex text-sm font-semibold text-blue-600 dark:text-blue-400">
-                            {{ $t('common.learn_more') }} →
+                            {{ chrome.learn_more ?? 'Learn more' }} →
                         </span>
                     </Link>
                 </div>
@@ -91,13 +94,13 @@ const cardClass = (slug) => accentMap[slug] ?? accentMap.ai;
 
         <section class="border-t border-slate-200 bg-slate-50 py-16 dark:border-slate-800 dark:bg-slate-950 sm:py-20">
             <div class="mx-auto max-w-3xl px-4 text-center sm:px-6 lg:px-8">
-                <h2 class="text-2xl font-bold text-slate-900 dark:text-slate-100">{{ $t('central.features_hub.cta_title') }}</h2>
-                <p class="mt-4 text-slate-600 dark:text-slate-400">{{ $t('central.features_hub.cta_body', { days: trialDays }) }}</p>
+                <h2 class="text-2xl font-bold text-slate-900 dark:text-slate-100">{{ featuresHub.cta_title }}</h2>
+                <p class="mt-4 text-slate-600 dark:text-slate-400">{{ featuresHub.cta_body }}</p>
                 <Link
                     href="/register"
                     class="mt-8 inline-flex rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-8 py-3 text-sm font-bold text-white shadow-lg transition hover:from-blue-500 hover:to-indigo-500"
                 >
-                    {{ $t('central.home.hero_cta_short') }}
+                    {{ marketingLabels.hero_cta_short ?? 'Start free trial' }}
                 </Link>
             </div>
         </section>

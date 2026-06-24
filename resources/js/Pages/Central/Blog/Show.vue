@@ -1,8 +1,8 @@
 <script setup>
-import { Link } from '@inertiajs/vue3';
+import { Link, usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
-import { useI18n } from 'vue-i18n';
 import CentralLayout from '../../../Layouts/CentralLayout.vue';
+import { formatMarketingTemplate } from '../../../composables/useMarketingEnglish.js';
 
 const props = defineProps({
     brand: { type: String, default: 'helpefi' },
@@ -14,8 +14,10 @@ const props = defineProps({
     socialLinks: { type: Array, default: () => [] },
 });
 
-const { t } = useI18n();
-const platformName = computed(() => t('app.name'));
+const page = usePage();
+const blog = computed(() => page.props.marketingChrome?.blog ?? {});
+const blogText = (key, params = {}) => formatMarketingTemplate(blog.value[key] ?? key, { days: props.trialDays, ...params });
+const platformName = computed(() => props.brand);
 </script>
 
 <template>
@@ -27,7 +29,7 @@ const platformName = computed(() => t('app.name'));
                         <ol class="flex flex-wrap items-center gap-2">
                             <li><Link href="/" class="transition hover:text-white">{{ platformName }}</Link></li>
                             <li aria-hidden="true">/</li>
-                            <li><Link href="/blog" class="transition hover:text-white">{{ $t('central.blog.index_nav_label') }}</Link></li>
+                            <li><Link href="/blog" class="transition hover:text-white">{{ blogText('index_nav_label') }}</Link></li>
                             <li aria-hidden="true">/</li>
                             <li class="text-slate-300">{{ post.title }}</li>
                         </ol>
@@ -47,7 +49,7 @@ const platformName = computed(() => t('app.name'));
                 </div>
 
                 <section v-if="internalLinks.length" class="mt-12 rounded-2xl border border-blue-200 bg-blue-50 p-6 dark:border-blue-900/50 dark:bg-blue-950/30">
-                    <h2 class="text-lg font-semibold text-slate-900 dark:text-slate-100">{{ $t('central.blog.continue_exploring') }}</h2>
+                    <h2 class="text-lg font-semibold text-slate-900 dark:text-slate-100">{{ blogText('continue_exploring') }}</h2>
                     <div class="mt-4 flex flex-wrap gap-3">
                         <Link
                             v-for="link in internalLinks"
@@ -55,7 +57,7 @@ const platformName = computed(() => t('app.name'));
                             :href="link.path"
                             class="rounded-full border border-blue-200 bg-white px-4 py-2 text-sm font-medium text-blue-800 transition hover:border-blue-400 dark:border-blue-800 dark:bg-slate-900 dark:text-blue-200"
                         >
-                            {{ link.label ?? $t(link.label_key) }}
+                            {{ link.label }}
                         </Link>
                     </div>
                 </section>
@@ -69,7 +71,7 @@ const platformName = computed(() => t('app.name'));
                             :href="feature.path"
                             class="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-blue-300 hover:text-blue-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
                         >
-                            {{ $t(`central.feature_pages.${feature.slug}.nav_label`) }}
+                            {{ feature.nav_label }}
                         </Link>
                     </div>
                 </section>
@@ -87,8 +89,8 @@ const platformName = computed(() => t('app.name'));
 
         <section class="bg-slate-950 py-16">
             <div class="mx-auto max-w-4xl px-4 text-center">
-                <h2 class="text-3xl font-bold text-white">{{ $t('central.blog.cta_title') }}</h2>
-                <p class="mt-4 text-lg text-slate-400">{{ $t('central.blog.cta_body', { days: trialDays }) }}</p>
+                <h2 class="text-3xl font-bold text-white">{{ blogText('cta_title') }}</h2>
+                <p class="mt-4 text-lg text-slate-400">{{ blogText('cta_body') }}</p>
                 <Link href="/register" class="mt-8 inline-flex rounded-2xl bg-white px-10 py-4 text-sm font-bold text-slate-900">Start {{ trialDays }}-day free trial</Link>
             </div>
         </section>

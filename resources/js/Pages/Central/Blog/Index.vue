@@ -1,18 +1,20 @@
 <script setup>
-import { Link } from '@inertiajs/vue3';
+import { Link, usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
-import { useI18n } from 'vue-i18n';
 import CentralLayout from '../../../Layouts/CentralLayout.vue';
+import { formatMarketingTemplate } from '../../../composables/useMarketingEnglish.js';
 
-defineProps({
+const props = defineProps({
     brand: { type: String, default: 'helpefi' },
     trialDays: { type: Number, default: 14 },
     posts: { type: Array, default: () => [] },
     socialLinks: { type: Array, default: () => [] },
 });
 
-const { t } = useI18n();
-const platformName = computed(() => t('app.name'));
+const page = usePage();
+const blog = computed(() => page.props.marketingChrome?.blog ?? {});
+const blogText = (key, params = {}) => formatMarketingTemplate(blog.value[key] ?? key, { days: props.trialDays, ...params });
+const platformName = computed(() => props.brand);
 </script>
 
 <template>
@@ -23,11 +25,11 @@ const platformName = computed(() => t('app.name'));
                     <ol class="flex flex-wrap items-center gap-2">
                         <li><Link href="/" class="transition hover:text-white">{{ platformName }}</Link></li>
                         <li aria-hidden="true">/</li>
-                        <li class="text-slate-300">{{ $t('central.blog.index_nav_label') }}</li>
+                        <li class="text-slate-300">{{ blogText('index_nav_label') }}</li>
                     </ol>
                 </nav>
-                <h1 class="text-3xl font-extrabold tracking-tight sm:text-5xl">{{ $t('central.blog.index_title') }}</h1>
-                <p class="mt-6 max-w-2xl text-lg text-slate-300">{{ $t('central.blog.index_subtitle') }}</p>
+                <h1 class="text-3xl font-extrabold tracking-tight sm:text-5xl">{{ blogText('index_title') }}</h1>
+                <p class="mt-6 max-w-2xl text-lg text-slate-300">{{ blogText('index_subtitle') }}</p>
             </div>
         </section>
 
@@ -46,7 +48,7 @@ const platformName = computed(() => t('app.name'));
                         <Link :href="post.path" class="mt-4 inline-flex text-sm font-semibold text-blue-600 hover:text-blue-700">Read article</Link>
                     </article>
                 </div>
-                <p v-else class="text-slate-600 dark:text-slate-400">{{ $t('central.blog.empty_state') }}</p>
+                <p v-else class="text-slate-600 dark:text-slate-400">{{ blogText('empty_state') }}</p>
             </div>
         </section>
     </CentralLayout>

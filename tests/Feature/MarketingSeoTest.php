@@ -33,6 +33,8 @@ class MarketingSeoTest extends TestCase
                 ->assertInertia(fn ($page) => $page
                     ->component('Central/FeatureLanding')
                     ->where('feature', $slug)
+                    ->has('content.features')
+                    ->has('content.faq')
                 );
         }
     }

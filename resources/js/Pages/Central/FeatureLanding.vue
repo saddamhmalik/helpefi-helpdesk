@@ -1,35 +1,26 @@
 <script setup>
-import { Link } from '@inertiajs/vue3';
+import { Link, usePage } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
-import { useI18n } from 'vue-i18n';
 import CentralLayout from '../../Layouts/CentralLayout.vue';
-import { useMarketingCopy } from '../../composables/useMarketingCopy.js';
 
 const props = defineProps({
     brand: { type: String, default: 'helpefi' },
     trialDays: { type: Number, default: 14 },
     feature: { type: String, required: true },
     featureMeta: { type: Object, default: () => ({}) },
+    content: { type: Object, required: true },
     featurePages: { type: Array, default: () => [] },
     socialLinks: { type: Array, default: () => [] },
 });
 
-const { t, tm } = useI18n();
-const { platformName, brandParams, createLocalizedSection } = useMarketingCopy(() => props.trialDays);
-const copyPrefix = computed(() => `central.feature_pages.${props.feature}`);
+const page = usePage();
+const chrome = computed(() => page.props.marketingChrome ?? {});
 
-const copy = computed(() => ({
-    badge: t(`${copyPrefix.value}.badge`),
-    heroTitle: t(`${copyPrefix.value}.hero_title`),
-    heroHighlight: t(`${copyPrefix.value}.hero_highlight`),
-    heroSubtitle: t(`${copyPrefix.value}.hero_subtitle`, brandParams.value),
-    ctaTitle: t(`${copyPrefix.value}.cta_title`, brandParams.value),
-    ctaBody: t(`${copyPrefix.value}.cta_body`, brandParams.value),
-}));
+const platformName = computed(() => props.brand);
 
-const pains = createLocalizedSection(() => `${copyPrefix.value}.pains`);
-const features = createLocalizedSection(() => `${copyPrefix.value}.features`);
-const faqs = createLocalizedSection(() => `${copyPrefix.value}.faq`);
+const features = computed(() => props.content.features ?? []);
+
+const faqs = computed(() => props.content.faq ?? []);
 
 const relatedFeatures = computed(() => props.featurePages.filter((page) => page.slug !== props.feature).slice(0, 3));
 
@@ -66,19 +57,19 @@ const toggleFaq = (index) => {
                     <ol class="flex flex-wrap items-center gap-2">
                         <li><Link href="/" class="transition hover:text-white">{{ platformName }}</Link></li>
                         <li aria-hidden="true">/</li>
-                        <li><Link href="/features" class="transition hover:text-white">{{ $t('central.features') }}</Link></li>
+                        <li><Link href="/features" class="transition hover:text-white">{{ chrome.features ?? 'Features' }}</Link></li>
                         <li aria-hidden="true">/</li>
-                        <li class="text-slate-300">{{ copy.badge }}</li>
+                        <li class="text-slate-300">{{ content.badge }}</li>
                     </ol>
                 </nav>
 
                 <div class="max-w-3xl">
-                    <span class="inline-flex rounded-full border px-4 py-1.5 text-xs font-semibold backdrop-blur" :class="accent.badge">{{ copy.badge }}</span>
+                    <span class="inline-flex rounded-full border px-4 py-1.5 text-xs font-semibold backdrop-blur" :class="accent.badge">{{ content.badge }}</span>
                     <h1 class="mt-6 text-3xl font-extrabold leading-tight tracking-tight sm:text-5xl">
-                        {{ copy.heroTitle }}
-                        <span class="mt-2 block bg-gradient-to-r bg-clip-text text-transparent" :class="accent.highlight">{{ copy.heroHighlight }}</span>
+                        {{ content.hero_title }}
+                        <span class="mt-2 block bg-gradient-to-r bg-clip-text text-transparent" :class="accent.highlight">{{ content.hero_highlight }}</span>
                     </h1>
-                    <p class="mt-6 text-lg leading-relaxed text-slate-300">{{ copy.heroSubtitle }}</p>
+                    <p class="mt-6 text-lg leading-relaxed text-slate-300">{{ content.hero_subtitle }}</p>
                     <div class="mt-8 flex flex-col gap-3 sm:flex-row">
                         <Link href="/register" class="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 px-8 py-4 text-sm font-bold text-white">Start {{ trialDays }}-day free trial</Link>
                         <Link href="/pricing" class="inline-flex items-center justify-center rounded-2xl border border-white/20 px-8 py-4 text-sm font-semibold text-white transition hover:bg-white/10">View pricing</Link>
@@ -109,7 +100,7 @@ const toggleFaq = (index) => {
                         :href="page.path"
                         class="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-blue-300 hover:text-blue-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
                     >
-                        {{ $t(`central.feature_pages.${page.slug}.nav_label`) }}
+                        {{ page.nav_label }}
                     </Link>
                 </div>
             </div>
@@ -133,8 +124,8 @@ const toggleFaq = (index) => {
 
         <section class="bg-slate-950 py-16">
             <div class="mx-auto max-w-4xl px-4 text-center">
-                <h2 class="text-3xl font-bold text-white">{{ copy.ctaTitle }}</h2>
-                <p class="mt-4 text-lg text-slate-400">{{ copy.ctaBody }}</p>
+                <h2 class="text-3xl font-bold text-white">{{ content.cta_title }}</h2>
+                <p class="mt-4 text-lg text-slate-400">{{ content.cta_body }}</p>
                 <Link href="/register" class="mt-8 inline-flex rounded-2xl bg-white px-10 py-4 text-sm font-bold text-slate-900">Start {{ trialDays }}-day free trial</Link>
             </div>
         </section>
