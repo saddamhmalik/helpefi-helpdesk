@@ -44,7 +44,11 @@ class PlatformDashboardService
         }
 
         if ($this->authorization->allows($user, 'settings.manage')) {
-            $data['marketing_seo_audit'] = $this->marketingSeoAudit->summary();
+            $seoAuditSummary = $this->marketingSeoAudit->summary();
+
+            if ($seoAuditSummary !== null) {
+                $data['marketing_seo_audit'] = $seoAuditSummary;
+            }
         }
 
         if ($this->authorization->allows($user, 'leads.view')) {

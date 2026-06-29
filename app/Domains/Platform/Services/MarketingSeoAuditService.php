@@ -33,9 +33,13 @@ class MarketingSeoAuditService
         return Cache::remember(self::CACHE_KEY, now()->addHours(6), fn () => $this->performAudit());
     }
 
-    public function summary(): array
+    public function summary(): ?array
     {
-        $report = $this->run();
+        $report = Cache::get(self::CACHE_KEY);
+
+        if (! is_array($report) || ! isset($report['summary']) || ! is_array($report['summary'])) {
+            return null;
+        }
 
         return [
             'generated_at' => $report['generated_at'],

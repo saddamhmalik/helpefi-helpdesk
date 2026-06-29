@@ -8,6 +8,7 @@ use Database\Seeders\MarketingBlogPostSeeder;
 use Database\Seeders\PlatformPermissionSeeder;
 use Database\Seeders\PlatformUserSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Cache;
 use Tests\TestCase;
 
 class MarketingSeoAuditTest extends TestCase
@@ -54,6 +55,25 @@ class MarketingSeoAuditTest extends TestCase
         $this->assertSame(200, $home['status']);
         $this->assertNotSame('', $home['title']);
         $this->assertTrue($home['schema']);
+    }
+
+    public function test_dashboard_does_not_run_full_seo_audit_on_cache_miss(): void
+    {
+        Cache::forget('marketing:seo:audit:v1');
+
+        $this->adminLogin();
+
+        $startedAt = microtime(true);
+
+        $this->get($this->centralUrl('/admin/dashboard'))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('Central/Admin/Dashboard')
+                ->missing('dashboard.marketing_seo_audit')
+            );
+
+        $this->assertLessThan(5, microtime(true) - $startedAt);
+        $this->assertNull(Cache::get('marketing:seo:audit:v1'));
     }
 
     public function test_admin_can_view_seo_audit_report(): void
