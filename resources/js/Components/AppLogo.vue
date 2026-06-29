@@ -31,19 +31,7 @@ const imageClass = (size, markOnly) => [
     'shrink-0 object-contain',
 ];
 
-const imgUrl = (path, w, fmt) => {
-    const p = String(path ?? '').startsWith('/') ? String(path ?? '') : `/${String(path ?? '')}`;
-    const parts = [
-        `path=${encodeURIComponent(p)}`,
-        `w=${encodeURIComponent(String(w))}`,
-        `fmt=${encodeURIComponent(String(fmt))}`,
-    ];
-    return `/_marketing-image?${parts.join('&')}`;
-};
-
-const srcset = (path, fmt) => [64, 96, 128, 160, 192, 256, 320, 384, 512]
-    .map((w) => `${imgUrl(path, w, fmt)} ${w}w`)
-    .join(', ');
+const logoSrc = (markOnly) => (markOnly ? '/icon.png' : '/logo.png');
 </script>
 
 <template>
@@ -51,26 +39,8 @@ const srcset = (path, fmt) => [64, 96, 128, 160, 192, 256, 320, 384, 512]
         v-if="surface === 'light'"
         class="inline-flex items-center rounded-xl bg-white dark:bg-slate-900 px-3 py-1.5 shadow-sm shadow-black/10 ring-1 ring-black/5"
     >
-        <picture>
-            <source type="image/avif" :srcset="srcset(markOnly ? '/icon.png' : '/logo.png', 'avif')" sizes="(max-width: 640px) 128px, 160px" />
-            <source type="image/webp" :srcset="srcset(markOnly ? '/icon.png' : '/logo.png', 'webp')" sizes="(max-width: 640px) 128px, 160px" />
-            <img
-                :src="imgUrl(markOnly ? '/icon.png' : '/logo.png', 256, 'auto')"
-                :alt="t('app.name')"
-                :class="imageClass(size, markOnly)"
-                width="512"
-                height="512"
-                loading="eager"
-                fetchpriority="high"
-                decoding="async"
-            >
-        </picture>
-    </span>
-    <picture v-else>
-        <source type="image/avif" :srcset="srcset(markOnly ? '/icon.png' : '/logo.png', 'avif')" sizes="(max-width: 640px) 128px, 160px" />
-        <source type="image/webp" :srcset="srcset(markOnly ? '/icon.png' : '/logo.png', 'webp')" sizes="(max-width: 640px) 128px, 160px" />
         <img
-            :src="imgUrl(markOnly ? '/icon.png' : '/logo.png', 256, 'auto')"
+            :src="logoSrc(markOnly)"
             :alt="t('app.name')"
             :class="imageClass(size, markOnly)"
             width="512"
@@ -79,5 +49,16 @@ const srcset = (path, fmt) => [64, 96, 128, 160, 192, 256, 320, 384, 512]
             fetchpriority="high"
             decoding="async"
         >
-    </picture>
+    </span>
+    <img
+        v-else
+        :src="logoSrc(markOnly)"
+        :alt="t('app.name')"
+        :class="imageClass(size, markOnly)"
+        width="512"
+        height="512"
+        loading="eager"
+        fetchpriority="high"
+        decoding="async"
+    >
 </template>

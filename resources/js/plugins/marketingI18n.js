@@ -1,5 +1,6 @@
 import { createI18n } from 'vue-i18n';
 import central from '../locales/en/central.json';
+import core from '../locales/en/core.json';
 import layouts from '../locales/en/layouts.json';
 import errors from '../locales/en/errors.json';
 import auth from '../locales/en/auth.json';
@@ -8,6 +9,7 @@ import components from '../locales/en/components.json';
 export async function createMarketingI18n(locale = 'en') {
     const messages = {
         en: {
+            ...core,
             central,
             layouts,
             errors,

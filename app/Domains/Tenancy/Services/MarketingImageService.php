@@ -35,9 +35,11 @@ class MarketingImageService
 
         if (! $this->images->hasCached($cachePath)) {
             $bytes = $this->render($source, $width, $targetFormat, $quality, $blur);
+
             if ($bytes === null || $bytes === '') {
-                return null;
+                return $this->originalFileResponse($source);
             }
+
             file_put_contents($cachePath, $bytes);
         }
 
@@ -168,6 +170,22 @@ class MarketingImageService
         }
 
         return $bytes;
+    }
+
+    private function originalFileResponse(string $source): ?Response
+    {
+        if (! is_file($source)) {
+            return null;
+        }
+
+        $info = @getimagesize($source);
+        $mime = is_array($info) ? (string) ($info['mime'] ?? '') : '';
+        $contentType = $mime !== '' ? $mime : 'application/octet-stream';
+
+        return response((string) file_get_contents($source), 200, [
+            'Content-Type' => $contentType,
+            'Cache-Control' => 'public, max-age=31536000, immutable',
+        ]);
     }
 
     private function fallbackFormatFromMime(string $mime): string
