@@ -117,6 +117,45 @@ const statusTone = (workspace) => {
                 </div>
             </section>
 
+            <section v-if="dashboard.marketing_seo_audit" class="mb-8">
+                <div class="mb-3 flex items-center justify-between gap-3">
+                    <div>
+                        <h2 class="text-sm font-semibold text-slate-900 dark:text-slate-100">{{ $t('central.marketing_seo_audit.title') }}</h2>
+                        <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                            {{ $t('central.marketing_seo_audit.caption', { pages: dashboard.marketing_seo_audit.pages_scanned }) }}
+                        </p>
+                    </div>
+                    <Link
+                        v-if="can('settings.manage')"
+                        href="/admin/seo-audit"
+                        class="text-sm font-medium text-blue-600 hover:text-blue-700 dark:hover:text-blue-300 dark:text-blue-300"
+                    >
+                        {{ $t('central.marketing_seo_audit.view_report') }} →
+                    </Link>
+                </div>
+                <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                    <PlatformStatCard
+                        :label="$t('central.marketing_seo_audit.health_score')"
+                        :value="`${dashboard.marketing_seo_audit.health_score}%`"
+                        :tone="dashboard.marketing_seo_audit.health_score >= 90 ? 'emerald' : dashboard.marketing_seo_audit.health_score >= 70 ? 'amber' : 'red'"
+                    />
+                    <PlatformStatCard
+                        :label="$t('central.marketing_seo_audit.total_issues')"
+                        :value="dashboard.marketing_seo_audit.total_issues"
+                        :tone="dashboard.marketing_seo_audit.total_issues > 0 ? 'amber' : 'emerald'"
+                    />
+                    <PlatformStatCard
+                        :label="$t('central.marketing_seo_audit.missing_title')"
+                        :value="dashboard.marketing_seo_audit.counts?.missing_title ?? 0"
+                    />
+                    <PlatformStatCard
+                        :label="$t('central.marketing_seo_audit.broken_links')"
+                        :value="dashboard.marketing_seo_audit.counts?.broken_links ?? 0"
+                        tone="red"
+                    />
+                </div>
+            </section>
+
             <section v-if="dashboard.marketing_analytics" class="mb-8">
                 <h2 class="mb-3 text-sm font-semibold text-slate-900 dark:text-slate-100">{{ $t('central.marketing_website') }}</h2>
                 <p class="mb-4 text-sm text-slate-500 dark:text-slate-400">{{ $t('central.marketing_website_caption') }}</p>

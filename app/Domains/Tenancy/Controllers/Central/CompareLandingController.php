@@ -17,10 +17,15 @@ class CompareLandingController extends Controller
 
     public function show(string $competitor): Response
     {
-        $definition = CompareLandingDefinition::find($competitor);
         $pageContent = $this->content->forSlug($competitor);
 
-        abort_unless($definition !== null && $pageContent !== null, 404);
+        abort_unless($pageContent !== null, 404);
+
+        $definition = CompareLandingDefinition::find($competitor) ?? [
+            'slug' => $competitor,
+            'seo_key' => CompareLandingDefinition::seoKey($competitor),
+            'path' => CompareLandingDefinition::path($competitor),
+        ];
 
         return Inertia::render('Central/CompareLanding', [
             ...CentralMarketingPresenter::shared(),

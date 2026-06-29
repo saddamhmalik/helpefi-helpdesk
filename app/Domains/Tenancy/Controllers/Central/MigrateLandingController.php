@@ -15,6 +15,14 @@ class MigrateLandingController extends Controller
     {
     }
 
+    public function index(): Response
+    {
+        return Inertia::render('Central/MigrateIndex', [
+            ...CentralMarketingPresenter::shared(),
+            'migrateHub' => $this->content->hub(),
+        ]);
+    }
+
     public function show(string $source): Response
     {
         $definition = MigrateLandingDefinition::find($source);

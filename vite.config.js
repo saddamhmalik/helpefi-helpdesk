@@ -6,7 +6,11 @@ import tailwindcss from '@tailwindcss/vite';
 export default defineConfig({
     plugins: [
         laravel({
-            input: ['resources/css/app.css', 'resources/js/app.js'],
+            input: [
+                'resources/css/app.css',
+                'resources/js/app.js',
+                'resources/js/marketing.js',
+            ],
             refresh: true,
         }),
         vue({
@@ -33,6 +37,14 @@ export default defineConfig({
 
                     if (id.includes('node_modules/vue/') || id.includes('node_modules/@vue/')) {
                         return 'vue';
+                    }
+
+                    if (id.includes('node_modules/marked/')) {
+                        return 'marked';
+                    }
+
+                    if (id.includes('node_modules/dompurify/')) {
+                        return 'dompurify';
                     }
                 },
             },

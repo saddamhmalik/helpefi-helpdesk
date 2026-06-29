@@ -148,6 +148,8 @@ const targetLabel = (notice) => {
                                         v-if="notice.image_url"
                                         :src="notice.image_url"
                                         :alt="notice.title"
+                                        loading="lazy"
+                                        decoding="async"
                                         class="h-12 w-12 shrink-0 rounded-lg border border-slate-200 dark:border-slate-800 object-cover"
                                     />
                                     <div class="min-w-0">

@@ -27,6 +27,110 @@ return array (
     'cta_title' => 'Start your free trial',
     'cta_body' => 'Create your workspace in minutes and explore every feature before you commit.',
   ),
+  'integrations' =>
+  array (
+    'nav_label' => 'Integrations',
+    'hero_title' => 'Integrations',
+    'hero_subtitle' => 'Connect Helpefi with the tools your team already uses. Enable integrations when you need them, and keep customer context and workflow automation in one place.',
+    'sections' =>
+    array (
+      0 =>
+      array (
+        'title' => 'Bring your customer context into the queue',
+        'body' => 'Show CRM profiles, orders, and activity timelines beside every ticket so agents can respond faster with full context.',
+      ),
+      1 =>
+      array (
+        'title' => 'Automate and notify',
+        'body' => 'Route tickets, trigger webhooks, and send updates to the right channels with configurable rules and alerts.',
+      ),
+      2 =>
+      array (
+        'title' => 'Security-first connections',
+        'body' => 'Use OAuth where available and control access by role. Teams can enable only what they need.',
+      ),
+    ),
+    'cta_title' => 'Start your free trial',
+    'cta_body' => 'Create your workspace and explore integrations during your {days}-day free trial.',
+  ),
+  'industries' =>
+  array (
+    'nav_label' => 'Industries',
+    'hero_title' => 'Built for modern support and IT teams',
+    'hero_subtitle' => 'Helpefi adapts to your workflows, whether you support customers, employees, or both. Start simple and add service desk and advanced automation when you’re ready.',
+    'sections' =>
+    array (
+      0 =>
+      array (
+        'title' => 'SaaS and technology',
+        'body' => 'Unify email, chat, and portal requests with SLAs, automations, and AI assistance to scale support without scaling headcount.',
+      ),
+      1 =>
+      array (
+        'title' => 'Ecommerce and retail',
+        'body' => 'Give agents order context, shipping status, and customer history in one view to resolve issues quickly and reduce back-and-forth.',
+      ),
+      2 =>
+      array (
+        'title' => 'IT and internal service desk',
+        'body' => 'Handle incidents, requests, approvals, and assets with service catalog workflows designed for internal teams.',
+      ),
+    ),
+    'cta_title' => 'See Helpefi in action',
+    'cta_body' => 'Start a free trial and configure workflows for your team in minutes.',
+  ),
+  'resources' =>
+  array (
+    'nav_label' => 'Resources',
+    'hero_title' => 'Resources',
+    'hero_subtitle' => 'Guides, best practices, and product updates to help you build a faster support and IT operation.',
+    'sections' =>
+    array (
+      0 =>
+      array (
+        'title' => 'Product guides',
+        'body' => 'Learn how to set up inboxes, SLAs, automations, knowledge base content, and the customer portal.',
+      ),
+      1 =>
+      array (
+        'title' => 'Migration and rollout',
+        'body' => 'Plan your move from legacy helpdesk tools and get a clear rollout checklist for your team.',
+      ),
+      2 =>
+      array (
+        'title' => 'Security and compliance',
+        'body' => 'Review security practices and policies, including optional data residency with BYO database and storage.',
+      ),
+    ),
+    'cta_title' => 'Read the blog',
+    'cta_body' => 'Browse our latest posts on support operations, ITSM, and product updates.',
+  ),
+  'support' =>
+  array (
+    'nav_label' => 'Support',
+    'hero_title' => 'Support',
+    'hero_subtitle' => 'Need help with your workspace? Sign in for product support, or contact us for billing and enterprise questions.',
+    'sections' =>
+    array (
+      0 =>
+      array (
+        'title' => 'Product support',
+        'body' => 'Sign in to your workspace to contact support and view ticket history. If you are in a trial, you can still reach us from the contact page.',
+      ),
+      1 =>
+      array (
+        'title' => 'Billing and account',
+        'body' => 'For billing or account questions, email {contactEmail} from your registered address.',
+      ),
+      2 =>
+      array (
+        'title' => 'Enterprise',
+        'body' => 'Need SSO, custom domain, data residency, or dedicated onboarding? Email {contactEmail} with topic Enterprise.',
+      ),
+    ),
+    'cta_title' => 'Contact us',
+    'cta_body' => 'Send us a message and we’ll route it to the right team.',
+  ),
   'about' => 
   array (
     'nav_label' => 'About',

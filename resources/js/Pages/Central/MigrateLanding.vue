@@ -1,8 +1,10 @@
 <script setup>
 import { Link } from '@inertiajs/vue3';
-import { computed, ref } from 'vue';
+import { computed } from 'vue';
 import CentralLayout from '../../Layouts/CentralLayout.vue';
 import { formatMarketingTemplate } from '../../composables/useMarketingEnglish.js';
+import CentralBreadcrumbs from '../../Components/Central/CentralBreadcrumbs.vue';
+import FaqAccordion from '../../Components/Central/FaqAccordion.vue';
 
 const props = defineProps({
     brand: { type: String, default: 'Helpefi' },
@@ -29,7 +31,7 @@ const chrome = (key, params = {}) => formatMarketingTemplate(props.marketingChro
 const comparePath = computed(() => {
     const slug = props.migrateMeta.compare_slug;
 
-    return slug ? `/vs/${slug}` : '/#compare';
+    return slug ? `/compare/${slug}-vs-helpefi` : '/#compare';
 });
 
 const accent = computed(() => {
@@ -43,12 +45,6 @@ const accent = computed(() => {
 
     return map[props.migrateMeta.accent ?? 'blue'] ?? map.blue;
 });
-
-const openFaq = ref(null);
-
-const toggleFaq = (index) => {
-    openFaq.value = openFaq.value === index ? null : index;
-};
 </script>
 
 <template>
@@ -58,15 +54,7 @@ const toggleFaq = (index) => {
                 <div class="absolute -left-32 top-0 h-[28rem] w-[28rem] rounded-full blur-3xl" :class="accent.glow" />
             </div>
             <div class="relative mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-24 lg:px-8">
-                <nav class="mb-8 text-sm text-slate-400" aria-label="Breadcrumb">
-                    <ol class="flex flex-wrap items-center gap-2">
-                        <li><Link href="/" class="transition hover:text-white">{{ platformName }}</Link></li>
-                        <li aria-hidden="true">/</li>
-                        <li class="text-slate-300">{{ chrome('migrate_nav') }}</li>
-                        <li aria-hidden="true">/</li>
-                        <li class="text-slate-300">{{ sourceName }}</li>
-                    </ol>
-                </nav>
+                <CentralBreadcrumbs />
                 <div class="max-w-3xl">
                     <span class="inline-flex rounded-full border px-4 py-1.5 text-xs font-semibold backdrop-blur" :class="accent.badge">{{ content.badge }}</span>
                     <h1 class="mt-6 text-3xl font-extrabold leading-tight tracking-tight sm:text-5xl">
@@ -114,20 +102,15 @@ const toggleFaq = (index) => {
             </div>
         </section>
 
-        <section v-if="faqs.length" class="bg-white py-16 dark:bg-slate-900 sm:py-20">
-            <div class="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
-                <h2 class="text-2xl font-bold text-slate-900 dark:text-slate-100">{{ chrome('faq') }}</h2>
-                <div class="mt-8 divide-y divide-slate-200 dark:divide-slate-800">
-                    <div v-for="(faq, index) in faqs" :key="index">
-                        <button type="button" class="flex w-full items-center justify-between py-4 text-left text-sm font-semibold text-slate-900 dark:text-slate-100" @click="toggleFaq(index)">
-                            {{ faq.q }}
-                            <span class="text-slate-400">{{ openFaq === index ? '−' : '+' }}</span>
-                        </button>
-                        <p v-if="openFaq === index" class="pb-4 text-sm leading-relaxed text-slate-600 dark:text-slate-400">{{ faq.a }}</p>
-                    </div>
-                </div>
-            </div>
-        </section>
+        <FaqAccordion
+            :items="faqs"
+            :title="chrome('faq')"
+            heading-class="text-2xl font-bold text-slate-900 dark:text-slate-100"
+            header-class=""
+            variant="plain"
+            list-class="mt-8"
+            section-class="bg-white py-16 dark:bg-slate-900 sm:py-20"
+        />
 
         <section class="bg-slate-950 py-16 text-center sm:py-24">
             <div class="mx-auto max-w-3xl px-4">

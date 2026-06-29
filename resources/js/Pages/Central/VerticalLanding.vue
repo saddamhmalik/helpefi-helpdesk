@@ -1,7 +1,9 @@
 <script setup>
 import { Link } from '@inertiajs/vue3';
-import { computed, ref } from 'vue';
+import { computed } from 'vue';
 import CentralLayout from '../../Layouts/CentralLayout.vue';
+import CentralBreadcrumbs from '../../Components/Central/CentralBreadcrumbs.vue';
+import FaqAccordion from '../../Components/Central/FaqAccordion.vue';
 
 const props = defineProps({
     brand: { type: String, default: 'helpefi' },
@@ -45,12 +47,6 @@ const accent = computed(() => {
     return map[props.verticalMeta.accent ?? 'violet'] ?? map.violet;
 });
 
-const openFaq = ref(null);
-
-const toggleFaq = (index) => {
-    openFaq.value = openFaq.value === index ? null : index;
-};
-
 const trustBadges = [
     'No credit card required',
     'Full platform trial',
@@ -67,13 +63,7 @@ const trustBadges = [
             </div>
 
             <div class="relative mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-24 lg:px-8">
-                <nav class="mb-8 text-sm text-slate-400" aria-label="Breadcrumb">
-                    <ol class="flex flex-wrap items-center gap-2">
-                        <li><Link href="/" class="transition hover:text-white">{{ platformName }}</Link></li>
-                        <li aria-hidden="true">/</li>
-                        <li class="text-slate-300">{{ content.badge }}</li>
-                    </ol>
-                </nav>
+                <CentralBreadcrumbs />
 
                 <div class="max-w-3xl">
                     <span class="inline-flex rounded-full border px-4 py-1.5 text-xs font-semibold backdrop-blur" :class="accent.badge">
@@ -154,33 +144,12 @@ const trustBadges = [
             </div>
         </section>
 
-        <section class="bg-white py-16 dark:bg-slate-900 sm:py-20">
-            <div class="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
-                <div class="text-center">
-                    <p class="text-sm font-semibold uppercase tracking-wider text-blue-600">FAQ</p>
-                    <h2 class="mt-3 text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100">Common questions</h2>
-                </div>
-                <div class="mt-10 space-y-3">
-                    <div
-                        v-for="(item, index) in faqs"
-                        :key="item.q"
-                        class="overflow-hidden rounded-2xl border border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-950"
-                    >
-                        <button
-                            type="button"
-                            class="flex w-full items-center justify-between gap-4 px-5 py-4 text-left"
-                            @click="toggleFaq(index)"
-                        >
-                            <span class="text-sm font-semibold text-slate-900 dark:text-slate-100 sm:text-base">{{ item.q }}</span>
-                            <svg class="h-5 w-5 shrink-0 text-slate-400 transition" :class="openFaq === index ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
-                        </button>
-                        <div v-show="openFaq === index" class="border-t border-slate-200 px-5 pb-5 pt-2 dark:border-slate-800">
-                            <p class="text-sm leading-relaxed text-slate-600 dark:text-slate-400">{{ item.a }}</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
+        <FaqAccordion
+            :items="faqs"
+            eyebrow="FAQ"
+            title="Common questions"
+            section-class="bg-white py-16 dark:bg-slate-900 sm:py-20"
+        />
 
         <section class="bg-slate-950 py-16 sm:py-24">
             <div class="mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-8">

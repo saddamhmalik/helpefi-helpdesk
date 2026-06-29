@@ -1,25 +1,34 @@
 <?php
 
 return [
-    'ai' => [
-        'accent' => 'violet',
-    ],
-    'ticket-management' => [
+    'shared-inbox' => [
         'accent' => 'blue',
+    ],
+    'ai-agent' => [
+        'accent' => 'violet',
     ],
     'knowledge-base' => [
         'accent' => 'emerald',
     ],
-    'automation' => [
-        'accent' => 'amber',
-    ],
     'live-chat' => [
         'accent' => 'cyan',
     ],
-    'integrations' => [
+    'email-ticketing' => [
         'accent' => 'indigo',
     ],
-    'data-residency' => [
+    'omnichannel-support' => [
         'accent' => 'sky',
+    ],
+    'sla-management' => [
+        'accent' => 'amber',
+    ],
+    'automation' => [
+        'accent' => 'orange',
+    ],
+    'analytics' => [
+        'accent' => 'rose',
+    ],
+    'customer-portal' => [
+        'accent' => 'teal',
     ],
 ];

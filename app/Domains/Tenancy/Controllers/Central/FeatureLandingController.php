@@ -22,10 +22,15 @@ class FeatureLandingController extends Controller
 
     public function show(string $feature): Response
     {
-        $definition = MarketingFeatureDefinition::find($feature);
         $pageContent = $this->content->forSlug($feature);
 
-        abort_unless($definition !== null && $pageContent !== null, 404);
+        abort_unless($pageContent !== null, 404);
+
+        $definition = MarketingFeatureDefinition::find($feature) ?? [
+            'slug' => $feature,
+            'seo_key' => MarketingFeatureDefinition::seoKey($feature),
+            'path' => MarketingFeatureDefinition::path($feature),
+        ];
 
         return Inertia::render('Central/FeatureLanding', [
             ...CentralMarketingPresenter::shared(),

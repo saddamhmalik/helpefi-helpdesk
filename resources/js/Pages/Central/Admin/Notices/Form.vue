@@ -142,7 +142,7 @@ const typeStyles = {
                 <div>
                     <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('central.image_optional') }}</label>
                     <div v-if="imagePreview" class="mb-3 flex items-start gap-3">
-                        <img :src="imagePreview" alt="Preview" class="max-h-32 rounded-xl border border-slate-200 dark:border-slate-800 object-contain" />
+                        <img :src="imagePreview" alt="Preview" loading="lazy" decoding="async" class="max-h-32 rounded-xl border border-slate-200 dark:border-slate-800 object-contain" />
                         <button type="button" class="text-sm text-red-600 hover:text-red-700 dark:text-red-300" @click="removeImage">{{ $t('central.remove_image') }}</button>
                     </div>
                     <input type="file" accept="image/*" class="block w-full text-sm text-slate-600 dark:text-slate-400" @change="onImageChange" />

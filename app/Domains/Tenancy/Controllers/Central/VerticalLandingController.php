@@ -17,10 +17,15 @@ class VerticalLandingController extends Controller
 
     public function show(string $vertical): Response
     {
-        $definition = VerticalLandingDefinition::find($vertical);
         $pageContent = $this->content->forSlug($vertical);
 
-        abort_unless($definition !== null && $pageContent !== null, 404);
+        abort_unless($pageContent !== null, 404);
+
+        $definition = VerticalLandingDefinition::find($vertical) ?? [
+            'slug' => $vertical,
+            'seo_key' => VerticalLandingDefinition::seoKey($vertical),
+            'path' => VerticalLandingDefinition::path($vertical),
+        ];
 
         return Inertia::render('Central/VerticalLanding', [
             ...CentralMarketingPresenter::shared(),

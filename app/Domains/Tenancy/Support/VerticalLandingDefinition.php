@@ -2,6 +2,9 @@
 
 namespace App\Domains\Tenancy\Support;
 
+use App\Domains\Platform\Services\MarketingPageContentService;
+use App\Domains\Platform\Support\MarketingContentType;
+
 class VerticalLandingDefinition
 {
     public static function slugs(): array
@@ -45,7 +48,20 @@ class VerticalLandingDefinition
 
     public static function path(string $slug): string
     {
-        return '/for/'.$slug;
+        return '/helpdesk-for-'.$slug;
+    }
+
+    public static function slugFromPath(string $path): ?string
+    {
+        $prefix = '/helpdesk-for-';
+
+        if (! str_starts_with($path, $prefix)) {
+            return null;
+        }
+
+        $slug = substr($path, strlen($prefix));
+
+        return self::isValid($slug) ? $slug : null;
     }
 
     public static function seoKey(string $slug): string
@@ -61,11 +77,21 @@ class VerticalLandingDefinition
 
         $slug = str_replace('_', '-', substr($seoKey, strlen('vertical_')));
 
-        return self::find($slug) ? $slug : null;
+        if (self::find($slug) !== null) {
+            return $slug;
+        }
+
+        return app(MarketingPageContentService::class)->isKnownSlug(MarketingContentType::VERTICAL, $slug)
+            ? $slug
+            : null;
     }
 
     public static function isValid(string $slug): bool
     {
-        return self::find($slug) !== null;
+        if (self::find($slug) !== null) {
+            return true;
+        }
+
+        return app(MarketingPageContentService::class)->isKnownSlug(MarketingContentType::VERTICAL, $slug);
     }
 }

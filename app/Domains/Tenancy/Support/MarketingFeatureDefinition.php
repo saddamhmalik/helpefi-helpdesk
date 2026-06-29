@@ -2,6 +2,9 @@
 
 namespace App\Domains\Tenancy\Support;
 
+use App\Domains\Platform\Services\MarketingPageContentService;
+use App\Domains\Platform\Support\MarketingContentType;
+
 class MarketingFeatureDefinition
 {
     public static function slugs(): array
@@ -45,7 +48,7 @@ class MarketingFeatureDefinition
 
     public static function path(string $slug): string
     {
-        return '/features/'.$slug;
+        return '/'.$slug;
     }
 
     public static function seoKey(string $slug): string
@@ -61,11 +64,21 @@ class MarketingFeatureDefinition
 
         $slug = str_replace('_', '-', substr($seoKey, strlen('feature_')));
 
-        return self::find($slug) ? $slug : null;
+        if (self::find($slug) !== null) {
+            return $slug;
+        }
+
+        return app(MarketingPageContentService::class)->isKnownSlug(MarketingContentType::FEATURE, $slug)
+            ? $slug
+            : null;
     }
 
     public static function isValid(string $slug): bool
     {
-        return self::find($slug) !== null;
+        if (self::find($slug) !== null) {
+            return true;
+        }
+
+        return app(MarketingPageContentService::class)->isKnownSlug(MarketingContentType::FEATURE, $slug);
     }
 }

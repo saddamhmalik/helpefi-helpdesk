@@ -1,301 +1,184 @@
 <?php
 
-return array (
-  'ai' => 
-  array (
-    'nav_label' => 'AI Features',
-    'badge' => 'AI customer support',
-    'hero_title' => 'AI helpdesk software that resolves tickets faster',
-    'hero_highlight' => 'Copilot, deflection, and smart routing',
-    'hero_subtitle' => 'Use AI across your helpdesk to draft replies, deflect repetitive questions, and route complex tickets to the right agent — without replacing human judgment.',
-    'features' => 
-    array (
-      0 => 
-      array (
-        'title' => 'AI Copilot for agents',
-        'body' => 'Draft replies, summarize threads, and suggest next steps inside the agent workspace.',
-      ),
-      1 => 
-      array (
-        'title' => 'Semantic knowledge search',
-        'body' => 'Surface relevant articles and past tickets so customers and agents find answers faster.',
-      ),
-      2 => 
-      array (
-        'title' => 'AI deflection on portal and chat',
-        'body' => 'Answer common questions before a ticket is created, reducing queue volume.',
-      ),
-    ),
-    'faq' => 
-    array (
-      0 => 
-      array (
-        'q' => 'Does AI replace support agents?',
-        'a' => 'No. Helpefi AI assists agents and deflects repetitive questions. Your team stays in control of every customer conversation.',
-      ),
-      1 => 
-      array (
-        'q' => 'Can AI use our knowledge base?',
-        'a' => 'Yes. AI features can reference published articles and approved content to keep answers accurate and on-brand.',
-      ),
-    ),
-    'cta_title' => 'Try AI-powered support today',
-    'cta_body' => 'Start your free trial and see how AI reduces handle time while improving customer satisfaction.',
-  ),
-  'ticket-management' => 
-  array (
-    'nav_label' => 'Ticket Management',
-    'badge' => 'Ticket management system',
-    'hero_title' => 'Modern ticket management for support teams',
-    'hero_highlight' => 'Shared inbox, SLA, and collaboration',
-    'hero_subtitle' => 'Manage email, chat, SMS, and portal requests in one ticket management system with SLA policies, internal notes, and skills-based routing.',
-    'features' => 
-    array (
-      0 => 
-      array (
-        'title' => 'Unified shared inbox',
-        'body' => 'Every channel creates a ticket in one workspace with full conversation history.',
-      ),
-      1 => 
-      array (
-        'title' => 'SLA and escalation rules',
-        'body' => 'Set response and resolution targets with business hours, tiers, and automated escalations.',
-      ),
-      2 => 
-      array (
-        'title' => 'Collaboration built in',
-        'body' => 'Private notes, {\'@\'}mentions, and linked incidents keep teams aligned on complex issues.',
-      ),
-    ),
-    'faq' => 
-    array (
-      0 => 
-      array (
-        'q' => 'Which channels create tickets?',
-        'a' => 'Email, live chat, SMS, and your customer portal all route into the same shared inbox.',
-      ),
-      1 => 
-      array (
-        'q' => 'Can we route tickets by skill or team?',
-        'a' => 'Yes. Use assignment rules, skills routing, and tier-based SLA policies to match tickets to the right agents.',
-      ),
-    ),
-    'cta_title' => 'Upgrade your ticket workflow',
-    'cta_body' => 'Launch a dedicated workspace in minutes and give your team a faster, clearer way to manage support volume.',
-  ),
-  'knowledge-base' => 
-  array (
-    'nav_label' => 'Knowledge Base',
-    'badge' => 'Self-service knowledge base',
-    'hero_title' => 'Help customers help themselves',
-    'hero_highlight' => 'Articles, portal, and deflection',
-    'hero_subtitle' => 'Publish a branded knowledge base that powers your customer portal, reduces ticket volume, and feeds AI deflection across chat and email.',
-    'features' => 
-    array (
-      0 => 
-      array (
-        'title' => 'Branded customer portal',
-        'body' => 'Host help content on your domain with categories, search, and ticket submission.',
-      ),
-      1 => 
-      array (
-        'title' => 'Semantic search',
-        'body' => 'Customers and agents find answers by meaning, not just keywords.',
-      ),
-      2 => 
-      array (
-        'title' => 'Article analytics',
-        'body' => 'See which articles deflect tickets and where content gaps remain.',
-      ),
-    ),
-    'faq' => 
-    array (
-      0 => 
-      array (
-        'q' => 'Can we restrict articles by audience?',
-        'a' => 'Yes. Control visibility by brand, portal, or customer segment.',
-      ),
-      1 => 
-      array (
-        'q' => 'Does the knowledge base work with AI?',
-        'a' => 'Published articles power AI deflection and Copilot suggestions in the agent workspace.',
-      ),
-    ),
-    'cta_title' => 'Launch your knowledge base',
-    'cta_body' => 'Reduce repeat questions and give customers 24/7 self-service without adding headcount.',
-  ),
-  'automation' => 
-  array (
-    'nav_label' => 'Automation',
-    'badge' => 'Support automation',
-    'hero_title' => 'Automate repetitive support work',
-    'hero_highlight' => 'Rules, macros, and workflows',
-    'hero_subtitle' => 'Build support automation with triggers, SLA policies, macros, and approval workflows so agents focus on complex customer issues.',
-    'features' => 
-    array (
-      0 => 
-      array (
-        'title' => 'Trigger-based automation',
-        'body' => 'Assign, tag, notify, and escalate tickets automatically based on conditions you define.',
-      ),
-      1 => 
-      array (
-        'title' => 'Macros and canned responses',
-        'body' => 'Speed up replies with reusable templates and multi-action macros.',
-      ),
-      2 => 
-      array (
-        'title' => 'Service catalog approvals',
-        'body' => 'Route service requests through approval chains before fulfillment.',
-      ),
-    ),
-    'faq' => 
-    array (
-      0 => 
-      array (
-        'q' => 'Do I need developers to automate?',
-        'a' => 'No. Most automations are configured in the admin UI with visual rule builders.',
-      ),
-      1 => 
-      array (
-        'q' => 'Can automation work with SLA policies?',
-        'a' => 'Yes. Combine SLA timers, business hours, and automation rules for reliable escalations.',
-      ),
-    ),
-    'cta_title' => 'Automate your support queue',
-    'cta_body' => 'Start a free trial and configure your first automation rules in the setup wizard.',
-  ),
-  'live-chat' => 
-  array (
-    'nav_label' => 'Live Chat',
-    'badge' => 'Live chat support',
-    'hero_title' => 'Live chat that converts and resolves',
-    'hero_highlight' => 'Widget, routing, and context',
-    'hero_subtitle' => 'Embed live chat on your site, route conversations to available agents, and convert chats into tracked tickets with full customer context.',
-    'features' => 
-    array (
-      0 => 
-      array (
-        'title' => 'Embeddable chat widget',
-        'body' => 'Customize colors, placement, and pre-chat forms to match your brand.',
-      ),
-      1 => 
-      array (
-        'title' => 'Real-time agent workspace',
-        'body' => 'Handle multiple chats alongside email and portal tickets in one inbox.',
-      ),
-      2 => 
-      array (
-        'title' => 'Chat-to-ticket continuity',
-        'body' => 'Every chat becomes a ticket with history, SLA tracking, and follow-up via email.',
-      ),
-    ),
-    'faq' => 
-    array (
-      0 => 
-      array (
-        'q' => 'Can chat hand off to email?',
-        'a' => 'Yes. Offline messages and follow-ups continue as email tickets with the same thread.',
-      ),
-      1 => 
-      array (
-        'q' => 'Does live chat support AI deflection?',
-        'a' => 'Yes. Suggest knowledge base articles before connecting visitors to an agent.',
-      ),
-    ),
-    'cta_title' => 'Add live chat to your site',
-    'cta_body' => 'Install the widget during setup and start engaging visitors in real time.',
-  ),
-  'integrations' => 
-  array (
-    'nav_label' => 'Integrations',
-    'badge' => 'Helpdesk integrations',
-    'hero_title' => 'Connect your helpdesk to your stack',
-    'hero_highlight' => 'CRM, commerce, and dev tools',
-    'hero_subtitle' => 'Integrate Helpefi with Slack, HubSpot, Salesforce, Shopify, Jira, Linear, and more — with customer context surfaced directly in tickets.',
-    'features' => 
-    array (
-      0 => 
-      array (
-        'title' => 'CRM and commerce context',
-        'body' => 'View HubSpot, Salesforce, and Shopify data in the ticket sidebar.',
-      ),
-      1 => 
-      array (
-        'title' => 'Dev tool sync',
-        'body' => 'Link Jira and Linear issues to support tickets for engineering handoffs.',
-      ),
-      2 => 
-      array (
-        'title' => 'SSO and webhooks',
-        'body' => 'SAML/OIDC sign-in, REST API, and webhooks for custom integrations.',
-      ),
-    ),
-    'faq' => 
-    array (
-      0 => 
-      array (
-        'q' => 'Is there a REST API?',
-        'a' => 'Yes. Helpefi exposes a documented REST API and webhooks for custom workflows.',
-      ),
-      1 => 
-      array (
-        'q' => 'Which integrations are included?',
-        'a' => 'Core integrations include Slack, HubSpot, Salesforce, Shopify, Jira, Linear, Twilio SMS, and SSO.',
-      ),
-    ),
-    'cta_title' => 'Connect your tools',
-    'cta_body' => 'Start your trial and enable integrations from the admin setup wizard.',
-  ),
-  'data-residency' => 
-  array (
-    'nav_label' => 'Data Residency',
-    'badge' => 'Data residency & BYO cloud',
-    'hero_title' => 'Keep workspace data in your cloud',
-    'hero_highlight' => 'BYO database & object storage',
-    'hero_subtitle' => 'Store tickets, contacts, and attachments in your own MySQL (RDS, Aurora, or self-hosted) and S3 or Cloudflare R2 buckets — with guided migration, connection testing, and same-region performance best practices.',
-    'features' => 
-    array (
-      0 => 
-      array (
-        'title' => 'Bring your own database',
-        'body' => 'Connect MySQL on AWS RDS, Aurora, or your infrastructure. We validate credentials, migrate existing workspace data, and run tenant migrations against your database.',
-      ),
-      1 => 
-      array (
-        'title' => 'Bring your own storage',
-        'body' => 'Point attachments and avatars to your AWS S3 or Cloudflare R2 bucket with prefix-scoped access. Files migrate automatically from helpefi-managed storage.',
-      ),
-      2 => 
-      array (
-        'title' => 'Test before you save',
-        'body' => 'Test database and storage connections independently before committing. Clear status in Settings → Data residency so your team knows when each resource is verified.',
-      ),
-    ),
-    'faq' => 
-    array (
-      0 => 
-      array (
-        'q' => 'What data stays on helpefi?',
-        'a' => 'Control-plane metadata remains in our central database: workspace slug, subscription, domain mappings, and encrypted BYO credentials. Application logs and queue metadata may also include tenant-scoped tags. Workspace ticket and contact data lives in your database when BYO database is enabled.',
-      ),
-      1 => 
-      array (
-        'q' => 'Which cloud providers are supported?',
-        'a' => 'MySQL-compatible databases including Amazon RDS and Aurora, plus object storage on AWS S3 or Cloudflare R2. Use the same region as your workspace for lowest latency.',
-      ),
-      2 => 
-      array (
-        'q' => 'Can I enable database and storage separately?',
-        'a' => 'Yes. Purchase and configure BYO database and BYO storage as separate add-ons. Test and save each resource independently from Settings → Data residency.',
-      ),
-      3 => 
-      array (
-        'q' => 'Is this available on the free trial?',
-        'a' => 'Data residency add-ons require a paid plan. Enable the add-on from billing, then configure your external resources.',
-      ),
-    ),
-    'cta_title' => 'Meet your residency requirements',
-    'cta_body' => 'Start a paid plan, enable BYO add-ons, and configure your database and storage in minutes — with automatic migration from helpefi-managed resources.',
-  ),
-);
+return [
+    'shared-inbox' => [
+        'nav_label' => 'Shared Inbox',
+        'badge' => 'Shared inbox software',
+        'hero_title' => 'One shared inbox for your whole support team',
+        'hero_highlight' => 'Email, chat, and portal in one place',
+        'hero_subtitle' => 'Stop juggling personal inboxes and forwarded threads. Helpefi gives every agent a unified shared inbox with assignment, collision detection, and full conversation history.',
+        'features' => [
+            ['title' => 'Unified team workspace', 'body' => 'Every channel creates a ticket in one inbox so nothing gets lost in individual email accounts.'],
+            ['title' => 'Collision detection', 'body' => 'See when another agent is viewing or replying so customers never get duplicate responses.'],
+            ['title' => 'Internal notes and @mentions', 'body' => 'Collaborate on complex tickets privately without cluttering the customer thread.'],
+        ],
+        'faq' => [
+            ['q' => 'Can multiple agents work the same inbox?', 'a' => 'Yes. Assign tickets by team, skill, or round-robin. Every agent sees the same queue with real-time updates.'],
+            ['q' => 'Does shared inbox include live chat?', 'a' => 'Yes. Chat, email, SMS, and portal submissions all land in the same shared inbox.'],
+        ],
+        'cta_title' => 'Unify your support inbox',
+        'cta_body' => 'Start your free trial and connect your first email inbox in under two minutes.',
+    ],
+    'ai-agent' => [
+        'nav_label' => 'AI Agent',
+        'badge' => 'AI agent for support',
+        'hero_title' => 'AI agent that assists — not replaces — your team',
+        'hero_highlight' => 'Copilot, deflection, and smart routing',
+        'hero_subtitle' => 'Use AI across your helpdesk to draft replies, deflect repetitive questions, and route complex tickets to the right agent without losing human judgment.',
+        'features' => [
+            ['title' => 'AI Copilot for agents', 'body' => 'Draft replies, summarize threads, and suggest next steps inside the agent workspace.'],
+            ['title' => 'Semantic knowledge search', 'body' => 'Surface relevant articles and past tickets so customers and agents find answers faster.'],
+            ['title' => 'AI deflection on portal and chat', 'body' => 'Answer common questions before a ticket is created, reducing queue volume.'],
+        ],
+        'faq' => [
+            ['q' => 'Does AI replace support agents?', 'a' => 'No. Helpefi AI assists agents and deflects repetitive questions. Your team stays in control of every customer conversation.'],
+            ['q' => 'Can AI use our knowledge base?', 'a' => 'Yes. AI features reference published articles and approved content to keep answers accurate and on-brand.'],
+        ],
+        'cta_title' => 'Try AI-powered support today',
+        'cta_body' => 'Start your free trial and see how AI reduces handle time while improving customer satisfaction.',
+    ],
+    'knowledge-base' => [
+        'nav_label' => 'Knowledge Base',
+        'badge' => 'Self-service knowledge base',
+        'hero_title' => 'Help customers help themselves',
+        'hero_highlight' => 'Articles, portal, and deflection',
+        'hero_subtitle' => 'Publish a branded knowledge base that powers your customer portal, reduces ticket volume, and feeds AI deflection across chat and email.',
+        'features' => [
+            ['title' => 'Branded customer portal', 'body' => 'Host help content on your domain with categories, search, and ticket submission.'],
+            ['title' => 'Semantic search', 'body' => 'Customers and agents find answers by meaning, not just keywords.'],
+            ['title' => 'Article analytics', 'body' => 'See which articles deflect tickets and where content gaps remain.'],
+        ],
+        'faq' => [
+            ['q' => 'Can we restrict articles by audience?', 'a' => 'Yes. Control visibility by brand, portal, or customer segment.'],
+            ['q' => 'Does the knowledge base work with AI?', 'a' => 'Published articles power AI deflection and Copilot suggestions in the agent workspace.'],
+        ],
+        'cta_title' => 'Launch your knowledge base',
+        'cta_body' => 'Reduce repeat questions and give customers 24/7 self-service without adding headcount.',
+    ],
+    'live-chat' => [
+        'nav_label' => 'Live Chat',
+        'badge' => 'Live chat support',
+        'hero_title' => 'Live chat that converts and resolves',
+        'hero_highlight' => 'Widget, routing, and context',
+        'hero_subtitle' => 'Embed live chat on your site, route conversations to available agents, and convert chats into tracked tickets with full customer context.',
+        'features' => [
+            ['title' => 'Embeddable chat widget', 'body' => 'Customize colors, placement, and pre-chat forms to match your brand.'],
+            ['title' => 'Real-time agent workspace', 'body' => 'Handle multiple chats alongside email and portal tickets in one inbox.'],
+            ['title' => 'Chat-to-ticket continuity', 'body' => 'Every chat becomes a ticket with history, SLA tracking, and follow-up via email.'],
+        ],
+        'faq' => [
+            ['q' => 'Can chat hand off to email?', 'a' => 'Yes. Offline messages and follow-ups continue as email tickets with the same thread.'],
+            ['q' => 'Does live chat support AI deflection?', 'a' => 'Yes. Suggest knowledge base articles before connecting visitors to an agent.'],
+        ],
+        'cta_title' => 'Add live chat to your site',
+        'cta_body' => 'Install the widget during setup and start engaging visitors in real time.',
+    ],
+    'email-ticketing' => [
+        'nav_label' => 'Email Ticketing',
+        'badge' => 'Email ticketing system',
+        'hero_title' => 'Email ticketing built for support teams',
+        'hero_highlight' => 'Threading, routing, and SLA',
+        'hero_subtitle' => 'Turn support@ into a professional email ticketing system with automatic threading, smart routing, SLA timers, and collision detection.',
+        'features' => [
+            ['title' => 'Automatic email threading', 'body' => 'Replies stay grouped by conversation so agents always have full context.'],
+            ['title' => 'Multi-inbox support', 'body' => 'Connect Gmail, Microsoft 365, and Zoho Mail — or forward any address into Helpefi.'],
+            ['title' => 'SLA on every email', 'body' => 'Track first response and resolution targets with business hours and escalations.'],
+        ],
+        'faq' => [
+            ['q' => 'Can we keep our existing support email?', 'a' => 'Yes. Forward or OAuth-connect your current support address. Customers see replies from your domain.'],
+            ['q' => 'Does email ticketing include attachments?', 'a' => 'Yes. Inline images and file attachments are preserved in the ticket thread.'],
+        ],
+        'cta_title' => 'Upgrade from shared Gmail',
+        'cta_body' => 'Connect your support inbox during trial setup and route email like a real helpdesk.',
+    ],
+    'omnichannel-support' => [
+        'nav_label' => 'Omnichannel Support',
+        'badge' => 'Omnichannel helpdesk',
+        'hero_title' => 'Omnichannel support in one platform',
+        'hero_highlight' => 'Email, chat, SMS, and portal',
+        'hero_subtitle' => 'Meet customers on every channel without fragmenting your team. Helpefi unifies email, live chat, SMS, and portal into one omnichannel helpdesk.',
+        'features' => [
+            ['title' => 'Single customer timeline', 'body' => 'See every interaction across channels in one contact record and ticket history.'],
+            ['title' => 'Channel-aware routing', 'body' => 'Route chat to online agents and email to specialists — all from one queue.'],
+            ['title' => 'Consistent SLA everywhere', 'body' => 'Apply the same SLA policies whether the customer emailed, chatted, or submitted a portal form.'],
+        ],
+        'faq' => [
+            ['q' => 'Which channels are supported?', 'a' => 'Email, live chat, SMS via Twilio, and your branded customer portal. Social channels via API and webhooks.'],
+            ['q' => 'Can customers switch channels mid-conversation?', 'a' => 'Yes. A chat can continue as email with the same ticket and full history.'],
+        ],
+        'cta_title' => 'Go omnichannel without the chaos',
+        'cta_body' => 'Start your trial and connect your first three channels in one workspace.',
+    ],
+    'sla-management' => [
+        'nav_label' => 'SLA Management',
+        'badge' => 'SLA management software',
+        'hero_title' => 'SLA management that teams actually trust',
+        'hero_highlight' => 'Policies, timers, and escalations',
+        'hero_subtitle' => 'Define response and resolution SLAs with business hours, priority tiers, and automated escalations so nothing breaches silently.',
+        'features' => [
+            ['title' => 'Flexible SLA policies', 'body' => 'Set different targets by priority, customer tier, brand, or ticket type.'],
+            ['title' => 'Business hours aware', 'body' => 'Timers pause outside working hours and respect holidays per team or region.'],
+            ['title' => 'Automated escalations', 'body' => 'Notify managers and reassign tickets when SLAs approach breach.'],
+        ],
+        'faq' => [
+            ['q' => 'Can we have different SLAs per brand?', 'a' => 'Yes. Multi-brand workspaces support independent SLA policies per brand or customer segment.'],
+            ['q' => 'Do SLAs work on chat and email?', 'a' => 'Yes. SLA timers apply to every channel that creates a ticket.'],
+        ],
+        'cta_title' => 'Hold your team to clear standards',
+        'cta_body' => 'Configure your first SLA policy during trial setup in minutes.',
+    ],
+    'automation' => [
+        'nav_label' => 'Automation',
+        'badge' => 'Support automation',
+        'hero_title' => 'Automate repetitive support work',
+        'hero_highlight' => 'Rules, macros, and workflows',
+        'hero_subtitle' => 'Build support automation with triggers, SLA policies, macros, and approval workflows so agents focus on complex customer issues.',
+        'features' => [
+            ['title' => 'Trigger-based automation', 'body' => 'Assign, tag, notify, and escalate tickets automatically based on conditions you define.'],
+            ['title' => 'Macros and canned responses', 'body' => 'Speed up replies with reusable templates and multi-action macros.'],
+            ['title' => 'Service catalog approvals', 'body' => 'Route service requests through approval chains before fulfillment.'],
+        ],
+        'faq' => [
+            ['q' => 'Do I need developers to automate?', 'a' => 'No. Most automations are configured in the admin UI with visual rule builders.'],
+            ['q' => 'Can automation work with SLA policies?', 'a' => 'Yes. Combine SLA timers, business hours, and automation rules for reliable escalations.'],
+        ],
+        'cta_title' => 'Automate your support queue',
+        'cta_body' => 'Start a free trial and configure your first automation rules in the setup wizard.',
+    ],
+    'analytics' => [
+        'nav_label' => 'Analytics',
+        'badge' => 'Helpdesk analytics',
+        'hero_title' => 'Support analytics that drive decisions',
+        'hero_highlight' => 'Volume, CSAT, and agent performance',
+        'hero_subtitle' => 'Track ticket volume, response times, resolution rates, CSAT, and agent workload from dashboards built for support leaders.',
+        'features' => [
+            ['title' => 'Real-time dashboards', 'body' => 'Monitor queue depth, SLA compliance, and channel mix without exporting spreadsheets.'],
+            ['title' => 'Agent performance', 'body' => 'See handle time, first response, and resolution rates per agent and team.'],
+            ['title' => 'CSAT and feedback', 'body' => 'Collect post-resolution ratings and tie scores back to tickets and agents.'],
+        ],
+        'faq' => [
+            ['q' => 'Can we export analytics data?', 'a' => 'Yes. Use the REST API and webhooks to push metrics into your BI tools.'],
+            ['q' => 'Is CSAT included?', 'a' => 'CSAT surveys are included on Professional and above. Configure triggers per channel and priority.'],
+        ],
+        'cta_title' => 'Measure what matters',
+        'cta_body' => 'Start your trial and see live analytics from your first resolved ticket.',
+    ],
+    'customer-portal' => [
+        'nav_label' => 'Customer Portal',
+        'badge' => 'Customer support portal',
+        'hero_title' => 'A customer portal your users will actually use',
+        'hero_highlight' => 'Self-service, tickets, and branding',
+        'hero_subtitle' => 'Give customers a branded portal to search your knowledge base, submit tickets, and track request status — on your domain.',
+        'features' => [
+            ['title' => 'Custom branding', 'body' => 'Match your logo, colors, and domain so the portal feels like part of your product.'],
+            ['title' => 'Ticket tracking', 'body' => 'Customers see status updates and reply to threads without emailing back and forth.'],
+            ['title' => 'KB-powered deflection', 'body' => 'Suggest articles before ticket submission to reduce volume automatically.'],
+        ],
+        'faq' => [
+            ['q' => 'Can we use a custom domain?', 'a' => 'Yes. Custom domains are available on Pro. Default portal URLs work on every plan during trial.'],
+            ['q' => 'Does the portal require customer accounts?', 'a' => 'Customers can submit via email verification or optional login — you choose the friction level.'],
+        ],
+        'cta_title' => 'Launch your customer portal',
+        'cta_body' => 'Publish your portal during trial setup and start deflecting tickets today.',
+    ],
+];

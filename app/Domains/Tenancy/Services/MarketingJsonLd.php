@@ -146,6 +146,9 @@ class MarketingJsonLd
         string $publishedAt,
         ?string $updatedAt,
         ?string $imageUrl,
+        ?string $authorName = null,
+        array $categories = [],
+        array $tags = [],
     ): array {
         $node = [
             '@type' => 'BlogPosting',
@@ -156,7 +159,10 @@ class MarketingJsonLd
             'datePublished' => $publishedAt,
             'dateModified' => $updatedAt ?: $publishedAt,
             'inLanguage' => 'en',
-            'author' => [
+            'author' => is_string($authorName) && trim($authorName) !== '' ? [
+                '@type' => 'Person',
+                'name' => trim($authorName),
+            ] : [
                 '@type' => 'Organization',
                 'name' => $brand,
             ],
@@ -167,6 +173,28 @@ class MarketingJsonLd
 
         if (is_string($imageUrl) && $imageUrl !== '') {
             $node['image'] = [$imageUrl];
+        }
+
+        $section = [];
+        if ($categories !== []) {
+            $section = array_values(array_filter(array_map('strval', $categories)));
+        }
+
+        if ($section !== []) {
+            $node['articleSection'] = $section[0];
+        }
+
+        $keywordParts = [];
+        if (is_array($categories) && $categories !== []) {
+            $keywordParts = array_merge($keywordParts, $categories);
+        }
+        if (is_array($tags) && $tags !== []) {
+            $keywordParts = array_merge($keywordParts, $tags);
+        }
+
+        $keywordParts = array_values(array_unique(array_filter(array_map('strval', $keywordParts))));
+        if ($keywordParts !== []) {
+            $node['keywords'] = implode(', ', array_slice($keywordParts, 0, 20));
         }
 
         return $node;

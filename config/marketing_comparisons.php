@@ -1,23 +1,26 @@
 <?php
 
 return [
+    'zendesk' => [
+        'accent' => 'teal',
+    ],
     'freshdesk' => [
         'accent' => 'blue',
     ],
-    'zendesk' => [
-        'accent' => 'teal',
+    'intercom' => [
+        'accent' => 'orange',
+    ],
+    'front' => [
+        'accent' => 'violet',
+    ],
+    'help-scout' => [
+        'accent' => 'amber',
     ],
     'zoho-desk' => [
         'accent' => 'crimson',
     ],
     'freshservice' => [
         'accent' => 'indigo',
-    ],
-    'helpscout' => [
-        'accent' => 'amber',
-    ],
-    'intercom' => [
-        'accent' => 'orange',
     ],
     'jira-service-management' => [
         'accent' => 'blue',

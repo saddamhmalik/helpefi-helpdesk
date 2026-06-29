@@ -5,6 +5,7 @@ import CentralLayout from '../../Layouts/CentralLayout.vue';
 import { useCurrency } from '../../composables/useCurrency.js';
 import { useBillingInterval } from '../../composables/useBillingInterval.js';
 import { formatMarketingTemplate, useMarketingEnglish } from '../../composables/useMarketingEnglish.js';
+import CentralBreadcrumbs from '../../Components/Central/CentralBreadcrumbs.vue';
 
 const props = defineProps({
     brand: { type: String, default: 'helpefi' },
@@ -16,6 +17,7 @@ const props = defineProps({
     plans: { type: Array, default: () => [] },
     addons: { type: Array, default: () => [] },
     featurePages: { type: Array, default: () => [] },
+    verticalPages: { type: Array, default: () => [] },
     contactEmail: { type: String, default: '' },
     socialLinks: { type: Array, default: () => [] },
     indiaEnabled: { type: Boolean, default: false },
@@ -29,6 +31,7 @@ const props = defineProps({
 const platformName = computed(() => props.brand || 'helpefi');
 const { label } = useMarketingEnglish(platformName, computed(() => props.marketingLabels));
 const isPricing = computed(() => props.page === 'pricing');
+const isIndustries = computed(() => props.page === 'industries');
 const isLegalPage = computed(() => ['privacy', 'terms'].includes(props.page));
 
 const effectiveDate = computed(() => props.content.effective_date ?? '');
@@ -103,19 +106,28 @@ const addonPrice = (addon) => (
 );
 
 const pricingSection = computed(() => props.pricingMeta?.pricing_section ?? {});
+
+const verticalAccentMap = {
+    fintech: 'border-violet-500/20 bg-violet-500/5 hover:border-violet-400/40',
+    healthcare: 'border-emerald-500/20 bg-emerald-500/5 hover:border-emerald-400/40',
+    saas: 'border-violet-500/20 bg-violet-500/5 hover:border-violet-400/40',
+    ecommerce: 'border-emerald-500/20 bg-emerald-500/5 hover:border-emerald-400/40',
+    logistics: 'border-rose-500/20 bg-rose-500/5 hover:border-rose-400/40',
+    edtech: 'border-emerald-500/20 bg-emerald-500/5 hover:border-emerald-400/40',
+    government: 'border-rose-500/20 bg-rose-500/5 hover:border-rose-400/40',
+    startups: 'border-violet-500/20 bg-violet-500/5 hover:border-violet-400/40',
+    banking: 'border-violet-500/20 bg-violet-500/5 hover:border-violet-400/40',
+    insurance: 'border-emerald-500/20 bg-emerald-500/5 hover:border-emerald-400/40',
+};
+
+const verticalCardClass = (slug) => verticalAccentMap[slug] ?? verticalAccentMap.saas;
 </script>
 
 <template>
     <CentralLayout :brand="brand" :trial-days="trialDays" :social-links="socialLinks">
         <section class="relative overflow-hidden bg-slate-950 py-16 text-white sm:py-24">
             <div class="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-                <nav class="mb-8 text-sm text-slate-400" aria-label="Breadcrumb">
-                    <ol class="flex flex-wrap items-center gap-2">
-                        <li><Link href="/" class="transition hover:text-white">{{ platformName }}</Link></li>
-                        <li aria-hidden="true">/</li>
-                        <li class="text-slate-300">{{ copy.navLabel }}</li>
-                    </ol>
-                </nav>
+                <CentralBreadcrumbs />
 
                 <div class="max-w-3xl">
                     <h1 class="text-3xl font-extrabold tracking-tight sm:text-5xl">{{ copy.heroTitle }}</h1>
@@ -269,6 +281,33 @@ const pricingSection = computed(() => props.pricingMeta?.pricing_section ?? {});
             </div>
         </section>
 
+        <section v-if="isIndustries && verticalPages.length" class="bg-white py-16 dark:bg-slate-900 sm:py-20">
+            <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                    <Link
+                        v-for="vertical in verticalPages"
+                        :key="vertical.slug"
+                        :href="vertical.path"
+                        class="group rounded-2xl border p-6 transition dark:border-slate-800"
+                        :class="verticalCardClass(vertical.slug)"
+                    >
+                        <p class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                            {{ vertical.badge || marketingChrome.industry_label || 'Industry' }}
+                        </p>
+                        <h2 class="mt-3 text-xl font-bold text-slate-900 transition group-hover:text-blue-600 dark:text-slate-100 dark:group-hover:text-blue-400">
+                            {{ vertical.nav_label }}
+                        </h2>
+                        <p v-if="vertical.hero_subtitle" class="mt-3 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
+                            {{ vertical.hero_subtitle }}
+                        </p>
+                        <span class="mt-4 inline-flex text-sm font-semibold text-blue-600 dark:text-blue-400">
+                            {{ marketingChrome.learn_more ?? 'Learn more' }} →
+                        </span>
+                    </Link>
+                </div>
+            </div>
+        </section>
+
         <section v-if="sections.length" class="bg-white py-16 dark:bg-slate-900 sm:py-20">
             <div class="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
                 <article v-for="(section, index) in sections" :key="index" class="mb-10 last:mb-0">
@@ -288,7 +327,7 @@ const pricingSection = computed(() => props.pricingMeta?.pricing_section ?? {});
             </div>
         </section>
 
-        <section v-if="featurePages.length && !isPricing && !isLegalPage" class="border-t border-slate-200 bg-slate-50 py-12 dark:border-slate-800 dark:bg-slate-950">
+        <section v-if="featurePages.length && !isPricing && !isLegalPage && !isIndustries" class="border-t border-slate-200 bg-slate-50 py-12 dark:border-slate-800 dark:bg-slate-950">
             <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                 <h2 class="text-lg font-semibold text-slate-900 dark:text-slate-100">{{ marketingChrome.explore_product_features ?? 'Explore product features' }}</h2>
                 <div class="mt-4 flex flex-wrap gap-3">

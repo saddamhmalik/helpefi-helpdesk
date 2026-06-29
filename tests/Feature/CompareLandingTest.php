@@ -12,7 +12,19 @@ class CompareLandingTest extends TestCase
 
     public function test_compare_landing_pages_render(): void
     {
-        foreach (CompareLandingDefinition::slugs() as $slug) {
+        $competitorComparisonSlugs = ['zendesk', 'freshdesk', 'freshservice', 'zoho-desk', 'intercom', 'front', 'help-scout'];
+
+        foreach ($competitorComparisonSlugs as $slug) {
+            $this->get('http://'.config('tenancy.central_app_domain').CompareLandingDefinition::path($slug))
+                ->assertOk()
+                ->assertInertia(fn ($page) => $page
+                    ->component('Central/CompetitorComparison')
+                    ->where('competitorSlug', $slug)
+                    ->has('matrix.rows')
+                );
+        }
+
+        foreach (array_diff(CompareLandingDefinition::slugs(), $competitorComparisonSlugs) as $slug) {
             $this->get('http://'.config('tenancy.central_app_domain').CompareLandingDefinition::path($slug))
                 ->assertOk()
                 ->assertInertia(fn ($page) => $page
@@ -32,13 +44,13 @@ class CompareLandingTest extends TestCase
             ->assertInertia(fn ($page) => $page
                 ->component('Central/Home')
                 ->has('comparePages', count(CompareLandingDefinition::slugs()))
-                ->where('comparePages.0.footer_label', 'vs Freshdesk')
+                ->where('comparePages.0.footer_label', 'vs Zendesk')
             );
     }
 
     public function test_unknown_compare_page_returns_not_found(): void
     {
-        $this->get('http://'.config('tenancy.central_app_domain').'/vs/not-a-real-competitor')
+        $this->get('http://'.config('tenancy.central_app_domain').'/compare/not-a-real-competitor-vs-helpefi')
             ->assertNotFound();
     }
 
@@ -59,7 +71,7 @@ class CompareLandingTest extends TestCase
     {
         config(['marketing_seo.site_url' => 'http://'.config('tenancy.central_app_domain')]);
 
-        $url = 'http://'.config('tenancy.central_app_domain').'/vs/freshdesk';
+        $url = 'http://'.config('tenancy.central_app_domain').CompareLandingDefinition::path('freshdesk');
 
         $response = $this->get($url);
 

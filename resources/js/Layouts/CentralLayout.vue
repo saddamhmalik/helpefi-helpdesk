@@ -1,10 +1,25 @@
 <script setup>
 import { Link, usePage } from '@inertiajs/vue3';
-import { computed, ref } from 'vue';
+import { computed, defineAsyncComponent, onMounted, ref } from 'vue';
 import AppLogo from '../Components/AppLogo.vue';
-import CentralMarketingHelpBot from '../Components/CentralMarketingHelpBot.vue';
+import SeoHead from '../Components/SeoHead.vue';
 import { formatMarketingTemplate } from '../composables/useMarketingEnglish.js';
 import { useBodyScrollLock } from '../composables/useModal.js';
+
+const CentralMarketingHelpBot = defineAsyncComponent(() => import('../Components/CentralMarketingHelpBot.vue'));
+const showHelpBot = ref(false);
+
+onMounted(() => {
+    const reveal = () => {
+        showHelpBot.value = true;
+    };
+
+    if ('requestIdleCallback' in window) {
+        requestIdleCallback(reveal, { timeout: 2500 });
+    } else {
+        setTimeout(reveal, 1500);
+    }
+});
 
 const props = defineProps({
     brand: { type: String, default: 'helpefi' },
@@ -64,6 +79,7 @@ useBodyScrollLock(mobileOpen);
 </script>
 
 <template>
+    <SeoHead />
     <a href="#main-content" class="agent-skip-link">{{ chrome.skip_to_main_content ?? 'Skip to main content' }}</a>
     <div class="flex min-h-screen flex-col overflow-x-hidden">
         <div
@@ -86,6 +102,7 @@ useBodyScrollLock(mobileOpen);
                 <div v-if="minimalHeader" class="flex items-center gap-2">
                     <Link
                         href="/login"
+                        prefetch
                         class="rounded-lg px-3 py-2 text-sm font-medium agent-text-muted transition hover:text-slate-900 dark:hover:text-slate-100"
                     >
                         {{ layoutText('sign_in') }}
@@ -106,12 +123,14 @@ useBodyScrollLock(mobileOpen);
                 <div v-if="!minimalHeader" class="hidden items-center gap-2 sm:flex">
                     <Link
                         href="/login"
+                        prefetch
                         class="rounded-lg px-3 py-2 text-sm font-medium agent-text-muted transition hover:text-slate-900 dark:text-slate-100 dark:hover:text-slate-100"
                     >
                         {{ layoutText('sign_in') }}
                     </Link>
                     <Link
                         href="/register"
+                        prefetch
                         class="rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-2 text-sm font-bold text-white shadow-lg shadow-blue-600/30 transition hover:from-blue-500 hover:to-indigo-500"
                     >
                         {{ layoutText('start_free_trial') }}
@@ -121,6 +140,7 @@ useBodyScrollLock(mobileOpen);
                 <div v-if="!minimalHeader" class="flex items-center gap-2 lg:hidden">
                     <Link
                         href="/register"
+                        prefetch
                         class="rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-bold text-white shadow-sm sm:hidden"
                     >
                         Try free
@@ -165,10 +185,10 @@ useBodyScrollLock(mobileOpen);
                         >
                             {{ link.label }}
                         </a>
-                        <Link href="/login" class="rounded-lg px-3 py-3 text-sm font-medium agent-text-muted active:bg-slate-100 dark:bg-slate-900 dark:active:bg-slate-800" @click="mobileOpen = false">
+                        <Link href="/login" prefetch class="rounded-lg px-3 py-3 text-sm font-medium agent-text-muted active:bg-slate-100 dark:bg-slate-900 dark:active:bg-slate-800" @click="mobileOpen = false">
                             {{ layoutText('sign_in') }}
                         </Link>
-                        <Link href="/register" class="mt-2 rounded-xl bg-blue-600 px-3 py-3 text-center text-sm font-semibold text-white" @click="mobileOpen = false">
+                        <Link href="/register" prefetch class="mt-2 rounded-xl bg-blue-600 px-3 py-3 text-center text-sm font-semibold text-white" @click="mobileOpen = false">
                             {{ layoutText('start_free_trial') }}
                         </Link>
                     </nav>
@@ -212,12 +232,13 @@ useBodyScrollLock(mobileOpen);
                         <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">{{ layoutText('footer_get_started') }}</p>
                         <Link
                             href="/register"
+                            prefetch
                             class="mt-4 flex w-full items-center justify-center rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-5 py-3 text-sm font-bold text-white shadow-lg shadow-blue-900/30 transition hover:from-blue-500 hover:to-indigo-500"
                         >
                             {{ layoutText('start_free_trial') }}
                         </Link>
                         <div class="mt-4 flex flex-col gap-2.5 border-t border-white/10 pt-4 text-sm sm:flex-row sm:flex-wrap sm:gap-x-5 sm:gap-y-2">
-                            <Link href="/login" class="text-slate-300 transition hover:text-white">
+                            <Link href="/login" prefetch class="text-slate-300 transition hover:text-white">
                                 {{ layoutText('footer_sign_in_workspace') }}
                             </Link>
                             <a href="/#how-it-works" class="text-slate-400 transition hover:text-white">
@@ -232,7 +253,7 @@ useBodyScrollLock(mobileOpen);
                         <p class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">{{ layoutText('footer_product') }}</p>
                         <ul class="mt-4 space-y-2.5 text-sm">
                             <li><a href="/#differentiators" class="transition hover:text-white">{{ layoutText('why_us') }}</a></li>
-                        <li><Link href="/features" class="transition hover:text-white">{{ layoutText('features') }}</Link></li>
+                        <li><Link href="/features" prefetch class="transition hover:text-white">{{ layoutText('features') }}</Link></li>
                         <li><a href="/#product" class="transition hover:text-white">{{ layoutText('footer_platform_overview') }}</a></li>
                             <li><a href="/#pricing" class="transition hover:text-white">{{ layoutText('pricing') }}</a></li>
                             <li><a href="/#faq" class="transition hover:text-white">{{ layoutText('faq') }}</a></li>
@@ -242,7 +263,7 @@ useBodyScrollLock(mobileOpen);
                         <p class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">{{ layoutText('footer_features') }}</p>
                         <ul class="mt-4 space-y-2.5 text-sm">
                             <li v-for="feature in featurePages" :key="feature.slug">
-                                <Link :href="feature.path" class="transition hover:text-white">
+                                <Link :href="feature.path" prefetch class="transition hover:text-white">
                                     {{ feature.nav_label }}
                                 </Link>
                             </li>
@@ -252,7 +273,7 @@ useBodyScrollLock(mobileOpen);
                         <p class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">{{ layoutText('footer_solutions') }}</p>
                         <ul class="mt-4 space-y-2.5 text-sm">
                             <li v-for="vertical in verticalPages" :key="vertical.slug">
-                                <Link :href="vertical.path" class="transition hover:text-white">
+                                <Link :href="vertical.path" prefetch class="transition hover:text-white">
                                     {{ vertical.nav_label }}
                                 </Link>
                             </li>
@@ -308,7 +329,7 @@ useBodyScrollLock(mobileOpen);
             </div>
         </footer>
 
-        <CentralMarketingHelpBot :enabled="aiDemoEnabled" :brand="brand" />
+        <CentralMarketingHelpBot v-if="showHelpBot" :enabled="aiDemoEnabled" :brand="brand" />
     </div>
 </template>
 

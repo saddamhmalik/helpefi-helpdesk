@@ -23,6 +23,10 @@ return [
                 ClearWorkspaceCachesStep::class,
             ],
         ],
+        '1.0.1' => [
+            'description' => 'Patch release with no tenant data migrations.',
+            'steps' => [],
+        ],
     ],
 
 ];

@@ -84,4 +84,28 @@ class PlatformAdminBlogTest extends TestCase
                 ->where('post.slug', 'ai-helpdesk-software-guide')
             );
     }
+
+    public function test_scheduled_published_posts_are_not_public_until_published_at(): void
+    {
+        MarketingBlogPost::query()->create([
+            'slug' => 'scheduled-future-post',
+            'title' => 'Scheduled future post',
+            'excerpt' => 'Should be hidden until published_at.',
+            'body' => 'Scheduled body.',
+            'status' => MarketingBlogPost::STATUS_PUBLISHED,
+            'published_at' => now()->addDay(),
+        ]);
+
+        $this->get('http://'.config('tenancy.central_app_domain').'/blog/scheduled-future-post')
+            ->assertNotFound();
+    }
+
+    public function test_blog_rss_feed_contains_published_posts(): void
+    {
+        $this->seed(MarketingBlogPostSeeder::class);
+
+        $this->get('http://'.config('tenancy.central_app_domain').'/blog/rss.xml')
+            ->assertOk()
+            ->assertSee('ai-helpdesk-software-guide', false);
+    }
 }

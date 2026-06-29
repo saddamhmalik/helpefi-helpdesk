@@ -2,6 +2,7 @@
 import { Link, usePage } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 import AppLogo from '../Components/AppLogo.vue';
+import SeoHead from '../Components/SeoHead.vue';
 import PlatformUserMenu from '../Components/Platform/PlatformUserMenu.vue';
 import ThemeToggle from '../Components/ThemeToggle.vue';
 import { usePlatformAdmin } from '../composables/usePlatformAdmin.js';
@@ -23,6 +24,7 @@ const navLinkClass = (item) => (
 </script>
 
 <template>
+    <SeoHead />
     <a href="#main-content" class="agent-skip-link">{{ $t('components.skip_to_main_content') }}</a>
     <div class="min-h-screen agent-page-bg">
         <Transition name="slide-over">

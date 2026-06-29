@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Domains\Tenancy\Support\CentralDomain;
+use App\Domains\Tenancy\Services\SchemaService;
 use App\Domains\Ai\Services\AiAssistService;
 use App\Domains\Auth\Services\UserPreferenceService;
 use App\Domains\Billing\Services\BillingService;
@@ -33,12 +34,15 @@ class HandleInertiaRequests extends Middleware
 
     public function share(Request $request): array
     {
-        $user = CentralDomain::isCentralHost($request->getHost()) ? null : $request->user();
+        $isCentral = CentralDomain::isCentralHost($request->getHost());
+        $user = $isCentral ? null : $request->user();
         $preferenceContext = $user instanceof User ? $this->preferenceContext($user) : null;
 
         return array_merge(parent::share($request), [
             'appVersion' => fn () => AppVersion::current(),
             'csrf_token' => fn () => csrf_token(),
+            'seo_schema' => fn () => $this->centralOnly($isCentral, fn () => app(SchemaService::class)->forRequest($request)),
+            'seo_meta' => fn () => $this->centralOnly($isCentral, fn () => $this->centralSeoMeta($request)),
             'platformAuth' => function () {
                 $platformUser = auth('platform')->user();
 
@@ -238,5 +242,22 @@ class HandleInertiaRequests extends Middleware
         }
 
         return app(TenantDummyDataService::class)->cachedPublicState();
+    }
+
+    private function centralOnly(bool $isCentral, callable $callback): mixed
+    {
+        if (! $isCentral) {
+            return null;
+        }
+
+        return $callback();
+    }
+
+    private function centralSeoMeta(Request $request): array
+    {
+        return [
+            'route' => $request->route()?->getName(),
+            'path' => '/'.ltrim($request->path(), '/'),
+        ];
     }
 }

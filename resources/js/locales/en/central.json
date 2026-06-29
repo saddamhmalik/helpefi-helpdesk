@@ -91,6 +91,15 @@
         "social_links_hint": "Add your social profile URLs. Links you fill in are shown in the marketing website footer.",
         "marketing_website": "Marketing website",
         "marketing_website_caption": "Public site traffic, excluding known bots. Refreshed every 5 minutes.",
+        "marketing_seo_audit": {
+            "title": "Marketing SEO health",
+            "caption": "Automated audit across {pages} public marketing pages. Cached for 6 hours.",
+            "view_report": "View full report",
+            "health_score": "Health score",
+            "total_issues": "Total issues",
+            "missing_title": "Missing titles",
+            "broken_links": "Broken links"
+        },
         "total_visits": "Total visits",
         "visits_today": "Visits today",
         "visits_7_days": "Visits (7 days)",
@@ -1116,6 +1125,112 @@
                 ],
                 "cta_title": "Ready for the next enrollment cycle?",
                 "cta_body": "Start your trial, publish five KB articles, and embed chat before registration opens."
+            },
+            "edtech": {
+                "nav_label": "Edtech",
+                "badge": "For schools, edtech & training providers",
+                "hero_title": "Helpdesk software for education support teams",
+                "hero_highlight": "Help students and staff faster.",
+                "hero_subtitle": "Centralize student, faculty, and IT requests in one platform — portal, live chat, knowledge base, and optional Service Desk for campus IT.",
+                "faq": [
+                    {
+                        "q": "Can parents and students use the same portal?",
+                        "a": "Yes. Configure separate brands or forms if you need different experiences for students vs staff."
+                    },
+                    {
+                        "q": "Does {brand} integrate with our LMS?",
+                        "a": "Use webhooks and REST API to link tickets to Canvas, Moodle, or internal systems. CRM integrations available on Enterprise."
+                    },
+                    {
+                        "q": "Can we handle start-of-semester volume?",
+                        "a": "Use SLA policies, automation, and AI deflection before peak registration weeks."
+                    }
+                ]
+            },
+            "logistics": {
+                "nav_label": "Logistics",
+                "faq": [
+                    {
+                        "q": "Can we route tickets by warehouse or region?",
+                        "a": "Yes. Use automation rules, skills-based assignment, and team queues to route exceptions to the right hub."
+                    },
+                    {
+                        "q": "Does {brand} integrate with our TMS or WMS?",
+                        "a": "Use webhooks and REST API to link tickets to shipment records. CRM and integration add-ons surface customer context in the sidebar."
+                    },
+                    {
+                        "q": "How fast can a logistics team go live?",
+                        "a": "Most teams connect email and publish a shipper portal within a week. SLAs and automations fit inside the free trial."
+                    }
+                ]
+            },
+            "government": {
+                "nav_label": "Government",
+                "faq": [
+                    {
+                        "q": "Can we host data in our own cloud?",
+                        "a": "Yes. BYO database and storage add-ons keep workspace data in your AWS or Cloudflare account."
+                    },
+                    {
+                        "q": "Does {brand} support accessibility requirements?",
+                        "a": "Portals and agent workspace support keyboard navigation and semantic markup. Contact sales for agency-specific reviews."
+                    },
+                    {
+                        "q": "Can multiple departments share one platform?",
+                        "a": "Yes. Use teams, brands, or type queues to separate programs while leadership sees unified reporting."
+                    }
+                ]
+            },
+            "startups": {
+                "nav_label": "Startups",
+                "faq": [
+                    {
+                        "q": "Do we need a credit card to start?",
+                        "a": "No. Start a free trial with full platform access and upgrade when you are ready."
+                    },
+                    {
+                        "q": "How fast can a startup go live?",
+                        "a": "Most teams connect email and publish a help center within a day. Chat embed takes minutes."
+                    },
+                    {
+                        "q": "Can we migrate from Intercom or Zendesk later?",
+                        "a": "Yes. Import CSV data and run parallel during cutover. See our migration guides for Zendesk, Intercom, and Freshdesk."
+                    }
+                ]
+            },
+            "banking": {
+                "nav_label": "Banking",
+                "faq": [
+                    {
+                        "q": "Can we restrict who sees sensitive account data?",
+                        "a": "Yes. Custom roles control field visibility, exports, and admin settings per team."
+                    },
+                    {
+                        "q": "Do you support encrypted attachments?",
+                        "a": "Attachments use private object storage with signed URLs. BYOS keeps files in your S3 or R2 bucket."
+                    },
+                    {
+                        "q": "How long does a banking pilot take?",
+                        "a": "Most teams connect email and SSO within the first two weeks of trial, then expand to chat and portal."
+                    }
+                ]
+            },
+            "insurance": {
+                "nav_label": "Insurance",
+                "faq": [
+                    {
+                        "q": "Can we separate claims and policy servicing queues?",
+                        "a": "Yes. Use teams, type queues, and automation rules to route inquiries by line of business."
+                    },
+                    {
+                        "q": "Does {brand} integrate with our policy admin system?",
+                        "a": "Use webhooks and REST API to link tickets to policy records. CRM integrations add customer context in the sidebar."
+                    },
+                    {
+                        "q": "How fast can an insurance team go live?",
+                        "a": "Most teams connect email and publish a policyholder portal within two weeks of trial."
+                    }
+                ]
             }
         },
         "migrate_nav": "Migration guides",
@@ -2472,6 +2587,10 @@
             "home_description": "AI-powered helpdesk for modern support teams. Unified inbox, live chat, knowledge base, AI Copilot, automation, and optional ITSM — replace 3–5 tools with one platform. {days}-day free trial, no credit card.",
             "features_index_title": "Helpdesk Features — AI, Ticketing, Chat & More | {brand}",
             "features_index_description": "Explore {brand} helpdesk features: AI Copilot, ticket management, knowledge base, live chat, automation, integrations, and data residency. Start a {days}-day free trial.",
+            "compare_index_title": "Compare {brand} vs Zendesk, Freshdesk & Intercom",
+            "compare_index_description": "Side-by-side comparisons of {brand} with Zendesk, Freshdesk, Intercom, Front, Help Scout, Zoho Desk, Freshservice, and Jira Service Management. {days}-day free trial.",
+            "migrate_index_title": "Migrate to {brand} from Zendesk, Freshdesk & More",
+            "migrate_index_description": "Migration playbooks for moving from Zendesk, Freshdesk, Intercom, Help Scout, and Freshservice to {brand}. Start a {days}-day free trial.",
             "register_title": "Start free trial · {brand}",
             "register_description": "Create your dedicated {brand} workspace in minutes. Full platform access for {days} days — tickets, chat, knowledge base, automation, and more. No credit card required.",
             "login_title": "Sign in · {brand}",
@@ -2491,8 +2610,18 @@
             "vertical_healthcare_description": "Patient and member support with SSO, audit logs, SLA tiers, AI deflection, and optional BYO data residency. {days}-day free trial on {brand}.",
             "vertical_fintech_title": "Fintech customer support software · {brand}",
             "vertical_fintech_description": "Secure helpdesk for fintech teams: unified inbox, CRM context, SSO, tier SLAs, and data residency add-ons. Start a {days}-day free trial.",
-            "vertical_education_title": "Education helpdesk & student support · {brand}",
-            "vertical_education_description": "Helpdesk for schools and edtech: student portal, live chat, KB deflection, and optional campus ITSM. {days}-day free trial, no credit card.",
+            "vertical_logistics_title": "Logistics helpdesk software · {brand}",
+            "vertical_logistics_description": "Helpdesk for logistics and supply chain teams: shipment exceptions, shipper portals, SLA automation, and multi-channel inbox. {days}-day free trial on {brand}.",
+            "vertical_edtech_title": "Edtech helpdesk & student support · {brand}",
+            "vertical_edtech_description": "Helpdesk for schools and edtech: student portal, live chat, KB deflection, and optional campus ITSM. {days}-day free trial, no credit card.",
+            "vertical_government_title": "Government helpdesk software · {brand}",
+            "vertical_government_description": "Citizen service desk with SSO, audit logs, SLA tiers, service catalog, and optional BYO data residency. {days}-day free trial on {brand}.",
+            "vertical_startups_title": "Helpdesk software for startups · {brand}",
+            "vertical_startups_description": "Affordable helpdesk for startups: unified inbox, help center, live chat, AI Copilot, and room to grow into ITSM. {days}-day free trial, no credit card.",
+            "vertical_banking_title": "Banking customer support software · {brand}",
+            "vertical_banking_description": "Secure helpdesk for banks: tier SLAs, SSO, audit trails, CRM context, and data residency add-ons. Start a {days}-day free trial on {brand}.",
+            "vertical_insurance_title": "Insurance helpdesk software · {brand}",
+            "vertical_insurance_description": "Policyholder and broker support with branded portals, SLA automation, AI deflection, and audit-ready ticket history. {days}-day free trial on {brand}.",
             "compare_freshdesk_title": "Freshdesk alternative · {brand} vs Freshdesk",
             "compare_freshdesk_description": "Compare {brand} and Freshdesk: shared inbox, AI, SLA, optional ITSM, and INR pricing. {days}-day free trial, no credit card required.",
             "compare_zendesk_title": "Zendesk alternative · {brand} vs Zendesk",
@@ -2501,10 +2630,12 @@
             "compare_zoho_desk_description": "Compare {brand} and Zoho Desk for teams that want ITSM, AI Copilot, and multi-brand support outside the Zoho stack. {days}-day free trial.",
             "compare_freshservice_title": "Freshservice alternative · {brand} vs Freshservice",
             "compare_freshservice_description": "IT helpdesk and optional Service Desk ITSM in one platform — a Freshservice alternative for employee and customer support. {days}-day free trial on {brand}.",
-            "compare_helpscout_title": "Help Scout alternative · {brand} vs Help Scout",
-            "compare_helpscout_description": "Outgrow shared inbox with {brand}: SLA, chat, SMS, AI, and optional ITSM beyond Help Scout. {days}-day free trial, no credit card.",
+            "compare_help_scout_title": "Help Scout alternative · {brand} vs Help Scout",
+            "compare_help_scout_description": "Outgrow shared inbox with {brand}: SLA, chat, SMS, AI, and optional ITSM beyond Help Scout. {days}-day free trial, no credit card.",
             "compare_intercom_title": "Intercom alternative · {brand} vs Intercom",
             "compare_intercom_description": "Helpdesk-first Intercom alternative with SLA, ticketing, KB, AI Copilot, and optional ITSM — without per-resolution AI fees. {days}-day free trial on {brand}.",
+            "compare_front_title": "Front alternative · {brand} vs Front",
+            "compare_front_description": "Graduate from shared inbox to full helpdesk — SLA, KB, chat, AI, and optional ITSM beyond Front. {days}-day free trial on {brand}.",
             "compare_jira_service_management_title": "Jira Service Management alternative · {brand}",
             "compare_jira_service_management_description": "Lean ITSM and customer support in one platform — a Jira Service Management alternative for mid-market IT teams. {days}-day free trial.",
             "migrate_zendesk_title": "Migrate from Zendesk to {brand}",
@@ -2517,24 +2648,54 @@
             "migrate_helpscout_description": "Help Scout migration guide — graduate to SLA, chat, and AI on {brand} without losing inbox simplicity.",
             "migrate_freshservice_title": "Migrate from Freshservice to {brand}",
             "migrate_freshservice_description": "Replace Freshservice with {brand} employee support plus Service Desk ITSM. Migration steps and checklist.",
-            "feature_ai_title": "AI Helpdesk Features · {brand}",
-            "feature_ai_description": "AI customer support with Copilot, semantic search, and deflection. Reduce handle time without losing human oversight. {days}-day free trial.",
-            "feature_ticket_management_title": "Ticket Management System · {brand}",
-            "feature_ticket_management_description": "Unified ticket management for email, chat, SMS, and portal. SLA policies, routing, and collaboration in one helpdesk. Start a {days}-day free trial.",
+            "feature_shared_inbox_title": "Shared Inbox Software · {brand}",
+            "feature_shared_inbox_description": "Unified shared inbox for email, chat, and portal. Assignment, collision detection, and team collaboration. {days}-day free trial.",
+            "feature_ai_agent_title": "AI Agent for Customer Support · {brand}",
+            "feature_ai_agent_description": "AI agent with Copilot, semantic search, and deflection. Reduce handle time without losing human oversight. {days}-day free trial.",
             "feature_knowledge_base_title": "Knowledge Base Software · {brand}",
             "feature_knowledge_base_description": "Self-service knowledge base and customer portal with semantic search and AI deflection. Reduce ticket volume. {days}-day free trial.",
-            "feature_automation_title": "Support Automation · {brand}",
-            "feature_automation_description": "Automate assignments, escalations, macros, and approvals in your helpdesk. {days}-day free trial on {brand}.",
             "feature_live_chat_title": "Live Chat for Customer Support · {brand}",
             "feature_live_chat_description": "Embeddable live chat that routes to agents and creates tracked tickets. Part of {brand} helpdesk software. {days}-day free trial.",
-            "feature_integrations_title": "Helpdesk Integrations · {brand}",
-            "feature_integrations_description": "Connect Slack, HubSpot, Salesforce, Shopify, Jira, and more. CRM context in every ticket. {days}-day free trial.",
-            "feature_data_residency_title": "Data Residency & BYO Cloud · {brand}",
-            "feature_data_residency_description": "Store workspace data in your MySQL (RDS/Aurora) and S3 or R2 buckets. Guided migration and test-before-save. Paid plan add-ons on {brand}.",
+            "feature_email_ticketing_title": "Email Ticketing System · {brand}",
+            "feature_email_ticketing_description": "Professional email ticketing with threading, routing, and SLA. Turn support@ into a real helpdesk. {days}-day free trial.",
+            "feature_omnichannel_support_title": "Omnichannel Helpdesk · {brand}",
+            "feature_omnichannel_support_description": "Email, chat, SMS, and portal in one omnichannel helpdesk. Single timeline, consistent SLA. {days}-day free trial on {brand}.",
+            "feature_sla_management_title": "SLA Management Software · {brand}",
+            "feature_sla_management_description": "SLA policies, business hours, and automated escalations for support teams. {days}-day free trial on {brand}.",
+            "feature_automation_title": "Support Automation · {brand}",
+            "feature_automation_description": "Automate assignments, escalations, macros, and approvals in your helpdesk. {days}-day free trial on {brand}.",
+            "feature_analytics_title": "Helpdesk Analytics · {brand}",
+            "feature_analytics_description": "Track volume, CSAT, SLA compliance, and agent performance. Dashboards built for support leaders. {days}-day free trial.",
+            "feature_customer_portal_title": "Customer Support Portal · {brand}",
+            "feature_customer_portal_description": "Branded customer portal with KB search, ticket submission, and status tracking. {days}-day free trial on {brand}.",
+            "integration_slack_title": "Slack Helpdesk Integration · {brand}",
+            "integration_slack_description": "Connect {brand} to Slack for ticket notifications and team collaboration. {days}-day free trial.",
+            "integration_teams_title": "Microsoft Teams Integration · {brand}",
+            "integration_teams_description": "Route support alerts to Microsoft Teams channels. {days}-day free trial on {brand}.",
+            "integration_jira_title": "Jira Helpdesk Integration · {brand}",
+            "integration_jira_description": "Bi-directional Jira issue sync from {brand} tickets. {days}-day free trial.",
+            "integration_linear_title": "Linear Helpdesk Integration · {brand}",
+            "integration_linear_description": "Create and sync Linear issues from {brand} support tickets. {days}-day free trial.",
+            "integration_shopify_title": "Shopify Helpdesk Integration · {brand}",
+            "integration_shopify_description": "Shopify order context in every support ticket. {days}-day free trial on {brand}.",
+            "integration_hubspot_title": "HubSpot CRM Integration · {brand}",
+            "integration_hubspot_description": "HubSpot contact context in the ticket sidebar. {days}-day free trial on {brand}.",
+            "integration_salesforce_title": "Salesforce Helpdesk Integration · {brand}",
+            "integration_salesforce_description": "Salesforce contact and account context in {brand} tickets. {days}-day free trial.",
+            "integration_zapier_title": "Zapier Helpdesk Integration · {brand}",
+            "integration_zapier_description": "Automate {brand} ticket workflows with Zapier. {days}-day free trial.",
             "static_pricing_title": "Helpdesk Pricing · {brand}",
             "static_pricing_description": "Transparent helpdesk and ITSM pricing for growing teams. Starter, Professional, and Enterprise plans. {days}-day free trial, no credit card.",
             "static_about_title": "About {brand}",
             "static_about_description": "Learn about {brand} — modern AI helpdesk and ITSM software built for support and IT teams.",
+            "static_integrations_title": "Helpdesk Integrations · {brand}",
+            "static_integrations_description": "Connect Slack, Teams, Jira, Linear, Shopify, HubSpot, Salesforce, and Zapier to {brand}.",
+            "static_industries_title": "Industries We Serve · {brand}",
+            "static_industries_description": "AI helpdesk software for SaaS, ecommerce, healthcare, education, and IT teams. Explore industry-specific solutions on {brand}.",
+            "static_resources_title": "Helpdesk Resources · {brand}",
+            "static_resources_description": "Guides, comparisons, and migration playbooks for support and IT teams evaluating helpdesk and ITSM software from {brand}.",
+            "static_support_title": "Support · {brand}",
+            "static_support_description": "Get help with {brand} — documentation, contact options, and answers for customers and evaluators.",
             "static_contact_title": "Contact {brand}",
             "static_contact_description": "Contact {brand} at hello{'@'}helpefi.com for sales, demos, and enterprise inquiries.",
             "static_privacy_title": "Privacy Policy · {brand}",

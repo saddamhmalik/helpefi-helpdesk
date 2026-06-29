@@ -441,7 +441,7 @@ return array (
     'cta_title' => 'Unify IT and support on helpefi',
     'cta_body' => 'Trial the platform free, then enable Service Desk when your ITIL processes need it.',
   ),
-  'helpscout' => 
+  'help-scout' => 
   array (
     'nav_label' => 'Help Scout',
     'competitor_name' => 'Help Scout',
@@ -660,6 +660,105 @@ return array (
     ),
     'cta_title' => 'Try the Intercom alternative free',
     'cta_body' => 'Run a parallel trial — connect email and chat, then compare handle time and total cost side by side.',
+  ),
+  'front' =>
+  array (
+    'nav_label' => 'Front',
+    'competitor_name' => 'Front',
+    'badge' => '{brand} vs Front',
+    'hero_title' => 'Front alternative for teams that need a real helpdesk',
+    'hero_highlight' => 'Beyond shared inbox.',
+    'hero_subtitle' => 'Front excels at team email collaboration. {brand} adds SLA management, knowledge base, live chat, AI Copilot, and optional ITSM when your support operation outgrows inbox-only workflows.',
+    'reasons' =>
+    array (
+      0 =>
+      array (
+        'title' => 'SLA and escalation depth',
+        'body' => 'Define response and resolution targets with business hours, tiers, and automated escalations — not just threaded email.',
+      ),
+      1 =>
+      array (
+        'title' => 'Omnichannel in one queue',
+        'body' => 'Email, chat, SMS, and portal tickets in one workspace instead of bolting channels onto an inbox product.',
+      ),
+      2 =>
+      array (
+        'title' => 'ITSM when you need it',
+        'body' => 'Add Service Desk for incidents, changes, and war rooms without switching to a separate platform.',
+      ),
+    ),
+    'rows' =>
+    array (
+      0 =>
+      array (
+        'feature' => 'Shared team inbox',
+        'us' => true,
+        'them' => true,
+      ),
+      1 =>
+      array (
+        'feature' => 'SLA policies & business hours',
+        'us' => 'Professional+',
+        'them' => 'Limited',
+      ),
+      2 =>
+      array (
+        'feature' => 'Knowledge base & customer portal',
+        'us' => true,
+        'them' => 'Limited',
+      ),
+      3 =>
+      array (
+        'feature' => 'Live chat widget',
+        'us' => true,
+        'them' => false,
+      ),
+      4 =>
+      array (
+        'feature' => 'Service catalog & approvals',
+        'us' => true,
+        'them' => false,
+      ),
+      5 =>
+      array (
+        'feature' => 'AI reply drafts & deflection',
+        'us' => 'AI add-on or Enterprise',
+        'them' => 'Add-on',
+      ),
+      6 =>
+      array (
+        'feature' => 'ITSM / change management',
+        'us' => 'Service Desk add-on',
+        'them' => false,
+      ),
+      7 =>
+      array (
+        'feature' => 'Multi-brand workspaces',
+        'us' => true,
+        'them' => 'Higher tiers',
+      ),
+      8 =>
+      array (
+        'feature' => 'Free trial, no credit card',
+        'us' => true,
+        'them' => 'Limited',
+      ),
+    ),
+    'faq' =>
+    array (
+      0 =>
+      array (
+        'q' => 'When should we choose {brand} over Front?',
+        'a' => 'When you need SLA-driven operations, self-service portal, live chat, or IT workflows — not just collaborative email.',
+      ),
+      1 =>
+      array (
+        'q' => 'Can we migrate from Front?',
+        'a' => 'Yes. Import contacts and connect your support inbox. Historical threads can be referenced during transition.',
+      ),
+    ),
+    'cta_title' => 'Graduate from inbox-only support',
+    'cta_body' => 'Start your trial and connect email first — add chat, SLA, and AI when you\'re ready.',
   ),
   'jira-service-management' => 
   array (

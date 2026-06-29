@@ -3,6 +3,7 @@ import { Link, usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import AppLogo from '../Components/AppLogo.vue';
+import SeoHead from '../Components/SeoHead.vue';
 import HelpCenterSearch from '../Components/HelpCenterSearch.vue';
 import ThemeToggle from '../Components/ThemeToggle.vue';
 
@@ -22,6 +23,7 @@ const helpCenter = computed(() => usePage().props.helpCenter);
 </script>
 
 <template>
+    <SeoHead />
     <a href="#main-content" class="agent-skip-link">{{ $t('components.skip_to_main_content') }}</a>
     <div class="relative min-h-screen overflow-hidden bg-gradient-to-br from-slate-50 via-white to-blue-50/50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
         <div class="pointer-events-none absolute inset-0" aria-hidden="true">

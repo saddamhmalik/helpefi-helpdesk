@@ -9,6 +9,7 @@ use App\Domains\Tenancy\Services\CentralSeoService;
 use App\Domains\Tenancy\Services\CentralSettingsService;
 use App\Domains\Tenancy\Services\CompareLandingContentService;
 use App\Domains\Tenancy\Services\FeatureLandingContentService;
+use App\Domains\Tenancy\Services\IntegrationLandingContentService;
 use App\Domains\Tenancy\Services\MarketingChromeContentService;
 use App\Domains\Tenancy\Services\MarketingHomeContentService;
 use App\Domains\Tenancy\Services\MarketingLabelsContentService;
@@ -19,7 +20,7 @@ use Illuminate\Support\Facades\Cache;
 
 class CentralMarketingPresenter
 {
-    private const CACHE_KEY = 'marketing.shared.base.v3';
+    private const CACHE_KEY = 'marketing.shared.base.v6';
 
     private const CACHE_TTL_SECONDS = 600;
 
@@ -27,17 +28,6 @@ class CentralMarketingPresenter
     {
         return array_merge(self::cachedBase(), [
             'currency' => app(RegionCurrencyResolver::class)->resolveMeta(request()),
-            'parentCompany' => self::parentCompany(),
-            'comparePages' => app(CompareLandingContentService::class)->navigation(),
-            'featurePages' => app(FeatureLandingContentService::class)->navigation(),
-            'verticalPages' => app(VerticalLandingContentService::class)->navigation(),
-            'migratePages' => app(MigrateLandingContentService::class)->navigation(),
-            'featuresHub' => app(MarketingStaticContentService::class)->featuresHub(),
-            'marketingChrome' => app(MarketingChromeContentService::class)->content(),
-            'marketingLabels' => app(MarketingLabelsContentService::class)->labels(),
-            'marketingWidgets' => self::marketingWidgets(),
-            'registerContent' => self::registerContent(),
-            'staticPages' => app(MarketingStaticContentService::class)->navigation(),
         ]);
     }
 
@@ -86,6 +76,18 @@ class CentralMarketingPresenter
             'indiaCurrency' => $settings->indiaCurrencyMeta(),
             'indiaEnabled' => $settings->indiaPricingEnabled(),
             'socialLinks' => $settings->socialLinks(),
+            'parentCompany' => self::parentCompany(),
+            'comparePages' => app(CompareLandingContentService::class)->navigation(),
+            'featurePages' => app(FeatureLandingContentService::class)->navigation(),
+            'integrationPages' => app(IntegrationLandingContentService::class)->navigation(),
+            'verticalPages' => app(VerticalLandingContentService::class)->navigation(),
+            'migratePages' => app(MigrateLandingContentService::class)->navigation(),
+            'featuresHub' => app(MarketingStaticContentService::class)->featuresHub(),
+            'marketingChrome' => app(MarketingChromeContentService::class)->content(),
+            'marketingLabels' => app(MarketingLabelsContentService::class)->labels(),
+            'marketingWidgets' => self::marketingWidgets(),
+            'registerContent' => self::registerContent(),
+            'staticPages' => app(MarketingStaticContentService::class)->navigation(),
             'plans' => self::plans(),
             'addons' => self::addons(),
             'blogPosts' => MarketingBlogDefinition::forIndex(),

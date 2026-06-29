@@ -1,13 +1,16 @@
 <script setup>
 import { Link } from '@inertiajs/vue3';
-import { computed, ref } from 'vue';
+import { computed, defineAsyncComponent, onMounted, ref } from 'vue';
 import CentralLayout from '../../Layouts/CentralLayout.vue';
-import CentralAiDemoWidget from '../../Components/CentralAiDemoWidget.vue';
-import CentralMarketingLeadCapture from '../../Components/CentralMarketingLeadCapture.vue';
 import IntegrationStackIcon from '../../Components/IntegrationStackIcon.vue';
 import { useCurrency } from '../../composables/useCurrency.js';
 import { useBillingInterval } from '../../composables/useBillingInterval.js';
 import { formatMarketingTemplate, useMarketingEnglish } from '../../composables/useMarketingEnglish.js';
+
+const CentralAiDemoWidget = defineAsyncComponent(() => import('../../Components/CentralAiDemoWidget.vue'));
+const CentralMarketingLeadCapture = defineAsyncComponent(() => import('../../Components/CentralMarketingLeadCapture.vue'));
+const CentralHomeConversionModules = defineAsyncComponent(() => import('../../Components/Central/CentralHomeConversionModules.vue'));
+const FaqAccordion = defineAsyncComponent(() => import('../../Components/Central/FaqAccordion.vue'));
 
 const props = defineProps({
     brand: { type: String, default: 'helpefi' },
@@ -115,7 +118,8 @@ const addonPrice = (addon) => (
 
 const previewTab = ref('ai');
 const featureCategory = ref('operations');
-const openFaq = ref(null);
+const faqs = computed(() => homeArray('faqs'));
+const staticHeroActive = ref(false);
 
 const featureLabels = computed(() => homeObject('feature_labels'));
 
@@ -324,8 +328,6 @@ const switchMockNav = [
 
 const comparisons = computed(() => homeArray('comparisons'));
 
-const faqs = computed(() => homeArray('faqs'));
-
 const planTaglines = computed(() => homeObject('plan_taglines'));
 
 const integrationGroups = computed(() => homeArray('integration_groups'));
@@ -471,9 +473,26 @@ const planHighlights = (plan) => {
     return items;
 };
 
-const toggleFaq = (index) => {
-    openFaq.value = openFaq.value === index ? null : index;
-};
+onMounted(() => {
+    const shell = document.getElementById('marketing-first-paint');
+    const main = document.querySelector('#app main#main-content');
+    const heroMain = shell?.querySelector('[data-static-hero-root]');
+
+    if (! shell || ! main || ! heroMain) {
+        if (shell) {
+            document.body.classList.remove('marketing-fp-pending');
+            shell.remove();
+        }
+
+        return;
+    }
+
+    staticHeroActive.value = true;
+    main.insertBefore(heroMain, main.firstChild);
+    shell.remove();
+    document.body.classList.remove('marketing-fp-pending');
+    document.body.classList.add('marketing-fp-ready');
+});
 
 const featureGroups = computed(() => {
     const groups = homeArray('feature_groups');
@@ -491,12 +510,11 @@ const featureGroups = computed(() => {
 
 <template>
     <CentralLayout :brand="brand" :trial-days="trialDays" :social-links="socialLinks">
-        <section class="relative overflow-hidden bg-slate-950 text-white">
-            <div class="pointer-events-none absolute inset-0">
-                <div class="absolute -left-40 top-0 h-[36rem] w-[36rem] rounded-full bg-blue-600/30 blur-3xl" />
-                <div class="absolute right-[-10%] top-10 h-[28rem] w-[28rem] rounded-full bg-indigo-500/25 blur-3xl" />
-                <div class="absolute bottom-[-10%] left-1/3 h-96 w-96 rounded-full bg-violet-600/20 blur-3xl" />
-                <div class="absolute right-1/4 top-1/3 h-72 w-72 rounded-full bg-fuchsia-600/15 blur-3xl" />
+        <section v-if="!staticHeroActive" class="relative min-h-[32rem] overflow-hidden bg-slate-950 text-white sm:min-h-[36rem] lg:min-h-[40rem]">
+            <div class="pointer-events-none absolute inset-0 overflow-hidden [contain:strict]" aria-hidden="true">
+                <div class="absolute -left-40 top-0 h-[36rem] w-[36rem] rounded-full bg-blue-600/30 blur-3xl will-change-transform" />
+                <div class="absolute right-[-10%] top-10 h-[28rem] w-[28rem] rounded-full bg-indigo-500/25 blur-3xl will-change-transform" />
+                <div class="absolute bottom-[-10%] left-1/3 h-96 w-96 rounded-full bg-violet-600/20 blur-3xl will-change-transform" />
                 <div class="absolute inset-0 bg-[linear-gradient(to_right,#ffffff06_1px,transparent_1px),linear-gradient(to_bottom,#ffffff06_1px,transparent_1px)] bg-[size:3.5rem_3.5rem]" />
                 <div class="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
             </div>
@@ -779,6 +797,10 @@ const featureGroups = computed(() => {
                             </div>
                         </div>
                     </div>
+                </div>
+
+                <div class="mt-10 lg:mt-14">
+                    <CentralHomeConversionModules :base-domain="centralDomain || 'helpefi.com'" :plans="plans" />
                 </div>
             </div>
         </section>
@@ -1591,7 +1613,7 @@ const featureGroups = computed(() => {
                             <span class="text-slate-400 dark:text-slate-500">{{ intervalSuffix }}</span>
                         </p>
                         <p v-if="billingInterval === 'year' && yearlySavingsPercent(plan, isIndia) > 0" class="mt-2 text-sm font-semibold text-emerald-400">
-                            {{ home.pricing_section.save_vs_monthly }}
+                            {{ formatMarketingTemplate(home.pricing_section.save_vs_monthly ?? '', { percent: yearlySavingsPercent(plan, isIndia) }) }}
                         </p>
                         <ul class="mt-8 flex-1 space-y-3">
                             <li v-for="item in planHighlights(plan)" :key="item" class="flex items-start gap-2.5 text-sm text-slate-300">
@@ -1675,25 +1697,14 @@ const featureGroups = computed(() => {
 
         <CentralMarketingLeadCapture variant="dark" />
 
-        <section id="faq" class="bg-white dark:bg-slate-900 py-16 sm:py-24">
-            <div class="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
-                <div class="text-center">
-                    <p class="text-sm font-semibold uppercase tracking-wider text-blue-600">{{ marketingLabels.faq }}</p>
-                    <h2 class="mt-3 text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100">{{ marketingLabels.common_questions }}</h2>
-                </div>
-                <div class="mt-12 space-y-3">
-                    <div v-for="(item, index) in faqs" :key="item.q" class="overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 transition hover:border-slate-300 dark:hover:border-slate-600 dark:border-slate-700">
-                        <button type="button" class="flex w-full items-center justify-between gap-3 px-4 py-4 text-left sm:gap-4 sm:px-6 sm:py-5" @click="toggleFaq(index)">
-                            <span class="text-sm font-semibold text-slate-900 dark:text-slate-100 sm:text-base">{{ item.q }}</span>
-                            <svg class="h-5 w-5 shrink-0 text-slate-400 dark:text-slate-500 transition" :class="openFaq === index ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
-                        </button>
-                        <div v-show="openFaq === index" class="border-t border-slate-200 dark:border-slate-800 px-4 pb-4 pt-2 sm:px-6 sm:pb-5">
-                            <p class="text-sm leading-relaxed text-slate-600 dark:text-slate-400">{{ item.a }}</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
+        <FaqAccordion
+            id="faq"
+            :items="faqs"
+            :eyebrow="marketingLabels.faq"
+            :title="marketingLabels.common_questions"
+            section-class="bg-white dark:bg-slate-900 py-16 sm:py-24"
+            list-class="mt-12 space-y-3"
+        />
 
         <section class="relative overflow-hidden bg-slate-950 py-20 sm:py-28">
             <div class="pointer-events-none absolute inset-0">

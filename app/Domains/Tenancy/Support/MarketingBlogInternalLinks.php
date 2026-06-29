@@ -15,7 +15,7 @@ class MarketingBlogInternalLinks
             'freshdesk-vs-freshservice-do-you-need-both' => [
                 self::compareLink('freshdesk'),
                 self::compareLink('freshservice'),
-                self::verticalLink('it-teams'),
+                self::verticalLink('saas'),
             ],
             'intercom-fin-pricing-explained' => [
                 self::compareLink('intercom'),

@@ -1,0 +1,148 @@
+<?php
+
+return [
+    'slack' => [
+        'nav_label' => 'Slack',
+        'badge' => 'Slack helpdesk integration',
+        'hero_title' => 'Connect Helpefi to Slack',
+        'hero_highlight' => 'Ticket alerts and team collaboration',
+        'hero_subtitle' => 'Route support notifications to Slack channels, keep agents in sync, and link conversations back to tracked tickets in your helpdesk.',
+        'features' => [
+            ['title' => 'Channel notifications', 'body' => 'Post ticket updates, SLA breaches, and assignment changes to the channels your team already monitors.'],
+            ['title' => 'Configurable events', 'body' => 'Choose ticket created, updated, and customer message events so alerts stay high-signal.'],
+            ['title' => 'Setup from Settings', 'body' => 'Connect your Slack incoming webhook from Settings → Integrations in minutes.'],
+        ],
+        'faq' => [
+            ['q' => 'Does the Slack integration require a paid plan?', 'a' => 'Slack is available on the Integrations add-on or Enterprise plan. Enable it from Settings → Integrations during or after your trial.'],
+            ['q' => 'Which Slack events are supported?', 'a' => 'Ticket created, ticket updated, and customer message events can each notify Slack channels you configure.'],
+        ],
+        'cta_title' => 'Connect Slack to your helpdesk',
+        'cta_body' => 'Start your free trial and enable Slack from Settings → Integrations.',
+    ],
+    'teams' => [
+        'nav_label' => 'Microsoft Teams',
+        'badge' => 'Microsoft Teams integration',
+        'hero_title' => 'Helpefi for Microsoft Teams',
+        'hero_highlight' => 'Support alerts where your team works',
+        'hero_subtitle' => 'Deliver ticket notifications to Microsoft Teams channels so IT and support stay aligned without switching tools.',
+        'features' => [
+            ['title' => 'Teams channel alerts', 'body' => 'Push ticket events to Teams channels your org already uses.'],
+            ['title' => 'Webhook-based setup', 'body' => 'Connect a Teams incoming webhook from Settings → Integrations — no custom middleware required.'],
+            ['title' => 'Deep links to tickets', 'body' => 'Every notification links back to the full ticket in Helpefi for resolution and audit trail.'],
+        ],
+        'faq' => [
+            ['q' => 'Is Microsoft Teams included on all plans?', 'a' => 'Teams notifications are part of the Integrations add-on or bundled on Enterprise.'],
+            ['q' => 'Can we use Teams alongside email support?', 'a' => 'Yes. Teams is for internal collaboration — customers still reach you via email, chat, and portal.'],
+        ],
+        'cta_title' => 'Add Teams to your support workflow',
+        'cta_body' => 'Connect Microsoft Teams from Settings → Integrations during setup.',
+    ],
+    'jira' => [
+        'nav_label' => 'Jira',
+        'badge' => 'Jira helpdesk integration',
+        'hero_title' => 'Jira integration for support teams',
+        'hero_highlight' => 'Bi-directional issue sync',
+        'hero_subtitle' => 'Create Jira issues from tickets, sync status updates via webhooks, and give agents engineering context without leaving the helpdesk.',
+        'features' => [
+            ['title' => 'Create issues from tickets', 'body' => 'Escalate bugs and feature requests to Jira with customer context attached.'],
+            ['title' => 'Webhook status sync', 'body' => 'When Jira issues resolve, linked tickets update automatically so agents can close the loop with customers.'],
+            ['title' => 'Project mapping', 'body' => 'Configure site URL, project key, and issue type from Settings → Integrations.'],
+        ],
+        'faq' => [
+            ['q' => 'Which Jira products are supported?', 'a' => 'Jira Cloud is supported. Connect from Settings → Integrations with your site URL, email, and API token.'],
+            ['q' => 'Can agents link existing Jira issues?', 'a' => 'Yes. Link or create Jira issues from the ticket workspace when Jira is configured.'],
+        ],
+        'cta_title' => 'Sync Jira with your helpdesk',
+        'cta_body' => 'Enable Jira from Settings → Integrations and link your first ticket in minutes.',
+    ],
+    'linear' => [
+        'nav_label' => 'Linear',
+        'badge' => 'Linear helpdesk integration',
+        'hero_title' => 'Linear integration for support engineering',
+        'hero_highlight' => 'Fast issue handoffs',
+        'hero_subtitle' => 'Create Linear issues from support tickets and sync status updates so engineering and support share one workflow.',
+        'features' => [
+            ['title' => 'Ticket-to-issue creation', 'body' => 'Escalate customer-reported bugs to Linear with one click from the ticket sidebar.'],
+            ['title' => 'Status sync', 'body' => 'Webhook updates keep ticket status aligned when Linear issues move to done or reopen.'],
+            ['title' => 'Team mapping', 'body' => 'Configure Linear team, done state, and open state from Settings → Integrations.'],
+        ],
+        'faq' => [
+            ['q' => 'Does Linear replace Jira in Helpefi?', 'a' => 'You can enable Jira, Linear, or both depending on which engineering tools your team uses.'],
+            ['q' => 'What do I need to connect Linear?', 'a' => 'A Linear API key and team ID. Add them under Settings → Integrations → Linear.'],
+        ],
+        'cta_title' => 'Connect Linear to your inbox',
+        'cta_body' => 'Start your trial and link your first Linear issue from a support ticket.',
+    ],
+    'shopify' => [
+        'nav_label' => 'Shopify',
+        'badge' => 'Shopify helpdesk integration',
+        'hero_title' => 'Shopify support integration',
+        'hero_highlight' => 'Order context in every ticket',
+        'hero_subtitle' => 'See customer orders and fulfillment status in the ticket sidebar so ecommerce support resolves faster.',
+        'features' => [
+            ['title' => 'Order sidebar', 'body' => 'View recent orders, shipping status, and refunds next to every Shopify customer ticket.'],
+            ['title' => 'Customer lookup by email', 'body' => 'Match ticket requesters to Shopify customers automatically.'],
+            ['title' => 'Admin API connect', 'body' => 'Connect your shop domain and access token from Settings → Integrations.'],
+        ],
+        'faq' => [
+            ['q' => 'Is Shopify available on all plans?', 'a' => 'Shopify is included with the Integrations add-on or Enterprise.'],
+            ['q' => 'Can we use this for Shopify Plus?', 'a' => 'Yes. Helpefi works with standard and Plus stores via the Shopify Admin API.'],
+        ],
+        'cta_title' => 'Support Shopify customers better',
+        'cta_body' => 'Connect your store from Settings → Integrations and give agents order context on day one.',
+    ],
+    'hubspot' => [
+        'nav_label' => 'HubSpot',
+        'badge' => 'HubSpot CRM integration',
+        'hero_title' => 'HubSpot and Helpefi integration',
+        'hero_highlight' => 'CRM context in every ticket',
+        'hero_subtitle' => 'Look up HubSpot contacts from the ticket sidebar so support and sales stay aligned.',
+        'features' => [
+            ['title' => 'Contact sidebar', 'body' => 'Auto-match requesters to HubSpot contacts by email and show CRM profile data in tickets.'],
+            ['title' => 'Private app token', 'body' => 'Connect with a HubSpot private app access token from Settings → Integrations.'],
+            ['title' => 'Works with CRM workflows', 'body' => 'Keep HubSpot as your CRM while Helpefi handles ticket resolution and SLA.'],
+        ],
+        'faq' => [
+            ['q' => 'Do we need HubSpot Service Hub?', 'a' => 'No. Helpefi is your helpdesk. HubSpot remains your CRM — we surface contact context in tickets.'],
+            ['q' => 'How is the contact matched?', 'a' => 'Helpefi looks up HubSpot contacts by the ticket requester email when HubSpot is active.'],
+        ],
+        'cta_title' => 'Unify support and CRM',
+        'cta_body' => 'Connect HubSpot from Settings → Integrations and see CRM context on your next ticket.',
+    ],
+    'salesforce' => [
+        'nav_label' => 'Salesforce',
+        'badge' => 'Salesforce helpdesk integration',
+        'hero_title' => 'Salesforce integration for support',
+        'hero_highlight' => 'Enterprise CRM in the ticket sidebar',
+        'hero_subtitle' => 'Pull Salesforce contact and account context into Helpefi so enterprise support teams resolve with full customer history.',
+        'features' => [
+            ['title' => 'Contact lookup', 'body' => 'Match ticket requesters to Salesforce contacts and show account context in the sidebar.'],
+            ['title' => 'Connected app setup', 'body' => 'Configure consumer key, username, and security token from Settings → Integrations.'],
+            ['title' => 'Enterprise-ready', 'body' => 'Pair Salesforce CRM context with SSO on Enterprise for unified identity.'],
+        ],
+        'faq' => [
+            ['q' => 'Does Helpefi replace Salesforce Service Cloud?', 'a' => 'Helpefi is your helpdesk. Many teams keep Salesforce as the CRM system of record and use Helpefi for support operations.'],
+            ['q' => 'What credentials are required?', 'a' => 'Salesforce connected app consumer key and secret, plus the integration user username and password or security token.'],
+        ],
+        'cta_title' => 'Connect Salesforce to your inbox',
+        'cta_body' => 'Start a trial and connect Salesforce from Settings → Integrations.',
+    ],
+    'zapier' => [
+        'nav_label' => 'Zapier',
+        'badge' => 'Zapier automation',
+        'hero_title' => 'Automate Helpefi with Zapier',
+        'hero_highlight' => 'No-code workflows',
+        'hero_subtitle' => 'Send ticket events to Zapier and trigger actions across thousands of apps without writing code.',
+        'features' => [
+            ['title' => 'Inbound webhook URL', 'body' => 'Helpefi provides a dedicated Zapier hook URL from Settings → Integrations.'],
+            ['title' => 'Ticket event triggers', 'body' => 'Use Zapier to react to support activity and sync data to spreadsheets, CRMs, and internal tools.'],
+            ['title' => 'Enable when you need it', 'body' => 'Turn Zapier on from Settings → Integrations without affecting other connectors.'],
+        ],
+        'faq' => [
+            ['q' => 'Is Zapier included on all plans?', 'a' => 'Zapier is available with the Integrations add-on or Enterprise plan.'],
+            ['q' => 'Can Zapier create tickets in Helpefi?', 'a' => 'Use Helpefi webhooks and REST API alongside Zapier for custom inbound workflows.'],
+        ],
+        'cta_title' => 'Connect Zapier to your helpdesk',
+        'cta_body' => 'Enable Zapier from Settings → Integrations and paste the hook URL into your Zap.',
+    ],
+];

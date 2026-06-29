@@ -2,6 +2,7 @@
 import { Link, router, usePage } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 import PortalDeflectionBot from '../Components/PortalDeflectionBot.vue';
+import SeoHead from '../Components/SeoHead.vue';
 import ThemeToggle from '../Components/ThemeToggle.vue';
 import { usePortalRoutes } from '../composables/usePortalRoutes.js';
 
@@ -69,6 +70,7 @@ const navLinks = computed(() => {
 </script>
 
 <template>
+    <SeoHead />
     <a href="#main-content" class="agent-skip-link">{{ $t('components.skip_to_main_content') }}</a>
 
     <div class="min-h-screen agent-page-bg">

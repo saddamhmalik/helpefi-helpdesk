@@ -2,6 +2,9 @@
 
 namespace App\Domains\Tenancy\Support;
 
+use App\Domains\Platform\Services\MarketingPageContentService;
+use App\Domains\Platform\Support\MarketingContentType;
+
 class CompareLandingDefinition
 {
     public static function slugs(): array
@@ -45,7 +48,20 @@ class CompareLandingDefinition
 
     public static function path(string $slug): string
     {
-        return '/vs/'.$slug;
+        return '/compare/'.$slug.'-vs-helpefi';
+    }
+
+    public static function slugFromComparison(string $comparison): ?string
+    {
+        $suffix = '-vs-helpefi';
+
+        if (str_ends_with($comparison, $suffix)) {
+            $slug = substr($comparison, 0, -strlen($suffix));
+
+            return self::isValid($slug) ? $slug : null;
+        }
+
+        return self::isValid($comparison) ? $comparison : null;
     }
 
     public static function seoKey(string $slug): string
@@ -61,11 +77,21 @@ class CompareLandingDefinition
 
         $slug = str_replace('_', '-', substr($seoKey, strlen('compare_')));
 
-        return self::find($slug) ? $slug : null;
+        if (self::find($slug) !== null) {
+            return $slug;
+        }
+
+        return app(MarketingPageContentService::class)->isKnownSlug(MarketingContentType::COMPARISON, $slug)
+            ? $slug
+            : null;
     }
 
     public static function isValid(string $slug): bool
     {
-        return self::find($slug) !== null;
+        if (self::find($slug) !== null) {
+            return true;
+        }
+
+        return app(MarketingPageContentService::class)->isKnownSlug(MarketingContentType::COMPARISON, $slug);
     }
 }

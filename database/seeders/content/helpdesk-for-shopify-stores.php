@@ -15,7 +15,7 @@ return [
 
     'Helpefi e-commerce solution',
 
-    'Our e-commerce landing page (/for/ecommerce) covers Shopify sidebar integration (Integrations add-on or Enterprise), multi-channel inbox, and INR-friendly pricing from ₹999/mo on Professional. Connect Shopify (/features/integrations), publish a knowledge base (/features/knowledge-base), and enable AI deflection on portal and chat (/features/ai).',
+    'Our e-commerce landing page (/helpdesk-for-ecommerce) covers Shopify sidebar integration (Integrations add-on or Enterprise), multi-channel inbox, and INR-friendly pricing from ₹999/mo on Professional. Connect Shopify (/features/integrations), publish a knowledge base (/features/knowledge-base), and enable AI deflection on portal and chat (/features/ai).',
 
     'Setup in one afternoon',
 

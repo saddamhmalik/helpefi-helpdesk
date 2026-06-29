@@ -3,6 +3,7 @@ import { Link, useForm, usePage } from '@inertiajs/vue3';
 import { computed, onMounted, ref, watch } from 'vue';
 import CentralLayout from '../../Layouts/CentralLayout.vue';
 import ContactTurnstile from '../../Components/Central/ContactTurnstile.vue';
+import CentralBreadcrumbs from '../../Components/Central/CentralBreadcrumbs.vue';
 import { useClipboard } from '../../composables/useClipboard.js';
 
 import { formatMarketingTemplate } from '../../composables/useMarketingEnglish.js';
@@ -129,13 +130,7 @@ const sidebarLinks = computed(() => [
         <section class="relative overflow-hidden bg-slate-950 py-14 text-white sm:py-20">
             <div class="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(59,130,246,0.18),transparent_45%)]" />
             <div class="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-                <nav class="mb-8 text-sm text-slate-400" aria-label="Breadcrumb">
-                    <ol class="flex flex-wrap items-center gap-2">
-                        <li><Link href="/" class="transition hover:text-white">{{ platformName }}</Link></li>
-                        <li aria-hidden="true">/</li>
-                        <li class="text-slate-300">{{ pageCopy('nav_label') }}</li>
-                    </ol>
-                </nav>
+                <CentralBreadcrumbs />
 
                 <div class="max-w-2xl">
                     <h1 class="text-3xl font-extrabold tracking-tight sm:text-5xl">{{ pageCopy('hero_title') }}</h1>

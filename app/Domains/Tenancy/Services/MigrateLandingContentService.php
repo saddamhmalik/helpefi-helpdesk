@@ -43,4 +43,11 @@ class MigrateLandingContentService
             ->values()
             ->all();
     }
+
+    public function hub(): array
+    {
+        $content = config('marketing_migrations_hub_content', []);
+
+        return is_array($content) ? $this->interpolator->interpolate($content) : [];
+    }
 }

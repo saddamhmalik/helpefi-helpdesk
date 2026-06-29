@@ -21,7 +21,7 @@ return [
 
     'Helpefi runs customer support on Professional or Enterprise, then adds Service Desk ITSM as a monthly add-on when you need incident, change, and problem queues, approval workflows, change calendar, and major incident war rooms — without a second Freshworks contract.',
 
-    'See our Freshdesk alternative (/vs/freshdesk) and Freshservice alternative (/vs/freshservice) pages for feature comparisons. IT teams evaluating unified employee and customer support should also review our IT teams solution (/for/it-teams).',
+    'See our Freshdesk alternative (/vs/freshdesk) and Freshservice alternative (/vs/freshservice) pages for feature comparisons. SaaS teams evaluating unified customer support should also review our SaaS solution (/helpdesk-for-saas).',
 
     'Decision framework',
 

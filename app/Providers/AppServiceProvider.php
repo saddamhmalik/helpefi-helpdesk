@@ -9,6 +9,10 @@ use App\Domains\Ai\Contracts\AiCompletionClient;
 use App\Domains\Ai\Contracts\AiEmbeddingClient;
 use App\Domains\Billing\Contracts\FeatureEntitlementChecker;
 use App\Domains\Billing\Services\BillingService;
+use App\Domains\Platform\Models\MarketingBlogPost;
+use App\Domains\Platform\Models\MarketingPageContent;
+use App\Domains\Platform\Observers\MarketingBlogPostSitemapCacheObserver;
+use App\Domains\Platform\Observers\MarketingPageContentSitemapCacheObserver;
 use App\Domains\Automation\Listeners\BridgeTicketLifecycleToAutomation;
 use App\Domains\Automation\Events\TicketAutomationTrigger;
 use App\Domains\ServiceDesk\Events\TicketApprovalApproved;
@@ -102,6 +106,8 @@ class AppServiceProvider extends ServiceProvider
         Organization::observe(ContactFormReferenceCacheObserver::class);
         Tag::observe(ContactFormReferenceCacheObserver::class);
         HelpdeskSetting::observe(HelpdeskSettingCacheObserver::class);
+        MarketingBlogPost::observe(MarketingBlogPostSitemapCacheObserver::class);
+        MarketingPageContent::observe(MarketingPageContentSitemapCacheObserver::class);
 
         PortalRateLimiters::register();
 

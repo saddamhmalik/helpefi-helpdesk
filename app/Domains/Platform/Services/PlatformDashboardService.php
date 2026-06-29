@@ -21,6 +21,7 @@ class PlatformDashboardService
         private PlatformExecutiveMetricsService $executiveMetrics,
         private MarketingAnalyticsService $marketingAnalytics,
         private MarketingLeadService $marketingLeads,
+        private MarketingSeoAuditService $marketingSeoAudit,
     ) {
     }
 
@@ -40,6 +41,10 @@ class PlatformDashboardService
 
         if ($this->authorization->allows($user, 'analytics.view')) {
             $data['marketing_analytics'] = $this->marketingAnalytics->snapshot();
+        }
+
+        if ($this->authorization->allows($user, 'settings.manage')) {
+            $data['marketing_seo_audit'] = $this->marketingSeoAudit->summary();
         }
 
         if ($this->authorization->allows($user, 'leads.view')) {

@@ -1,7 +1,9 @@
 <script setup>
 import { Link, usePage } from '@inertiajs/vue3';
-import { computed, ref } from 'vue';
+import { computed } from 'vue';
 import CentralLayout from '../../Layouts/CentralLayout.vue';
+import CentralBreadcrumbs from '../../Components/Central/CentralBreadcrumbs.vue';
+import FaqAccordion from '../../Components/Central/FaqAccordion.vue';
 
 const props = defineProps({
     brand: { type: String, default: 'helpefi' },
@@ -33,16 +35,13 @@ const accent = computed(() => {
         cyan: { glow: 'bg-cyan-600/25', badge: 'border-cyan-400/30 bg-cyan-500/10 text-cyan-300', highlight: 'from-cyan-400 via-sky-300 to-blue-400', card: 'hover:border-cyan-500/30', icon: 'text-cyan-400' },
         indigo: { glow: 'bg-indigo-600/25', badge: 'border-indigo-400/30 bg-indigo-500/10 text-indigo-300', highlight: 'from-indigo-400 via-blue-300 to-violet-400', card: 'hover:border-indigo-500/30', icon: 'text-indigo-400' },
         sky: { glow: 'bg-sky-600/25', badge: 'border-sky-400/30 bg-sky-500/10 text-sky-300', highlight: 'from-sky-400 via-cyan-300 to-teal-400', card: 'hover:border-sky-500/30', icon: 'text-sky-400' },
+        orange: { glow: 'bg-orange-600/25', badge: 'border-orange-400/30 bg-orange-500/10 text-orange-300', highlight: 'from-orange-400 via-amber-300 to-yellow-400', card: 'hover:border-orange-500/30', icon: 'text-orange-400' },
+        rose: { glow: 'bg-rose-600/25', badge: 'border-rose-400/30 bg-rose-500/10 text-rose-300', highlight: 'from-rose-400 via-pink-300 to-fuchsia-400', card: 'hover:border-rose-500/30', icon: 'text-rose-400' },
+        teal: { glow: 'bg-teal-600/25', badge: 'border-teal-400/30 bg-teal-500/10 text-teal-300', highlight: 'from-teal-400 via-emerald-300 to-green-400', card: 'hover:border-teal-500/30', icon: 'text-teal-400' },
     };
 
     return map[props.featureMeta.accent ?? 'violet'] ?? map.violet;
 });
-
-const openFaq = ref(null);
-
-const toggleFaq = (index) => {
-    openFaq.value = openFaq.value === index ? null : index;
-};
 </script>
 
 <template>
@@ -53,15 +52,7 @@ const toggleFaq = (index) => {
             </div>
 
             <div class="relative mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-24 lg:px-8">
-                <nav class="mb-8 text-sm text-slate-400" aria-label="Breadcrumb">
-                    <ol class="flex flex-wrap items-center gap-2">
-                        <li><Link href="/" class="transition hover:text-white">{{ platformName }}</Link></li>
-                        <li aria-hidden="true">/</li>
-                        <li><Link href="/features" class="transition hover:text-white">{{ chrome.features ?? 'Features' }}</Link></li>
-                        <li aria-hidden="true">/</li>
-                        <li class="text-slate-300">{{ content.badge }}</li>
-                    </ol>
-                </nav>
+                <CentralBreadcrumbs />
 
                 <div class="max-w-3xl">
                     <span class="inline-flex rounded-full border px-4 py-1.5 text-xs font-semibold backdrop-blur" :class="accent.badge">{{ content.badge }}</span>
@@ -106,21 +97,11 @@ const toggleFaq = (index) => {
             </div>
         </section>
 
-        <section v-if="faqs.length" class="bg-white py-16 dark:bg-slate-900">
-            <div class="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
-                <h2 class="text-center text-3xl font-bold text-slate-900 dark:text-slate-100">FAQ</h2>
-                <div class="mt-10 space-y-3">
-                    <div v-for="(item, index) in faqs" :key="item.q" class="overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800">
-                        <button type="button" class="flex w-full items-center justify-between gap-4 px-5 py-4 text-left" @click="toggleFaq(index)">
-                            <span class="text-sm font-semibold text-slate-900 dark:text-slate-100">{{ item.q }}</span>
-                        </button>
-                        <div v-show="openFaq === index" class="border-t border-slate-200 px-5 pb-5 pt-2 dark:border-slate-800">
-                            <p class="text-sm text-slate-600 dark:text-slate-400">{{ item.a }}</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
+        <FaqAccordion
+            :items="faqs"
+            title="FAQ"
+            section-class="bg-white py-16 dark:bg-slate-900"
+        />
 
         <section class="bg-slate-950 py-16">
             <div class="mx-auto max-w-4xl px-4 text-center">

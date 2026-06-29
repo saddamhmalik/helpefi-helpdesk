@@ -3,6 +3,7 @@ import AgentStatusBar from '../Components/AgentStatusBar.vue';
 import AgentTopBar from '../Components/AgentTopBar.vue';
 import AppAvatar from '../Components/AppAvatar.vue';
 import AppLogo from '../Components/AppLogo.vue';
+import SeoHead from '../Components/SeoHead.vue';
 import DummyDataBanner from '../Components/DummyDataBanner.vue';
 import PlatformNoticeModal from '../Components/PlatformNoticeModal.vue';
 import TrialBanner from '../Components/TrialBanner.vue';
@@ -80,6 +81,7 @@ const iconWrapClass = (href, exact = false) => isActive(href, exact)
 </script>
 
 <template>
+    <SeoHead />
     <a href="#main-content" class="agent-skip-link">{{ $t('components.skip_to_main_content') }}</a>
     <div class="h-screen overflow-hidden agent-page-bg lg:flex">
         <aside

@@ -10,7 +10,7 @@ Helpefi separates **schema migrations** from **versioned data releases** for mul
 | Tenant schema | `php artisan tenants:migrate` | `migrations` (each tenant DB) |
 | Tenant data releases | `php artisan tenants:upgrade` | `tenant_release_migrations` (each tenant DB) |
 
-Application release version comes from `APP_VERSION` or the root `VERSION` file (currently `1.0.0`).
+Application release version comes from `APP_VERSION` or the root `VERSION` file (currently `1.0.1`).
 
 ## Deploy sequence
 
@@ -28,6 +28,7 @@ Defined in `config/tenant-releases.php`:
 
 - `0.0.1` — baseline marker for workspaces provisioned before release tracking (no steps)
 - `1.0.0` — production readiness data upgrades
+- `1.0.1` — patch release (no tenant data steps)
 
 ### 1.0.0 steps
 

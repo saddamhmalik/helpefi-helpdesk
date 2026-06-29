@@ -34,7 +34,7 @@ class MarketingSecurityTest extends TestCase
 
     public function test_marketing_security_headers_apply_to_blog_and_landings(): void
     {
-        foreach (['/blog', '/for/ecommerce', '/vs/freshdesk', '/features/ai', '/pricing'] as $path) {
+        foreach (['/blog', '/helpdesk-for-ecommerce', '/compare/freshdesk-vs-helpefi', '/ai-agent', '/integrations/slack', '/pricing'] as $path) {
             $response = $this->get($this->centralUrl($path));
 
             $response->assertOk();

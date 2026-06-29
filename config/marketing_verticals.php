@@ -1,28 +1,34 @@
 <?php
 
 return [
-    'ecommerce' => [
-        'accent' => 'emerald',
-    ],
-    'it-teams' => [
-        'accent' => 'rose',
-    ],
-    'agencies' => [
+    'fintech' => [
         'accent' => 'violet',
-    ],
-    'saas' => [
-        'accent' => 'blue',
-    ],
-    'professional-services' => [
-        'accent' => 'amber',
     ],
     'healthcare' => [
         'accent' => 'emerald',
     ],
-    'fintech' => [
-        'accent' => 'indigo',
+    'saas' => [
+        'accent' => 'violet',
     ],
-    'education' => [
-        'accent' => 'cyan',
+    'ecommerce' => [
+        'accent' => 'emerald',
+    ],
+    'logistics' => [
+        'accent' => 'rose',
+    ],
+    'edtech' => [
+        'accent' => 'emerald',
+    ],
+    'government' => [
+        'accent' => 'rose',
+    ],
+    'startups' => [
+        'accent' => 'violet',
+    ],
+    'banking' => [
+        'accent' => 'violet',
+    ],
+    'insurance' => [
+        'accent' => 'emerald',
     ],
 ];

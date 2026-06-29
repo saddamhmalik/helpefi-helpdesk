@@ -23,6 +23,8 @@ class MarketingBlogPost extends Model
         'published_at',
         'reading_minutes',
         'related_slugs',
+        'category_slugs',
+        'tag_slugs',
         'og_image_url',
         'seo_title',
         'seo_description',
@@ -34,6 +36,8 @@ class MarketingBlogPost extends Model
         return [
             'published_at' => 'datetime',
             'related_slugs' => 'array',
+            'category_slugs' => 'array',
+            'tag_slugs' => 'array',
         ];
     }
 

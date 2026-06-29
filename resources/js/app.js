@@ -10,6 +10,17 @@ import { createAppI18n, syncDocumentLocale } from './plugins/i18n.js';
 import { syncCsrfMeta } from './support/csrf.js';
 
 createInertiaApp({
+    title: (title) => {
+        const brand = 'Helpefi';
+        const raw = String(title ?? '').trim();
+        if (!raw) return brand;
+        if (raw.toLowerCase() === brand.toLowerCase()) return brand;
+        if (raw.toLowerCase().endsWith(`| ${brand.toLowerCase()}`)) return raw;
+        try {
+            if (window.location.pathname === '/' || window.location.pathname === '') return raw;
+        } catch {}
+        return `${raw} | ${brand}`;
+    },
     resolve: async (name) => {
         const pages = import.meta.glob('./Pages/**/*.vue');
         const page = await pages[`./Pages/${name}.vue`]();

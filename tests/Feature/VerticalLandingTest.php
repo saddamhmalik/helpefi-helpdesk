@@ -26,6 +26,24 @@ class VerticalLandingTest extends TestCase
 
     public function test_unknown_vertical_returns_not_found(): void
     {
+        $this->get('http://'.config('tenancy.central_app_domain').'/helpdesk-for-not-a-real-vertical')
+            ->assertNotFound();
+    }
+
+    public function test_legacy_for_urls_redirect_to_helpdesk_for_paths(): void
+    {
+        $this->get('http://'.config('tenancy.central_app_domain').'/for/ecommerce')
+            ->assertRedirect('/helpdesk-for-ecommerce');
+    }
+
+    public function test_education_vertical_redirects_to_edtech(): void
+    {
+        $this->get('http://'.config('tenancy.central_app_domain').'/helpdesk-for-education')
+            ->assertRedirect('/helpdesk-for-edtech');
+    }
+
+    public function test_legacy_for_unknown_vertical_returns_not_found(): void
+    {
         $this->get('http://'.config('tenancy.central_app_domain').'/for/not-a-real-vertical')
             ->assertNotFound();
     }
@@ -47,7 +65,7 @@ class VerticalLandingTest extends TestCase
     {
         config(['marketing_seo.site_url' => 'http://'.config('tenancy.central_app_domain')]);
 
-        $url = 'http://'.config('tenancy.central_app_domain').'/for/ecommerce';
+        $url = 'http://'.config('tenancy.central_app_domain').'/helpdesk-for-ecommerce';
 
         $response = $this->get($url);
 

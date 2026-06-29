@@ -24,6 +24,9 @@ use App\Domains\Platform\Controllers\Central\AdminSubscriptionController;
 use App\Domains\Platform\Controllers\Central\AdminTenantInfrastructureController;
 use App\Domains\Platform\Controllers\Central\AdminTenantController;
 use App\Domains\Platform\Controllers\Central\AdminUserController;
+use App\Domains\Platform\Controllers\Central\AdminMarketingSeoAuditController;
+use App\Domains\Platform\Controllers\Central\AdminMarketingSeoMetadataController;
+use App\Domains\Platform\Controllers\Central\AdminMarketingContentController;
 use App\Domains\Platform\Controllers\Central\PlatformNoticeImageController;
 use App\Domains\Tenancy\Controllers\Central\AdminSettingsController;
 use App\Domains\Tenancy\Controllers\Central\HomeController;
@@ -32,13 +35,19 @@ use App\Domains\Tenancy\Controllers\Central\RegisterController;
 use App\Domains\Tenancy\Controllers\Central\RegisterSlugCheckController;
 use App\Domains\Tenancy\Controllers\Central\RobotsController;
 use App\Domains\Tenancy\Controllers\Central\SitemapController;
+use App\Domains\Tenancy\Controllers\Central\MarketingImageController;
+use App\Domains\Tenancy\Controllers\Central\ImageSitemapController;
 use App\Domains\Tenancy\Controllers\Central\BlogController;
-use App\Domains\Tenancy\Controllers\Central\CompareLandingController;
+use App\Domains\Tenancy\Controllers\Central\BlogRssController;
 use App\Domains\Tenancy\Controllers\Central\FeatureLandingController;
+use App\Domains\Tenancy\Controllers\Central\IntegrationLandingController;
 use App\Domains\Tenancy\Controllers\Central\MarketingContactController;
 use App\Domains\Tenancy\Controllers\Central\MarketingStaticPageController;
 use App\Domains\Tenancy\Controllers\Central\MigrateLandingController;
 use App\Domains\Tenancy\Controllers\Central\VerticalLandingController;
+use App\Domains\Tenancy\Support\VerticalLandingDefinition;
+use App\Domains\Tenancy\Support\CompareLandingDefinition;
+use App\Domains\Platform\Controllers\Central\CompetitorComparisonController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -54,22 +63,56 @@ Route::get('/platform-notices/{notice}/image', PlatformNoticeImageController::cl
 
 Route::get('/robots.txt', RobotsController::class)->name('central.robots');
 Route::get('/sitemap.xml', SitemapController::class)->name('central.sitemap');
+Route::get('/sitemap-images.xml', ImageSitemapController::class)->name('central.sitemap.images');
+Route::get('/_marketing-image', MarketingImageController::class)->name('central.marketing.image');
+Route::get('/sitemap-{chunk}.xml', SitemapController::class)
+    ->whereNumber('chunk')
+    ->name('central.sitemap.chunk');
 Route::get('/', [HomeController::class, 'index'])->name('central.home');
 Route::get('/features', [FeatureLandingController::class, 'index'])->name('central.features.index');
-Route::get('/features/{feature}', [FeatureLandingController::class, 'show'])
-    ->where('feature', '[a-z0-9-]+')
-    ->name('central.feature');
-Route::get('/for/{vertical}', [VerticalLandingController::class, 'show'])
+foreach ([
+    'ai' => '/ai-agent',
+    'ticket-management' => '/shared-inbox',
+    'knowledge-base' => '/knowledge-base',
+    'automation' => '/automation',
+    'live-chat' => '/live-chat',
+    'integrations' => '/integrations',
+    'data-residency' => '/features',
+] as $legacyFeature => $target) {
+    Route::redirect('/features/'.$legacyFeature, $target, 301);
+}
+Route::get('/features/{feature}', fn () => abort(404))->where('feature', '[a-z0-9-]+');
+Route::redirect('/helpdesk-for-education', '/helpdesk-for-edtech', 301);
+Route::get('/helpdesk-for-{vertical}', [VerticalLandingController::class, 'show'])
     ->where('vertical', '[a-z0-9-]+')
     ->name('central.vertical');
-Route::get('/vs/{competitor}', [CompareLandingController::class, 'show'])
-    ->where('competitor', '[a-z0-9-]+')
+Route::get('/for/{vertical}', function (string $vertical) {
+    abort_unless(VerticalLandingDefinition::isValid($vertical), 404);
+
+    return redirect(VerticalLandingDefinition::path($vertical), 301);
+})->where('vertical', '[a-z0-9-]+');
+Route::get('/compare', [CompetitorComparisonController::class, 'index'])->name('central.compare.index');
+Route::get('/compare/{comparison}', [CompetitorComparisonController::class, 'show'])
+    ->where('comparison', '[a-z0-9-]+')
     ->name('central.compare');
+Route::get('/vs/{competitor}', function (string $competitor) {
+    abort_unless(CompareLandingDefinition::isValid($competitor), 404);
+
+    return redirect(CompareLandingDefinition::path($competitor), 301);
+})->where('competitor', '[a-z0-9-]+');
+Route::get('/migrate', [MigrateLandingController::class, 'index'])->name('central.migrate.index');
 Route::get('/migrate/from-{source}', [MigrateLandingController::class, 'show'])
     ->where('source', '[a-z0-9-]+')
     ->name('central.migrate');
 Route::get('/pricing', fn () => app(MarketingStaticPageController::class)->show('pricing'))->name('central.static.pricing');
 Route::get('/about', fn () => app(MarketingStaticPageController::class)->show('about'))->name('central.static.about');
+Route::get('/integrations', [IntegrationLandingController::class, 'index'])->name('central.static.integrations');
+Route::get('/integrations/{integration}', [IntegrationLandingController::class, 'show'])
+    ->where('integration', '[a-z0-9-]+')
+    ->name('central.integration');
+Route::get('/industries', fn () => app(MarketingStaticPageController::class)->show('industries'))->name('central.static.industries');
+Route::get('/resources', fn () => app(MarketingStaticPageController::class)->show('resources'))->name('central.static.resources');
+Route::get('/support', fn () => app(MarketingStaticPageController::class)->show('support'))->name('central.static.support');
 Route::get('/contact', [MarketingContactController::class, 'index'])->name('central.static.contact');
 Route::post('/contact', [MarketingContactController::class, 'store'])->name('central.contact.store');
 Route::get('/privacy', fn () => app(MarketingStaticPageController::class)->show('privacy'))->name('central.static.privacy');
@@ -78,6 +121,7 @@ Route::get('/blog', [BlogController::class, 'index'])->name('central.blog.index'
 Route::get('/blog/{slug}', [BlogController::class, 'show'])
     ->where('slug', '[a-z0-9-]+')
     ->name('central.blog.show');
+Route::get('/blog/rss.xml', BlogRssController::class)->name('central.blog.rss');
 
 Route::post('/api/marketing/ai-demo', [MarketingAiDemoController::class, 'store'])
     ->middleware('throttle:10,1')
@@ -112,6 +156,10 @@ Route::middleware('guest')->group(function () {
     Route::post('/register/resend', [RegisterController::class, 'resend'])->middleware('throttle:3,1')->name('central.register.resend');
     Route::get('/register/verify/{token}', [RegisterController::class, 'verify'])->name('central.register.verify');
 });
+
+Route::get('/{feature}', [FeatureLandingController::class, 'show'])
+    ->where('feature', '[a-z0-9-]+')
+    ->name('central.feature');
 
 Route::prefix('admin')->name('central.admin.')->group(function () {
     Route::middleware('guest:platform')->group(function () {
@@ -182,6 +230,23 @@ Route::prefix('admin')->name('central.admin.')->group(function () {
         Route::middleware('platform.permission:settings.manage')->group(function () {
             Route::put('/settings', [AdminSettingsController::class, 'update'])->name('settings.update');
             Route::post('/settings/purge-expired-tenants', [AdminSettingsController::class, 'purgeExpiredTenants'])->name('settings.purge-expired-tenants');
+
+            Route::get('/seo-audit', [AdminMarketingSeoAuditController::class, 'index'])->name('seo.audit');
+            Route::post('/seo-audit', [AdminMarketingSeoAuditController::class, 'store'])->name('seo.audit.run');
+
+            Route::get('/seo', [AdminMarketingSeoMetadataController::class, 'index'])->name('seo.index');
+            Route::get('/seo/{pageKey}', [AdminMarketingSeoMetadataController::class, 'edit'])->name('seo.edit');
+            Route::put('/seo/{pageKey}', [AdminMarketingSeoMetadataController::class, 'update'])->name('seo.update');
+            Route::post('/seo/{pageKey}/generate', [AdminMarketingSeoMetadataController::class, 'generate'])->name('seo.generate');
+
+            Route::get('/content', [AdminMarketingContentController::class, 'index'])->name('content.index');
+            Route::get('/content/create', [AdminMarketingContentController::class, 'create'])->name('content.create');
+            Route::post('/content', [AdminMarketingContentController::class, 'store'])->name('content.store');
+            Route::get('/content/{draft}/edit', [AdminMarketingContentController::class, 'edit'])->name('content.edit');
+            Route::put('/content/{draft}', [AdminMarketingContentController::class, 'update'])->name('content.update');
+            Route::post('/content/{draft}/regenerate', [AdminMarketingContentController::class, 'regenerate'])->name('content.regenerate');
+            Route::post('/content/{draft}/publish', [AdminMarketingContentController::class, 'publish'])->name('content.publish');
+            Route::delete('/content/{draft}', [AdminMarketingContentController::class, 'destroy'])->name('content.destroy');
         });
 
         Route::middleware('platform.permission:emails.view')->group(function () {

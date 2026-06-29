@@ -48,6 +48,7 @@ class MarketingSecurityHeaders
             "'unsafe-inline'",
             'https://www.googletagmanager.com',
             'https://www.google-analytics.com',
+            'https://analytics.ahrefs.com',
         ];
 
         $styleSources = [
@@ -59,9 +60,12 @@ class MarketingSecurityHeaders
             "'self'",
             'https://www.google-analytics.com',
             'https://www.googletagmanager.com',
+            'https://analytics.ahrefs.com',
         ];
 
         if (app()->environment('local', 'testing')) {
+            $scriptSources[] = 'blob:';
+
             foreach (['http://localhost:5173', 'http://127.0.0.1:5173', 'ws://localhost:5173', 'ws://127.0.0.1:5173'] as $devOrigin) {
                 $scriptSources[] = $devOrigin;
                 $styleSources[] = $devOrigin;

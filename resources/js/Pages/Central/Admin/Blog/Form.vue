@@ -1,5 +1,5 @@
 <script setup>
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import AdminLayout from '../../../../Layouts/AdminLayout.vue';
 import { adminInputClass } from '../../../../composables/usePlatformAdmin.js';
@@ -22,7 +22,23 @@ const form = useForm({
     seo_description: props.post?.seo_description ?? '',
     og_image_url: props.post?.og_image_url ?? '',
     related_slugs: props.post?.related_slugs ?? [],
+    category_slugs: props.post?.category_slugs ?? [],
+    tag_slugs: props.post?.tag_slugs ?? [],
 });
+
+const categoriesInput = ref((Array.isArray(form.category_slugs) ? form.category_slugs : []).join(', '));
+const tagsInput = ref((Array.isArray(form.tag_slugs) ? form.tag_slugs : []).join(', '));
+
+const parseSlugList = (value) => {
+    const raw = String(value ?? '');
+    const parts = raw
+        .split(',')
+        .map((p) => p.trim())
+        .filter(Boolean)
+        .map((p) => p.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, ''));
+
+    return Array.from(new Set(parts)).filter(Boolean);
+};
 
 const slugify = () => {
     if (isEditing.value || form.slug) {
@@ -47,6 +63,9 @@ const toggleRelated = (slug) => {
 };
 
 const submit = () => {
+    form.category_slugs = parseSlugList(categoriesInput.value);
+    form.tag_slugs = parseSlugList(tagsInput.value);
+
     if (isEditing.value) {
         form.put(`/admin/blog/${props.post.id}`);
         return;
@@ -140,6 +159,19 @@ const submit = () => {
                             <input type="checkbox" class="rounded border-slate-300" :checked="form.related_slugs.includes(option.slug)" @change="toggleRelated(option.slug)" />
                             {{ option.title }}
                         </label>
+                    </div>
+                </div>
+
+                <div class="grid gap-4 sm:grid-cols-2">
+                    <div>
+                        <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Categories (comma-separated slugs)</label>
+                        <input v-model="categoriesInput" type="text" :class="adminInputClass" placeholder="support, itsm" />
+                        <p v-if="form.errors.category_slugs" class="mt-1 text-xs text-red-600">{{ form.errors.category_slugs }}</p>
+                    </div>
+                    <div>
+                        <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Tags (comma-separated slugs)</label>
+                        <input v-model="tagsInput" type="text" :class="adminInputClass" placeholder="ai-deflection, sla" />
+                        <p v-if="form.errors.tag_slugs" class="mt-1 text-xs text-red-600">{{ form.errors.tag_slugs }}</p>
                     </div>
                 </div>
 

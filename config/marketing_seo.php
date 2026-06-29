@@ -30,6 +30,7 @@ return [
         'google_analytics_id' => env('GOOGLE_ANALYTICS_ID'),
         'google_site_verification' => env('GOOGLE_SITE_VERIFICATION'),
         'bing_site_verification' => env('BING_SITE_VERIFICATION'),
+        'ahrefs_analytics_key' => env('AHREFS_ANALYTICS_KEY', '5IT1VWG7SN8wIl3TxsDObg'),
     ],
 
     'twitter' => [
@@ -48,12 +49,11 @@ return [
     'robots' => [
         'disallow' => [
             '/admin',
-            '/admin/',
             '/dashboard',
             '/login',
-            '/register/verify',
-            '/api/',
-            '/razorpay/',
+            '/register',
+            '/api',
+            '/storage',
         ],
     ],
 
@@ -63,6 +63,30 @@ return [
             'sitemap' => true,
             'changefreq' => 'weekly',
             'priority' => '0.95',
+        ],
+        'integrations' => [
+            'path' => '/integrations',
+            'sitemap' => true,
+            'changefreq' => 'monthly',
+            'priority' => '0.8',
+        ],
+        'industries' => [
+            'path' => '/industries',
+            'sitemap' => true,
+            'changefreq' => 'monthly',
+            'priority' => '0.8',
+        ],
+        'resources' => [
+            'path' => '/resources',
+            'sitemap' => true,
+            'changefreq' => 'weekly',
+            'priority' => '0.75',
+        ],
+        'support' => [
+            'path' => '/support',
+            'sitemap' => true,
+            'changefreq' => 'monthly',
+            'priority' => '0.7',
         ],
         'about' => [
             'path' => '/about',

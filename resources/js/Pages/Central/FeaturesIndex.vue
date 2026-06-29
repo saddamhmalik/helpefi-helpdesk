@@ -2,6 +2,7 @@
 import { Link, usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import CentralLayout from '../../Layouts/CentralLayout.vue';
+import CentralBreadcrumbs from '../../Components/Central/CentralBreadcrumbs.vue';
 
 const props = defineProps({
     brand: { type: String, default: 'Helpefi' },
@@ -18,16 +19,19 @@ const chrome = computed(() => page.props.marketingChrome ?? {});
 const platformName = computed(() => props.brand);
 
 const accentMap = {
-    ai: 'border-violet-500/20 bg-violet-500/5 hover:border-violet-400/40',
-    'ticket-management': 'border-blue-500/20 bg-blue-500/5 hover:border-blue-400/40',
+    'shared-inbox': 'border-blue-500/20 bg-blue-500/5 hover:border-blue-400/40',
+    'ai-agent': 'border-violet-500/20 bg-violet-500/5 hover:border-violet-400/40',
     'knowledge-base': 'border-emerald-500/20 bg-emerald-500/5 hover:border-emerald-400/40',
-    automation: 'border-amber-500/20 bg-amber-500/5 hover:border-amber-400/40',
+    automation: 'border-orange-500/20 bg-orange-500/5 hover:border-orange-400/40',
     'live-chat': 'border-cyan-500/20 bg-cyan-500/5 hover:border-cyan-400/40',
-    integrations: 'border-indigo-500/20 bg-indigo-500/5 hover:border-indigo-400/40',
-    'data-residency': 'border-sky-500/20 bg-sky-500/5 hover:border-sky-400/40',
+    'email-ticketing': 'border-indigo-500/20 bg-indigo-500/5 hover:border-indigo-400/40',
+    'omnichannel-support': 'border-sky-500/20 bg-sky-500/5 hover:border-sky-400/40',
+    'sla-management': 'border-amber-500/20 bg-amber-500/5 hover:border-amber-400/40',
+    analytics: 'border-rose-500/20 bg-rose-500/5 hover:border-rose-400/40',
+    'customer-portal': 'border-teal-500/20 bg-teal-500/5 hover:border-teal-400/40',
 };
 
-const cardClass = (slug) => accentMap[slug] ?? accentMap.ai;
+const cardClass = (slug) => accentMap[slug] ?? accentMap['ai-agent'];
 </script>
 
 <template>
@@ -38,13 +42,7 @@ const cardClass = (slug) => accentMap[slug] ?? accentMap.ai;
                 <div class="absolute -right-32 bottom-0 h-[24rem] w-[24rem] rounded-full bg-blue-600/15 blur-3xl" />
             </div>
             <div class="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-                <nav class="mb-8 text-sm text-slate-400" aria-label="Breadcrumb">
-                    <ol class="flex flex-wrap items-center gap-2">
-                        <li><Link href="/" class="transition hover:text-white">{{ platformName }}</Link></li>
-                        <li aria-hidden="true">/</li>
-                        <li class="text-slate-300">{{ featuresHub.nav_label ?? 'Features' }}</li>
-                    </ol>
-                </nav>
+                <CentralBreadcrumbs />
                 <p class="text-sm font-semibold uppercase tracking-wider text-violet-300">{{ featuresHub.badge }}</p>
                 <h1 class="mt-4 max-w-3xl text-3xl font-extrabold tracking-tight sm:text-5xl">
                     {{ featuresHub.hero_title }}

@@ -90,13 +90,20 @@ class MarketingBlogPostService
             'path' => $this->path($post->slug),
             'title' => $post->title,
             'excerpt' => $post->excerpt,
-            'body_paragraphs' => $this->bodyParagraphs($post->body),
+            'body' => $post->body,
             'published_at' => $post->published_at?->toDateString(),
             'updated_at' => $post->updated_at?->toDateString(),
             'reading_minutes' => $post->reading_minutes,
+            'featured_image' => $post->og_image_url,
             'og_image' => $post->og_image_url,
             'seo_title' => $post->seo_title,
             'seo_description' => $post->seo_description,
+            'categories' => $this->presentSlugList($post->category_slugs ?? []),
+            'tags' => $this->presentSlugList($post->tag_slugs ?? []),
+            'author' => $post->creator ? [
+                'id' => $post->creator->id,
+                'name' => $post->creator->name,
+            ] : null,
             'related' => $post->related_slugs ?? [],
         ];
     }
@@ -110,6 +117,9 @@ class MarketingBlogPostService
             'excerpt' => $post->excerpt,
             'published_at' => $post->published_at?->toDateString(),
             'reading_minutes' => $post->reading_minutes,
+            'featured_image' => $post->og_image_url,
+            'categories' => $this->presentSlugList($post->category_slugs ?? []),
+            'tags' => $this->presentSlugList($post->tag_slugs ?? []),
         ];
     }
 
@@ -147,6 +157,10 @@ class MarketingBlogPostService
             'og_image_url' => ['nullable', 'string', 'max:500', 'url', 'starts_with:https://'],
             'related_slugs' => ['nullable', 'array'],
             'related_slugs.*' => ['string', 'max:120', 'regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/'],
+            'category_slugs' => ['nullable', 'array'],
+            'category_slugs.*' => ['string', 'max:120', 'regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/'],
+            'tag_slugs' => ['nullable', 'array'],
+            'tag_slugs.*' => ['string', 'max:120', 'regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/'],
         ];
     }
 
@@ -171,6 +185,9 @@ class MarketingBlogPostService
             ->values()
             ->all();
 
+        $categories = $this->normalizeSlugList($data['category_slugs'] ?? []);
+        $tags = $this->normalizeSlugList($data['tag_slugs'] ?? []);
+
         return [
             'slug' => Str::slug((string) ($data['slug'] ?? '')),
             'title' => $this->sanitizeText($data['title'] ?? '', 200),
@@ -180,6 +197,8 @@ class MarketingBlogPostService
             'published_at' => $publishedAt,
             'reading_minutes' => $this->estimateReadingMinutes($body),
             'related_slugs' => $related === [] ? null : $related,
+            'category_slugs' => $categories === [] ? null : $categories,
+            'tag_slugs' => $tags === [] ? null : $tags,
             'og_image_url' => filled($data['og_image_url'] ?? null) ? $data['og_image_url'] : null,
             'seo_title' => filled($data['seo_title'] ?? null) ? $this->sanitizeText($data['seo_title'], 200) : null,
             'seo_description' => filled($data['seo_description'] ?? null) ? $this->sanitizeText($data['seo_description'], 320) : null,
@@ -198,6 +217,8 @@ class MarketingBlogPostService
             'published_at' => $post->published_at?->format('Y-m-d'),
             'reading_minutes' => $post->reading_minutes,
             'related_slugs' => $post->related_slugs ?? [],
+            'category_slugs' => $post->category_slugs ?? [],
+            'tag_slugs' => $post->tag_slugs ?? [],
             'og_image_url' => $post->og_image_url,
             'seo_title' => $post->seo_title,
             'seo_description' => $post->seo_description,
@@ -226,6 +247,42 @@ class MarketingBlogPostService
             ->filter()
             ->values()
             ->all();
+    }
+
+    private function normalizeSlugList(mixed $value): array
+    {
+        if (! is_array($value)) {
+            return [];
+        }
+
+        return collect($value)
+            ->filter(fn ($slug) => is_string($slug))
+            ->map(fn (string $slug) => Str::slug($slug))
+            ->filter(fn (string $slug) => $slug !== '')
+            ->unique()
+            ->values()
+            ->all();
+    }
+
+    private function presentSlugList(array $slugs): array
+    {
+        $items = collect($slugs)
+            ->filter(fn (mixed $slug) => is_string($slug) && trim($slug) !== '')
+            ->unique()
+            ->values();
+
+        return $items->map(fn (string $slug) => [
+            'slug' => $slug,
+            'name' => $this->labelFromSlug($slug),
+        ])->all();
+    }
+
+    private function labelFromSlug(string $slug): string
+    {
+        $raw = str_replace(['-', '_'], ' ', trim($slug));
+        $raw = preg_replace('/\s+/u', ' ', $raw) ?? $raw;
+
+        return mb_strtoupper(mb_substr($raw, 0, 1)).mb_substr($raw, 1);
     }
 
     private function estimateReadingMinutes(string $body): int

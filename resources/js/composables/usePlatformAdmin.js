@@ -110,6 +110,27 @@ export function usePlatformAdmin() {
             });
         }
 
+        if (can('settings.manage')) {
+            platformItems.push({
+                label: t('layouts.admin.nav_content'),
+                href: '/admin/content',
+                permission: 'settings.manage',
+                match: (url) => url.startsWith('/admin/content'),
+            });
+            platformItems.push({
+                label: t('layouts.admin.nav_seo'),
+                href: '/admin/seo',
+                permission: 'settings.manage',
+                match: (url) => url.startsWith('/admin/seo') && !url.startsWith('/admin/seo-audit'),
+            });
+            platformItems.push({
+                label: t('layouts.admin.nav_seo_audit'),
+                href: '/admin/seo-audit',
+                permission: 'settings.manage',
+                match: (url) => url.startsWith('/admin/seo-audit'),
+            });
+        }
+
         if (can('testimonials.view')) {
             platformItems.push({
                 label: t('layouts.admin.nav_testimonials'),
