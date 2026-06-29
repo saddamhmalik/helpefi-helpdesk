@@ -12,7 +12,7 @@ export async function createMarketingI18n(locale = 'en') {
             ...core,
             central,
             layouts,
-            errors,
+            ...errors,
             auth,
             components,
             common: {

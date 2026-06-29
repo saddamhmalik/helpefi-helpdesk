@@ -35,6 +35,9 @@ class PlatformAdminAccessTest extends TestCase
             ->assertOk()
             ->assertInertia(fn ($page) => $page->component('Central/Admin/Dashboard'));
 
+        $this->get('http://'.config('tenancy.central_app_domain').'/admin/login')
+            ->assertRedirect('http://'.config('tenancy.central_app_domain').'/admin/dashboard');
+
         $this->get('http://'.config('tenancy.central_app_domain').'/admin/profile')
             ->assertOk()
             ->assertInertia(fn ($page) => $page->component('Central/Admin/Profile'));

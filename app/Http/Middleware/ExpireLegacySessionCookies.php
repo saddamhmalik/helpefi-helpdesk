@@ -21,6 +21,10 @@ class ExpireLegacySessionCookies
 
         $legacyDomain = '.'.$central;
 
+        if ($this->usesLegacySessionDomain($legacyDomain)) {
+            return $response;
+        }
+
         foreach ([config('session.cookie'), 'XSRF-TOKEN'] as $name) {
             if (! is_string($name) || $name === '') {
                 continue;
@@ -40,5 +44,20 @@ class ExpireLegacySessionCookies
         }
 
         return $response;
+    }
+
+    private function usesLegacySessionDomain(string $legacyDomain): bool
+    {
+        $configured = config('session.domain');
+
+        if (! is_string($configured) || $configured === '' || $configured === 'null') {
+            return false;
+        }
+
+        if (str_starts_with($configured, '.')) {
+            return false;
+        }
+
+        return $configured === ltrim($legacyDomain, '.');
     }
 }
