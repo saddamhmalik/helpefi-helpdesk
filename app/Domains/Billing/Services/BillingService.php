@@ -123,7 +123,7 @@ class BillingService implements FeatureEntitlementChecker
             return $this->activateAddon($addonKey);
         }
 
-        if ($this->razorpay->isEnabled() && $subscription->razorpay_subscription_id) {
+        if ($this->razorpay->isEnabled()) {
             return $this->razorpay->purchaseAddon($addonKey, $customerEmail, $customerName);
         }
 

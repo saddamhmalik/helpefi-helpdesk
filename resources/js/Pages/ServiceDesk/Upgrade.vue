@@ -46,9 +46,11 @@ const purchaseAddon = () => {
     router.post('/settings/billing/addons/service_desk', {}, {
         preserveScroll: true,
         onSuccess: () => {
-            if (!page.props.flash?.razorpay_checkout) {
-                router.visit('/service-desk');
+            if (openCheckoutFromFlash(page.props.flash?.razorpay_checkout)) {
+                return;
             }
+
+            router.visit('/service-desk');
         },
     });
 };

@@ -392,7 +392,7 @@ class BillingTest extends TenantTestCase
         app(BillingService::class)->activateAddon('ai_copilot');
     }
 
-    public function test_active_plan_without_razorpay_can_purchase_addon_when_razorpay_enabled(): void
+    public function test_active_plan_without_razorpay_cannot_purchase_addon_when_razorpay_enabled(): void
     {
         config(['razorpay.enabled' => true, 'razorpay.key' => 'rzp_test', 'razorpay.secret' => 'secret']);
 
@@ -402,16 +402,12 @@ class BillingTest extends TenantTestCase
 
         $this->actingAs($admin)
             ->tenantPost('/settings/billing/addons/service_desk')
-            ->assertRedirect();
-
-        $this->assertDatabaseHas('subscriptions', [
-            'tenant_id' => tenant('id'),
-        ], 'central');
+            ->assertSessionHasErrors('addon');
 
         $subscription = Subscription::query()->where('tenant_id', tenant('id'))->first();
 
-        $this->assertContains('service_desk', $subscription->active_addons ?? []);
-        $this->assertTrue(app(BillingService::class)->canUseFeature('service_desk'));
+        $this->assertNotContains('service_desk', $subscription->active_addons ?? []);
+        $this->assertFalse(app(BillingService::class)->canUseFeature('service_desk'));
     }
 
     public function test_enterprise_plan_marks_ai_addon_as_included_in_plan(): void

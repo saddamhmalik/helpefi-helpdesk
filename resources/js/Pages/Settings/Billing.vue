@@ -229,8 +229,12 @@ const addonPurchaseDisabled = (addon) => {
         return false;
     }
 
-    if (!props.billing.razorpay_enabled || !props.billing.has_razorpay_subscription) {
+    if (!props.billing.razorpay_enabled) {
         return false;
+    }
+
+    if (!props.billing.has_razorpay_subscription) {
+        return true;
     }
 
     return !addon.billing_ready;
@@ -537,6 +541,7 @@ const formatLimit = (limit) => (limit === 'unlimited' ? t('settings_billing.unli
                     <p v-else-if="billing.on_trial && !addon.active" class="mt-3 text-xs agent-text-subtle">
                         {{ $t('settings_billing.addon_trial_try_note', { price: formatAddonPrice(addon.price_monthly) }) }}
                     </p>
+                    <p v-else-if="billing.razorpay_enabled && !billing.has_razorpay_subscription" class="mt-3 text-xs text-amber-700 dark:text-amber-300">{{ $t('settings_billing.addon_requires_subscription') }}</p>
                     <p v-else-if="billing.razorpay_enabled && !addon.billing_ready" class="mt-3 text-xs text-amber-700 dark:text-amber-300">{{ $t('settings_billing.addon_billing_not_ready') }}</p>
                 </div>
             </div>

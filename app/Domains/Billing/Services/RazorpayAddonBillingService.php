@@ -294,7 +294,7 @@ class RazorpayAddonBillingService
     ): array|Subscription {
         $status = (string) ($addonSubscription['status'] ?? '');
 
-        if (in_array($status, ['active', 'authenticated'], true)) {
+        if ($status === 'active') {
             return $this->activateAddonSubscription($subscription, $addonKey, $addonSubscription);
         }
 
