@@ -48,7 +48,6 @@ class MarketingFirstPaintService
         $layout = $chrome['layout'] ?? [];
 
         return [
-            'swapHero' => $request->routeIs('central.home'),
             'trialDays' => $this->settings->trialDays(),
             'promoTrial' => $home['promo_trial'] ?? '',
             'promoStart' => $home['promo_start'] ?? '',

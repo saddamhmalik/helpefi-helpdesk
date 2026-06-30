@@ -76,7 +76,7 @@ createInertiaApp({
         showInitialFlashToasts(props.initialPage.props);
 
         const shell = document.getElementById('marketing-first-paint');
-        if (shell && shell.dataset.swapHero !== 'true') {
+        if (shell) {
             document.body.classList.remove('marketing-fp-pending');
             shell.remove();
         }

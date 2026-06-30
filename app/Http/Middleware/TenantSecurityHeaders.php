@@ -25,7 +25,7 @@ class TenantSecurityHeaders
         $response->headers->set('X-Content-Type-Options', 'nosniff');
         $response->headers->set('X-Frame-Options', 'SAMEORIGIN');
         $response->headers->set('Referrer-Policy', 'strict-origin-when-cross-origin');
-        $response->headers->set('Permissions-Policy', 'camera=(), microphone=(), geolocation=(), payment=()');
+        $response->headers->set('Permissions-Policy', $this->permissionsPolicy());
 
         if (! app()->environment('local') || $request->secure()) {
             $response->headers->set('Cross-Origin-Opener-Policy', 'same-origin');
@@ -48,12 +48,23 @@ class TenantSecurityHeaders
         $connectSources = ["'self'", 'https:', 'wss:'];
         $imgSources = ["'self'", 'data:', 'https:', 'blob:'];
         $fontSources = ["'self'", 'data:', 'https:'];
+        $frameSources = ["'self'"];
 
         if (app()->environment('local', 'testing')) {
+            $scriptSources[] = 'blob:';
+
             foreach (['http://localhost:5173', 'http://127.0.0.1:5173', 'ws://localhost:5173', 'ws://127.0.0.1:5173'] as $devOrigin) {
                 $scriptSources[] = $devOrigin;
                 $styleSources[] = $devOrigin;
                 $connectSources[] = $devOrigin;
+            }
+        }
+
+        if ($this->razorpayEnabled()) {
+            foreach ($this->razorpayOrigins() as $origin) {
+                $scriptSources[] = $origin;
+                $frameSources[] = $origin;
+                $connectSources[] = $origin;
             }
         }
 
@@ -75,7 +86,7 @@ class TenantSecurityHeaders
             "base-uri 'self'",
             "form-action 'self'",
             "frame-ancestors 'self'",
-            "frame-src 'self'",
+            'frame-src '.implode(' ', $frameSources),
             'img-src '.implode(' ', $imgSources),
             'font-src '.implode(' ', $fontSources),
             "object-src 'none'",
@@ -83,5 +94,31 @@ class TenantSecurityHeaders
             'style-src '.implode(' ', $styleSources),
             'connect-src '.implode(' ', $connectSources),
         ]);
+    }
+
+    private function permissionsPolicy(): string
+    {
+        $payment = $this->razorpayEnabled() ? 'payment=(self)' : 'payment=()';
+
+        return "camera=(), microphone=(), geolocation=(), {$payment}";
+    }
+
+    private function razorpayEnabled(): bool
+    {
+        return (bool) config('razorpay.enabled')
+            && filled(config('razorpay.key'))
+            && filled(config('razorpay.secret'));
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function razorpayOrigins(): array
+    {
+        return [
+            'https://checkout.razorpay.com',
+            'https://api.razorpay.com',
+            'https://cdn.razorpay.com',
+        ];
     }
 }

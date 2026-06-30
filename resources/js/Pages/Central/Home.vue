@@ -1,6 +1,6 @@
 <script setup>
 import { Link } from '@inertiajs/vue3';
-import { computed, defineAsyncComponent, onMounted, ref } from 'vue';
+import { computed, defineAsyncComponent, ref } from 'vue';
 import CentralLayout from '../../Layouts/CentralLayout.vue';
 import IntegrationStackIcon from '../../Components/IntegrationStackIcon.vue';
 import { useCurrency } from '../../composables/useCurrency.js';
@@ -119,7 +119,6 @@ const addonPrice = (addon) => (
 const previewTab = ref('ai');
 const featureCategory = ref('operations');
 const faqs = computed(() => homeArray('faqs'));
-const staticHeroActive = ref(false);
 
 const featureLabels = computed(() => homeObject('feature_labels'));
 
@@ -473,27 +472,6 @@ const planHighlights = (plan) => {
     return items;
 };
 
-onMounted(() => {
-    const shell = document.getElementById('marketing-first-paint');
-    const main = document.querySelector('#app main#main-content');
-    const heroMain = shell?.querySelector('[data-static-hero-root]');
-
-    if (! shell || ! main || ! heroMain) {
-        if (shell) {
-            document.body.classList.remove('marketing-fp-pending');
-            shell.remove();
-        }
-
-        return;
-    }
-
-    staticHeroActive.value = true;
-    main.insertBefore(heroMain, main.firstChild);
-    shell.remove();
-    document.body.classList.remove('marketing-fp-pending');
-    document.body.classList.add('marketing-fp-ready');
-});
-
 const featureGroups = computed(() => {
     const groups = homeArray('feature_groups');
 
@@ -510,7 +488,7 @@ const featureGroups = computed(() => {
 
 <template>
     <CentralLayout :brand="brand" :trial-days="trialDays" :social-links="socialLinks">
-        <section v-if="!staticHeroActive" class="relative min-h-[32rem] overflow-hidden bg-slate-950 text-white sm:min-h-[36rem] lg:min-h-[40rem]">
+        <section class="relative min-h-[32rem] overflow-hidden bg-slate-950 text-white sm:min-h-[36rem] lg:min-h-[40rem]">
             <div class="pointer-events-none absolute inset-0 overflow-hidden [contain:strict]" aria-hidden="true">
                 <div class="absolute -left-40 top-0 h-[36rem] w-[36rem] rounded-full bg-blue-600/30 blur-3xl will-change-transform" />
                 <div class="absolute right-[-10%] top-10 h-[28rem] w-[28rem] rounded-full bg-indigo-500/25 blur-3xl will-change-transform" />

@@ -137,11 +137,6 @@
                     pointer-events: none;
                     z-index: -1;
                 }
-
-                body.marketing-fp-ready #marketing-first-paint > header,
-                body.marketing-fp-ready #marketing-first-paint > div:first-of-type {
-                    display: none;
-                }
             </style>
         @endif
         @php

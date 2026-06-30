@@ -47,9 +47,9 @@ class RazorpayAddonBillingService
             return $subscription;
         }
 
-        if (! $subscription->isActive() || ! $subscription->razorpay_subscription_id) {
+        if (! $subscription->isActive()) {
             throw ValidationException::withMessages([
-                'addon' => 'Activate a Razorpay subscription before purchasing add-ons.',
+                'addon' => 'Activate a subscription plan before purchasing add-ons.',
             ]);
         }
 

@@ -7,7 +7,6 @@
 <div
     id="marketing-first-paint"
     class="flex min-h-screen flex-col overflow-x-hidden font-sans antialiased"
-    @if (!empty($shell['swapHero'])) data-swap-hero="true" @endif
 >
     @if (($shell['trialDays'] ?? 0) > 0)
         <div
@@ -49,7 +48,7 @@
         </div>
     </header>
 
-    <main id="main-content" class="flex-1 overflow-x-hidden bg-slate-50 text-slate-900" @if ($pageType === 'home') data-static-hero-root @endif>
+    <main id="main-content" class="flex-1 overflow-x-hidden bg-slate-50 text-slate-900">
         @if (!empty($page['breadcrumbs']))
             <nav class="border-b border-slate-200 bg-white px-4 py-3 text-sm text-slate-500 sm:px-6 lg:px-8" aria-label="Breadcrumb">
                 <ol class="mx-auto flex max-w-7xl flex-wrap items-center gap-1">

@@ -233,7 +233,7 @@ const addonPurchaseDisabled = (addon) => {
         return false;
     }
 
-    if (!props.billing.has_razorpay_subscription) {
+    if (props.billing.status !== 'active') {
         return true;
     }
 
@@ -541,7 +541,8 @@ const formatLimit = (limit) => (limit === 'unlimited' ? t('settings_billing.unli
                     <p v-else-if="billing.on_trial && !addon.active" class="mt-3 text-xs agent-text-subtle">
                         {{ $t('settings_billing.addon_trial_try_note', { price: formatAddonPrice(addon.price_monthly) }) }}
                     </p>
-                    <p v-else-if="billing.razorpay_enabled && !billing.has_razorpay_subscription" class="mt-3 text-xs text-amber-700 dark:text-amber-300">{{ $t('settings_billing.addon_requires_subscription') }}</p>
+                    <p v-else-if="billing.razorpay_enabled && billing.status !== 'active'" class="mt-3 text-xs text-amber-700 dark:text-amber-300">{{ $t('settings_billing.addon_requires_subscription') }}</p>
+                    <p v-else-if="billing.razorpay_enabled && billing.plan?.is_custom_price" class="mt-3 text-xs text-slate-600 dark:text-slate-400">{{ $t('settings_billing.addon_managed_plan_note') }}</p>
                     <p v-else-if="billing.razorpay_enabled && !addon.billing_ready" class="mt-3 text-xs text-amber-700 dark:text-amber-300">{{ $t('settings_billing.addon_billing_not_ready') }}</p>
                 </div>
             </div>

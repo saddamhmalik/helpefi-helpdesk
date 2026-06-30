@@ -144,6 +144,7 @@
         "addon_stripe_not_ready": "Stripe price not configured for this add-on yet.",
         "addon_billing_not_ready": "Razorpay price not configured for this add-on yet.",
         "addon_requires_subscription": "Subscribe to a paid plan via Razorpay before purchasing add-ons.",
+        "addon_managed_plan_note": "Your plan is managed by your account team. Add-ons are billed separately via Razorpay checkout.",
         "agent_limit_reached": "You've reached your plan limit of {limit} team members ({used} in use).",
         "agent_limit_near": "You're using {used} of {limit} team members on your plan.",
         "ticket_limit_reached": "You've reached your plan limit of {limit} tickets this month ({used} created).",

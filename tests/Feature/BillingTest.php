@@ -392,7 +392,7 @@ class BillingTest extends TenantTestCase
         app(BillingService::class)->activateAddon('ai_copilot');
     }
 
-    public function test_active_plan_without_razorpay_cannot_purchase_addon_when_razorpay_enabled(): void
+    public function test_active_plan_without_razorpay_does_not_activate_addon_for_free_when_razorpay_enabled(): void
     {
         config(['razorpay.enabled' => true, 'razorpay.key' => 'rzp_test', 'razorpay.secret' => 'secret']);
 
@@ -408,6 +408,24 @@ class BillingTest extends TenantTestCase
 
         $this->assertNotContains('service_desk', $subscription->active_addons ?? []);
         $this->assertFalse(app(BillingService::class)->canUseFeature('service_desk'));
+    }
+
+    public function test_tenant_csp_allows_razorpay_checkout_when_billing_enabled(): void
+    {
+        config(['razorpay.enabled' => true, 'razorpay.key' => 'rzp_test', 'razorpay.secret' => 'secret']);
+
+        $admin = User::query()->where('email', 'admin@helpdesk.test')->first();
+
+        $response = $this->actingAs($admin)
+            ->tenantGet('/settings/billing?section=addons');
+
+        $response->assertOk();
+
+        $csp = (string) $response->headers->get('Content-Security-Policy');
+
+        $this->assertStringContainsString('https://checkout.razorpay.com', $csp);
+        $this->assertStringContainsString('https://cdn.razorpay.com', $csp);
+        $this->assertStringContainsString('frame-src', $csp);
     }
 
     public function test_enterprise_plan_marks_ai_addon_as_included_in_plan(): void
