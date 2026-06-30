@@ -531,8 +531,8 @@ return array (
   ),
   'plan_taglines' => 
   array (
-    'starter' => 'Essentials for small teams',
-    'professional' => 'Automation, SLA & channels',
+    'starter' => 'SLA & essentials for small teams',
+    'professional' => 'Automation, service catalog & channels',
     'enterprise' => 'AI, integrations, SSO, custom domain & data residency',
   ),
   'comparisons' => 
@@ -663,7 +663,7 @@ return array (
     6 => 
     array (
       'q' => 'How does pricing work after the trial?',
-      'a' => 'Plans are based on team size (agents) and monthly ticket volume. Professional includes automation, SLA, service catalog, and live chat. Enterprise adds AI, integrations, assets, SSO, and custom domain. AI Copilot, Integrations, Service Desk ITSM, and data residency add-ons (BYO database and storage) are optional monthly add-ons on any paid plan. Upgrade anytime from your workspace billing settings.',
+      'a' => 'Plans are based on team size (agents) and monthly ticket volume. All paid plans include SLA policies and business hours. Professional adds automation, service catalog, and live chat. Enterprise adds AI, integrations, assets, SSO, and custom domain. AI Copilot, Integrations, Service Desk ITSM, and data residency add-ons (BYO database and storage) are optional monthly add-ons on any paid plan. Upgrade anytime from your workspace billing settings.',
     ),
     7 => 
     array (

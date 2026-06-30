@@ -249,9 +249,9 @@ class BillingTest extends TenantTestCase
             ->assertForbidden();
     }
 
-    public function test_starter_plan_does_not_apply_sla_timers(): void
+    public function test_starter_plan_applies_sla_timers(): void
     {
-        $this->seed(TicketLookupSeeder::class);
+        $this->seed([TicketLookupSeeder::class, SlaSeeder::class]);
         $this->setPlan('starter');
 
         $status = TicketStatus::query()->where('slug', 'open')->firstOrFail();
@@ -259,14 +259,32 @@ class BillingTest extends TenantTestCase
 
         $ticket = Ticket::query()->create([
             'number' => 'HD-01001',
-            'subject' => 'SLA skipped',
+            'subject' => 'SLA applied',
             'ticket_status_id' => $status->id,
             'ticket_priority_id' => $priority->id,
         ]);
 
         app(SlaService::class)->applyToTicket($ticket);
 
-        $this->assertDatabaseMissing('ticket_sla_timers', ['ticket_id' => $ticket->id]);
+        $this->assertDatabaseHas('ticket_sla_timers', ['ticket_id' => $ticket->id]);
+    }
+
+    public function test_custom_plan_without_sla_feature_still_includes_sla(): void
+    {
+        Subscription::query()->updateOrCreate(
+            ['tenant_id' => tenant('id')],
+            [
+                'plan' => 'enterprise',
+                'status' => Subscription::STATUS_ACTIVE,
+                'renews_at' => now()->addMonth(),
+                'custom_amount' => 14999,
+            ],
+        );
+
+        $billing = app(BillingService::class)->snapshot();
+
+        $this->assertContains('sla', $billing['features']);
+        $this->assertTrue(app(BillingService::class)->canUseFeature('sla'));
     }
 
     public function test_starter_monthly_ticket_limit_blocks_new_tickets(): void

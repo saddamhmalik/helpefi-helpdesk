@@ -57,7 +57,7 @@ return array (
       2 => 
       array (
         'q' => 'Does {brand} support Zendesk-style SLAs?',
-        'a' => 'Yes. Business hours, tier policies, breach alerts, and escalations are built in on Professional and above.',
+        'a' => 'Yes. Business hours, tier policies, breach alerts, and escalations are built in on all plans.',
       ),
     ),
     'cta_title' => 'Start your Zendesk migration trial',

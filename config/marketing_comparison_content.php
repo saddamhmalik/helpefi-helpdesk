@@ -160,7 +160,7 @@ return array (
       3 => 
       array (
         'feature' => 'SLA & business hours',
-        'us' => 'Professional+',
+        'us' => true,
         'them' => 'Suite plans',
       ),
       4 => 
@@ -270,7 +270,7 @@ return array (
       3 => 
       array (
         'feature' => 'SLA management',
-        'us' => 'Professional+',
+        'us' => true,
         'them' => 'Higher tiers',
       ),
       4 => 
@@ -496,7 +496,7 @@ return array (
       4 => 
       array (
         'feature' => 'SLA policies & business hours',
-        'us' => 'Professional+',
+        'us' => true,
         'them' => 'Limited',
       ),
       5 => 
@@ -600,7 +600,7 @@ return array (
       3 => 
       array (
         'feature' => 'SLA policies & business hours',
-        'us' => 'Professional+',
+        'us' => true,
         'them' => 'Limited',
       ),
       4 => 
@@ -698,7 +698,7 @@ return array (
       1 =>
       array (
         'feature' => 'SLA policies & business hours',
-        'us' => 'Professional+',
+        'us' => true,
         'them' => 'Limited',
       ),
       2 =>

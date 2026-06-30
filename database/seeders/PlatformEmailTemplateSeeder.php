@@ -182,7 +182,7 @@ HTML,
                 'body_html' => <<<'HTML'
 <p>Hi {{admin_name}},</p>
 <p>Your {{brand}} trial for <strong>{{organization_name}}</strong> ends in {{trial_days_remaining}} days.</p>
-<p>Professional includes automation, SLA, live chat, and service catalog. Enterprise adds AI, integrations, SSO, and custom domain — or add AI Copilot à la carte on Professional.</p>
+<p>All plans include SLA policies and business hours. Professional adds automation, live chat, and service catalog. Enterprise adds AI, integrations, SSO, and custom domain — or add AI Copilot à la carte on Professional.</p>
 <p style="margin:28px 0;">
   <a href="{{billing_url}}" style="display:inline-block;background:#2563eb;color:#ffffff;text-decoration:none;padding:12px 24px;border-radius:10px;font-weight:600;">Choose a plan</a>
 </p>

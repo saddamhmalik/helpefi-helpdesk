@@ -31,4 +31,7 @@ return [
         'byo_database' => 'Bring your own database',
         'byo_storage' => 'Bring your own storage',
     ],
+    'baseline_features' => [
+        'sla',
+    ],
 ];

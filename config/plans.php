@@ -9,7 +9,9 @@ return [
             'agents' => 3,
             'tickets_monthly' => 50,
         ],
-        'features' => [],
+        'features' => [
+            'sla',
+        ],
     ],
     'professional' => [
         'name' => 'Professional',

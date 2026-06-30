@@ -8,6 +8,7 @@ use App\Domains\Billing\Repositories\PlanRepository;
 use App\Domains\Billing\Repositories\SubscriptionRepository;
 use App\Domains\Billing\Repositories\UsageRepository;
 use App\Domains\Tenancy\Support\AddonCatalogDefinition;
+use App\Domains\Tenancy\Support\PlanCatalogDefinition;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Validation\ValidationException;
 
@@ -33,6 +34,10 @@ class PlanEntitlementService implements FeatureEntitlementChecker
 
         if (! $subscription->isAccessible()) {
             return $this->featureAccess[$feature] = false;
+        }
+
+        if (in_array($feature, PlanCatalogDefinition::baselineFeatures(), true)) {
+            return $this->featureAccess[$feature] = true;
         }
 
         $plan = $this->currentPlan($subscription);
@@ -106,7 +111,7 @@ class PlanEntitlementService implements FeatureEntitlementChecker
 
     public function effectiveFeatures(Subscription $subscription, array $plan): array
     {
-        $features = $plan['features'] ?? [];
+        $features = array_merge(PlanCatalogDefinition::baselineFeatures(), $plan['features'] ?? []);
 
         foreach ($subscription->active_addons ?? [] as $addonKey) {
             $feature = AddonCatalogDefinition::featureForAddon($addonKey);

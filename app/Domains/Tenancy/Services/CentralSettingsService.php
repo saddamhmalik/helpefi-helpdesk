@@ -167,7 +167,10 @@ class CentralSettingsService
                 'razorpay_plan_id_monthly_india' => $plan['razorpay_plan_id_monthly_india'] ?? null,
                 'razorpay_plan_id_yearly_india' => $plan['razorpay_plan_id_yearly_india'] ?? null,
                 'limits' => $plan['limits'],
-                'features' => $plan['features'],
+                'features' => array_values(array_unique(array_merge(
+                    PlanCatalogDefinition::baselineFeatures(),
+                    $plan['features'] ?? [],
+                ))),
             ])
             ->values()
             ->all();

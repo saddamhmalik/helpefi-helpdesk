@@ -121,6 +121,7 @@ return [
             ['title' => 'Automated escalations', 'body' => 'Notify managers and reassign tickets when SLAs approach breach.'],
         ],
         'faq' => [
+            ['q' => 'Which plans include SLA management?', 'a' => 'All plans include SLA policies, business hours, and breach alerts. Configure your first policy during trial setup or on Starter.'],
             ['q' => 'Can we have different SLAs per brand?', 'a' => 'Yes. Multi-brand workspaces support independent SLA policies per brand or customer segment.'],
             ['q' => 'Do SLAs work on chat and email?', 'a' => 'Yes. SLA timers apply to every channel that creates a ticket.'],
         ],

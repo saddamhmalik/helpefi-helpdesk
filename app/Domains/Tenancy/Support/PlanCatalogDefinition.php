@@ -29,6 +29,14 @@ class PlanCatalogDefinition
         return array_keys(self::featureDefinitions());
     }
 
+    public static function baselineFeatures(): array
+    {
+        return collect(config('plan_catalog.baseline_features', []))
+            ->filter(fn (string $feature) => in_array($feature, self::featureKeys(), true))
+            ->values()
+            ->all();
+    }
+
     public static function limitKeys(): array
     {
         return array_keys(self::limitDefinitions());
