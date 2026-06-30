@@ -7,6 +7,7 @@ use App\Domains\Platform\Services\PlatformTenantReminderService;
 use App\Domains\Platform\Services\PlatformTenantService;
 use App\Domains\Tenancy\Services\CentralSettingsService;
 use App\Domains\Tenancy\Services\TenantProvisioningService;
+use App\Domains\Tenancy\Support\AddonCatalogDefinition;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -61,13 +62,30 @@ class AdminTenantController extends Controller
                     'slug' => $slug,
                     'name' => $plan['name'],
                     'custom_pricing' => $plan['custom_pricing'] ?? false,
+                    'features' => $plan['features'] ?? [],
                     'price' => $plan['price'],
                     'price_monthly' => $plan['price_monthly'] ?? $plan['price'],
                     'price_yearly' => $plan['price_yearly'] ?? null,
+                    'price_monthly_india' => $plan['price_monthly_india'] ?? 0,
+                    'price_yearly_india' => $plan['price_yearly_india'] ?? 0,
+                ])
+                ->values()
+                ->all(),
+            'addons' => collect($this->settings->addonCatalog())
+                ->filter(fn (array $addon) => $addon['enabled'] ?? true)
+                ->map(fn (array $addon, string $key) => [
+                    'key' => $key,
+                    'name' => $addon['name'],
+                    'feature' => $addon['feature'],
+                    'description' => $addon['description'],
+                    'price_monthly' => $addon['price_monthly'],
+                    'price_monthly_india' => $addon['price_monthly_india'] ?? 0,
                 ])
                 ->values()
                 ->all(),
             'currency' => $this->settings->currencyMeta(),
+            'india_pricing' => $this->settings->indiaPricingEnabled(),
+            'india_currency' => $this->settings->indiaCurrencyMeta(),
             'razorpay_enabled' => (bool) config('razorpay.configured'),
         ]);
     }
@@ -75,14 +93,23 @@ class AdminTenantController extends Controller
     public function update(Request $request, string $tenant): RedirectResponse
     {
         $slugs = implode(',', array_keys($this->plans->all()));
+        $addonKeys = implode(',', AddonCatalogDefinition::keys());
+        $allowedCurrencies = [$this->settings->currency()];
+
+        if ($this->settings->indiaPricingEnabled()) {
+            $allowedCurrencies[] = $this->settings->indiaCurrency();
+        }
 
         $data = $request->validate([
             'is_blocked' => ['sometimes', 'boolean'],
             'byo_allowed' => ['sometimes', 'boolean'],
-            'plan' => ['sometimes', 'nullable', 'required_with:billing_interval,renews_at,note,custom_price', 'string', 'in:'.$slugs],
+            'plan' => ['sometimes', 'nullable', 'required_with:billing_interval,renews_at,note,custom_price,addons,billing_currency', 'string', 'in:'.$slugs],
             'billing_interval' => ['sometimes', 'string', 'in:month,year'],
+            'billing_currency' => ['sometimes', 'nullable', 'string', 'size:3', 'in:'.implode(',', $allowedCurrencies)],
             'renews_at' => ['sometimes', 'nullable', 'date', 'after:today'],
             'custom_price' => ['sometimes', 'nullable', 'integer', 'min:0', 'max:9999999'],
+            'addons' => ['sometimes', 'nullable', 'array'],
+            'addons.*' => ['string', 'in:'.$addonKeys],
             'note' => ['sometimes', 'nullable', 'string', 'max:500'],
             'start_trial' => ['sometimes', 'boolean'],
         ]);

@@ -207,8 +207,13 @@ const featureLabel = (feature) => {
     return t(key, feature.replace(/_/g, ' '));
 };
 
+const addonError = computed(() => page.props.errors?.addon);
+
 const purchaseAddon = (key) => {
-    router.post(`/settings/billing/addons/${key}`, {}, { preserveScroll: true });
+    router.post(`/settings/billing/addons/${key}`, {}, {
+        preserveScroll: true,
+        onSuccess: () => openCheckoutFromFlash(page.props.flash?.razorpay_checkout),
+    });
 };
 
 const cancelAddon = (key) => {
@@ -224,7 +229,11 @@ const addonPurchaseDisabled = (addon) => {
         return false;
     }
 
-    return props.billing.razorpay_enabled && !addon.billing_ready;
+    if (!props.billing.razorpay_enabled || !props.billing.has_razorpay_subscription) {
+        return false;
+    }
+
+    return !addon.billing_ready;
 };
 
 const addonStatusLabel = (addon) => {
@@ -239,8 +248,8 @@ const addonStatusLabel = (addon) => {
     return t('settings_billing.addon_active');
 };
 
-const { formatPrice } = useCurrency(() => props.addon?.currency ?? props.billing?.currency);
-const { formatPrice: formatAddonPrice } = useCurrency(() => props.billing?.base_currency ?? props.billing?.currency);
+const { formatPrice } = useCurrency(() => props.billing?.currency);
+const { formatPrice: formatAddonPrice } = useCurrency(() => props.billing?.currency);
 
 const trialRemainingLabel = computed(() => {
     const days = props.billing.trial_days_remaining;
@@ -468,6 +477,10 @@ const formatLimit = (limit) => (limit === 'unlimited' ? t('settings_billing.unli
                 <span v-if="billing.on_trial" class="mt-1 block text-blue-700 dark:text-blue-300">
                     {{ $t('settings_billing.paid_addons_trial_description') }}
                 </span>
+            </p>
+
+            <p v-if="addonError" class="mt-4 rounded-lg border border-red-200 dark:border-red-900/60 bg-red-50 dark:bg-red-950/40 px-3 py-2 text-sm text-red-700 dark:text-red-300">
+                {{ addonError }}
             </p>
 
             <div v-if="!billing.available_addons?.length" class="mt-4 text-sm agent-text-subtle">{{ $t('settings_billing.no_addons_available') }}</div>

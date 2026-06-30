@@ -2,6 +2,7 @@
 
 namespace App\Domains\Platform\Controllers\Central;
 
+use App\Domains\Platform\Jobs\RunMarketingSeoAuditJob;
 use App\Domains\Platform\Services\MarketingSeoAuditService;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
@@ -17,14 +18,24 @@ class AdminMarketingSeoAuditController extends Controller
     public function index(): Response
     {
         return Inertia::render('Central/Admin/Seo/Audit', [
-            'report' => $this->audit->run(),
+            'report' => $this->audit->cachedReport(),
+            'auditStatus' => $this->audit->auditStatus(),
         ]);
     }
 
     public function store(): RedirectResponse
     {
-        $this->audit->run(fresh: true);
+        if ($this->audit->isRunning()) {
+            return redirect()
+                ->route('central.admin.seo.audit')
+                ->with('warning', 'SEO audit is already running.');
+        }
 
-        return redirect()->route('central.admin.seo.audit')->with('success', 'SEO audit completed.');
+        $this->audit->markRunning();
+        RunMarketingSeoAuditJob::dispatch();
+
+        return redirect()
+            ->route('central.admin.seo.audit')
+            ->with('success', 'SEO audit started. Results will appear shortly.');
     }
 }

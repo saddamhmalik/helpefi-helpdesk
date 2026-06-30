@@ -43,14 +43,14 @@ class RazorpayAddonBillingService
             ]);
         }
 
+        if (in_array($addonKey, $subscription->active_addons ?? [], true)) {
+            return $subscription;
+        }
+
         if (! $subscription->isActive() || ! $subscription->razorpay_subscription_id) {
             throw ValidationException::withMessages([
                 'addon' => 'Activate a Razorpay subscription before purchasing add-ons.',
             ]);
-        }
-
-        if (in_array($addonKey, $subscription->active_addons ?? [], true)) {
-            return $subscription;
         }
 
         $planId = AddonCatalogDefinition::razorpayPlanIdForRegion(

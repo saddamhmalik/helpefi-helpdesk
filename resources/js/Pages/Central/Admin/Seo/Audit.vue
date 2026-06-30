@@ -1,13 +1,16 @@
 <script setup>
 import { Head, Link, router } from '@inertiajs/vue3';
-import { computed } from 'vue';
+import { computed, onBeforeUnmount, watch } from 'vue';
 import AdminLayout from '../../../../Layouts/AdminLayout.vue';
 import PageHeader from '../../../../Components/PageHeader.vue';
 import PlatformStatCard from '../../../../Components/Platform/PlatformStatCard.vue';
 
 const props = defineProps({
-    report: { type: Object, required: true },
+    report: { type: Object, default: null },
+    auditStatus: { type: String, default: 'pending' },
 });
+
+let pollTimer = null;
 
 const issueLabels = {
     missing_h1: 'Missing H1',
@@ -28,9 +31,11 @@ const severityTone = {
     warning: 'amber',
 };
 
-const summary = computed(() => props.report.summary ?? {});
-const issues = computed(() => props.report.issues ?? []);
-const pages = computed(() => props.report.pages ?? []);
+const summary = computed(() => props.report?.summary ?? {});
+const issues = computed(() => props.report?.issues ?? []);
+const pages = computed(() => props.report?.pages ?? []);
+const isRunning = computed(() => props.auditStatus === 'running');
+const hasReport = computed(() => props.auditStatus === 'ready' && props.report !== null);
 
 const groupedIssues = computed(() => {
     const groups = {};
@@ -74,6 +79,29 @@ const formatDate = (value) => {
 const runAudit = () => {
     router.post('/admin/seo-audit');
 };
+
+const stopPolling = () => {
+    if (pollTimer !== null) {
+        clearInterval(pollTimer);
+        pollTimer = null;
+    }
+};
+
+const startPolling = () => {
+    stopPolling();
+
+    if (!isRunning.value) {
+        return;
+    }
+
+    pollTimer = setInterval(() => {
+        router.reload({ only: ['report', 'auditStatus'], preserveScroll: true });
+    }, 5000);
+};
+
+watch(() => props.auditStatus, () => startPolling(), { immediate: true });
+
+onBeforeUnmount(() => stopPolling());
 </script>
 
 <template>
@@ -82,7 +110,11 @@ const runAudit = () => {
         <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6">
             <PageHeader
                 title="Marketing SEO audit"
-                :description="`Scanned ${report.pages_scanned} public pages on ${report.site_url}. Last run: ${formatDate(report.generated_at)}.`"
+                :description="hasReport
+                    ? `Scanned ${report.pages_scanned} public pages on ${report.site_url}. Last run: ${formatDate(report.generated_at)}.`
+                    : isRunning
+                        ? 'Scanning public marketing pages. Results will appear automatically.'
+                        : 'Run an audit to scan public marketing pages for SEO issues.'"
             >
                 <template #actions>
                     <div class="flex items-center gap-2">
@@ -91,15 +123,24 @@ const runAudit = () => {
                         </Link>
                         <button
                             type="button"
-                            class="rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-700"
+                            class="rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+                            :disabled="isRunning"
                             @click="runAudit"
                         >
-                            Run audit
+                            {{ isRunning ? 'Audit running…' : hasReport ? 'Run audit' : 'Run first audit' }}
                         </button>
                     </div>
                 </template>
             </PageHeader>
 
+            <div
+                v-if="isRunning"
+                class="mb-8 rounded-2xl border border-blue-200 bg-blue-50 px-5 py-4 text-sm text-blue-900 dark:border-blue-900/60 dark:bg-blue-950/40 dark:text-blue-200"
+            >
+                SEO audit is running in the background. This page refreshes every few seconds until the report is ready.
+            </div>
+
+            <template v-if="hasReport">
             <section class="mb-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
                 <PlatformStatCard label="Health score" :value="`${summary.health_score ?? 0}%`" :tone="scoreTone" />
                 <PlatformStatCard label="Total issues" :value="summary.total_issues ?? 0" :tone="(summary.total_issues ?? 0) > 0 ? 'amber' : 'emerald'" />
@@ -204,6 +245,7 @@ const runAudit = () => {
                     </table>
                 </div>
             </section>
+            </template>
         </div>
     </AdminLayout>
 </template>

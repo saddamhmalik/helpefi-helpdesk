@@ -123,7 +123,7 @@ class BillingService implements FeatureEntitlementChecker
             return $this->activateAddon($addonKey);
         }
 
-        if ($this->razorpay->isEnabled()) {
+        if ($this->razorpay->isEnabled() && $subscription->razorpay_subscription_id) {
             return $this->razorpay->purchaseAddon($addonKey, $customerEmail, $customerName);
         }
 
@@ -132,7 +132,10 @@ class BillingService implements FeatureEntitlementChecker
 
     public function cancelAddon(string $addonKey): Subscription
     {
-        if ($this->razorpay->isEnabled()) {
+        $subscription = $this->subscriptions->current();
+        $hasRazorpayAddon = isset(($subscription->razorpay_addon_items ?? [])[$addonKey]);
+
+        if ($this->razorpay->isEnabled() && $hasRazorpayAddon) {
             return $this->razorpay->cancelAddon($addonKey);
         }
 

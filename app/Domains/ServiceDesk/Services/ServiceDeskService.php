@@ -72,7 +72,7 @@ class ServiceDeskService
         $addon = collect($snapshot['available_addons'] ?? [])->firstWhere('key', 'service_desk');
 
         $canPurchase = ($snapshot['on_trial'] ?? false)
-            || (($snapshot['status'] ?? null) === 'active' && ($snapshot['has_razorpay_subscription'] ?? false));
+            || ($snapshot['status'] ?? null) === 'active';
 
         return [
             'plan' => $snapshot['plan']['name'] ?? 'Current plan',

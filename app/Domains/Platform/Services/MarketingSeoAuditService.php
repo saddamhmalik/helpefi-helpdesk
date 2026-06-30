@@ -11,7 +11,9 @@ use Illuminate\Support\Str;
 
 class MarketingSeoAuditService
 {
-    private const CACHE_KEY = 'marketing:seo:audit:v1';
+    public const CACHE_KEY = 'marketing:seo:audit:v1';
+
+    public const CACHE_RUNNING_KEY = 'marketing:seo:audit:running';
 
     private const LARGE_IMAGE_BYTES = 204_800;
 
@@ -31,6 +33,47 @@ class MarketingSeoAuditService
         }
 
         return Cache::remember(self::CACHE_KEY, now()->addHours(6), fn () => $this->performAudit());
+    }
+
+    public function cachedReport(): ?array
+    {
+        $report = Cache::get(self::CACHE_KEY);
+
+        return is_array($report) ? $report : null;
+    }
+
+    public function auditStatus(): string
+    {
+        if ($this->cachedReport() !== null) {
+            return 'ready';
+        }
+
+        if ($this->isRunning()) {
+            return 'running';
+        }
+
+        return 'pending';
+    }
+
+    public function isRunning(): bool
+    {
+        return (bool) Cache::get(self::CACHE_RUNNING_KEY);
+    }
+
+    public function markRunning(): void
+    {
+        Cache::forget(self::CACHE_KEY);
+        Cache::put(self::CACHE_RUNNING_KEY, true, now()->addMinutes(15));
+    }
+
+    public function clearRunning(): void
+    {
+        Cache::forget(self::CACHE_RUNNING_KEY);
+    }
+
+    public function storeReport(array $report): void
+    {
+        Cache::put(self::CACHE_KEY, $report, now()->addHours(6));
     }
 
     public function summary(): ?array

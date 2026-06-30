@@ -151,15 +151,7 @@ class PlanEntitlementService implements FeatureEntitlementChecker
                 continue;
             }
 
-            if ($subscription->isOnTrial()) {
-                return true;
-            }
-
-            if ($this->razorpay->isEnabled()) {
-                return isset(($subscription->razorpay_addon_items ?? [])[$addonKey]);
-            }
-
-            return $subscription->isActive();
+            return $subscription->isOnTrial() || $subscription->isActive();
         }
 
         return false;

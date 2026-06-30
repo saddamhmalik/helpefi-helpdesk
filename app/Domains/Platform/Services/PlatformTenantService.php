@@ -9,6 +9,7 @@ use App\Domains\Platform\Support\PlatformAuditRecorder;
 use App\Domains\Tenancy\Services\CentralSettingsService;
 use App\Domains\Tenancy\Services\TenantByoEligibilityService;
 use App\Domains\Tenancy\Services\TenantDomainService;
+use App\Domains\Tenancy\Support\AddonCatalogDefinition;
 use App\Domains\Tenancy\Support\PlanCatalogDefinition;
 use App\Domains\Tenancy\Support\TenantInfrastructurePresenter;
 use App\Models\Tenant;
@@ -54,6 +55,8 @@ class PlatformTenantService
         $beforeInterval = $tenant->subscription?->billing_interval;
         $beforeRenewsAt = $tenant->subscription?->renews_at;
         $beforeCustomAmount = $tenant->subscription?->custom_amount;
+        $beforeAddons = $tenant->subscription?->active_addons ?? [];
+        $beforeCurrency = $tenant->subscription?->currency;
 
         if (array_key_exists('is_blocked', $data)) {
             $tenant = $this->tenants->update($tenant, [
@@ -95,6 +98,14 @@ class PlatformTenantService
                 ? $this->resolveCustomAmount($data['custom_price'])
                 : $beforeCustomAmount;
 
+            $billingCurrency = array_key_exists('billing_currency', $data)
+                ? $this->resolveBillingCurrency($data['billing_currency'])
+                : $beforeCurrency;
+
+            $activeAddons = array_key_exists('addons', $data)
+                ? $this->resolveActiveAddons($data['addons'] ?? [], $data['plan'])
+                : $beforeAddons;
+
             $subscriptionPayload = [
                 'plan' => $data['plan'],
                 'status' => Subscription::STATUS_ACTIVE,
@@ -103,11 +114,16 @@ class PlatformTenantService
                 'cancelled_at' => null,
                 'access_ends_at' => null,
                 'renews_at' => $renewsAt,
+                'active_addons' => $activeAddons,
             ];
+
+            if (array_key_exists('billing_currency', $data)) {
+                $subscriptionPayload['currency'] = $billingCurrency;
+            }
 
             if ($customPriceProvided) {
                 $subscriptionPayload['custom_amount'] = $customAmount;
-                $subscriptionPayload['currency'] = $customAmount !== null ? $this->centralSettings->currency() : null;
+                $subscriptionPayload['currency'] = $billingCurrency ?? $this->centralSettings->currency();
             }
 
             $this->tenants->updateSubscription($tenant, $subscriptionPayload);
@@ -116,8 +132,12 @@ class PlatformTenantService
             $renewalChanged = $beforeRenewsAt === null || ! $beforeRenewsAt->equalTo($renewsAt);
             $noteProvided = isset($data['note']) && $data['note'] !== '';
             $customAmountChanged = $customPriceProvided && $customAmount !== $beforeCustomAmount;
+            $addonsChanged = array_key_exists('addons', $data)
+                && $activeAddons !== $beforeAddons;
+            $currencyChanged = array_key_exists('billing_currency', $data)
+                && $billingCurrency !== $beforeCurrency;
 
-            if ($planChanged || $renewalChanged || $noteProvided || $customAmountChanged) {
+            if ($planChanged || $renewalChanged || $noteProvided || $customAmountChanged || $addonsChanged || $currencyChanged) {
                 $this->audit->record(
                     'platform.tenant.plan_changed',
                     $tenant,
@@ -127,6 +147,8 @@ class PlatformTenantService
                         'interval' => $interval,
                         'renews_at' => $renewsAt->toIso8601String(),
                         'custom_amount' => $customPriceProvided ? $customAmount : null,
+                        'currency' => array_key_exists('billing_currency', $data) ? $billingCurrency : null,
+                        'addons' => array_key_exists('addons', $data) ? $activeAddons : null,
                         'note' => $data['note'] ?? null,
                     ], static fn ($value) => $value !== null),
                     tenantId: $tenant->id,
@@ -182,6 +204,45 @@ class PlatformTenantService
         return $interval === 'year' ? now()->addYear() : now()->addMonth();
     }
 
+    private function resolveBillingCurrency(mixed $value): ?string
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+
+        $normalized = strtoupper((string) $value);
+        $base = $this->centralSettings->currency();
+
+        if ($normalized === $base) {
+            return $base;
+        }
+
+        if ($this->centralSettings->indiaPricingEnabled()
+            && $normalized === $this->centralSettings->indiaCurrency()) {
+            return $normalized;
+        }
+
+        return null;
+    }
+
+    private function resolveActiveAddons(array $addonKeys, string $planSlug): array
+    {
+        $plan = $this->plans->all()[$planSlug] ?? [];
+        $planFeatures = $plan['features'] ?? [];
+        $catalog = $this->centralSettings->addonCatalog();
+
+        return collect($addonKeys)
+            ->filter(fn (string $key) => isset($catalog[$key]) && ($catalog[$key]['enabled'] ?? true))
+            ->reject(function (string $key) use ($planFeatures, $catalog) {
+                $feature = $catalog[$key]['feature'] ?? null;
+
+                return $feature && in_array($feature, $planFeatures, true);
+            })
+            ->unique()
+            ->values()
+            ->all();
+    }
+
     private function present(Tenant $tenant): array
     {
         $subscription = $tenant->subscription;
@@ -193,6 +254,10 @@ class PlatformTenantService
         $planSlug = $subscription?->plan;
         $plan = $planSlug ? ($this->plans->all()[$planSlug] ?? null) : null;
         $interval = $subscription?->billing_interval ?? 'month';
+        $india = $subscription?->currency
+            && strtoupper((string) $subscription->currency) === $this->centralSettings->indiaCurrency();
+        $activeAddonKeys = $subscription?->active_addons ?? [];
+        $addonCatalog = $this->centralSettings->addonCatalog();
 
         return [
             'id' => $tenant->id,
@@ -214,9 +279,15 @@ class PlatformTenantService
             'subscription' => $subscription ? [
                 'plan' => $planSlug,
                 'plan_name' => $plan['name'] ?? ($planSlug ? ucfirst($planSlug) : null),
-                'plan_price' => $plan ? PlanCatalogDefinition::priceForInterval($plan, $interval) : null,
+                'plan_price' => $plan ? PlanCatalogDefinition::priceForInterval($plan, $interval, $india) : null,
                 'custom_amount' => $subscription->custom_amount,
+                'currency' => $subscription->currency,
                 'billing_interval' => $subscription->billing_interval ?? 'month',
+                'active_addons' => $activeAddonKeys,
+                'addon_names' => collect($activeAddonKeys)
+                    ->map(fn (string $key) => $addonCatalog[$key]['name'] ?? $key)
+                    ->values()
+                    ->all(),
                 'status' => $subscription->status,
                 'on_trial' => $subscription->isOnTrial(),
                 'trial_expired' => $subscription->isTrialExpired(),

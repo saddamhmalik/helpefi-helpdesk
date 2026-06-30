@@ -1,8 +1,10 @@
 <script setup>
+import { computed, onMounted, watch } from 'vue';
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import AgentLayout from '../../Layouts/AgentLayout.vue';
 import PageHeader from '../../Components/PageHeader.vue';
 import { useCurrency } from '../../composables/useCurrency.js';
+import { useRazorpayCheckout, checkoutFlowFinishedInUrl } from '../../composables/useRazorpayCheckout.js';
 import { useI18n } from 'vue-i18n';
 
 const props = defineProps({
@@ -16,9 +18,39 @@ const props = defineProps({
 const page = usePage();
 const { t } = useI18n();
 const { formatPrice } = useCurrency(() => props.addon?.currency ?? page.props.billing?.currency);
+const { open: openRazorpayCheckout } = useRazorpayCheckout();
+
+const addonError = computed(() => page.props.errors?.addon);
+
+const openCheckoutFromFlash = (session) => {
+    if (checkoutFlowFinishedInUrl()) {
+        return;
+    }
+
+    if (session?.subscription_id) {
+        openRazorpayCheckout(session, {
+            redirectOnSuccess: session.redirect_on_success ?? '/settings/billing?checkout=success&section=addons',
+            redirectOnCancel: session.redirect_on_cancel ?? '/settings/billing?checkout=cancelled&section=addons',
+        });
+    }
+};
+
+onMounted(() => openCheckoutFromFlash(page.props.flash?.razorpay_checkout));
+
+watch(
+    () => page.props.flash?.razorpay_checkout,
+    (session) => openCheckoutFromFlash(session),
+);
 
 const purchaseAddon = () => {
-    router.post('/settings/billing/addons/service_desk', {}, { preserveScroll: true });
+    router.post('/settings/billing/addons/service_desk', {}, {
+        preserveScroll: true,
+        onSuccess: () => {
+            if (!page.props.flash?.razorpay_checkout) {
+                router.visit('/service-desk');
+            }
+        },
+    });
 };
 </script>
 
@@ -43,6 +75,10 @@ const purchaseAddon = () => {
 
             <p v-else-if="addon?.price_monthly" class="mt-4 text-lg font-semibold text-amber-950 dark:text-amber-100">
                 {{ formatPrice(addon.price_monthly) }}/month
+            </p>
+
+            <p v-if="addonError" class="mt-4 rounded-lg border border-red-200 dark:border-red-900/60 bg-red-50 dark:bg-red-950/40 px-4 py-3 text-sm text-red-700 dark:text-red-300">
+                {{ addonError }}
             </p>
 
             <p v-if="!canPurchase && !onTrial" class="mt-4 rounded-lg border border-amber-300 dark:border-amber-800 bg-white/70 dark:bg-slate-900/60 px-4 py-3 text-sm text-amber-900 dark:text-amber-200">

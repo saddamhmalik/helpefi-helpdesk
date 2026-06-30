@@ -68,6 +68,39 @@ class PlatformAdminTest extends TestCase
         ], 'central');
     }
 
+    public function test_platform_admin_can_assign_plan_with_addons_and_inr_billing(): void
+    {
+        \App\Domains\Tenancy\Models\CentralSetting::query()->update([
+            'currency' => 'USD',
+            'india_pricing' => true,
+        ]);
+
+        $tenant = app(\App\Domains\Tenancy\Services\TenantProvisioningService::class)->provision(
+            organizationName: 'Addon Test Co',
+            slug: 'addon-test',
+            adminName: 'Addon Admin',
+            adminEmail: 'addon@test.com',
+            adminPassword: 'password123',
+        );
+
+        $this->adminLogin();
+
+        $this->put('http://'.config('tenancy.central_app_domain').'/admin/tenants/'.$tenant->id, [
+            'plan' => 'enterprise',
+            'billing_interval' => 'month',
+            'billing_currency' => 'INR',
+            'addons' => ['service_desk'],
+            'custom_price' => 14999,
+        ])->assertRedirect();
+
+        $subscription = Subscription::query()->where('tenant_id', $tenant->id)->first();
+
+        $this->assertSame('enterprise', $subscription->plan);
+        $this->assertSame('INR', $subscription->currency);
+        $this->assertSame(14999, $subscription->custom_amount);
+        $this->assertSame(['service_desk'], $subscription->active_addons);
+    }
+
     public function test_blocked_tenant_redirects_to_blocked_page(): void
     {
         $provisioning = app(\App\Domains\Tenancy\Services\TenantProvisioningService::class);

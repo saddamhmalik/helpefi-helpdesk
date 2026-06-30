@@ -8,6 +8,7 @@ import PageHeader from '../../../../Components/PageHeader.vue';
 import PaginationLinks from '../../../../Components/PaginationLinks.vue';
 import PlatformStatCard from '../../../../Components/Platform/PlatformStatCard.vue';
 import { adminInputClass, usePlatformAdmin } from '../../../../composables/usePlatformAdmin.js';
+import { useCurrency } from '../../../../composables/useCurrency.js';
 import { useI18n } from 'vue-i18n';
 import { useDateTime } from '../../../../composables/useDateTime.js';
 
@@ -16,7 +17,10 @@ const props = defineProps({
     stats: Object,
     filters: Object,
     plans: { type: Array, default: () => [] },
+    addons: { type: Array, default: () => [] },
     currency: { type: Object, default: () => ({ symbol: '$', code: 'USD' }) },
+    india_pricing: { type: Boolean, default: false },
+    india_currency: { type: Object, default: () => ({ symbol: '₹', code: 'INR' }) },
     razorpay_enabled: Boolean,
 });
 
@@ -27,11 +31,70 @@ const { t } = useI18n();
 const { can } = usePlatformAdmin();
 const canManage = can('tenants.manage');
 
+const billingCurrencyMeta = computed(() => (
+    billingCurrency.value === props.india_currency.code
+        ? props.india_currency
+        : props.currency
+));
+
+const { formatPrice } = useCurrency(() => billingCurrencyMeta.value);
+
+const formatTenantPrice = (tenant) => {
+    const subscription = tenant.subscription;
+
+    if (!subscription) {
+        return props.currency;
+    }
+
+    return subscription.currency === props.india_currency.code
+        ? props.india_currency
+        : props.currency;
+};
+
+const tenantPriceLabel = (tenant) => {
+    const subscription = tenant.subscription;
+
+    if (!subscription || subscription.on_trial) {
+        return null;
+    }
+
+    const amount = subscription.custom_amount ?? subscription.plan_price;
+    const meta = formatTenantPrice(tenant);
+    const suffix = subscription.billing_interval === 'year' ? '/yr' : '/mo';
+
+    return `${meta.symbol}${amount}${suffix}`;
+};
+
+const usesIndiaBilling = computed(() => billingCurrency.value === props.india_currency.code);
+
+const addonIncludedInPlan = (addon) => (
+    selectedPlanDetails.value?.features?.includes(addon.feature) ?? false
+);
+
+const addonPrice = (addon) => (
+    usesIndiaBilling.value
+        ? (addon.price_monthly_india ?? 0)
+        : (addon.price_monthly ?? 0)
+);
+
+const selectableAddons = computed(() => props.addons.filter((addon) => !addonIncludedInPlan(addon)));
+
+const toggleAddon = (addonKey) => {
+    if (selectedAddons.value.includes(addonKey)) {
+        selectedAddons.value = selectedAddons.value.filter((key) => key !== addonKey);
+        return;
+    }
+
+    selectedAddons.value = [...selectedAddons.value, addonKey];
+};
+
 const search = ref(props.filters.q ?? '');
 const status = ref(props.filters.status ?? 'all');
 const manageTenant = ref(null);
 const selectedPlan = ref('starter');
 const selectedInterval = ref('month');
+const billingCurrency = ref(props.currency.code);
+const selectedAddons = ref([]);
 const customRenewal = ref('');
 const customPrice = ref('');
 const planNote = ref('');
@@ -145,10 +208,18 @@ const openManage = (tenant) => {
     manageTenant.value = tenant;
     selectedPlan.value = tenant.subscription?.plan ?? props.plans[0]?.slug ?? 'starter';
     selectedInterval.value = tenant.subscription?.billing_interval ?? 'month';
+    billingCurrency.value = tenant.subscription?.currency ?? props.currency.code;
+    selectedAddons.value = [...(tenant.subscription?.active_addons ?? [])];
     customRenewal.value = '';
     customPrice.value = tenant.subscription?.custom_amount ?? '';
     planNote.value = '';
 };
+
+watch(selectedPlan, () => {
+    selectedAddons.value = selectedAddons.value.filter(
+        (key) => !addonIncludedInPlan(props.addons.find((addon) => addon.key === key) ?? { feature: null }),
+    );
+});
 
 const selectedPlanDetails = computed(
     () => props.plans.find((plan) => plan.slug === selectedPlan.value) ?? null,
@@ -159,6 +230,12 @@ const selectedPlanPrice = computed(() => {
 
     if (!plan) {
         return null;
+    }
+
+    if (usesIndiaBilling.value) {
+        return selectedInterval.value === 'year'
+            ? plan.price_yearly_india ?? 0
+            : plan.price_monthly_india ?? 0;
     }
 
     return selectedInterval.value === 'year'
@@ -179,8 +256,10 @@ const planChanged = computed(() => {
 
     return selectedPlan.value !== subscription.plan
         || selectedInterval.value !== (subscription.billing_interval ?? 'month')
+        || billingCurrency.value !== (subscription.currency ?? props.currency.code)
         || customRenewal.value !== ''
         || String(customPrice.value) !== String(subscription.custom_amount ?? '')
+        || JSON.stringify([...selectedAddons.value].sort()) !== JSON.stringify([...(subscription.active_addons ?? [])].sort())
         || planNote.value.trim() !== '';
 });
 
@@ -235,6 +314,8 @@ const savePlan = () => {
     router.put(`/admin/tenants/${manageTenant.value.id}`, {
         plan: selectedPlan.value,
         billing_interval: selectedInterval.value,
+        billing_currency: billingCurrency.value,
+        addons: selectedAddons.value,
         renews_at: customRenewal.value || null,
         custom_price: customPrice.value === '' ? null : Number(customPrice.value),
         note: planNote.value.trim() || null,
@@ -418,8 +499,11 @@ const resendLifecycleEmail = (tenant, slug) => {
                                 <td class="px-5 py-4">
                                     <p class="font-medium text-slate-900 dark:text-slate-100">{{ planLabel(tenant) }}</p>
                                     <p v-if="(tenant.subscription?.custom_amount != null || tenant.subscription?.plan_price != null) && !tenant.subscription?.on_trial" class="text-xs text-slate-500 dark:text-slate-400">
-                                        {{ currency.symbol }}{{ tenant.subscription.custom_amount ?? tenant.subscription.plan_price }}/{{ tenant.subscription?.billing_interval === 'year' ? $t('central.year_short') : $t('central.month_short') }}
+                                        {{ tenantPriceLabel(tenant) }}
                                         <span v-if="tenant.subscription?.custom_amount != null" class="ml-1 font-medium text-blue-600 dark:text-blue-400">({{ $t('central.custom_pricing_price') }})</span>
+                                    </p>
+                                    <p v-if="tenant.subscription?.addon_names?.length && !tenant.subscription?.on_trial" class="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                                        + {{ tenant.subscription.addon_names.join(', ') }}
                                     </p>
                                     <p v-if="razorpay_enabled && tenant.subscription?.has_razorpay" class="mt-1 text-[10px] font-semibold uppercase tracking-wide text-violet-600">
                                         {{ $t('central.stripe_billing') }}
@@ -531,6 +615,28 @@ const resendLifecycleEmail = (tenant, slug) => {
                         </select>
                     </div>
 
+                    <div v-if="india_pricing">
+                        <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('central.billing_currency') }}</label>
+                        <div class="grid grid-cols-2 gap-2">
+                            <button
+                                type="button"
+                                class="rounded-xl px-3 py-2 text-sm font-medium ring-1 transition"
+                                :class="billingCurrency === currency.code ? 'bg-violet-600 text-white ring-violet-600' : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 ring-slate-200 dark:ring-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800'"
+                                @click="billingCurrency = currency.code"
+                            >
+                                {{ currency.code }}
+                            </button>
+                            <button
+                                type="button"
+                                class="rounded-xl px-3 py-2 text-sm font-medium ring-1 transition"
+                                :class="billingCurrency === india_currency.code ? 'bg-violet-600 text-white ring-violet-600' : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 ring-slate-200 dark:ring-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800'"
+                                @click="billingCurrency = india_currency.code"
+                            >
+                                {{ india_currency.code }}
+                            </button>
+                        </div>
+                    </div>
+
                     <div>
                         <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('central.billing_interval') }}</label>
                         <div class="grid grid-cols-2 gap-2">
@@ -556,7 +662,7 @@ const resendLifecycleEmail = (tenant, slug) => {
                     <div>
                         <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">{{ $t('central.negotiated_price') }}</label>
                         <div class="flex overflow-hidden rounded-xl border border-slate-200 dark:border-slate-800 focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/20">
-                            <span class="flex items-center bg-slate-50 dark:bg-slate-950 px-3 text-sm text-slate-500 dark:text-slate-400">{{ currency.symbol }}</span>
+                            <span class="flex items-center bg-slate-50 dark:bg-slate-950 px-3 text-sm text-slate-500 dark:text-slate-400">{{ billingCurrencyMeta.symbol }}</span>
                             <input v-model.number="customPrice" type="number" min="0" max="9999999" :placeholder="selectedPlanPrice !== null ? String(selectedPlanPrice) : ''" class="min-w-0 flex-1 border-0 bg-transparent px-3 py-2.5 text-sm focus:outline-none" />
                         </div>
                         <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">
@@ -572,8 +678,37 @@ const resendLifecycleEmail = (tenant, slug) => {
                             {{ $t('central.new_price') }}<span v-if="hasCustomPrice" class="ml-1 text-xs font-medium text-blue-600 dark:text-blue-400">({{ $t('central.custom_pricing_price') }})</span>
                         </span>
                         <span class="text-base font-semibold text-slate-900 dark:text-slate-100">
-                            {{ currency.symbol }}{{ effectivePrice }}<span class="text-sm font-normal text-slate-500 dark:text-slate-400">/{{ selectedInterval === 'year' ? $t('central.year_short') : $t('central.month_short') }}</span>
+                            {{ formatPrice(effectivePrice, selectedInterval === 'year' ? '/yr' : '/mo') }}
                         </span>
+                    </div>
+
+                    <div v-if="selectableAddons.length">
+                        <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Add-ons</label>
+                        <p class="mb-3 text-xs text-slate-500 dark:text-slate-400">
+                            Include paid add-ons with this subscription. Add-ons already bundled in the plan are hidden.
+                        </p>
+                        <div class="space-y-2">
+                            <label
+                                v-for="addon in selectableAddons"
+                                :key="addon.key"
+                                class="flex cursor-pointer items-start gap-3 rounded-xl border border-slate-200 dark:border-slate-800 px-4 py-3 transition hover:border-slate-300 dark:hover:border-slate-600"
+                                :class="selectedAddons.includes(addon.key) ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/40' : ''"
+                            >
+                                <input
+                                    type="checkbox"
+                                    class="mt-1 rounded border-slate-300 dark:border-slate-700"
+                                    :checked="selectedAddons.includes(addon.key)"
+                                    @change="toggleAddon(addon.key)"
+                                />
+                                <div class="min-w-0 flex-1">
+                                    <div class="flex items-baseline justify-between gap-3">
+                                        <span class="font-medium text-slate-900 dark:text-slate-100">{{ addon.name }}</span>
+                                        <span class="text-sm text-slate-500 dark:text-slate-400">{{ formatPrice(addonPrice(addon)) }}/mo</span>
+                                    </div>
+                                    <p v-if="addon.description" class="mt-1 text-xs text-slate-500 dark:text-slate-400">{{ addon.description }}</p>
+                                </div>
+                            </label>
+                        </div>
                     </div>
 
                     <div>
