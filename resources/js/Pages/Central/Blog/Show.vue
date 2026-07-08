@@ -6,6 +6,8 @@ import { formatMarketingTemplate } from '../../../composables/useMarketingEnglis
 import MarketingImage from '../../../Components/MarketingImage.vue';
 import MarkdownContent from '../../../Components/MarkdownContent.vue';
 import CentralBreadcrumbs from '../../../Components/Central/CentralBreadcrumbs.vue';
+import CtaSection from '../../../Components/Central/CtaSection.vue';
+import RelatedArticles from '../../../Components/Central/RelatedArticles.vue';
 
 const props = defineProps({
     brand: { type: String, default: 'helpefi' },
@@ -44,7 +46,7 @@ const setToc = (items) => {
                     <p class="mt-4 text-lg text-slate-300">{{ post.excerpt }}</p>
 
                     <div v-if="post.featured_image" class="mt-8 overflow-hidden rounded-2xl border border-white/10">
-                        <MarketingImage :src="post.featured_image" :alt="post.title" :widths="[640, 960, 1280]" sizes="(max-width: 768px) 100vw, 720px" priority />
+                        <MarketingImage :src="post.featured_image" :alt="post.title" :widths="[640, 960, 1280]" sizes="(max-width: 768px) 100vw, 720px" priority width="960" height="540" />
                     </div>
 
                     <div v-if="(post.categories?.length ?? 0) + (post.tags?.length ?? 0) > 0" class="mt-6 flex flex-wrap items-center gap-2">
@@ -96,63 +98,41 @@ const setToc = (items) => {
                     </aside>
                 </div>
 
-                <section v-if="internalLinks.length" class="mt-12 rounded-2xl border border-blue-200 bg-blue-50 p-6 dark:border-blue-900/50 dark:bg-blue-950/30">
-                    <h2 class="text-lg font-semibold text-slate-900 dark:text-slate-100">{{ blogText('continue_exploring') }}</h2>
-                    <div class="mt-4 flex flex-wrap gap-3">
-                        <Link
-                            v-for="link in internalLinks"
-                            :key="link.path"
-                            :href="link.path"
-                            class="rounded-full border border-blue-200 bg-white px-4 py-2 text-sm font-medium text-blue-800 transition hover:border-blue-400 dark:border-blue-800 dark:bg-slate-900 dark:text-blue-200"
-                        >
-                            {{ link.label }}
-                        </Link>
-                    </div>
-                </section>
+                <RelatedArticles
+                    :items="internalLinks"
+                    :title="blogText('continue_exploring')"
+                    variant="links"
+                    accent="blue"
+                />
 
-                <section v-if="featurePages.length" class="mt-12 rounded-2xl border border-slate-200 bg-slate-50 p-6 dark:border-slate-800 dark:bg-slate-950">
-                    <h2 class="text-lg font-semibold text-slate-900 dark:text-slate-100">Related product features</h2>
-                    <div class="mt-4 flex flex-wrap gap-3">
-                        <Link
-                            v-for="feature in featurePages.slice(0, 4)"
-                            :key="feature.slug"
-                            :href="feature.path"
-                            class="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-blue-300 hover:text-blue-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
-                        >
-                            {{ feature.nav_label }}
-                        </Link>
-                    </div>
-                </section>
+                <RelatedArticles
+                    v-if="featurePages.length"
+                    :items="featurePages.slice(0, 4)"
+                    title="Related product features"
+                    variant="links"
+                />
 
-                <section v-if="relatedPosts.length" class="mt-12">
-                    <h2 class="text-lg font-semibold text-slate-900 dark:text-slate-100">Related articles</h2>
-                    <ul class="mt-4 space-y-3">
-                        <li v-for="related in relatedPosts" :key="related.slug">
-                            <Link :href="related.path" class="font-medium text-blue-600 hover:text-blue-700">{{ related.title }}</Link>
-                        </li>
-                    </ul>
-                </section>
+                <RelatedArticles
+                    v-if="relatedPosts.length"
+                    :items="relatedPosts"
+                    title="Related articles"
+                    variant="posts"
+                />
 
-                <section v-if="recommendedPosts.length" class="mt-12">
-                    <h2 class="text-lg font-semibold text-slate-900 dark:text-slate-100">Recommended articles</h2>
-                    <ul class="mt-4 space-y-3">
-                        <li v-for="recommended in recommendedPosts" :key="recommended.slug">
-                            <Link :href="recommended.path" class="font-medium text-blue-600 hover:text-blue-700">
-                                {{ recommended.title }}
-                            </Link>
-                            <div class="mt-1 text-sm text-slate-600 dark:text-slate-300">{{ recommended.excerpt }}</div>
-                        </li>
-                    </ul>
-                </section>
+                <RelatedArticles
+                    v-if="recommendedPosts.length"
+                    :items="recommendedPosts"
+                    title="Recommended articles"
+                    variant="posts"
+                />
             </div>
         </article>
 
-        <section class="bg-slate-950 py-16">
-            <div class="mx-auto max-w-4xl px-4 text-center">
-                <h2 class="text-3xl font-bold text-white">{{ blogText('cta_title') }}</h2>
-                <p class="mt-4 text-lg text-slate-400">{{ blogText('cta_body') }}</p>
-                <Link href="/register" class="mt-8 inline-flex rounded-2xl bg-white px-10 py-4 text-sm font-bold text-slate-900">Start {{ trialDays }}-day free trial</Link>
-            </div>
-        </section>
+        <CtaSection
+            :title="blogText('cta_title')"
+            :body="blogText('cta_body')"
+            :primary-label="`Start ${trialDays}-day free trial`"
+            primary-href="/register"
+        />
     </CentralLayout>
 </template>

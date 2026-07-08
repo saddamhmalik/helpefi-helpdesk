@@ -1,32 +1,7 @@
 <?php
 
 return array (
-  'pricing' => 
-  array (
-    'nav_label' => 'Pricing',
-    'hero_title' => 'Simple, transparent helpdesk pricing',
-    'hero_subtitle' => 'Choose a plan that fits your team. Every plan includes a {days}-day free trial with full platform access — no credit card required.',
-    'sections' => 
-    array (
-      0 => 
-      array (
-        'title' => 'Plans for every stage',
-        'body' => 'From Starter for small teams to Enterprise with SSO, custom domains, advanced ITSM, and optional data residency — scale without switching platforms.',
-      ),
-      1 => 
-      array (
-        'title' => 'Add-ons when you need more',
-        'body' => 'Enable Service Desk ITSM, AI Copilot, Integrations, or data residency (BYO database and storage) as modular add-ons on any paid plan.',
-      ),
-      2 => 
-      array (
-        'title' => 'Data residency for regulated teams',
-        'body' => 'Bring your own MySQL and object storage so workspace data at rest stays in your AWS or Cloudflare account. We migrate existing data, test connections before save, and document what control-plane metadata remains on helpefi. See the Data Residency feature page for compliance details.',
-      ),
-    ),
-    'cta_title' => 'Start your free trial',
-    'cta_body' => 'Create your workspace in minutes and explore every feature before you commit.',
-  ),
+  'pricing' => require __DIR__.'/static_pages/pricing.php',
   'integrations' =>
   array (
     'nav_label' => 'Integrations',
@@ -83,53 +58,240 @@ return array (
   array (
     'nav_label' => 'Resources',
     'hero_title' => 'Resources',
-    'hero_subtitle' => 'Guides, best practices, and product updates to help you build a faster support and IT operation.',
+    'hero_subtitle' => 'Guides, comparisons, migration playbooks, and product documentation to help you evaluate, deploy, and scale Helpefi.',
+    'intro' => 'Whether you are evaluating Helpefi against your current helpdesk, planning a migration, or optimizing an existing workspace, these resources will help you move faster. Browse comparison guides, feature deep dives, migration playbooks, and blog posts — all curated for support and IT leaders who want practical answers without sales fluff.',
     'sections' =>
     array (
       0 =>
       array (
-        'title' => 'Product guides',
-        'body' => 'Learn how to set up inboxes, SLAs, automations, knowledge base content, and the customer portal.',
+        'title' => 'Competitor comparisons',
+        'body' => 'Side-by-side comparisons with the most popular helpdesk and ITSM platforms. Each guide covers pricing, AI capabilities, automation, knowledge base, live chat, SLA management, service desk features, and who each platform is best for.',
+        'items' =>
+        array (
+          0 => 'Helpefi vs Zendesk — Suite pricing, Advanced AI seats, and modular alternative',
+          1 => 'Helpefi vs Freshdesk — Feature-rich alternative with transparent pricing',
+          2 => 'Helpefi vs Intercom — Helpdesk-first alternative without per-resolution AI fees',
+          3 => 'Helpefi vs Help Scout — Full helpdesk beyond shared inbox',
+          4 => 'Helpefi vs Front — Graduate shared inbox to full ticket ops',
+          5 => 'Helpefi vs Freshservice — Unified ITSM and customer support',
+          6 => 'Helpefi vs Zoho Desk — Modern alternative outside the Zoho stack',
+          7 => 'Helpefi vs Jira Service Management — Lean ITSM for mid-market IT teams',
+        ),
       ),
       1 =>
       array (
-        'title' => 'Migration and rollout',
-        'body' => 'Plan your move from legacy helpdesk tools and get a clear rollout checklist for your team.',
+        'title' => 'Feature guides',
+        'body' => 'Deep dives into Helpefi features — how they work, when to use them, and how they compare to similar capabilities in other platforms.',
+        'items' =>
+        array (
+          0 => 'AI Agent — Copilot, semantic search, deflection, and flat modular pricing',
+          1 => 'Shared Inbox — Omnichannel inbox with collision detection and assignment',
+          2 => 'SLA Management — Policies, business hours, escalations, and breach alerts',
+          3 => 'Knowledge Base — Self-service portal with AI-powered deflection',
+          4 => 'Live Chat — Real-time chat with routing and transcript continuity',
+          5 => 'Email Ticketing — Connect Gmail, Microsoft 365, or any forwarding address',
+          6 => 'Omnichannel Support — Unify email, chat, SMS, and portal in one queue',
+          7 => 'Automation — Triggers, macros, workflows, and SLA-driven actions',
+          8 => 'Analytics — Dashboards, reports, and exportable metrics',
+          9 => 'Customer Portal — Branded self-service portal with ticket tracking',
+        ),
       ),
       2 =>
       array (
-        'title' => 'Security and compliance',
-        'body' => 'Review security practices and policies, including optional data residency with BYO database and storage.',
+        'title' => 'Migration playbooks',
+        'body' => 'Step-by-step guides for moving your support operation from another platform to Helpefi. Each playbook covers export, import, automation remapping, parallel run, and cutover.',
+        'items' =>
+        array (
+          0 => 'Migrate from Zendesk — Export tickets, rebuild SLAs, and cut over email',
+          1 => 'Migrate from Freshdesk — Import contacts, remap automations, and parallel-run',
+          2 => 'Migrate from Intercom — Move conversations, articles, and workflows',
+          3 => 'Migrate from Help Scout — Preserve Docs articles and mailbox history',
+          4 => 'Migrate from Freshservice — ITSM and customer support in one platform',
+        ),
+      ),
+      3 =>
+      array (
+        'title' => 'Latest from the blog',
+        'body' => 'Product updates, industry analysis, and practical guides for support and IT operations teams.',
+        'items' =>
+        array (
+          0 => 'Zendesk pricing alternatives in 2026 — Suite cost analysis and alternatives',
+          1 => 'Intercom Fin pricing explained — What you pay per resolution and how Helpefi compares',
+          2 => 'Freshdesk vs Freshservice — Do you need both for support and ITSM?',
+          3 => 'AI helpdesk software guide — How AI is changing support operations',
+          4 => 'Helpdesk vs ITSM — When to combine customer and employee support',
+        ),
       ),
     ),
-    'cta_title' => 'Read the blog',
-    'cta_body' => 'Browse our latest posts on support operations, ITSM, and product updates.',
+    'faq' =>
+    array (
+      0 =>
+      array (
+        'q' => 'Is Helpefi suitable for both customer support and IT service desk?',
+        'a' => 'Yes. Helpefi is built as a unified platform for customer support and ITSM. Optional Service Desk add-on adds incident, change, problem, and service catalog management — so you can start with one queue and expand without migrating to a different product.',
+      ),
+      1 =>
+      array (
+        'q' => 'Which platforms can I migrate to Helpefi?',
+        'a' => 'Helpefi provides dedicated migration playbooks for Zendesk, Freshdesk, Intercom, Help Scout, and Freshservice. Each guide covers ticket export, field mapping, automation remapping, parallel run, and DNS cutover.',
+      ),
+      2 =>
+      array (
+        'q' => 'Does Helpefi offer a free trial?',
+        'a' => 'Yes. Start a 14-day free trial with full platform access — no credit card required. During the trial you can connect email, invite agents, configure SLAs and automations, and evaluate AI Copilot with your own knowledge base content.',
+      ),
+      3 =>
+      array (
+        'q' => 'How does Helpefi AI pricing compare to Zendesk or Intercom?',
+        'a' => 'Helpefi AI Copilot is available as a flat monthly add-on or included on Professional and Enterprise plans. Unlike Zendesk Advanced AI (per-agent) or Intercom Fin (per-resolution), Helpefi pricing stays forecastable as your team grows.',
+      ),
+      4 =>
+      array (
+        'q' => 'Can I run Helpefi alongside my existing helpdesk during migration?',
+        'a' => 'Yes. Set up a parallel workspace, forward a subset of email, and keep your legacy system read-only while you validate SLAs, automations, and agent workflows. Most teams complete the parallel run within two weeks.',
+      ),
+    ),
+    'related_links' =>
+    array (
+      0 =>
+      array (
+        'href' => '/compare',
+        'label' => 'All comparisons',
+      ),
+      1 =>
+      array (
+        'href' => '/features',
+        'label' => 'All features',
+      ),
+      2 =>
+      array (
+        'href' => '/migrate',
+        'label' => 'Migration guides',
+      ),
+      3 =>
+      array (
+        'href' => '/blog',
+        'label' => 'Blog',
+      ),
+      4 =>
+      array (
+        'href' => '/pricing',
+        'label' => 'Pricing',
+      ),
+      5 =>
+      array (
+        'href' => '/register',
+        'label' => 'Start free trial',
+      ),
+    ),
+    'cta_title' => 'Start your free trial',
+    'cta_body' => 'Explore Helpefi with full platform access — no credit card required.',
   ),
   'support' =>
   array (
     'nav_label' => 'Support',
     'hero_title' => 'Support',
-    'hero_subtitle' => 'Need help with your workspace? Sign in for product support, or contact us for billing and enterprise questions.',
+    'hero_subtitle' => 'Get help with Helpefi — product support, billing, enterprise setup, and answers to common questions.',
+    'intro' => 'We aim to make self-service fast and personal support responsive. Browse common questions below, sign in to your workspace for product support, or email us directly for billing, enterprise, and partnership inquiries.',
     'sections' =>
     array (
       0 =>
       array (
-        'title' => 'Product support',
-        'body' => 'Sign in to your workspace to contact support and view ticket history. If you are in a trial, you can still reach us from the contact page.',
+        'title' => 'Self-service resources',
+        'body' => 'Find answers quickly without opening a ticket.',
+        'items' =>
+        array (
+          0 => 'Browse competitor comparisons to evaluate Helpefi against your current platform',
+          1 => 'Read feature guides for AI Agent, Shared Inbox, SLA Management, and more',
+          2 => 'Follow migration playbooks for moving from Zendesk, Freshdesk, Intercom, and others',
+          3 => 'Check pricing and plans for transparent cost estimates',
+          4 => 'Visit the contact page to send us a direct message',
+        ),
       ),
       1 =>
       array (
-        'title' => 'Billing and account',
-        'body' => 'For billing or account questions, email {contactEmail} from your registered address.',
+        'title' => 'Product support',
+        'body' => 'Sign in to your workspace to contact product support and view your ticket history. If you are in a trial, you can still reach us from the contact page — we typically respond within one business day.',
       ),
       2 =>
       array (
-        'title' => 'Enterprise',
-        'body' => 'Need SSO, custom domain, data residency, or dedicated onboarding? Email {contactEmail} with topic Enterprise.',
+        'title' => 'Billing and account',
+        'body' => 'For billing or account questions, email {contactEmail} from your registered address. Include your workspace name and billing details so we can help faster. Topics include plan changes, invoices, refunds, and subscription management.',
+      ),
+      3 =>
+      array (
+        'title' => 'Enterprise and data residency',
+        'body' => 'Need SSO, custom domain, data residency (BYO database and storage), dedicated onboarding, or custom contracts? Email {contactEmail} with topic Enterprise and we will walk through add-ons, migration, and compliance documentation.',
+      ),
+      4 =>
+      array (
+        'title' => 'Security and compliance',
+        'body' => 'Helpefi publishes clear documentation on security practices, tenant isolation, encryption, audit logging, and data processing. Review the Privacy Policy and Terms of Service for legal terms. For security reports or vulnerability disclosures, email {contactEmail} with topic Security.',
       ),
     ),
-    'cta_title' => 'Contact us',
-    'cta_body' => 'Send us a message and we’ll route it to the right team.',
+    'faq' =>
+    array (
+      0 =>
+      array (
+        'q' => 'How do I contact Helpefi product support?',
+        'a' => 'Sign in to your workspace to contact product support and view your ticket history. Trial users can also reach us from the contact page. We typically respond within one business day.',
+      ),
+      1 =>
+      array (
+        'q' => 'How do I change my subscription plan?',
+        'a' => 'Plan changes can be managed from your workspace billing settings. For assistance or custom plans, email hello@helpefi.com from your registered address.',
+      ),
+      2 =>
+      array (
+        'q' => 'Can I get a refund?',
+        'a' => 'Refund eligibility depends on your billing cycle and plan. Contact hello@helpefi.com with your workspace details and we will review your request.',
+      ),
+      3 =>
+      array (
+        'q' => 'How do I set up SSO or custom domain?',
+        'a' => 'SSO (SAML/OIDC) and custom domains are available on Professional and Enterprise plans. Email hello@helpefi.com with topic Enterprise and we will guide you through setup.',
+      ),
+      4 =>
+      array (
+        'q' => 'Where is my data stored?',
+        'a' => 'Helpefi workspaces are hosted in cloud infrastructure. Optional data residency is available with BYO database (AWS RDS/Aurora) and object storage (S3/R2) on Enterprise plans.',
+      ),
+      5 =>
+      array (
+        'q' => 'Do you offer dedicated onboarding?',
+        'a' => 'Yes. Enterprise plans include dedicated onboarding support. For smaller teams, the setup wizard and self-serve migration guides cover the most common configurations.',
+      ),
+    ),
+    'related_links' =>
+    array (
+      0 =>
+      array (
+        'href' => '/contact',
+        'label' => 'Contact us',
+      ),
+      1 =>
+      array (
+        'href' => '/pricing',
+        'label' => 'Pricing',
+      ),
+      2 =>
+      array (
+        'href' => '/register',
+        'label' => 'Start free trial',
+      ),
+      3 =>
+      array (
+        'href' => '/privacy',
+        'label' => 'Privacy Policy',
+      ),
+      4 =>
+      array (
+        'href' => '/terms',
+        'label' => 'Terms of Service',
+      ),
+    ),
+    'cta_title' => 'Still have questions?',
+    'cta_body' => 'Send us a message and we will route it to the right team.',
   ),
   'about' => 
   array (

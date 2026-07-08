@@ -3,6 +3,8 @@ import { Link, usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import CentralLayout from '../../Layouts/CentralLayout.vue';
 import CentralBreadcrumbs from '../../Components/Central/CentralBreadcrumbs.vue';
+import AuthorCard from '../../Components/Central/AuthorCard.vue';
+import CtaSection from '../../Components/Central/CtaSection.vue';
 import FaqAccordion from '../../Components/Central/FaqAccordion.vue';
 
 const props = defineProps({
@@ -23,6 +25,12 @@ const platformName = computed(() => props.brand);
 const features = computed(() => props.content.features ?? []);
 
 const faqs = computed(() => props.content.faq ?? []);
+
+const deepDives = computed(() => props.content.deep_dives ?? []);
+
+const useCases = computed(() => props.content.use_cases?.items ?? []);
+
+const relatedLinks = computed(() => props.content.related_links ?? []);
 
 const relatedFeatures = computed(() => props.featurePages.filter((page) => page.slug !== props.feature).slice(0, 3));
 
@@ -69,6 +77,22 @@ const accent = computed(() => {
             </div>
         </section>
 
+        <!-- Article metadata -->
+        <AuthorCard
+            :updated-at="content.updated_at"
+            :author="content.author ?? {}"
+            :reviewer="content.reviewer ?? {}"
+            updated-label="Last updated on"
+            written-label="Written by"
+            reviewed-label="Reviewed by"
+        />
+
+        <section v-if="content.intro" class="bg-white py-12 dark:bg-slate-900 sm:py-16">
+            <div class="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
+                <p class="whitespace-pre-line text-base leading-relaxed text-slate-700 dark:text-slate-300">{{ content.intro }}</p>
+            </div>
+        </section>
+
         <section class="bg-white py-16 dark:bg-slate-900 sm:py-20">
             <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                 <h2 class="text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100">Why teams choose {{ platformName }}</h2>
@@ -77,6 +101,69 @@ const accent = computed(() => {
                         <h3 class="text-lg font-semibold text-slate-900 dark:text-slate-100">{{ feature.title }}</h3>
                         <p class="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-400">{{ feature.body }}</p>
                     </article>
+                </div>
+            </div>
+        </section>
+
+        <section v-if="deepDives.length" class="bg-slate-50 py-16 dark:bg-slate-950 sm:py-20">
+            <div class="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
+                <h2 class="text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100">In-depth guide</h2>
+                <div class="mt-10 space-y-10">
+                    <article v-for="(section, index) in deepDives" :key="index">
+                        <h3 class="text-xl font-semibold text-slate-900 dark:text-slate-100">{{ section.title }}</h3>
+                        <p class="mt-3 whitespace-pre-line text-base leading-relaxed text-slate-700 dark:text-slate-300">{{ section.body }}</p>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <!-- Screenshots gallery -->
+        <section v-if="content.screenshots?.length" class="bg-white py-16 dark:bg-slate-900 sm:py-20">
+            <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                <h2 class="text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100">Screenshots</h2>
+                <div class="mt-10 grid gap-8 md:grid-cols-2">
+                    <figure v-for="(shot, index) in content.screenshots" :key="index" class="overflow-hidden rounded-2xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900" :aria-label="shot.caption || shot.alt">
+                        <div class="aspect-video bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400 text-sm" aria-hidden="true">
+                            <span class="italic">Screenshot coming soon</span>
+                        </div>
+                        <figcaption class="border-t border-slate-200 px-5 py-4 text-sm text-slate-600 dark:border-slate-800 dark:text-slate-400">
+                            {{ shot.caption || shot.alt }}
+                        </figcaption>
+                    </figure>
+                </div>
+            </div>
+        </section>
+
+        <section v-if="useCases.length" class="bg-white py-16 dark:bg-slate-900 sm:py-20">
+            <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                <h2 class="text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
+                    {{ content.use_cases?.title || 'Common use cases' }}
+                </h2>
+                <div class="mt-10 grid gap-6 md:grid-cols-2">
+                    <article
+                        v-for="(item, index) in useCases"
+                        :key="index"
+                        class="rounded-2xl border border-slate-200 bg-slate-50 p-6 dark:border-slate-800 dark:bg-slate-950"
+                    >
+                        <h3 class="text-lg font-semibold text-slate-900 dark:text-slate-100">{{ item.title }}</h3>
+                        <p class="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-400">{{ item.body }}</p>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <section v-if="relatedLinks.length" class="border-t border-slate-200 bg-slate-50 py-12 dark:border-slate-800 dark:bg-slate-950">
+            <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                <h2 class="text-lg font-semibold text-slate-900 dark:text-slate-100">Related resources</h2>
+                <div class="mt-4 flex flex-wrap gap-3">
+                    <Link
+                        v-for="(link, index) in relatedLinks"
+                        :key="index"
+                        :href="link.href"
+                        class="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-blue-300 hover:text-blue-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+                    >
+                        {{ link.label }}
+                    </Link>
                 </div>
             </div>
         </section>
@@ -103,12 +190,33 @@ const accent = computed(() => {
             section-class="bg-white py-16 dark:bg-slate-900"
         />
 
-        <section class="bg-slate-950 py-16">
-            <div class="mx-auto max-w-4xl px-4 text-center">
-                <h2 class="text-3xl font-bold text-white">{{ content.cta_title }}</h2>
-                <p class="mt-4 text-lg text-slate-400">{{ content.cta_body }}</p>
-                <Link href="/register" class="mt-8 inline-flex rounded-2xl bg-white px-10 py-4 text-sm font-bold text-slate-900">Start {{ trialDays }}-day free trial</Link>
+        <section v-if="content.conclusion?.body" class="bg-slate-50 py-16 dark:bg-slate-950 sm:py-20" style="content-visibility:auto">
+            <div class="mx-auto max-w-3xl px-4 text-center sm:px-6 lg:px-8">
+                <h2 class="text-3xl font-bold text-slate-900 dark:text-slate-100">{{ content.conclusion.title || 'Ready to get started?' }}</h2>
+                <p class="mt-4 text-lg leading-relaxed text-slate-600 dark:text-slate-400">{{ content.conclusion.body }}</p>
             </div>
         </section>
+
+        <!-- External references -->
+        <section v-if="content.external_references?.length" class="border-t border-slate-200 bg-slate-50 py-12 dark:border-slate-800 dark:bg-slate-950" style="content-visibility:auto">
+            <div class="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
+                <h2 class="text-lg font-semibold text-slate-900 dark:text-slate-100">References & sources</h2>
+                <ul class="mt-4 space-y-4">
+                    <li v-for="(ref, index) in content.external_references" :key="index" class="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
+                        <a :href="ref.url" target="_blank" rel="noopener noreferrer" class="font-medium text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
+                            {{ ref.title }}<span class="sr-only"> (opens in new tab)</span> →
+                        </a>
+                        <p v-if="ref.description" class="mt-1 text-sm text-slate-600 dark:text-slate-400">{{ ref.description }}</p>
+                    </li>
+                </ul>
+            </div>
+        </section>
+
+        <CtaSection
+            :title="content.cta_title"
+            :body="content.cta_body"
+            :primary-label="`Start ${trialDays}-day free trial`"
+            primary-href="/register"
+        />
     </CentralLayout>
 </template>

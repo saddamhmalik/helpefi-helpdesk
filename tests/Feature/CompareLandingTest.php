@@ -12,27 +12,42 @@ class CompareLandingTest extends TestCase
 
     public function test_compare_landing_pages_render(): void
     {
-        $competitorComparisonSlugs = ['zendesk', 'freshdesk', 'freshservice', 'zoho-desk', 'intercom', 'front', 'help-scout'];
+        $requiredRows = [
+            'Pricing',
+            'Features',
+            'AI capabilities',
+            'Automation',
+            'Knowledge Base',
+            'Live Chat',
+            'SLA',
+            'Integrations',
+            'API',
+            'Security',
+            'White Label',
+            'Multi Tenant',
+            'Mobile',
+            'Support',
+        ];
 
-        foreach ($competitorComparisonSlugs as $slug) {
-            $this->get('http://'.config('tenancy.central_app_domain').CompareLandingDefinition::path($slug))
-                ->assertOk()
-                ->assertInertia(fn ($page) => $page
-                    ->component('Central/CompetitorComparison')
-                    ->where('competitorSlug', $slug)
-                    ->has('matrix.rows')
-                );
-        }
-
-        foreach (array_diff(CompareLandingDefinition::slugs(), $competitorComparisonSlugs) as $slug) {
+        foreach (CompareLandingDefinition::slugs() as $slug) {
             $this->get('http://'.config('tenancy.central_app_domain').CompareLandingDefinition::path($slug))
                 ->assertOk()
                 ->assertInertia(fn ($page) => $page
                     ->component('Central/CompareLanding')
                     ->where('competitor', $slug)
-                    ->has('content.reasons', 3)
-                    ->has('content.rows')
+                    ->has('content.reasons')
+                    ->has('content.rows', count($requiredRows))
                     ->has('content.faq')
+                    ->has('content.pros')
+                    ->has('content.cons')
+                    ->has('content.who_them')
+                    ->has('content.who_us')
+                    ->has('content.use_cases.items')
+                    ->has('content.alternatives.items')
+                    ->has('content.migration.steps')
+                    ->has('content.conclusion')
+                    ->has('content.deep_dives')
+                    ->where('content.rows.0.feature', 'Pricing')
                 );
         }
     }

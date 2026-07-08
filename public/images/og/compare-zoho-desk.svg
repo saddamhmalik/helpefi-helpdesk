@@ -1,0 +1,26 @@
+<svg width="1200" height="630" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0f172a"/>
+      <stop offset="100%" style="stop-color:#1e3a5f"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#f59e0b"/>
+      <stop offset="100%" style="stop-color:#d97706"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <rect x="0" y="0" width="1200" height="8" fill="url(#accent)"/>
+  <text x="80" y="240" font-family="system-ui,-apple-system,sans-serif" font-size="52" font-weight="800" fill="#ffffff">Helpefi vs Zoho Desk</text>
+  <text x="80" y="310" font-family="system-ui,-apple-system,sans-serif" font-size="26" font-weight="500" fill="#94a3b8">Modern alternative outside the Zoho ecosystem</text>
+  <line x1="80" y1="350" x2="350" y2="350" stroke="#334155" stroke-width="2"/>
+  <text x="80" y="400" font-family="system-ui,-apple-system,sans-serif" font-size="22" font-weight="400" fill="#64748b"> AI Copilot &amp; deflection</text>
+  <text x="80" y="440" font-family="system-ui,-apple-system,sans-serif" font-size="22" font-weight="400" fill="#64748b"> Multi-brand inboxes</text>
+  <text x="80" y="480" font-family="system-ui,-apple-system,sans-serif" font-size="22" font-weight="400" fill="#64748b"> SLA policies &amp; automation</text>
+  <text x="560" y="400" font-family="system-ui,-apple-system,sans-serif" font-size="22" font-weight="400" fill="#64748b"> Live chat &amp; knowledge base</text>
+  <text x="560" y="440" font-family="system-ui,-apple-system,sans-serif" font-size="22" font-weight="400" fill="#64748b"> Optional Service Desk ITSM</text>
+  <text x="560" y="480" font-family="system-ui,-apple-system,sans-serif" font-size="22" font-weight="400" fill="#64748b"> Database-per-tenant</text>
+  <text x="80" y="550" font-family="system-ui,-apple-system,sans-serif" font-size="20" font-weight="600" fill="#fbbf24">helpefi.com/compare/zoho-desk</text>
+  <rect x="980" y="520" width="140" height="40" rx="20" fill="#f59e0b"/>
+  <text x="1050" y="546" font-family="system-ui,-apple-system,sans-serif" font-size="16" font-weight="700" fill="#ffffff" text-anchor="middle">Free trial</text>
+</svg>

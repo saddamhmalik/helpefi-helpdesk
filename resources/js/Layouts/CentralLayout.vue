@@ -95,7 +95,7 @@ useBodyScrollLock(mobileOpen);
         </div>
         <header class="sticky top-0 z-40 border-b agent-border bg-white/95 shadow-sm backdrop-blur-md dark:bg-slate-900/95">
             <div class="mx-auto flex h-14 min-w-0 max-w-7xl items-center justify-between gap-3 px-4 sm:h-16 sm:px-6 lg:px-8">
-                <Link href="/" class="flex min-w-0 shrink items-center">
+                <Link href="/" class="flex min-w-0 shrink items-center" aria-label="Go to homepage">
                     <AppLogo size="md" />
                 </Link>
 
@@ -109,7 +109,7 @@ useBodyScrollLock(mobileOpen);
                     </Link>
                 </div>
 
-                <nav v-else class="hidden items-center gap-1 lg:flex">
+                <nav v-else class="hidden items-center gap-1 lg:flex" aria-label="Main navigation">
                     <a
                         v-for="link in navLinks"
                         :key="link.href"
@@ -175,7 +175,7 @@ useBodyScrollLock(mobileOpen);
                     v-if="mobileOpen"
                     class="absolute left-0 right-0 z-40 max-h-[calc(100dvh-3.5rem)] overflow-y-auto border-t agent-border agent-panel px-4 py-4 shadow-lg sm:max-h-[calc(100dvh-4rem)] lg:hidden"
                 >
-                    <nav class="flex flex-col gap-1">
+                    <nav class="flex flex-col gap-1" aria-label="Mobile navigation">
                         <a
                             v-for="link in navLinks"
                             :key="link.href"
@@ -204,6 +204,7 @@ useBodyScrollLock(mobileOpen);
             v-if="showFooter"
             class="border-t border-slate-200 bg-slate-950 text-slate-300 dark:border-slate-800"
             :class="aiDemoEnabled ? 'pb-20 sm:pb-0' : ''"
+            style="content-visibility:auto"
         >
             <div class="mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-14 lg:px-8">
                 <div class="flex flex-col gap-8 border-b border-white/10 pb-10 lg:flex-row lg:items-start lg:justify-between lg:gap-12">
@@ -229,7 +230,7 @@ useBodyScrollLock(mobileOpen);
                     </div>
 
                     <div class="w-full rounded-2xl border border-white/10 bg-gradient-to-br from-white/[0.07] to-white/[0.02] p-5 sm:p-6 lg:max-w-sm lg:shrink-0">
-                        <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">{{ layoutText('footer_get_started') }}</p>
+                        <h2 class="text-xs font-semibold uppercase tracking-wider text-slate-400">{{ layoutText('footer_get_started') }}</h2>
                         <Link
                             href="/register"
                             prefetch
@@ -250,7 +251,7 @@ useBodyScrollLock(mobileOpen);
 
                 <div class="grid gap-8 pt-10 sm:grid-cols-2 sm:gap-10 lg:grid-cols-6">
                     <div>
-                        <p class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">{{ layoutText('footer_product') }}</p>
+                        <h2 class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">{{ layoutText('footer_product') }}</h2>
                         <ul class="mt-4 space-y-2.5 text-sm">
                             <li><a href="/#differentiators" class="transition hover:text-white">{{ layoutText('why_us') }}</a></li>
                         <li><Link href="/features" prefetch class="transition hover:text-white">{{ layoutText('features') }}</Link></li>
@@ -260,7 +261,7 @@ useBodyScrollLock(mobileOpen);
                         </ul>
                     </div>
                     <div>
-                        <p class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">{{ layoutText('footer_features') }}</p>
+                        <h2 class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">{{ layoutText('footer_features') }}</h2>
                         <ul class="mt-4 space-y-2.5 text-sm">
                             <li v-for="feature in featurePages" :key="feature.slug">
                                 <Link :href="feature.path" prefetch class="transition hover:text-white">
@@ -270,7 +271,7 @@ useBodyScrollLock(mobileOpen);
                         </ul>
                     </div>
                     <div>
-                        <p class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">{{ layoutText('footer_solutions') }}</p>
+                        <h2 class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">{{ layoutText('footer_solutions') }}</h2>
                         <ul class="mt-4 space-y-2.5 text-sm">
                             <li v-for="vertical in verticalPages" :key="vertical.slug">
                                 <Link :href="vertical.path" prefetch class="transition hover:text-white">
@@ -280,7 +281,7 @@ useBodyScrollLock(mobileOpen);
                         </ul>
                     </div>
                     <div>
-                        <p class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">{{ layoutText('footer_compare') }}</p>
+                        <h2 class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">{{ layoutText('footer_compare') }}</h2>
                         <ul class="mt-4 space-y-2.5 text-sm">
                             <li v-for="compare in comparePages" :key="compare.slug">
                                 <Link :href="compare.path" class="transition hover:text-white">
@@ -290,7 +291,7 @@ useBodyScrollLock(mobileOpen);
                         </ul>
                     </div>
                     <div>
-                        <p class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">{{ layoutText('footer_migrate') }}</p>
+                        <h2 class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">{{ layoutText('footer_migrate') }}</h2>
                         <ul class="mt-4 space-y-2.5 text-sm">
                             <li v-for="migrate in migratePages" :key="migrate.slug">
                                 <Link :href="migrate.path" class="transition hover:text-white">
@@ -300,7 +301,7 @@ useBodyScrollLock(mobileOpen);
                         </ul>
                     </div>
                     <div>
-                        <p class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">{{ layoutText('footer_company') }}</p>
+                        <h2 class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">{{ layoutText('footer_company') }}</h2>
                         <ul class="mt-4 space-y-2.5 text-sm">
                             <li><Link href="/about" class="transition hover:text-white">{{ staticNavLabel('about') }}</Link></li>
                             <li><Link href="/contact" class="transition hover:text-white">{{ staticNavLabel('contact') }}</Link></li>

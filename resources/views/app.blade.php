@@ -46,7 +46,7 @@
             <link rel="dns-prefetch" href="https://www.google-analytics.com">
             <link rel="preconnect" href="https://analytics.ahrefs.com" crossorigin>
             <link rel="dns-prefetch" href="https://analytics.ahrefs.com">
-            <link rel="preload" as="image" href="/logo.png" fetchpriority="high">
+            <link rel="preload" as="image" href="/logo.png" fetchpriority="high" width="512" height="512">
         @endif
         <title inertia>{{ $centralSeo['title'] ?? config('app.name', 'helpefi') }}</title>
         @if ($isMarketingPage)
@@ -180,7 +180,7 @@
                 str_starts_with((string) $marketingPageKey, 'vertical_') => 'resources/js/Pages/Central/VerticalLanding.vue',
                 str_starts_with((string) $marketingPageKey, 'feature_') => 'resources/js/Pages/Central/FeatureLanding.vue',
                 str_starts_with((string) $marketingPageKey, 'integration_') => 'resources/js/Pages/Central/IntegrationLanding.vue',
-                str_starts_with((string) $marketingPageKey, 'compare_') => 'resources/js/Pages/Central/CompetitorComparison.vue',
+                str_starts_with((string) $marketingPageKey, 'compare_') => 'resources/js/Pages/Central/CompareLanding.vue',
                 str_starts_with((string) $marketingPageKey, 'migrate_') => 'resources/js/Pages/Central/MigrateLanding.vue',
                 default => null,
             } : null;

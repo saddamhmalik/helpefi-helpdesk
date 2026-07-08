@@ -43,6 +43,8 @@ use App\Domains\Tenancy\Controllers\Central\FeatureLandingController;
 use App\Domains\Tenancy\Controllers\Central\IntegrationLandingController;
 use App\Domains\Tenancy\Controllers\Central\MarketingContactController;
 use App\Domains\Tenancy\Controllers\Central\MarketingStaticPageController;
+use App\Domains\Tenancy\Controllers\Central\CompareLandingController;
+use App\Domains\Tenancy\Controllers\Central\CompareVerticalController;
 use App\Domains\Tenancy\Controllers\Central\MigrateLandingController;
 use App\Domains\Tenancy\Controllers\Central\VerticalLandingController;
 use App\Domains\Tenancy\Support\VerticalLandingDefinition;
@@ -92,6 +94,10 @@ Route::get('/for/{vertical}', function (string $vertical) {
     return redirect(VerticalLandingDefinition::path($vertical), 301);
 })->where('vertical', '[a-z0-9-]+');
 Route::get('/compare', [CompetitorComparisonController::class, 'index'])->name('central.compare.index');
+Route::get('/compare/{competitor}/for/{vertical}', [CompareVerticalController::class, 'show'])
+    ->where('competitor', '[a-z0-9-]+')
+    ->where('vertical', '[a-z0-9-]+')
+    ->name('central.compare.vertical');
 Route::get('/compare/{comparison}', [CompetitorComparisonController::class, 'show'])
     ->where('comparison', '[a-z0-9-]+')
     ->name('central.compare');

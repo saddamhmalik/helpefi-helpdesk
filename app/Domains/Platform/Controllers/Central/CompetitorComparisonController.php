@@ -2,7 +2,6 @@
 
 namespace App\Domains\Platform\Controllers\Central;
 
-use App\Domains\Platform\Services\CompetitorComparisonService;
 use App\Domains\Tenancy\Controllers\Central\CompareLandingController;
 use App\Domains\Tenancy\Services\CompareLandingContentService;
 use App\Domains\Tenancy\Support\CentralMarketingPresenter;
@@ -14,7 +13,6 @@ use Inertia\Response;
 class CompetitorComparisonController extends Controller
 {
     public function __construct(
-        private readonly CompetitorComparisonService $comparisons,
         private readonly CompareLandingContentService $content,
     ) {
     }
@@ -32,16 +30,6 @@ class CompetitorComparisonController extends Controller
         $slug = CompareLandingDefinition::slugFromComparison($comparison);
 
         abort_unless($slug !== null, 404);
-
-        $payload = $this->comparisons->forSlug($slug);
-
-        if ($payload !== null) {
-            return Inertia::render('Central/CompetitorComparison', [
-                ...CentralMarketingPresenter::shared(),
-                'competitorSlug' => $slug,
-                ...$payload,
-            ]);
-        }
 
         return app(CompareLandingController::class)->show($slug);
     }

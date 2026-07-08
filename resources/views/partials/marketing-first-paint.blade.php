@@ -53,12 +53,12 @@
             <nav class="border-b border-slate-200 bg-white px-4 py-3 text-sm text-slate-500 sm:px-6 lg:px-8" aria-label="Breadcrumb">
                 <ol class="mx-auto flex max-w-7xl flex-wrap items-center gap-1">
                     @foreach ($page['breadcrumbs'] as $index => $crumb)
-                        @if ($index > 0)
-                            <li aria-hidden="true" class="text-slate-300">/</li>
-                        @endif
-                        <li>
+                        <li class="inline-flex items-center gap-1">
+                            @if ($index > 0)
+                                <span aria-hidden="true" class="text-slate-300">/</span>
+                            @endif
                             @if ($index === count($page['breadcrumbs']) - 1)
-                                <span class="font-medium text-slate-700">{{ $crumb['label'] }}</span>
+                                <span class="font-medium text-slate-700" aria-current="page">{{ $crumb['label'] }}</span>
                             @else
                                 <a href="{{ $crumb['href'] }}" class="hover:text-slate-900">{{ $crumb['label'] }}</a>
                             @endif
@@ -92,6 +92,39 @@
                 </div>
             </section>
 
+            @if (!empty($page['updatedAt']) || !empty($page['author']) || !empty($page['reviewer']))
+                <section class="border-b border-slate-200 bg-white">
+                    <div class="mx-auto max-w-3xl px-4 py-4 sm:px-6 lg:px-8">
+                        <div class="flex flex-wrap items-center gap-x-5 gap-y-1.5 text-xs text-slate-500">
+                            @if (!empty($page['updatedAt']))
+                                <span class="inline-flex items-center gap-1.5">
+                                    <svg class="h-3.5 w-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                    Last updated on {{ $page['updatedAt'] }}
+                                </span>
+                            @endif
+                            @if (!empty($page['author']['name']))
+                                <span class="inline-flex items-center gap-1.5">
+                                    <svg class="h-3.5 w-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                                    Written by {{ $page['author']['name'] }}
+                                    @if (!empty($page['author']['role']))
+                                        <span class="hidden sm:inline text-slate-400">· {{ $page['author']['role'] }}</span>
+                                    @endif
+                                </span>
+                            @endif
+                            @if (!empty($page['reviewer']['name']))
+                                <span class="inline-flex items-center gap-1.5">
+                                    <svg class="h-3.5 w-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                                    Reviewed by {{ $page['reviewer']['name'] }}
+                                    @if (!empty($page['reviewer']['role']))
+                                        <span class="hidden sm:inline text-slate-400">· {{ $page['reviewer']['role'] }}</span>
+                                    @endif
+                                </span>
+                            @endif
+                        </div>
+                    </div>
+                </section>
+            @endif
+
             @if ($pageType === 'article' && !empty($page['body']))
                 <section class="bg-white py-10">
                     <div class="mx-auto max-w-3xl px-4 text-base leading-relaxed text-slate-700 sm:px-6 lg:px-8">
@@ -101,26 +134,45 @@
             @endif
 
             @if (!empty($page['sections']))
+                @php
+                    $sectionCount = count($page['sections']);
+                    $longFormCompare = $sectionCount >= 8;
+                @endphp
                 <section class="bg-white py-12 sm:py-16">
                     <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-                        <div class="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-                            @foreach ($page['sections'] as $section)
-                                <article class="rounded-2xl border border-slate-200 bg-slate-50 p-6">
-                                    @if (!empty($section['title']))
-                                        <h2 class="text-lg font-semibold text-slate-900">{{ $section['title'] }}</h2>
-                                    @endif
-                                    @if (!empty($section['body']))
-                                        <p class="mt-2 text-sm leading-relaxed text-slate-600">{{ $section['body'] }}</p>
-                                    @endif
-                                </article>
-                            @endforeach
-                        </div>
+                        @if ($longFormCompare)
+                            <div class="mx-auto max-w-3xl space-y-10">
+                                @foreach ($page['sections'] as $section)
+                                    <article>
+                                        @if (!empty($section['title']))
+                                            <h2 class="text-xl font-semibold text-slate-900">{{ $section['title'] }}</h2>
+                                        @endif
+                                        @if (!empty($section['body']))
+                                            <p class="mt-3 text-base leading-relaxed text-slate-700">{{ $section['body'] }}</p>
+                                        @endif
+                                    </article>
+                                @endforeach
+                            </div>
+                        @else
+                            <div class="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+                                @foreach ($page['sections'] as $section)
+                                    <article class="rounded-2xl border border-slate-200 bg-slate-50 p-6">
+                                        @if (!empty($section['title']))
+                                            <h2 class="text-lg font-semibold text-slate-900">{{ $section['title'] }}</h2>
+                                        @endif
+                                        @if (!empty($section['body']))
+                                            <p class="mt-2 text-sm leading-relaxed text-slate-600">{{ $section['body'] }}</p>
+                                        @endif
+                                    </article>
+                                @endforeach
+                            </div>
+                        @endif
                     </div>
                 </section>
             @endif
 
             @if (!empty($page['links']))
-                <section class="bg-slate-50 py-12 sm:py-16">
+                <section class="bg-slate-50 py-12 sm:py-16" style="content-visibility:auto">
                     <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                         <h2 class="text-2xl font-bold text-slate-900">Explore</h2>
                         <ul class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -140,7 +192,7 @@
             @endif
 
             @if (!empty($page['faqs']))
-                <section class="bg-white py-12 sm:py-16">
+                <section class="bg-white py-12 sm:py-16" style="content-visibility:auto">
                     <div class="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
                         <h2 class="text-2xl font-bold text-slate-900">Frequently asked questions</h2>
                         <dl class="mt-8 space-y-6">
@@ -155,8 +207,28 @@
                 </section>
             @endif
 
+            @if (!empty($page['externalReferences']))
+                <section class="border-t border-slate-200 bg-slate-50 py-12" style="content-visibility:auto">
+                    <div class="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
+                        <h2 class="text-lg font-semibold text-slate-900">References & sources</h2>
+                        <ul class="mt-4 space-y-4">
+                            @foreach ($page['externalReferences'] as $ref)
+                                <li class="rounded-xl border border-slate-200 bg-white p-4">
+                                    <a href="{{ $ref['url'] }}" target="_blank" rel="noopener noreferrer" class="font-medium text-blue-600 hover:text-blue-800">
+                                        {{ $ref['title'] }} →
+                                    </a>
+                                    @if (!empty($ref['description']))
+                                        <p class="mt-1 text-sm text-slate-600">{{ $ref['description'] }}</p>
+                                    @endif
+                                </li>
+                            @endforeach
+                        </ul>
+                    </div>
+                </section>
+            @endif
+
             @if (!empty($page['ctaTitle']) || !empty($page['ctaBody']))
-                <section class="border-t border-slate-200 bg-white py-12">
+                <section class="border-t border-slate-200 bg-white py-12" style="content-visibility:auto">
                     <div class="mx-auto max-w-3xl px-4 text-center sm:px-6 lg:px-8">
                         @if (!empty($page['ctaTitle']))
                             <h2 class="text-2xl font-bold text-slate-900">{{ $page['ctaTitle'] }}</h2>
@@ -171,11 +243,11 @@
         @endif
     </main>
 
-    <footer class="border-t border-slate-800 bg-slate-950 text-slate-300">
+    <footer class="border-t border-slate-800 bg-slate-950 text-slate-300" style="content-visibility:auto">
         <div class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
             <div class="grid gap-8 sm:grid-cols-2 lg:grid-cols-5">
                 <div>
-                    <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">{{ $layout['footer_product'] ?? 'Product' }}</p>
+                    <h2 class="text-xs font-semibold uppercase tracking-wider text-slate-500">{{ $layout['footer_product'] ?? 'Product' }}</h2>
                     <ul class="mt-4 space-y-2 text-sm">
                         <li><a href="/features" class="hover:text-white">Features</a></li>
                         <li><a href="/pricing" class="hover:text-white">Pricing</a></li>
@@ -183,7 +255,7 @@
                     </ul>
                 </div>
                 <div>
-                    <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">{{ $layout['footer_features'] ?? 'Features' }}</p>
+                    <h2 class="text-xs font-semibold uppercase tracking-wider text-slate-500">{{ $layout['footer_features'] ?? 'Features' }}</h2>
                     <ul class="mt-4 space-y-2 text-sm">
                         @foreach (array_slice($nav['features'] ?? [], 0, 8) as $feature)
                             <li><a href="{{ $feature['path'] }}" class="hover:text-white">{{ $feature['nav_label'] }}</a></li>
@@ -191,7 +263,7 @@
                     </ul>
                 </div>
                 <div>
-                    <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">{{ $layout['footer_solutions'] ?? 'Solutions' }}</p>
+                    <h2 class="text-xs font-semibold uppercase tracking-wider text-slate-500">{{ $layout['footer_solutions'] ?? 'Solutions' }}</h2>
                     <ul class="mt-4 space-y-2 text-sm">
                         @foreach (array_slice($nav['verticals'] ?? [], 0, 8) as $vertical)
                             <li><a href="{{ $vertical['path'] }}" class="hover:text-white">{{ $vertical['nav_label'] }}</a></li>
@@ -199,7 +271,7 @@
                     </ul>
                 </div>
                 <div>
-                    <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">{{ $layout['footer_compare'] ?? 'Compare' }}</p>
+                    <h2 class="text-xs font-semibold uppercase tracking-wider text-slate-500">{{ $layout['footer_compare'] ?? 'Compare' }}</h2>
                     <ul class="mt-4 space-y-2 text-sm">
                         @foreach ($nav['comparisons'] ?? [] as $compare)
                             <li><a href="{{ $compare['path'] }}" class="hover:text-white">{{ $compare['footer_label'] ?? $compare['nav_label'] }}</a></li>
@@ -207,7 +279,7 @@
                     </ul>
                 </div>
                 <div>
-                    <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">{{ $layout['footer_company'] ?? 'Company' }}</p>
+                    <h2 class="text-xs font-semibold uppercase tracking-wider text-slate-500">{{ $layout['footer_company'] ?? 'Company' }}</h2>
                     <ul class="mt-4 space-y-2 text-sm">
                         <li><a href="/about" class="hover:text-white">About</a></li>
                         <li><a href="/blog" class="hover:text-white">Blog</a></li>

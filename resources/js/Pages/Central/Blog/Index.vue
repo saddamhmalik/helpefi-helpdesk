@@ -111,6 +111,14 @@ const toggleTag = (slug) => {
         : [...selectedTags.value, slug];
     applyFilters({ tags: selectedTags.value, pageNumber: 1 });
 };
+
+const searchDebounce = ref(null);
+const onSearchInput = () => {
+    if (searchDebounce.value) clearTimeout(searchDebounce.value);
+    searchDebounce.value = setTimeout(() => {
+        applyFilters({ q: searchQuery.value, pageNumber: 1 });
+    }, 400);
+};
 </script>
 
 <template>
@@ -128,18 +136,20 @@ const toggleTag = (slug) => {
                 <section class="mb-10 rounded-2xl border border-slate-200 bg-slate-50 p-6 dark:border-slate-800 dark:bg-slate-950">
                     <div class="grid gap-4 sm:grid-cols-2">
                         <div>
-                            <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Search</label>
+                            <label for="blog-search" class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Search</label>
                             <input
+                                id="blog-search"
                                 v-model="searchQuery"
                                 type="search"
                                 class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
                                 placeholder="Search articles…"
-                                @change="applyFilters({ q: searchQuery, pageNumber: 1 })"
+                                @input="onSearchInput"
                             />
                         </div>
                         <div>
-                            <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Category</label>
+                            <label for="blog-category" class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">Category</label>
                             <select
+                                id="blog-category"
                                 v-model="selectedCategory"
                                 class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
                                 @change="applyFilters({ category: selectedCategory, pageNumber: 1 })"
@@ -150,24 +160,25 @@ const toggleTag = (slug) => {
                         </div>
                     </div>
 
-                    <div v-if="availableTags.length" class="mt-5">
-                        <div class="mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">Tags</div>
+                    <fieldset v-if="availableTags.length" class="mt-5">
+                        <legend class="mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">Tags</legend>
                         <div class="flex flex-wrap gap-2">
                             <button
                                 v-for="tag in availableTags"
                                 :key="tag.slug"
                                 type="button"
+                                :aria-pressed="selectedTags.includes(tag.slug) ? 'true' : 'false'"
                                 @click="toggleTag(tag.slug)"
                                 :class="selectedTags.includes(tag.slug) ? 'rounded-full bg-blue-600 px-4 py-1.5 text-xs font-semibold text-white hover:bg-blue-700' : 'rounded-full border border-slate-200 bg-white px-4 py-1.5 text-xs font-semibold text-slate-700 hover:border-blue-300 hover:text-blue-700 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-blue-700 dark:hover:text-blue-200'"
                             >
                                 {{ tag.name }}
                             </button>
                         </div>
-                    </div>
+                    </fieldset>
                 </section>
 
                 <div v-if="posts.length" class="space-y-8">
-                    <article v-for="post in posts" :key="post.slug" class="rounded-2xl border border-slate-200 p-6 transition hover:border-blue-300 dark:border-slate-800 dark:hover:border-blue-700">
+                    <article v-for="post in posts" :key="post.slug" class="rounded-2xl border border-slate-200 p-6 transition hover:border-blue-300 dark:border-slate-800 dark:hover:border-blue-700" style="content-visibility:auto;contain-intrinsic-size:480px">
                         <div class="flex flex-wrap items-center gap-3 text-xs text-slate-500 dark:text-slate-400">
                             <time v-if="post.published_at" :datetime="post.published_at">{{ post.published_at }}</time>
                             <span v-if="post.reading_minutes">{{ post.reading_minutes }} min read</span>
@@ -179,6 +190,8 @@ const toggleTag = (slug) => {
                                 :widths="[320, 480, 640, 768, 1024]"
                                 sizes="(max-width: 768px) 100vw, 768px"
                                 class="block h-44 w-full"
+                                width="768"
+                                height="176"
                             />
                         </div>
                         <h2 class="mt-3 text-2xl font-bold text-slate-900 dark:text-slate-100">
@@ -203,11 +216,12 @@ const toggleTag = (slug) => {
                 </div>
                 <p v-else class="text-slate-600 dark:text-slate-400">{{ blogText('empty_state') }}</p>
 
-                <div v-if="pagination.last > 1" class="mt-10 flex flex-wrap items-center justify-center gap-2">
+                <div v-if="pagination.last > 1" class="mt-10 flex flex-wrap items-center justify-center gap-2" role="navigation" aria-label="Pagination">
                     <Link
                         v-if="pagination.current > 1"
                         :href="buildPageHref(pagination.current - 1)"
                         class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+                        aria-label="Previous page"
                     >
                         Previous
                     </Link>
@@ -217,6 +231,8 @@ const toggleTag = (slug) => {
                         :href="buildPageHref(p)"
                         class="rounded-lg border px-3 py-1.5 text-sm font-semibold transition"
                         :class="p === pagination.current ? 'border-blue-600 bg-blue-600 text-white' : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800'"
+                        :aria-label="`Page ${p}`"
+                        :aria-current="p === pagination.current ? 'page' : undefined"
                     >
                         {{ p }}
                     </Link>
@@ -224,6 +240,7 @@ const toggleTag = (slug) => {
                         v-if="pagination.current < pagination.last"
                         :href="buildPageHref(pagination.current + 1)"
                         class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+                        aria-label="Next page"
                     >
                         Next
                     </Link>

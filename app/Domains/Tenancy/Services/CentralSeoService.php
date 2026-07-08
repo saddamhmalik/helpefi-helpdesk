@@ -5,6 +5,7 @@ namespace App\Domains\Tenancy\Services;
 use App\Domains\Platform\Services\MarketingPageContentService;
 use App\Domains\Platform\Support\MarketingContentType;
 use App\Domains\Tenancy\Support\CompareLandingDefinition;
+use App\Domains\Tenancy\Support\CompareVerticalDefinition;
 use App\Domains\Tenancy\Support\IntegrationLandingDefinition;
 use App\Domains\Tenancy\Support\MarketingBlogDefinition;
 use App\Domains\Tenancy\Support\MarketingFeatureDefinition;
@@ -159,18 +160,19 @@ class CentralSeoService
     public function sitemapEntries(): array
     {
         $defaultLastmod = $this->defaultSitemapLastmod();
+        $base = $this->siteUrl();
         $entries = [
-            $this->sitemapEntry(route('central.home'), 'weekly', '1.0', $defaultLastmod),
-            $this->sitemapEntry(route('central.static.pricing'), 'weekly', '0.95', $defaultLastmod),
-            $this->sitemapEntry(route('central.blog.index'), 'weekly', '0.8', $defaultLastmod),
-            $this->sitemapEntry(route('central.features.index'), 'weekly', '0.9', $defaultLastmod),
-            $this->sitemapEntry(route('central.compare.index'), 'weekly', '0.85', $defaultLastmod),
-            $this->sitemapEntry(route('central.migrate.index'), 'monthly', '0.85', $defaultLastmod),
-            $this->sitemapEntry(route('central.static.integrations'), 'monthly', '0.8', $defaultLastmod),
-            $this->sitemapEntry(route('central.static.industries'), 'monthly', '0.8', $defaultLastmod),
-            $this->sitemapEntry(route('central.static.resources'), 'weekly', '0.75', $defaultLastmod),
-            $this->sitemapEntry(route('central.static.contact'), 'monthly', '0.7', $defaultLastmod),
-            $this->sitemapEntry(route('central.static.support'), 'monthly', '0.7', $defaultLastmod),
+            $this->sitemapEntry($base.'/', 'weekly', '1.0', $defaultLastmod),
+            $this->sitemapEntry($base.'/pricing', 'weekly', '0.95', $defaultLastmod),
+            $this->sitemapEntry($base.'/blog', 'weekly', '0.8', $defaultLastmod),
+            $this->sitemapEntry($base.'/features', 'weekly', '0.9', $defaultLastmod),
+            $this->sitemapEntry($base.'/compare', 'weekly', '0.85', $defaultLastmod),
+            $this->sitemapEntry($base.'/migrate', 'monthly', '0.85', $defaultLastmod),
+            $this->sitemapEntry($base.'/integrations', 'monthly', '0.8', $defaultLastmod),
+            $this->sitemapEntry($base.'/industries', 'monthly', '0.8', $defaultLastmod),
+            $this->sitemapEntry($base.'/resources', 'weekly', '0.75', $defaultLastmod),
+            $this->sitemapEntry($base.'/contact', 'monthly', '0.7', $defaultLastmod),
+            $this->sitemapEntry($base.'/support', 'monthly', '0.7', $defaultLastmod),
         ];
 
         foreach (MarketingStaticPageDefinition::all() as $page) {
@@ -216,6 +218,15 @@ class CentralSeoService
                 $this->siteUrl().$migration['path'],
                 'monthly',
                 '0.85',
+                $defaultLastmod,
+            );
+        }
+
+        foreach (CompareVerticalDefinition::allCombinations() as $cv) {
+            $entries[] = $this->sitemapEntry(
+                $this->siteUrl().$cv['path'],
+                'monthly',
+                '0.7',
                 $defaultLastmod,
             );
         }
@@ -291,11 +302,11 @@ class CentralSeoService
             ];
         };
 
-        $push(route('central.home'), $this->ogImageUrl('home'), $defaultLastmod);
-        $push(route('central.features.index'), $this->ogImageUrl('features_index'), $defaultLastmod);
-        $push(route('central.compare.index'), $this->ogImageUrl('compare_index'), $defaultLastmod);
-        $push(route('central.migrate.index'), $this->ogImageUrl('migrate_index'), $defaultLastmod);
-        $push(route('central.blog.index'), $this->ogImageUrl('blog'), $defaultLastmod);
+        $push($this->siteUrl().'/', $this->ogImageUrl('home'), $defaultLastmod);
+        $push($this->siteUrl().'/features', $this->ogImageUrl('features_index'), $defaultLastmod);
+        $push($this->siteUrl().'/compare', $this->ogImageUrl('compare_index'), $defaultLastmod);
+        $push($this->siteUrl().'/migrate', $this->ogImageUrl('migrate_index'), $defaultLastmod);
+        $push($this->siteUrl().'/blog', $this->ogImageUrl('blog'), $defaultLastmod);
 
         foreach (MarketingStaticPageDefinition::all() as $page) {
             if (($page['sitemap'] ?? true) === false) {
@@ -431,6 +442,12 @@ class CentralSeoService
 
         if ($verticalSlug !== null) {
             return $this->siteUrl().VerticalLandingDefinition::path($verticalSlug);
+        }
+
+        $compareVertical = CompareVerticalDefinition::slugFromSeoKey($page);
+
+        if ($compareVertical !== null) {
+            return $this->siteUrl().CompareVerticalDefinition::path($compareVertical['competitor'], $compareVertical['vertical']);
         }
 
         $compareSlug = CompareLandingDefinition::slugFromSeoKey($page);
@@ -574,24 +591,82 @@ class CentralSeoService
 
     private function pageFaqs(string $page, int $trialDays, string $brand): ?array
     {
-        $migrateSlug = MigrateLandingDefinition::slugFromSeoKey($page);
+        $replacements = $this->marketingReplacements($brand, $trialDays);
 
+        // Migration pages — read from marketing_migration_content config
+        $migrateSlug = MigrateLandingDefinition::slugFromSeoKey($page);
         if ($migrateSlug !== null) {
-            return $this->faqNodeFromSection("migrations.{$migrateSlug}.faq", $brand, $trialDays);
+            $content = config("marketing_migration_content.{$migrateSlug}");
+            $faqs = is_array($content) ? ($content['faq'] ?? []) : [];
+
+            return $this->buildFaqNode($faqs, $replacements);
         }
 
-        $slug = VerticalLandingDefinition::slugFromSeoKey($page)
-            ?? MarketingFeatureDefinition::slugFromSeoKey($page);
+        // Compare-vertical hybrid pages — merge FAQs from comparison + vertical
+        $compareVertical = CompareVerticalDefinition::slugFromSeoKey($page);
+        if ($compareVertical !== null) {
+            $compareContent = config("marketing_comparison_content.{$compareVertical['competitor']}");
+            $verticalContent = config("marketing_vertical_content.{$compareVertical['vertical']}");
+            $compareFaqs = is_array($compareContent) ? ($compareContent['faq'] ?? []) : [];
+            $verticalFaqs = is_array($verticalContent) ? ($verticalContent['faq'] ?? []) : [];
+            $merged = array_merge(
+                array_slice($verticalFaqs, 0, 3),
+                array_slice($compareFaqs, 0, 3),
+            );
 
-        if ($slug === null) {
+            return $this->buildFaqNode($merged, $replacements);
+        }
+
+        // Comparison pages — read from marketing_comparison_content config
+        $compareSlug = CompareLandingDefinition::slugFromSeoKey($page);
+        if ($compareSlug !== null) {
+            $content = $this->pageContent->resolve(
+                MarketingContentType::COMPARISON,
+                'marketing_comparison_content',
+                $compareSlug,
+            );
+            $faqs = is_array($content) ? ($content['faq'] ?? []) : [];
+
+            return $this->buildFaqNode($faqs, $replacements);
+        }
+
+        // Feature pages — read from marketing_feature_content config
+        $featureSlug = MarketingFeatureDefinition::slugFromSeoKey($page);
+        if ($featureSlug !== null) {
+            $content = config("marketing_feature_content.{$featureSlug}");
+            $faqs = is_array($content) ? ($content['faq'] ?? []) : [];
+
+            return $this->buildFaqNode($faqs, $replacements);
+        }
+
+        // Vertical / industry pages — read from marketing_vertical_content config
+        $verticalSlug = VerticalLandingDefinition::slugFromSeoKey($page);
+        if ($verticalSlug !== null) {
+            $content = config("marketing_vertical_content.{$verticalSlug}");
+            $faqs = is_array($content) ? ($content['faq'] ?? []) : [];
+
+            return $this->buildFaqNode($faqs, $replacements);
+        }
+
+        return null;
+    }
+
+    private function buildFaqNode(array $faqs, array $replacements): ?array
+    {
+        if (! is_array($faqs) || $faqs === []) {
             return null;
         }
 
-        $prefix = VerticalLandingDefinition::slugFromSeoKey($page) !== null
-            ? "verticals.{$slug}.faq"
-            : "feature_pages.{$slug}.faq";
+        $items = collect($faqs)
+            ->map(fn ($faq) => is_array($faq) ? [
+                'q' => $this->interpolate((string) ($faq['q'] ?? $faq['question'] ?? ''), $replacements),
+                'a' => $this->interpolate((string) ($faq['a'] ?? $faq['answer'] ?? ''), $replacements),
+            ] : null)
+            ->filter(fn (?array $faq) => is_array($faq) && $faq['q'] !== '' && $faq['a'] !== '')
+            ->values()
+            ->all();
 
-        return $this->faqNodeFromSection($prefix, $brand, $trialDays);
+        return $this->jsonLd->faqPage($items);
     }
 
     private function faqNodeFromSection(string $prefix, string $brand, int $trialDays): ?array
@@ -705,6 +780,21 @@ class CentralSeoService
 
                 return [$title, $description];
             }
+        }
+
+        $compareVertical = CompareVerticalDefinition::slugFromSeoKey($page);
+
+        if ($compareVertical !== null) {
+            $compareConfig = config("marketing_comparison_content.{$compareVertical['competitor']}");
+            $verticalConfig = config("marketing_vertical_content.{$compareVertical['vertical']}");
+            $competitorName = $compareConfig['competitor_name'] ?? ucfirst(str_replace('-', ' ', $compareVertical['competitor']));
+            $verticalName = $verticalConfig['nav_label'] ?? ucfirst(str_replace('-', ' ', $compareVertical['vertical']));
+            $days = $replacements['days'] ?? '14';
+
+            $title = "{$competitorName} alternative for {$verticalName} · {$brand}";
+            $description = "Compare {$competitorName} vs Helpefi for {$verticalName} teams. Industry-specific features, AI automation, and transparent pricing. Start a {$days}-day free trial.";
+
+            return [$title, $description];
         }
 
         return [

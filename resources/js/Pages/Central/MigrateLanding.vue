@@ -4,6 +4,9 @@ import { computed } from 'vue';
 import CentralLayout from '../../Layouts/CentralLayout.vue';
 import { formatMarketingTemplate } from '../../composables/useMarketingEnglish.js';
 import CentralBreadcrumbs from '../../Components/Central/CentralBreadcrumbs.vue';
+import AuthorCard from '../../Components/Central/AuthorCard.vue';
+import CtaSection from '../../Components/Central/CtaSection.vue';
+import RelatedArticles from '../../Components/Central/RelatedArticles.vue';
 import FaqAccordion from '../../Components/Central/FaqAccordion.vue';
 
 const props = defineProps({
@@ -21,6 +24,7 @@ const sourceName = computed(() => props.content.source_name ?? props.source);
 const steps = computed(() => props.content.steps ?? []);
 const checklist = computed(() => props.content.checklist ?? []);
 const faqs = computed(() => props.content.faq ?? []);
+const relatedLinks = computed(() => props.content.related_links ?? []);
 
 const chrome = (key, params = {}) => formatMarketingTemplate(props.marketingChrome[key] ?? key, {
     brand: platformName.value,
@@ -74,6 +78,16 @@ const accent = computed(() => {
             </div>
         </section>
 
+        <!-- Article metadata -->
+        <AuthorCard
+            :updated-at="content.updated_at"
+            :author="content.author ?? {}"
+            :reviewer="content.reviewer ?? {}"
+            :updated-label="chrome('last_updated_on')"
+            :written-label="chrome('written_by')"
+            :reviewed-label="chrome('reviewed_by')"
+        />
+
         <section class="bg-white py-16 dark:bg-slate-900 sm:py-20">
             <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                 <h2 class="text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100">{{ chrome('migrate_steps_title') }}</h2>
@@ -102,6 +116,23 @@ const accent = computed(() => {
             </div>
         </section>
 
+        <!-- Screenshots gallery -->
+        <section v-if="content.screenshots?.length" class="border-y border-slate-200 bg-slate-50 py-16 dark:border-slate-800 dark:bg-slate-950 sm:py-20">
+            <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                <h2 class="text-2xl font-bold text-slate-900 dark:text-slate-100">{{ chrome('screenshots') }}</h2>
+                <div class="mt-8 grid gap-8 md:grid-cols-2">
+                    <figure v-for="(shot, index) in content.screenshots" :key="index" class="overflow-hidden rounded-2xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900" :aria-label="shot.caption || shot.alt">
+                        <div class="aspect-video bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400 text-sm" aria-hidden="true">
+                            <span class="italic">Screenshot coming soon</span>
+                        </div>
+                        <figcaption class="border-t border-slate-200 px-5 py-4 text-sm text-slate-600 dark:border-slate-800 dark:text-slate-400">
+                            {{ shot.caption || shot.alt }}
+                        </figcaption>
+                    </figure>
+                </div>
+            </div>
+        </section>
+
         <FaqAccordion
             :items="faqs"
             :title="chrome('faq')"
@@ -112,12 +143,32 @@ const accent = computed(() => {
             section-class="bg-white py-16 dark:bg-slate-900 sm:py-20"
         />
 
-        <section class="bg-slate-950 py-16 text-center sm:py-24">
-            <div class="mx-auto max-w-3xl px-4">
-                <h2 class="text-3xl font-bold text-white">{{ content.cta_title }}</h2>
-                <p class="mt-4 text-lg text-slate-400">{{ content.cta_body }}</p>
-                <Link href="/register" class="mt-8 inline-flex rounded-2xl bg-white px-10 py-4 text-sm font-bold text-slate-900">Start {{ trialDays }}-day free trial</Link>
+        <RelatedArticles
+            :items="relatedLinks"
+            title="Explore related resources"
+            variant="links"
+        />
+
+        <!-- External references -->
+        <section v-if="content.external_references?.length" class="border-y border-slate-200 bg-slate-50 py-12 dark:border-slate-800 dark:bg-slate-950" style="content-visibility:auto">
+            <div class="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
+                <h2 class="text-lg font-semibold text-slate-900 dark:text-slate-100">{{ chrome('external_references') }}</h2>
+                <ul class="mt-4 space-y-4">
+                    <li v-for="(ref, index) in content.external_references" :key="index" class="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
+                        <a :href="ref.url" target="_blank" rel="noopener noreferrer" class="font-medium text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
+                            {{ ref.title }}<span class="sr-only"> (opens in new tab)</span> →
+                        </a>
+                        <p v-if="ref.description" class="mt-1 text-sm text-slate-600 dark:text-slate-400">{{ ref.description }}</p>
+                    </li>
+                </ul>
             </div>
         </section>
+
+        <CtaSection
+            :title="content.cta_title"
+            :body="content.cta_body"
+            :primary-label="`Start ${trialDays}-day free trial`"
+            primary-href="/register"
+        />
     </CentralLayout>
 </template>

@@ -31,4 +31,10 @@ return [
     'insurance' => [
         'accent' => 'emerald',
     ],
+    'retail' => [
+        'accent' => 'amber',
+    ],
+    'manufacturing' => [
+        'accent' => 'rose',
+    ],
 ];

@@ -8,6 +8,13 @@ return array (
   'hero_title_line1' => 'Your AI helpdesk.',
   'hero_title_line2' => 'One platform. Every channel.',
   'hero_subtitle' => 'Resolve tickets faster with AI Copilot, deflect repetitive questions before they hit your queue, and run support plus optional ITSM from a single workspace — inbox, chat, knowledge base, and SLAs included.',
+  'intro' => 'Helpefi is an AI-native helpdesk platform built for support and IT teams that have outgrown shared inboxes, spreadsheet trackers, and disconnected tool stacks. Every customer conversation—whether it arrives by email, live chat, SMS, or your branded portal—lands in one shared inbox with assignment rules, collision detection, SLA timers, and full thread history. Agents work from a single workspace instead of juggling Gmail tabs, Slack threads, and legacy ITSM consoles that never agreed on who owns the customer.
+
+The platform is modular by design. Start with core ticketing, knowledge base, and SLA policies on Starter. Add automation, live chat, and service catalog workflows on Professional. Enable AI Copilot, integrations, SSO, custom domains, and optional data residency on Enterprise. Service Desk ITSM extends the same workspace when internal incidents, change requests, and catalog approvals mature—without forcing a separate product for employee service. Each workspace runs on its own database for hard isolation between brands, subsidiaries, or agency clients.
+
+AI is assistive, not autonomous. Copilot drafts replies grounded in published articles; deflection answers customers on the portal and chat widget before tickets are created; triage suggests priority and routing that agents can override. Your team stays accountable for every outbound message while handle times drop and repeat questions shrink. Compare Helpefi against Zendesk, Freshdesk, Intercom, and other suites on our comparison hub, then run a parallel trial with your real mailbox volume before your next renewal.
+
+This homepage summarizes how Helpefi replaces three to five tools with one calm queue: unified inbox, semantic knowledge base, SLA management, optional ITSM, and flat AI packaging finance can forecast. Migration guides cover Zendesk, Freshdesk, Intercom, and other suites when you are ready to parallel-run before cutover. Explore feature pillars for shared inbox, AI agent, and SLA depth—or jump straight into a {days}-day free trial with full platform access and no credit card required.',
   'hero_subtitle_ai' => 'Built-in AI',
   'hero_ai_heading' => 'AI-native from day one',
   'hero_ai_link' => 'See it live →',
@@ -728,5 +735,38 @@ return array (
     'body' => 'Join teams who replaced scattered inboxes and separate ITSM tools with one modern helpdesk. Setup takes minutes — not weeks.',
     'start_trial' => 'Start {days}-day free trial',
     'sign_in' => 'Sign in to workspace',
+  ),
+  'deep_dives' =>
+  array (
+    0 =>
+    array (
+      'title' => 'Unified inbox and omnichannel ticketing',
+      'body' => 'Helpefi treats every channel as a first-class ticket source. Email arrives via OAuth, IMAP, or forwarding and threads automatically by conversation. Live chat sessions convert to tracked tickets with visitor context preserved when the visitor leaves. SMS through Twilio and portal submissions share the same queue, assignment rules, and SLA policies. Agents see collision warnings when a teammate is viewing or replying, internal notes for collaboration, and @mentions that never leak to the customer thread. Multi-brand workspaces route tickets to the right inbox and knowledge base skin without maintaining separate helpdesk instances.',
+    ),
+    1 =>
+    array (
+      'title' => 'Knowledge base, deflection, and customer portal',
+      'body' => 'Self-service is not an afterthought. Publish articles with collections, versions, and locale support; expose them on a branded portal with semantic search that matches customer wording to article intent. Deflection suggests articles on portal submit and in the chat widget before a human connects. CSAT surveys after resolution tie feedback to agents and content gaps. Service catalog request types can require approvals before fulfillment, bridging customer-facing support and internal IT workflows when you enable Service Desk ITSM.',
+    ),
+    2 =>
+    array (
+      'title' => 'SLA policies, automation, and measurable performance',
+      'body' => 'SLA management includes business hours, holiday calendars, priority tiers, and breach escalations that notify managers before customers notice silence. Automation rules assign, tag, notify, and escalate based on conditions your leads can explain on a whiteboard—not invisible trigger sprawl. Macros and canned responses speed compliant replies. Dashboards show queue depth, first-response times, resolution rates, and agent workload without exporting spreadsheets. Combine SLA timers with automation so approaching breaches trigger reassignment instead of silent failures.',
+    ),
+    3 =>
+    array (
+      'title' => 'AI Copilot, triage, and responsible rollout',
+      'body' => 'AI Copilot drafts replies from ticket context and published knowledge; agents review every message before send. Triage suggests priority, tags, and routing hints on new tickets that humans can accept or override. Deflection answers repetitive questions on portal and chat, reducing volume without hiding complex cases behind bots. Helpefi AI is priced as a modular flat add-on or included on higher tiers—not a per-seat tax that punishes hiring. Roll out in phases: enable deflection first, then Copilot for a pilot team, then measure handle time and CSAT before expanding seats.',
+    ),
+    4 =>
+    array (
+      'title' => 'Integrations, API, and enterprise controls',
+      'body' => 'Connect Slack, Microsoft Teams, Jira, Linear, HubSpot, Salesforce, Shopify, and Zapier so revenue and engineering context appears beside tickets. REST API and signed webhooks let you push events into internal tooling. Enterprise plans add SAML and OIDC SSO, custom workspace domains, audit logs, and optional bring-your-own database and object storage for data residency. Each workspace is isolated with its own database—important for agencies, regulated industries, and multi-subsidiary operators who cannot accept soft tenancy stories. Review the integrations hub for OAuth setup notes, webhook signing, and role-based access patterns before you connect production systems.',
+    ),
+  ),
+  'conclusion' =>
+  array (
+    'title' => 'Start with a free trial, scale without switching platforms',
+    'body' => 'Helpefi is built for teams tired of renewing a stack of inbox, chat, KB, and ITSM products that never share context. Connect your first channel during a {days}-day trial, invite agents, publish help articles, and configure SLAs in an afternoon. Compare plans on the pricing page, read in-depth guides on shared inbox, AI agent, and SLA management, or explore Zendesk and Freshdesk alternatives on the compare hub. When you are ready, upgrade inside your workspace—no migration project required to unlock automation, AI, or ITSM.',
   ),
 );

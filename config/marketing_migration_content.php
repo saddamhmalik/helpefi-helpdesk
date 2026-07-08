@@ -60,8 +60,70 @@ return array (
         'a' => 'Yes. Business hours, tier policies, breach alerts, and escalations are built in on all plans.',
       ),
     ),
+    'updated_at' => '2026-07-08',
+    'author' => 
+    array (
+      'name' => 'Sarah Chen',
+      'role' => 'Product Marketing Manager',
+    ),
+    'reviewer' => 
+    array (
+      'name' => 'David Park',
+      'role' => 'VP of Engineering',
+    ),
+    'screenshots' => 
+    array (
+    ),
+    'external_references' => 
+    array (
+      0 => 
+      array (
+        'url' => 'https://www.g2.com/products/helpefi/reviews',
+        'title' => 'Helpefi on G2',
+        'description' => 'User reviews and ratings for Helpefi on G2.',
+      ),
+      1 => 
+      array (
+        'url' => 'https://helpefi.com/docs/security',
+        'title' => 'Helpefi Security & Compliance',
+        'description' => 'Helpefi security practices, certifications, and data protection policies.',
+      ),
+    ),
     'cta_title' => 'Start your Zendesk migration trial',
     'cta_body' => 'Import sample data free, run parallel for a week, and compare handle time before you cancel Zendesk.',
+    'related_links' => 
+    array (
+      0 => 
+      array (
+        'href' => '/compare/zendesk',
+        'label' => 'Helpefi vs Zendesk',
+      ),
+      1 => 
+      array (
+        'href' => '/compare/intercom',
+        'label' => 'Helpefi vs Intercom',
+      ),
+      2 => 
+      array (
+        'href' => '/ai-agent',
+        'label' => 'AI Agent',
+      ),
+      3 => 
+      array (
+        'href' => '/shared-inbox',
+        'label' => 'Shared Inbox',
+      ),
+      4 => 
+      array (
+        'href' => '/sla-management',
+        'label' => 'SLA Management',
+      ),
+      5 => 
+      array (
+        'href' => '/pricing',
+        'label' => 'Pricing',
+      ),
+    ),
   ),
   'freshdesk' => 
   array (
@@ -116,8 +178,70 @@ return array (
         'a' => 'Recreate them with {brand} triggers, macros, and SLA policies. Most common rules map directly.',
       ),
     ),
+    'updated_at' => '2026-07-08',
+    'author' => 
+    array (
+      'name' => 'Sarah Chen',
+      'role' => 'Product Marketing Manager',
+    ),
+    'reviewer' => 
+    array (
+      'name' => 'David Park',
+      'role' => 'VP of Engineering',
+    ),
+    'screenshots' => 
+    array (
+    ),
+    'external_references' => 
+    array (
+      0 => 
+      array (
+        'url' => 'https://www.g2.com/products/helpefi/reviews',
+        'title' => 'Helpefi on G2',
+        'description' => 'User reviews and ratings for Helpefi on G2.',
+      ),
+      1 => 
+      array (
+        'url' => 'https://helpefi.com/docs/security',
+        'title' => 'Helpefi Security & Compliance',
+        'description' => 'Helpefi security practices, certifications, and data protection policies.',
+      ),
+    ),
     'cta_title' => 'Try migrating from Freshdesk',
     'cta_body' => 'Start a free trial, import your export, and compare side by side with Freshdesk.',
+    'related_links' => 
+    array (
+      0 => 
+      array (
+        'href' => '/compare/freshdesk',
+        'label' => 'Helpefi vs Freshdesk',
+      ),
+      1 => 
+      array (
+        'href' => '/compare/freshservice',
+        'label' => 'Helpefi vs Freshservice',
+      ),
+      2 => 
+      array (
+        'href' => '/ai-agent',
+        'label' => 'AI Agent',
+      ),
+      3 => 
+      array (
+        'href' => '/shared-inbox',
+        'label' => 'Shared Inbox',
+      ),
+      4 => 
+      array (
+        'href' => '/automation',
+        'label' => 'Automation',
+      ),
+      5 => 
+      array (
+        'href' => '/pricing',
+        'label' => 'Pricing',
+      ),
+    ),
   ),
   'intercom' => 
   array (
@@ -171,8 +295,70 @@ return array (
         'a' => '{brand} AI Copilot is a flat monthly add-on or bundled on Enterprise — not per-resolution fees.',
       ),
     ),
+    'updated_at' => '2026-07-08',
+    'author' => 
+    array (
+      'name' => 'Sarah Chen',
+      'role' => 'Product Marketing Manager',
+    ),
+    'reviewer' => 
+    array (
+      'name' => 'David Park',
+      'role' => 'VP of Engineering',
+    ),
+    'screenshots' => 
+    array (
+    ),
+    'external_references' => 
+    array (
+      0 => 
+      array (
+        'url' => 'https://www.g2.com/products/helpefi/reviews',
+        'title' => 'Helpefi on G2',
+        'description' => 'User reviews and ratings for Helpefi on G2.',
+      ),
+      1 => 
+      array (
+        'url' => 'https://helpefi.com/docs/security',
+        'title' => 'Helpefi Security & Compliance',
+        'description' => 'Helpefi security practices, certifications, and data protection policies.',
+      ),
+    ),
     'cta_title' => 'Migrate from Intercom with a free trial',
     'cta_body' => 'Run chat and email on {brand} for two weeks and compare total AI plus seat cost.',
+    'related_links' => 
+    array (
+      0 => 
+      array (
+        'href' => '/compare/intercom',
+        'label' => 'Helpefi vs Intercom',
+      ),
+      1 => 
+      array (
+        'href' => '/compare/help-scout',
+        'label' => 'Helpefi vs Help Scout',
+      ),
+      2 => 
+      array (
+        'href' => '/shared-inbox',
+        'label' => 'Shared Inbox',
+      ),
+      3 => 
+      array (
+        'href' => '/ai-agent',
+        'label' => 'AI Agent',
+      ),
+      4 => 
+      array (
+        'href' => '/knowledge-base',
+        'label' => 'Knowledge Base',
+      ),
+      5 => 
+      array (
+        'href' => '/pricing',
+        'label' => 'Pricing',
+      ),
+    ),
   ),
   'helpscout' => 
   array (
@@ -226,8 +412,70 @@ return array (
         'a' => 'Yes. Forward email to both systems briefly or route one brand/channel to {brand} first.',
       ),
     ),
+    'updated_at' => '2026-07-08',
+    'author' => 
+    array (
+      'name' => 'Sarah Chen',
+      'role' => 'Product Marketing Manager',
+    ),
+    'reviewer' => 
+    array (
+      'name' => 'David Park',
+      'role' => 'VP of Engineering',
+    ),
+    'screenshots' => 
+    array (
+    ),
+    'external_references' => 
+    array (
+      0 => 
+      array (
+        'url' => 'https://www.g2.com/products/helpefi/reviews',
+        'title' => 'Helpefi on G2',
+        'description' => 'User reviews and ratings for Helpefi on G2.',
+      ),
+      1 => 
+      array (
+        'url' => 'https://helpefi.com/docs/security',
+        'title' => 'Helpefi Security & Compliance',
+        'description' => 'Helpefi security practices, certifications, and data protection policies.',
+      ),
+    ),
     'cta_title' => 'Upgrade from Help Scout',
     'cta_body' => 'Start a trial, connect email, and add SLA plus chat when you\'re ready.',
+    'related_links' => 
+    array (
+      0 => 
+      array (
+        'href' => '/compare/help-scout',
+        'label' => 'Helpefi vs Help Scout',
+      ),
+      1 => 
+      array (
+        'href' => '/compare/front',
+        'label' => 'Helpefi vs Front',
+      ),
+      2 => 
+      array (
+        'href' => '/shared-inbox',
+        'label' => 'Shared Inbox',
+      ),
+      3 => 
+      array (
+        'href' => '/sla-management',
+        'label' => 'SLA Management',
+      ),
+      4 => 
+      array (
+        'href' => '/live-chat',
+        'label' => 'Live Chat',
+      ),
+      5 => 
+      array (
+        'href' => '/pricing',
+        'label' => 'Pricing',
+      ),
+    ),
   ),
   'freshservice' => 
   array (
@@ -281,7 +529,69 @@ return array (
         'a' => 'Yes. {brand} unifies employee and customer channels in one platform.',
       ),
     ),
+    'updated_at' => '2026-07-08',
+    'author' => 
+    array (
+      'name' => 'Sarah Chen',
+      'role' => 'Product Marketing Manager',
+    ),
+    'reviewer' => 
+    array (
+      'name' => 'David Park',
+      'role' => 'VP of Engineering',
+    ),
+    'screenshots' => 
+    array (
+    ),
+    'external_references' => 
+    array (
+      0 => 
+      array (
+        'url' => 'https://www.g2.com/products/helpefi/reviews',
+        'title' => 'Helpefi on G2',
+        'description' => 'User reviews and ratings for Helpefi on G2.',
+      ),
+      1 => 
+      array (
+        'url' => 'https://helpefi.com/docs/security',
+        'title' => 'Helpefi Security & Compliance',
+        'description' => 'Helpefi security practices, certifications, and data protection policies.',
+      ),
+    ),
     'cta_title' => 'Replace Freshservice on your timeline',
     'cta_body' => 'Trial {brand} with Service Desk enabled and migrate one queue at a time.',
+    'related_links' => 
+    array (
+      0 => 
+      array (
+        'href' => '/compare/freshservice',
+        'label' => 'Helpefi vs Freshservice',
+      ),
+      1 => 
+      array (
+        'href' => '/compare/freshdesk',
+        'label' => 'Helpefi vs Freshdesk',
+      ),
+      2 => 
+      array (
+        'href' => '/sla-management',
+        'label' => 'SLA Management',
+      ),
+      3 => 
+      array (
+        'href' => '/automation',
+        'label' => 'Automation',
+      ),
+      4 => 
+      array (
+        'href' => '/shared-inbox',
+        'label' => 'Shared Inbox',
+      ),
+      5 => 
+      array (
+        'href' => '/pricing',
+        'label' => 'Pricing',
+      ),
+    ),
   ),
 );

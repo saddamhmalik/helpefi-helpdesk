@@ -39,3 +39,36 @@
         </div>
     </div>
 </section>
+
+@if (!empty($page['sections']))
+    <section class="bg-white py-12 sm:py-16">
+        <div class="mx-auto max-w-3xl space-y-10 px-4 sm:px-6 lg:px-8">
+            @foreach ($page['sections'] as $section)
+                <article>
+                    @if (!empty($section['title']))
+                        <h2 class="text-xl font-semibold text-slate-900">{{ $section['title'] }}</h2>
+                    @endif
+                    @if (!empty($section['body']))
+                        <p class="mt-3 text-base leading-relaxed text-slate-700">{{ $section['body'] }}</p>
+                    @endif
+                </article>
+            @endforeach
+        </div>
+    </section>
+@endif
+
+@if (!empty($page['faqs']))
+    <section class="bg-slate-50 py-12 sm:py-16">
+        <div class="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
+            <h2 class="text-2xl font-bold text-slate-900">Frequently asked questions</h2>
+            <dl class="mt-8 space-y-6">
+                @foreach ($page['faqs'] as $faq)
+                    <div>
+                        <dt class="text-lg font-semibold text-slate-900">{{ $faq['q'] }}</dt>
+                        <dd class="mt-2 text-slate-600">{{ $faq['a'] }}</dd>
+                    </div>
+                @endforeach
+            </dl>
+        </div>
+    </section>
+@endif

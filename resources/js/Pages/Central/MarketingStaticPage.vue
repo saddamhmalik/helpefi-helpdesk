@@ -6,6 +6,8 @@ import { useCurrency } from '../../composables/useCurrency.js';
 import { useBillingInterval } from '../../composables/useBillingInterval.js';
 import { formatMarketingTemplate, useMarketingEnglish } from '../../composables/useMarketingEnglish.js';
 import CentralBreadcrumbs from '../../Components/Central/CentralBreadcrumbs.vue';
+import CtaSection from '../../Components/Central/CtaSection.vue';
+import FaqAccordion from '../../Components/Central/FaqAccordion.vue';
 
 const props = defineProps({
     brand: { type: String, default: 'helpefi' },
@@ -45,6 +47,10 @@ const copy = computed(() => ({
 }));
 
 const sections = computed(() => props.content.sections ?? []);
+
+const faqs = computed(() => props.content.faq ?? []);
+
+const relatedLinks = computed(() => props.content.related_links ?? []);
 
 const selectedCurrencyCode = ref(props.currency?.code ?? props.baseCurrency.code);
 
@@ -141,20 +147,28 @@ const verticalCardClass = (slug) => verticalAccentMap[slug] ?? verticalAccentMap
             </div>
         </section>
 
+        <section v-if="content.intro" class="bg-white py-12 dark:bg-slate-900 sm:py-16">
+            <div class="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
+                <p class="whitespace-pre-line text-base leading-relaxed text-slate-600 dark:text-slate-400">{{ content.intro }}</p>
+            </div>
+        </section>
+
         <section v-if="isPricing && pricedPlans.length" class="bg-slate-950 pb-16 text-white">
             <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                 <div class="mb-8 flex flex-col items-center">
-                    <div class="inline-flex rounded-xl border border-white/10 bg-white/5 p-1 backdrop-blur">
+                    <div class="inline-flex rounded-xl border border-white/10 bg-white/5 p-1 backdrop-blur" role="group" aria-label="Billing interval">
                         <button
                             type="button"
                             class="rounded-lg px-5 py-2.5 text-sm font-semibold transition"
                             :class="billingInterval === 'month' ? 'bg-white text-slate-900 shadow-lg' : 'text-slate-300 hover:text-white'"
+                            :aria-pressed="billingInterval === 'month'"
                             @click="billingInterval = 'month'"
                         >{{ label('monthly') }}</button>
                         <button
                             type="button"
                             class="rounded-lg px-5 py-2.5 text-sm font-semibold transition"
                             :class="billingInterval === 'year' ? 'bg-white text-slate-900 shadow-lg' : 'text-slate-300 hover:text-white'"
+                            :aria-pressed="billingInterval === 'year'"
                             @click="billingInterval = 'year'"
                         >{{ label('yearly') }}</button>
                     </div>
@@ -165,17 +179,19 @@ const verticalCardClass = (slug) => verticalAccentMap[slug] ?? verticalAccentMap
                             <path stroke-linecap="round" d="M3 12h18M12 3c2.5 2.7 2.5 15.3 0 18M12 3c-2.5 2.7-2.5 15.3 0 18" />
                         </svg>
                         <span>{{ label('show_prices_in') }}</span>
-                        <div class="inline-flex overflow-hidden rounded-lg border border-white/10">
+                        <div class="inline-flex overflow-hidden rounded-lg border border-white/10" role="group" aria-label="Currency selector">
                             <button
                                 type="button"
                                 class="px-3 py-1 text-xs font-semibold transition"
                                 :class="selectedCurrencyCode === baseCurrency.code ? 'bg-white text-slate-900' : 'text-slate-300 hover:text-white'"
+                                :aria-pressed="selectedCurrencyCode === baseCurrency.code"
                                 @click="setCurrency(baseCurrency.code)"
                             >{{ baseCurrency.symbol }} {{ baseCurrency.code }}</button>
                             <button
                                 type="button"
                                 class="px-3 py-1 text-xs font-semibold transition"
                                 :class="selectedCurrencyCode === indiaCurrency.code ? 'bg-white text-slate-900' : 'text-slate-300 hover:text-white'"
+                                :aria-pressed="selectedCurrencyCode === indiaCurrency.code"
                                 @click="setCurrency(indiaCurrency.code)"
                             >{{ indiaCurrency.symbol }} {{ indiaCurrency.code }}</button>
                         </div>
@@ -203,7 +219,7 @@ const verticalCardClass = (slug) => verticalAccentMap[slug] ?? verticalAccentMap
                         </p>
                         <ul class="mt-8 flex-1 space-y-3">
                             <li v-for="item in planHighlights(plan)" :key="item" class="flex items-start gap-2.5 text-sm text-slate-300">
-                                <svg class="mt-0.5 h-4 w-4 shrink-0 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+                                <svg class="mt-0.5 h-4 w-4 shrink-0 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
                                 {{ item }}
                             </li>
                         </ul>
@@ -234,7 +250,7 @@ const verticalCardClass = (slug) => verticalAccentMap[slug] ?? verticalAccentMap
                             <p v-if="planTaglines[plan.slug]" class="mt-2 text-sm text-slate-400">{{ planTaglines[plan.slug] }}</p>
                             <ul class="mt-5 grid gap-x-6 gap-y-2 sm:grid-cols-2">
                                 <li v-for="item in planHighlights(plan)" :key="item" class="flex items-start gap-2.5 text-sm text-slate-300">
-                                    <svg class="mt-0.5 h-4 w-4 shrink-0 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+                                    <svg class="mt-0.5 h-4 w-4 shrink-0 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
                                     {{ item }}
                                 </li>
                             </ul>
@@ -308,6 +324,18 @@ const verticalCardClass = (slug) => verticalAccentMap[slug] ?? verticalAccentMap
             </div>
         </section>
 
+        <section v-if="content.deep_dives?.length" class="bg-slate-50 py-16 dark:bg-slate-950 sm:py-20">
+            <div class="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
+                <h2 class="text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100">Pricing guide</h2>
+                <div class="mt-10 space-y-10">
+                    <article v-for="(section, index) in content.deep_dives" :key="index">
+                        <h3 class="text-xl font-semibold text-slate-900 dark:text-slate-100">{{ section.title }}</h3>
+                        <p class="mt-3 whitespace-pre-line text-base leading-relaxed text-slate-700 dark:text-slate-300">{{ section.body }}</p>
+                    </article>
+                </div>
+            </div>
+        </section>
+
         <section v-if="sections.length" class="bg-white py-16 dark:bg-slate-900 sm:py-20">
             <div class="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
                 <article v-for="(section, index) in sections" :key="index" class="mb-10 last:mb-0">
@@ -327,6 +355,29 @@ const verticalCardClass = (slug) => verticalAccentMap[slug] ?? verticalAccentMap
             </div>
         </section>
 
+        <section v-if="relatedLinks.length" class="border-t border-slate-200 bg-slate-50 py-12 dark:border-slate-800 dark:bg-slate-950">
+            <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                <h2 class="text-lg font-semibold text-slate-900 dark:text-slate-100">Related resources</h2>
+                <div class="mt-4 flex flex-wrap gap-3">
+                    <Link
+                        v-for="(link, index) in relatedLinks"
+                        :key="index"
+                        :href="link.href"
+                        class="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-blue-300 hover:text-blue-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+                    >
+                        {{ link.label }}
+                    </Link>
+                </div>
+            </div>
+        </section>
+
+        <FaqAccordion
+            v-if="faqs.length"
+            :items="faqs"
+            :title="isPricing ? 'Pricing FAQ' : 'FAQ'"
+            section-class="bg-white py-16 dark:bg-slate-900"
+        />
+
         <section v-if="featurePages.length && !isPricing && !isLegalPage && !isIndustries" class="border-t border-slate-200 bg-slate-50 py-12 dark:border-slate-800 dark:bg-slate-950">
             <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                 <h2 class="text-lg font-semibold text-slate-900 dark:text-slate-100">{{ marketingChrome.explore_product_features ?? 'Explore product features' }}</h2>
@@ -343,12 +394,12 @@ const verticalCardClass = (slug) => verticalAccentMap[slug] ?? verticalAccentMap
             </div>
         </section>
 
-        <section v-if="copy.ctaTitle" class="bg-slate-950 py-16">
-            <div class="mx-auto max-w-4xl px-4 text-center">
-                <h2 class="text-3xl font-bold text-white">{{ copy.ctaTitle }}</h2>
-                <p class="mt-4 text-lg text-slate-400">{{ copy.ctaBody }}</p>
-                <Link href="/register" class="mt-8 inline-flex rounded-2xl bg-white px-10 py-4 text-sm font-bold text-slate-900">Start {{ trialDays }}-day free trial</Link>
-            </div>
-        </section>
+        <CtaSection
+            v-if="copy.ctaTitle"
+            :title="copy.ctaTitle"
+            :body="copy.ctaBody"
+            :primary-label="`Start ${trialDays}-day free trial`"
+            primary-href="/register"
+        />
     </CentralLayout>
 </template>

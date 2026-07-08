@@ -1,0 +1,26 @@
+<svg width="1200" height="630" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0f172a"/>
+      <stop offset="100%" style="stop-color:#1e1b4b"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#3b82f6"/>
+      <stop offset="100%" style="stop-color:#2563eb"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <rect x="0" y="0" width="1200" height="8" fill="url(#accent)"/>
+  <text x="80" y="240" font-family="system-ui,-apple-system,sans-serif" font-size="46" font-weight="800" fill="#ffffff">Helpefi vs Jira Service Mgmt</text>
+  <text x="80" y="310" font-family="system-ui,-apple-system,sans-serif" font-size="26" font-weight="500" fill="#94a3b8">Lean ITSM and customer support in one platform</text>
+  <line x1="80" y1="350" x2="350" y2="350" stroke="#334155" stroke-width="2"/>
+  <text x="80" y="400" font-family="system-ui,-apple-system,sans-serif" font-size="22" font-weight="400" fill="#64748b"> Incident &amp; change management</text>
+  <text x="80" y="440" font-family="system-ui,-apple-system,sans-serif" font-size="22" font-weight="400" fill="#64748b" > Customer support tickets</text>
+  <text x="80" y="480" font-family="system-ui,-apple-system,sans-serif" font-size="22" font-weight="400" fill="#64748b"> AI Copilot &amp; knowledge base</text>
+  <text x="560" y="400" font-family="system-ui,-apple-system,sans-serif" font-size="22" font-weight="400" fill="#64748b"> SLA policies &amp; escalations</text>
+  <text x="560" y="440" font-family="system-ui,-apple-system,sans-serif" font-size="22" font-weight="400" fill="#64748b"> Service catalog &amp; approvals</text>
+  <text x="560" y="480" font-family="system-ui,-apple-system,sans-serif" font-size="22" font-weight="400" fill="#64748b"> Major-incident war rooms</text>
+  <text x="80" y="550" font-family="system-ui,-apple-system,sans-serif" font-size="20" font-weight="600" fill="#60a5fa">helpefi.com/compare/jira-service-management</text>
+  <rect x="980" y="520" width="140" height="40" rx="20" fill="#3b82f6"/>
+  <text x="1050" y="546" font-family="system-ui,-apple-system,sans-serif" font-size="16" font-weight="700" fill="#ffffff" text-anchor="middle">Free trial</text>
+</svg>

@@ -31,6 +31,13 @@ class MarketingContentInterpolator
             $value = str_replace($search, $replace, $value);
         }
 
+        // Strip heredoc-style pipe markers used as visual paragraph separators
+        // in multi-line PHP strings. Pattern matches lines starting with optional
+        // whitespace, a pipe, and optional whitespace after the pipe.
+        if (str_contains($value, "\n")) {
+            $value = preg_replace('/^[ \t]*\|[ \t]?/m', '', $value);
+        }
+
         return $value;
     }
 

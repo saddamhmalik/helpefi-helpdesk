@@ -20,7 +20,6 @@ const pages = import.meta.glob([
     './Pages/Central/FeatureLanding.vue',
     './Pages/Central/IntegrationLanding.vue',
     './Pages/Central/VerticalLanding.vue',
-    './Pages/Central/CompetitorComparison.vue',
     './Pages/Central/CompareLanding.vue',
     './Pages/Central/MigrateLanding.vue',
     './Pages/Central/MarketingStaticPage.vue',
@@ -56,6 +55,12 @@ createInertiaApp({
         registerFlashToasts();
         syncCsrfMeta(props.initialPage.props.csrf_token);
 
+        // Unhide the real app immediately before async i18n load
+        const shell = document.getElementById('marketing-first-paint');
+        if (shell) {
+            document.body.classList.remove('marketing-fp-pending');
+        }
+
         const initialLocale = props.initialPage.props.locale ?? 'en';
         const initialDirection = props.initialPage.props.direction ?? 'ltr';
         const i18n = await createMarketingI18n(initialLocale);
@@ -75,9 +80,7 @@ createInertiaApp({
 
         showInitialFlashToasts(props.initialPage.props);
 
-        const shell = document.getElementById('marketing-first-paint');
         if (shell) {
-            document.body.classList.remove('marketing-fp-pending');
             shell.remove();
         }
     },

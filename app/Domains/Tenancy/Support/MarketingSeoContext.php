@@ -12,6 +12,7 @@ class MarketingSeoContext
         'central.register',
         'central.vertical',
         'central.compare',
+        'central.compare.vertical',
         'central.compare.index',
         'central.migrate',
         'central.migrate.index',
@@ -46,6 +47,10 @@ class MarketingSeoContext
             ),
             $request->routeIs('central.compare') => CompareLandingDefinition::seoKey(
                 (string) (CompareLandingDefinition::slugFromComparison((string) $request->route('comparison')) ?? '')
+            ),
+            $request->routeIs('central.compare.vertical') => CompareVerticalDefinition::seoKey(
+                (string) $request->route('competitor'),
+                (string) $request->route('vertical'),
             ),
             $request->routeIs('central.migrate') => MigrateLandingDefinition::seoKey(
                 (string) $request->route('source')
