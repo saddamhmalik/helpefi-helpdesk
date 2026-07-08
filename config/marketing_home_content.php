@@ -14,7 +14,7 @@ The platform is modular by design. Start with core ticketing, knowledge base, an
 
 AI is assistive, not autonomous. Copilot drafts replies grounded in published articles; deflection answers customers on the portal and chat widget before tickets are created; triage suggests priority and routing that agents can override. Your team stays accountable for every outbound message while handle times drop and repeat questions shrink. Compare Helpefi against Zendesk, Freshdesk, Intercom, and other suites on our comparison hub, then run a parallel trial with your real mailbox volume before your next renewal.
 
-This homepage summarizes how Helpefi replaces three to five tools with one calm queue: unified inbox, semantic knowledge base, SLA management, optional ITSM, and flat AI packaging finance can forecast. Migration guides cover Zendesk, Freshdesk, Intercom, and other suites when you are ready to parallel-run before cutover. Explore feature pillars for shared inbox, AI agent, and SLA depth—or jump straight into a {days}-day free trial with full platform access and no credit card required.',
+This homepage covers the core platform for support and IT teams: unified inbox, semantic knowledge base, SLA management, optional ITSM, and flat AI packaging finance can forecast. Migration guides cover Zendesk, Freshdesk, Intercom, and other suites when you are ready to parallel-run before cutover. Explore feature pillars for shared inbox, AI agent, and SLA depth—or jump straight into a {days}-day free trial with full platform access and no credit card required.',
   'hero_subtitle_ai' => 'Built-in AI',
   'hero_ai_heading' => 'AI-native from day one',
   'hero_ai_link' => 'See it live →',
@@ -222,7 +222,7 @@ This homepage summarizes how Helpefi replaces three to five tools with one calm 
   array (
     'eyebrow' => 'Why teams switch',
     'title' => 'From tool chaos to one calm helpdesk',
-    'subtitle' => 'Most teams pay for 3–5 separate products and still lose context. {brand} replaces the stack — not adds to it.',
+    'subtitle' => 'Most teams run inbox, KB, and chat as separate products and lose context between them. {brand} unifies the stack — not adds to it.',
     'old_way_badge' => 'The old way',
     'old_way_title' => 'Five tabs. Zero context.',
     'old_way_body' => 'Agents hunt across disconnected tools while customers wait — and nothing syncs.',
@@ -566,7 +566,7 @@ This homepage summarizes how Helpefi replaces three to five tools with one calm 
     array (
       'feature' => 'Service Desk ITSM (changes, problems, major incidents)',
       'us' => true,
-      'them' => 'Separate product',
+      'them' => 'Separate ITSM product',
     ),
     4 => 
     array (
@@ -584,7 +584,7 @@ This homepage summarizes how Helpefi replaces three to five tools with one calm 
     array (
       'feature' => 'Skills routing & tier-based SLA policies',
       'us' => true,
-      'them' => 'Rare',
+      'them' => 'Not standard',
     ),
     7 => 
     array (
@@ -596,7 +596,7 @@ This homepage summarizes how Helpefi replaces three to five tools with one calm 
     array (
       'feature' => 'Major incident war rooms & post-incident review',
       'us' => true,
-      'them' => 'Separate product',
+      'them' => 'Separate ITSM product',
     ),
     9 => 
     array (
@@ -626,7 +626,7 @@ This homepage summarizes how Helpefi replaces three to five tools with one calm 
     array (
       'feature' => 'Bring your own database & object storage (data residency)',
       'us' => true,
-      'them' => 'Rare',
+      'them' => 'Not standard',
     ),
     14 => 
     array (
@@ -709,7 +709,7 @@ This homepage summarizes how Helpefi replaces three to five tools with one calm 
   'compare_section' => 
   array (
     'title' => '{brand} vs. pieced-together tools',
-    'subtitle' => 'One helpdesk for support and IT — without stacking separate inbox, KB, and ITSM products.',
+    'subtitle' => 'One helpdesk for support and IT — with database-per-tenant isolation, modular AI, and optional Service Desk ITSM built in, not bolted on.',
     'cta' => 'Get everything above — start free trial',
     'cta_footnote' => '{days}-day trial · No credit card · Full access',
   ),

@@ -7,8 +7,6 @@ return array (
   'hero_title' => 'Helpefi vs Front: ticket ops beyond the shared inbox',
   'hero_highlight' => 'A Front alternative for SLAs, portals, and accountable AI.',
   'hero_subtitle' => 'Front owns collaborative inboxes and comments — not full ITSM. Helpefi is a ticket-first AI helpdesk with optional.',
-  'logo_us' => '/images/compare/helpefi-mark.svg',
-  'logo_them' => '/images/compare/front-mark.svg',
   'intro' => 'Front turned shared mailboxes into a social workspace: teammates annotate threads with comments, assign conversations in view of the whole pod, and keep sales plus support staring at the same branded address. That collaboration model beats a naked Gmail label for early revenue teams who live in email nuance. Limits appear when executives request breach-grade SLA evidence across regions, when customers need a searchable knowledge portal that agents and AI both trust, when an agency must present distinct white-label domains per retainer, or when internal laptop and access requests somehow land in the same tool that was optimized for outbound polish and witty sidebar comments. Front is an excellent collaborative inbox — it is not a full ITSM platform, nor a multi-tenant CX desk with hard isolation boundaries.
 
 Helpefi starts from tickets as the system of record while preserving teammate coordination. Internal notes still exist, but macros, automation, SLA policies, portal branding, and Copilot drafts share one operational spine instead of living as inbox folklore. Chat creates tracked work items that join the same queue as email. Professional pricing with modular AI keeps forecasting calm for INR and USD buyers who rejected surprise usage curves. Database-per-tenant isolation lets each client or subsidiary sit behind a hard backup and offboarding boundary rather than a tagged folder inside one Front workspace. Optional Service Desk ITSM covers employee catalog requests if your team was previously hacking those flows through comments, tags, and hope. Integrations for Slack, Teams, Jira, Linear, Shopify, HubSpot, Salesforce, and Zapier bring context without turning the inbox into an accidental CRM.
@@ -501,13 +499,11 @@ Treat this page as decision support. Bring the matrix into your RFP, model three
   'updated_at' => '2026-07-08',
   'author' => 
   array (
-    'name' => 'Sarah Chen',
-    'role' => 'Product Marketing Manager',
+    'name' => 'Malik S',
   ),
   'reviewer' => 
   array (
-    'name' => 'David Park',
-    'role' => 'VP of Engineering',
+    'name' => 'Gandral V',
   ),
   'screenshots' => 
   array (
@@ -519,12 +515,6 @@ Treat this page as decision support. Bring the matrix into your RFP, model three
       'url' => 'https://www.g2.com/products/helpefi/reviews',
       'title' => 'Helpefi on G2',
       'description' => 'User reviews and ratings for Helpefi on G2.',
-    ),
-    1 => 
-    array (
-      'url' => 'https://helpefi.com/docs/security',
-      'title' => 'Helpefi Security & Compliance',
-      'description' => 'Helpefi security practices, certifications, and data protection policies.',
     ),
   ),
   'cta_title' => 'Benchmark Helpefi against Front on real queues',

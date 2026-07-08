@@ -81,6 +81,7 @@ class MarketingFirstPaintService
                 'central.static.support',
                 'central.static.privacy',
                 'central.static.terms',
+                'central.static.security',
             ) => $this->staticPage($this->staticSlugFromRoute($request)),
             default => null,
         };
@@ -96,6 +97,7 @@ class MarketingFirstPaintService
             'central.static.support' => 'support',
             'central.static.privacy' => 'privacy',
             'central.static.terms' => 'terms',
+            'central.static.security' => 'security',
             default => 'pricing',
         };
     }
@@ -206,7 +208,7 @@ class MarketingFirstPaintService
 
             $sections[] = [
                 'title' => 'Platform comparison: '.$feature,
-                'body' => "Helpefi: {$usText}. Typical stacked tools: {$themText}.",
+                'body' => "Helpefi: {$usText}. Pieced-together tools: {$themText}.",
             ];
         }
 

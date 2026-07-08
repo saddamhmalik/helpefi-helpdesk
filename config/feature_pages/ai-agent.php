@@ -248,13 +248,11 @@ The architectural point is unity: AI is a layer on tickets, knowledge, and SLAsâ
   'updated_at' => '2026-07-08',
   'author' =>
   array (
-    'name' => 'Sarah Chen',
-    'role' => 'Product Marketing Manager',
+    'name' => 'Malik S',
   ),
   'reviewer' =>
   array (
-    'name' => 'David Park',
-    'role' => 'VP of Engineering',
+    'name' => 'Gandral V',
   ),
   'screenshots' =>
   array (
@@ -266,12 +264,6 @@ The architectural point is unity: AI is a layer on tickets, knowledge, and SLAsâ
       'url' => 'https://www.g2.com/products/helpefi/reviews',
       'title' => 'Helpefi on G2',
       'description' => 'User reviews and ratings for Helpefi on G2.',
-    ),
-    1 =>
-    array (
-      'url' => 'https://helpefi.com/docs/security',
-      'title' => 'Helpefi Security & Compliance',
-      'description' => 'Helpefi security practices, certifications, and data protection policies.',
     ),
   ),
   'cta_title' => 'Try AI-powered support today',

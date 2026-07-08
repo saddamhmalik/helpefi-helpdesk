@@ -7,8 +7,6 @@ return array (
   'hero_title' => 'Helpefi vs Zoho Desk: escape Zoho One gravity without losing ticketing depth',
   'hero_highlight' => 'A Zoho Desk alternative when Zia and departments feel like.',
   'hero_subtitle' => 'Compare Helpefi and Zoho Desk on Zoho One packaging, Zia AI, departments versus multi-brand portals, automation, KB, live chat, SLA, integrations.',
-  'logo_us' => '/images/compare/helpefi-mark.svg',
-  'logo_them' => '/images/compare/zoho-desk-mark.svg',
   'intro' => 'Zoho Desk looks inexpensive until you count the gravity of Zoho One. Departments, blueprints, and Zia features attract buyers who already live in Zoho CRM, Campaigns, or Books, yet true multi-brand isolation is often shallower than agencies expect, and Zia\'s usefulness depends on how far you are willing to stay inside Zoho\'s universe. What begins as a department-based desk can become lock-in: every adjacent workflow wants another Zoho app, every integration outside the One bundle feels awkward, and reporting spans products that only make sense if your finance stack already standardized on Zoho. INR pricing remains attractive; architectural freedom is the hidden cost.
 
 Helpefi competes by being a dedicated helpdesk with intentional modularity instead of a suite upsell ladder. Ticket-first agents get SLA policies, knowledge collections that ground Copilot, live chat that creates cases, and Professional packaging that can include flat AI without requiring Zoho One participation. Multi-brand portals with custom domains and database-per-tenant isolation treat each brand or client as a hard workspace, not merely a department toggle. Optional Service Desk ITSM covers employee requests when needed. Slack, Teams, Jira, Linear, Shopify, HubSpot, Salesforce, and Zapier connect tools you already run — even if those tools are not Zoho-native — so sales and engineering context does not demand a One migration.
@@ -499,13 +497,11 @@ Use this page as an RFP appendix. Model three-year Desk-plus-Zia costs against H
   'updated_at' => '2026-07-08',
   'author' => 
   array (
-    'name' => 'Sarah Chen',
-    'role' => 'Product Marketing Manager',
+    'name' => 'Malik S',
   ),
   'reviewer' => 
   array (
-    'name' => 'David Park',
-    'role' => 'VP of Engineering',
+    'name' => 'Gandral V',
   ),
   'screenshots' => 
   array (
@@ -517,12 +513,6 @@ Use this page as an RFP appendix. Model three-year Desk-plus-Zia costs against H
       'url' => 'https://www.g2.com/products/helpefi/reviews',
       'title' => 'Helpefi on G2',
       'description' => 'User reviews and ratings for Helpefi on G2.',
-    ),
-    1 => 
-    array (
-      'url' => 'https://helpefi.com/docs/security',
-      'title' => 'Helpefi Security & Compliance',
-      'description' => 'Helpefi security practices, certifications, and data protection policies.',
     ),
   ),
   'cta_title' => 'Benchmark Helpefi against Zoho Desk on real tickets',

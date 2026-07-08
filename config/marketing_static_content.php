@@ -2,6 +2,7 @@
 
 return array (
   'pricing' => require __DIR__.'/static_pages/pricing.php',
+  'security' => require __DIR__.'/static_pages/security.php',
   'integrations' =>
   array (
     'nav_label' => 'Integrations',
@@ -226,7 +227,7 @@ return array (
       4 =>
       array (
         'title' => 'Security and compliance',
-        'body' => 'Helpefi publishes clear documentation on security practices, tenant isolation, encryption, audit logging, and data processing. Review the Privacy Policy and Terms of Service for legal terms. For security reports or vulnerability disclosures, email {contactEmail} with topic Security.',
+        'body' => 'Read the Security & Compliance page for tenant isolation, authentication, audit logging, AI data use, and optional data residency. Review the Privacy Policy and Terms of Service for legal terms. For security reports or vulnerability disclosures, email {contactEmail} with topic Security.',
       ),
     ),
     'faq' =>

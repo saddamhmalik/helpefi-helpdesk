@@ -5,10 +5,8 @@ return array (
   'competitor_name' => 'Freshdesk',
   'badge' => 'Helpefi vs Freshdesk',
   'hero_title' => 'One desk for support—without Freshworks product split',
-  'hero_highlight' => 'Helpefi vs Freshdesk — side by side.',
+  'hero_highlight' => 'Freddy packaging and Freshservice split versus one modular desk.',
   'hero_subtitle' => 'Freddy packaging, Freshservice split, and Freshworks stack sprawl versus Helpefi modular Copilot, optional Service Desk ITSM, and INR-friendly Professional.',
-  'logo_us' => '/images/compare/helpefi-mark.svg',
-  'logo_them' => '/images/compare/freshdesk-mark.svg',
   'intro' => 'India-facing and global SMB buyers often shortlist Freshdesk because onboarding feels gentle, Freddy demos impress stakeholders, and Freshworks commercials already speak their currency language. The later shock is architectural rather than cosmetic: customer work sits in Freshdesk while employee IT drifts into Freshservice, Freddy capabilities lurk behind plan gates finance did not model at signature, and adjacent Freshworks CRM or chat SKUs turn a single-desk purchase into a basket negotiation at renewal. What began as an approachable CX helpdesk becomes a multi-console estate with separate admins, separate AI attach rates, and quarterly forecasts that no longer resemble the original quote. Agents bounce between products that marketing still calls one platform while metrics refuse to unify cleanly across the Freshworks boundary.
 
 Helpefi collapses that split for teams that still want INR-friendly Professional pricing without accepting Freshworks sprawl as destiny. Agents work a unified inbox with macros, automation, SLA policies, and a knowledge base that also grounds Copilot suggestions before anything reaches the customer. Chat widgets create durable tickets instead of orphan messenger threads that never join the audit trail. When internal service requests mature, Service Desk ITSM extends the same workspace rather than forcing a Freshservice sibling with its own CMDB-oriented vocabulary. Isolation is literal: each Helpefi workspace gets its own database, which matters for agency brands, multi-subsidiary sellers, and compliance questionnaires that frown on soft tenancy stories. Integrations cover Slack, Teams, Jira, Linear, Shopify, HubSpot, Salesforce, and Zapier so revenue and engineering context travels with the ticket.
@@ -486,13 +484,11 @@ Keep Freshdesk if Freddy plus the broader Freshworks suite is already embedded i
   'updated_at' => '2026-07-08',
   'author' => 
   array (
-    'name' => 'Sarah Chen',
-    'role' => 'Product Marketing Manager',
+    'name' => 'Malik S',
   ),
   'reviewer' => 
   array (
-    'name' => 'David Park',
-    'role' => 'VP of Engineering',
+    'name' => 'Gandral V',
   ),
   'screenshots' => 
   array (
@@ -504,12 +500,6 @@ Keep Freshdesk if Freddy plus the broader Freshworks suite is already embedded i
       'url' => 'https://www.g2.com/products/helpefi/reviews',
       'title' => 'Helpefi on G2',
       'description' => 'User reviews and ratings for Helpefi on G2.',
-    ),
-    1 => 
-    array (
-      'url' => 'https://helpefi.com/docs/security',
-      'title' => 'Helpefi Security & Compliance',
-      'description' => 'Helpefi security practices, certifications, and data protection policies.',
     ),
   ),
   'cta_title' => 'Ready to simplify beyond Freshdesk?',

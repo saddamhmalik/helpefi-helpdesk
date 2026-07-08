@@ -123,6 +123,7 @@ Route::get('/contact', [MarketingContactController::class, 'index'])->name('cent
 Route::post('/contact', [MarketingContactController::class, 'store'])->name('central.contact.store');
 Route::get('/privacy', fn () => app(MarketingStaticPageController::class)->show('privacy'))->name('central.static.privacy');
 Route::get('/terms', fn () => app(MarketingStaticPageController::class)->show('terms'))->name('central.static.terms');
+Route::get('/security', fn () => app(MarketingStaticPageController::class)->show('security'))->name('central.static.security');
 Route::get('/blog', [BlogController::class, 'index'])->name('central.blog.index');
 Route::get('/blog/{slug}', [BlogController::class, 'show'])
     ->where('slug', '[a-z0-9-]+')

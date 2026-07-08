@@ -7,8 +7,6 @@ return array (
   'hero_title' => 'Helpefi vs Intercom: tickets over Fin per-resolution math',
   'hero_highlight' => 'When messenger wins chats but SLA, tickets, and AI cost need a helpdesk spine.',
   'hero_subtitle' => 'Intercom messenger-first Fin versus Helpefi ticket-first Copilot, SLA, knowledge base, chat-to-ticket, optional Service Desk, and database-per-tenant isolation.',
-  'logo_us' => '/images/compare/helpefi-mark.svg',
-  'logo_them' => '/images/compare/intercom-mark.svg',
   'intro' => 'Intercom conquered product-led growth by planting a messenger on every authenticated screen and letting Fin clear repetitive questions at machine speed. Celebrations fade when resolution invoices spike after a launch week, when a regulated account demands a durable ticket of record instead of a chat transcript, and when outbound Series campaigns collide with support SLAs that finance never quantified as part of the Fin story. Messenger-first architecture is a genuine product advantage until accountability, auditing, hybrid email coverage, and multi-brand portals become non-negotiable. Tickets exist inside Intercom, yet many mid-market operators still experience them as a secondary surface beneath the chat war room, which makes handoffs to engineering and finance awkward when someone asks “where is the case?”
 
 Helpefi inverts the priority without abandoning modern channels. Live chat embeds into the same collision-aware ticket timeline as email, portal, and SMS, so messenger velocity never orphans the audit trail. Copilot assists agents with knowledge-grounded drafts under flat packaging — not Fin-style per-resolution economics that punish successful product launches or seasonal spikes. Multi-brand portals, SSO on Professional, and database-per-tenant isolation address agencies and compliance buyers who cannot justify messenger-centric tenancy assumptions. When internal IT later needs catalog items and approvals, Service Desk ITSM extends Helpefi rather than introducing an unrelated ITSM console beside Intercom. Daily connectors include Slack, Microsoft Teams, Jira, Linear, Shopify, HubSpot, Salesforce, and Zapier so revenue and engineering context rides with every conversation that became a ticket.
@@ -508,13 +506,11 @@ If messenger polish and outbound Series still outweigh ticket accountability aft
   'updated_at' => '2026-07-08',
   'author' => 
   array (
-    'name' => 'Sarah Chen',
-    'role' => 'Product Marketing Manager',
+    'name' => 'Malik S',
   ),
   'reviewer' => 
   array (
-    'name' => 'David Park',
-    'role' => 'VP of Engineering',
+    'name' => 'Gandral V',
   ),
   'screenshots' => 
   array (
@@ -526,12 +522,6 @@ If messenger polish and outbound Series still outweigh ticket accountability aft
       'url' => 'https://www.g2.com/products/helpefi/reviews',
       'title' => 'Helpefi on G2',
       'description' => 'User reviews and ratings for Helpefi on G2.',
-    ),
-    1 => 
-    array (
-      'url' => 'https://helpefi.com/docs/security',
-      'title' => 'Helpefi Security & Compliance',
-      'description' => 'Helpefi security practices, certifications, and data protection policies.',
     ),
   ),
   'cta_title' => 'Benchmark Helpefi against Intercom',

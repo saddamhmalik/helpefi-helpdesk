@@ -63,13 +63,11 @@ return array (
     'updated_at' => '2026-07-08',
     'author' => 
     array (
-      'name' => 'Sarah Chen',
-      'role' => 'Product Marketing Manager',
+      'name' => 'Malik S',
     ),
     'reviewer' => 
     array (
-      'name' => 'David Park',
-      'role' => 'VP of Engineering',
+      'name' => 'Gandral V',
     ),
     'screenshots' => 
     array (
@@ -81,12 +79,6 @@ return array (
         'url' => 'https://www.g2.com/products/helpefi/reviews',
         'title' => 'Helpefi on G2',
         'description' => 'User reviews and ratings for Helpefi on G2.',
-      ),
-      1 => 
-      array (
-        'url' => 'https://helpefi.com/docs/security',
-        'title' => 'Helpefi Security & Compliance',
-        'description' => 'Helpefi security practices, certifications, and data protection policies.',
       ),
     ),
     'cta_title' => 'Start your Zendesk migration trial',
@@ -181,13 +173,11 @@ return array (
     'updated_at' => '2026-07-08',
     'author' => 
     array (
-      'name' => 'Sarah Chen',
-      'role' => 'Product Marketing Manager',
+      'name' => 'Malik S',
     ),
     'reviewer' => 
     array (
-      'name' => 'David Park',
-      'role' => 'VP of Engineering',
+      'name' => 'Gandral V',
     ),
     'screenshots' => 
     array (
@@ -199,12 +189,6 @@ return array (
         'url' => 'https://www.g2.com/products/helpefi/reviews',
         'title' => 'Helpefi on G2',
         'description' => 'User reviews and ratings for Helpefi on G2.',
-      ),
-      1 => 
-      array (
-        'url' => 'https://helpefi.com/docs/security',
-        'title' => 'Helpefi Security & Compliance',
-        'description' => 'Helpefi security practices, certifications, and data protection policies.',
       ),
     ),
     'cta_title' => 'Try migrating from Freshdesk',
@@ -298,13 +282,11 @@ return array (
     'updated_at' => '2026-07-08',
     'author' => 
     array (
-      'name' => 'Sarah Chen',
-      'role' => 'Product Marketing Manager',
+      'name' => 'Malik S',
     ),
     'reviewer' => 
     array (
-      'name' => 'David Park',
-      'role' => 'VP of Engineering',
+      'name' => 'Gandral V',
     ),
     'screenshots' => 
     array (
@@ -316,12 +298,6 @@ return array (
         'url' => 'https://www.g2.com/products/helpefi/reviews',
         'title' => 'Helpefi on G2',
         'description' => 'User reviews and ratings for Helpefi on G2.',
-      ),
-      1 => 
-      array (
-        'url' => 'https://helpefi.com/docs/security',
-        'title' => 'Helpefi Security & Compliance',
-        'description' => 'Helpefi security practices, certifications, and data protection policies.',
       ),
     ),
     'cta_title' => 'Migrate from Intercom with a free trial',
@@ -415,13 +391,11 @@ return array (
     'updated_at' => '2026-07-08',
     'author' => 
     array (
-      'name' => 'Sarah Chen',
-      'role' => 'Product Marketing Manager',
+      'name' => 'Malik S',
     ),
     'reviewer' => 
     array (
-      'name' => 'David Park',
-      'role' => 'VP of Engineering',
+      'name' => 'Gandral V',
     ),
     'screenshots' => 
     array (
@@ -433,12 +407,6 @@ return array (
         'url' => 'https://www.g2.com/products/helpefi/reviews',
         'title' => 'Helpefi on G2',
         'description' => 'User reviews and ratings for Helpefi on G2.',
-      ),
-      1 => 
-      array (
-        'url' => 'https://helpefi.com/docs/security',
-        'title' => 'Helpefi Security & Compliance',
-        'description' => 'Helpefi security practices, certifications, and data protection policies.',
       ),
     ),
     'cta_title' => 'Upgrade from Help Scout',
@@ -532,13 +500,11 @@ return array (
     'updated_at' => '2026-07-08',
     'author' => 
     array (
-      'name' => 'Sarah Chen',
-      'role' => 'Product Marketing Manager',
+      'name' => 'Malik S',
     ),
     'reviewer' => 
     array (
-      'name' => 'David Park',
-      'role' => 'VP of Engineering',
+      'name' => 'Gandral V',
     ),
     'screenshots' => 
     array (
@@ -550,12 +516,6 @@ return array (
         'url' => 'https://www.g2.com/products/helpefi/reviews',
         'title' => 'Helpefi on G2',
         'description' => 'User reviews and ratings for Helpefi on G2.',
-      ),
-      1 => 
-      array (
-        'url' => 'https://helpefi.com/docs/security',
-        'title' => 'Helpefi Security & Compliance',
-        'description' => 'Helpefi security practices, certifications, and data protection policies.',
       ),
     ),
     'cta_title' => 'Replace Freshservice on your timeline',

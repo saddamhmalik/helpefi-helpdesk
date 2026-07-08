@@ -50,7 +50,7 @@ class MarketingContentInterpolator
             'brand' => $brand,
             'days' => $trialDays,
             'trialDays' => $trialDays,
-        ], $extra);
+        ], $this->extra, $extra);
 
         $replacements = [];
 

@@ -5,10 +5,8 @@ return array (
   'competitor_name' => 'Zendesk',
   'badge' => 'Helpefi vs Zendesk',
   'hero_title' => 'Escape Suite sprawl without losing enterprise depth',
-  'hero_highlight' => 'Helpefi vs Zendesk — side by side.',
+  'hero_highlight' => 'Modular AI, optional ITSM, and database-per-tenant isolation.',
   'hero_subtitle' => 'Suite cost, Advanced AI seats, and Explore lock-in versus Helpefi modular Copilot, optional Service Desk ITSM, and database-per-tenant isolation.',
-  'logo_us' => '/images/compare/helpefi-mark.svg',
-  'logo_them' => '/images/compare/zendesk-mark.svg',
   'intro' => 'Renewals on Zendesk Suite rarely fail because the inbox stops working. They stall when Advanced AI line items multiply with every seasonal hire, when Explore dashboards only answer board questions after a professional-services sprint, and when Guide, Messaging, and Support each carry their own configuration debt. Mid-market operators discover they financed an enterprise constellation while agents still live in views, macros, and SLA clocks. Regional finance teams quote USD seats against INR run-rate budgets and watch Advanced AI attach erase the savings narrative that justified Suite in year one. Marketplace apps that solved yesterday\'s telephony gap become tomorrow\'s switching tax, and training still spans consoles even after the partner engagement ends.
 
 Helpefi is built as a counterweight to that sprawl. One ticket-first workspace absorbs email, portal, SMS, and live chat with collision detection; Copilot drafts stay editable and knowledge-grounded under flat add-on or Professional packaging; optional Service Desk ITSM later covers incidents, changes, approvals, and major-incident war rooms without a second vendor identity. Database-per-tenant isolation gives agencies and multi-entity operators a hard boundary for backups and offboarding that Suite multi-brand toggles do not equal. Connectors for Slack, Microsoft Teams, Jira, Linear, Shopify, HubSpot, Salesforce, and Zapier cover the handoffs most support and product organizations actually run day to day, without requiring Explore consultants merely to report first-response and breach rates. Custom domains on Professional keep portals client-ready while SSO and audit logs satisfy security questionnaires that previously defaulted to Suite language.
@@ -507,13 +505,11 @@ Multi-tenant for Helpefi means hard workspace separation suitable for multi-bran
   'updated_at' => '2026-07-08',
   'author' => 
   array (
-    'name' => 'Sarah Chen',
-    'role' => 'Product Marketing Manager',
+    'name' => 'Malik S',
   ),
   'reviewer' => 
   array (
-    'name' => 'David Park',
-    'role' => 'VP of Engineering',
+    'name' => 'Gandral V',
   ),
   'screenshots' => 
   array (
@@ -525,12 +521,6 @@ Multi-tenant for Helpefi means hard workspace separation suitable for multi-bran
       'url' => 'https://www.g2.com/products/helpefi/reviews',
       'title' => 'Helpefi on G2',
       'description' => 'User reviews and ratings for Helpefi on G2.',
-    ),
-    1 => 
-    array (
-      'url' => 'https://helpefi.com/docs/security',
-      'title' => 'Helpefi Security & Compliance',
-      'description' => 'Helpefi security practices, certifications, and data protection policies.',
     ),
   ),
   'cta_title' => 'Ready to leave Suite sprawl behind?',

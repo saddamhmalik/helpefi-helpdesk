@@ -120,5 +120,11 @@ return [
             'changefreq' => 'yearly',
             'priority' => '0.4',
         ],
+        'security' => [
+            'path' => '/security',
+            'sitemap' => true,
+            'changefreq' => 'yearly',
+            'priority' => '0.5',
+        ],
     ],
 ];

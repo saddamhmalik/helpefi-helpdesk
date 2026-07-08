@@ -5,8 +5,6 @@ const props = defineProps({
     rows: { type: Array, required: true },
     platformName: { type: String, required: true },
     competitorName: { type: String, required: true },
-    logoUs: { type: String, default: '' },
-    logoThem: { type: String, default: '' },
     eyebrow: { type: String, default: '' },
     disclaimer: { type: String, default: '' },
 });
@@ -34,27 +32,6 @@ const cellValue = (value) => {
                 <p v-if="disclaimer" class="mx-auto mt-4 max-w-2xl text-sm text-slate-400">
                     {{ disclaimer }}
                 </p>
-            </div>
-
-            <div class="mt-10 flex flex-wrap items-center justify-center gap-6">
-                <img
-                    v-if="logoUs"
-                    :src="logoUs"
-                    :alt="`${platformName} logo`"
-                    width="160"
-                    height="42"
-                    class="h-9 w-auto"
-                    loading="lazy"
-                >
-                <img
-                    v-if="logoThem"
-                    :src="logoThem"
-                    :alt="`${competitorName} logo`"
-                    width="160"
-                    height="42"
-                    class="h-9 w-auto opacity-90"
-                    loading="lazy"
-                >
             </div>
 
             <div class="mt-12 space-y-3 lg:hidden" role="group" aria-label="Comparison features on mobile">

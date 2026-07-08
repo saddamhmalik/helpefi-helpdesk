@@ -7,8 +7,6 @@ return array (
   'hero_title' => 'Helpefi vs Jira Service Management: CX without Atlassian tax',
   'hero_highlight' => 'A Jira SM alternative when ITIL depth outpaces customer support reality.',
   'hero_subtitle' => 'Jira SM thrives on Atlassian linkage and ITIL depth. Helpefi is a ticket-first AI helpdesk with optional Service.',
-  'logo_us' => '/images/compare/helpefi-mark.svg',
-  'logo_them' => '/images/compare/jira-service-management-mark.svg',
   'intro' => 'Atlassian-centered IT departments adopt Jira Service Management because incidents, changes, and problems already rhyme with Jira Software issues and ITIL vocabulary. That linkage is powerful for technician workflows — and expensive when customer experience teams inherit Atlassian licensing tiers, Premium feature gates, marketplace apps, and portal patterns designed for employees rather than shoppers. The Atlassian tax is not only seats; it is admin patterns, asset and CMDB expectations you may not need for CX, and the cognitive load of asking ecommerce or SaaS support agents to think like change-advisory boards while customers wait for refunds. Many organizations accidentally make Jira the tax base for every human request simply because it was already there for engineering.
 
 Helpefi aims at hybrid and CX-led organizations that want optional Service Desk depth without making Jira Service Management the default for every customer email. A modern agent inbox, knowledge base, live chat, SLA clocks, and Copilot live together on modular Professional pricing with INR-friendly options. Service Desk ITSM can add catalog, approvals, and major-incident war rooms when internal work appears, without forcing shoppers through an ITIL-shaped portal. Integrations still talk to Jira and Linear for engineering handoffs — the difference is that customer channels no longer must wear project-issue clothing. Multi-brand white-label portals and database-per-tenant isolation suit agencies and multi-product companies better than project-centric tenancy assumptions. Slack and Teams notifications keep humans in flow without teaching every agent the full Jira issue dialect.
@@ -493,13 +491,11 @@ Use this page as decision support. Map CX versus IT queues, model three years of
   'updated_at' => '2026-07-08',
   'author' => 
   array (
-    'name' => 'Sarah Chen',
-    'role' => 'Product Marketing Manager',
+    'name' => 'Malik S',
   ),
   'reviewer' => 
   array (
-    'name' => 'David Park',
-    'role' => 'VP of Engineering',
+    'name' => 'Gandral V',
   ),
   'screenshots' => 
   array (
@@ -511,12 +507,6 @@ Use this page as decision support. Map CX versus IT queues, model three years of
       'url' => 'https://www.g2.com/products/helpefi/reviews',
       'title' => 'Helpefi on G2',
       'description' => 'User reviews and ratings for Helpefi on G2.',
-    ),
-    1 => 
-    array (
-      'url' => 'https://helpefi.com/docs/security',
-      'title' => 'Helpefi Security & Compliance',
-      'description' => 'Helpefi security practices, certifications, and data protection policies.',
     ),
   ),
   'cta_title' => 'Benchmark Helpefi against Jira SM on real CX tickets',

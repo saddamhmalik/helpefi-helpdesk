@@ -309,6 +309,7 @@ useBodyScrollLock(mobileOpen);
                             <li><Link href="/pricing" class="transition hover:text-white">{{ staticNavLabel('pricing') }}</Link></li>
                             <li><Link href="/privacy" class="transition hover:text-white">{{ staticNavLabel('privacy') }}</Link></li>
                             <li><Link href="/terms" class="transition hover:text-white">{{ staticNavLabel('terms') }}</Link></li>
+                            <li><Link href="/security" class="transition hover:text-white">{{ staticNavLabel('security') }}</Link></li>
                         </ul>
                     </div>
                 </div>

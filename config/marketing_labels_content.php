@@ -314,7 +314,7 @@ return array (
   'add_user' => 'Add user',
   'user' => 'User',
   'capability' => 'Capability',
-  'typical_stack' => 'Typical stack',
+  'typical_stack' => 'Pieced-together tools',
   'customer_support_and_itsm_in_one_modern_workspace' => 'Customer support and ITSM in one modern helpdesk',
   'one_platform_for_every_support_workflow' => 'One platform for every support workflow',
   'explore_by_capability' => 'Explore by capability',

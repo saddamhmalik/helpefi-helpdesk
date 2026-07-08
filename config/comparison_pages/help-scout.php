@@ -7,8 +7,6 @@ return array (
   'hero_title' => 'Helpefi vs Help Scout: from shared inbox to operational helpdesk',
   'hero_highlight' => 'Graduate Docs and email collab into tickets, SLA, and optional ITSM.',
   'hero_subtitle' => 'Help Scout shared inbox and Docs versus Helpefi tickets, SLA, chat-to-ticket, KB-backed Copilot, Service Desk, and database-per-tenant isolation.',
-  'logo_us' => '/images/compare/helpefi-mark.svg',
-  'logo_them' => '/images/compare/help-scout-mark.svg',
   'intro' => 'Help Scout thrives wherever human tone and Docs-backed email collaboration still beat heavyweight suites. Shared inboxes, private notes, and a readable Docs site can carry an early-stage support culture for years without drowning founders in admin consoles. Pressure arrives when leaders demand formal SLA clocks with holiday calendars and breach alerts, when a second product brand needs its own customer portal domain, when chat volume on the marketing site must become accountable tickets overnight, or when engineering refuses another Slack screenshot and wants Linear or Jira links that survive weekend rota changes. Graduating from collaborative email is not a failure of Help Scout — it is a recognition that the job description changed from mailbox manners to operational helpdesk discipline with measurable first response and resolution clocks.
 
 Helpefi is the graduation desk for that moment. You keep the warmth and assignability of a shared inbox while gaining collision-aware queues, business-hours SLA with escalations, semantic knowledge collections that feed both portal search and Copilot drafts, and embeddable live chat that never loses the thread into a separate silo. Professional plan packaging stays INR-aware for growing APAC teams; AI is modular rather than a surprise meter tied to conversation count. Agencies running multiple client Docs sites can move each brand into an isolated workspace with white-label portals and custom domains instead of stretching a single Help Scout account past its collaborative comfort zone. Optional Service Desk ITSM waits patiently until internal laptop and access requests justify catalog workflows. Connectors for Slack, Teams, Shopify, HubSpot, Salesforce, and Zapier sit beside engineering handoffs to Jira and Linear.
@@ -498,13 +496,11 @@ If collaboration culture still outweighs operational instrumentation after that 
   'updated_at' => '2026-07-08',
   'author' => 
   array (
-    'name' => 'Sarah Chen',
-    'role' => 'Product Marketing Manager',
+    'name' => 'Malik S',
   ),
   'reviewer' => 
   array (
-    'name' => 'David Park',
-    'role' => 'VP of Engineering',
+    'name' => 'Gandral V',
   ),
   'screenshots' => 
   array (
@@ -516,12 +512,6 @@ If collaboration culture still outweighs operational instrumentation after that 
       'url' => 'https://www.g2.com/products/helpefi/reviews',
       'title' => 'Helpefi on G2',
       'description' => 'User reviews and ratings for Helpefi on G2.',
-    ),
-    1 => 
-    array (
-      'url' => 'https://helpefi.com/docs/security',
-      'title' => 'Helpefi Security & Compliance',
-      'description' => 'Helpefi security practices, certifications, and data protection policies.',
     ),
   ),
   'cta_title' => 'Trial Helpefi beside Help Scout',

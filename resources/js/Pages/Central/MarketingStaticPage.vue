@@ -34,7 +34,7 @@ const platformName = computed(() => props.brand || 'helpefi');
 const { label } = useMarketingEnglish(platformName, computed(() => props.marketingLabels));
 const isPricing = computed(() => props.page === 'pricing');
 const isIndustries = computed(() => props.page === 'industries');
-const isLegalPage = computed(() => ['privacy', 'terms'].includes(props.page));
+const isLegalPage = computed(() => ['privacy', 'terms', 'security'].includes(props.page));
 
 const effectiveDate = computed(() => props.content.effective_date ?? '');
 

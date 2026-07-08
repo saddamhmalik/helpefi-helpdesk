@@ -94,8 +94,6 @@ class CompareVerticalContentService
                 . "with industry-specific workflows. Helpefi gives you the best of both worlds: a unified inbox, AI-powered automation, SLA management, "
                 . "and a self-service portal — all tailored to the way {$verticalName} organizations operate. "
                 . 'Stop juggling siloed tools and give your team a single platform that your customers will love.',
-            'logo_us' => $compare['logo_us'] ?? null,
-            'logo_them' => $compare['logo_them'] ?? null,
             'reasons' => $verticalPains,
             'rows' => $comparisonRows,
             'deep_dives' => [

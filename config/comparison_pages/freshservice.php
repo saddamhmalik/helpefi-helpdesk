@@ -7,8 +7,6 @@ return array (
   'hero_title' => 'Helpefi vs Freshservice: CX desks meeting ITSM without another stack',
   'hero_highlight' => 'An ITSM-first Freshservice alternative when employee portals outrun customer.',
   'hero_subtitle' => 'Compare Helpefi and Freshservice on ITSM packaging, CMDB, employee portals, optional Service Desk, AI Copilot, automation, KB, live chat, SLA, integrations, API.',
-  'logo_us' => '/images/compare/helpefi-mark.svg',
-  'logo_them' => '/images/compare/freshservice-mark.svg',
   'intro' => 'Freshservice is an ITSM-first product that earns loyalty from teams who need asset records, CMDB relationships, and an employee portal more than a consumer CX desk. Catalog items, approvals, and technician workflows feel native; the mismatch appears when the same organization tries to stretch Freshservice into brand-facing customer support or when Freshdesk already owns customer channels and the Freshworks split doubles admin load. Leaders then pay for ITSM depth on seats that also handle refunds and product questions, or they operate two Freshworks consoles and pretend the agent experience is unified. INR commercial familiarity does not erase the cognitive and licensing cost of that divide.
 
 Helpefi approaches the same fork from the opposite direction: start with a strong customer helpdesk — inbox, knowledge base, live chat, SLA, automation, Copilot — then enable Service Desk ITSM for incidents, changes, problems, approvals, and war rooms when employee demand justifies it. You are not forced into CMDB theater to send a customer a password reset article. Database-per-tenant isolation, multi-brand portals with custom domains, and Professional pricing with modular AI give mid-market and agency buyers controls Freshservice packages as broader ITSM suites. Daily integrations still include Slack, Teams, Jira, Linear, Shopify, HubSpot, Salesforce, and Zapier so IT and CX handoffs do not require a second platform identity.
@@ -508,13 +506,11 @@ Treat this page as decision support. Bring the matrix into your RFP, model three
   'updated_at' => '2026-07-08',
   'author' => 
   array (
-    'name' => 'Sarah Chen',
-    'role' => 'Product Marketing Manager',
+    'name' => 'Malik S',
   ),
   'reviewer' => 
   array (
-    'name' => 'David Park',
-    'role' => 'VP of Engineering',
+    'name' => 'Gandral V',
   ),
   'screenshots' => 
   array (
@@ -526,12 +522,6 @@ Treat this page as decision support. Bring the matrix into your RFP, model three
       'url' => 'https://www.g2.com/products/helpefi/reviews',
       'title' => 'Helpefi on G2',
       'description' => 'User reviews and ratings for Helpefi on G2.',
-    ),
-    1 => 
-    array (
-      'url' => 'https://helpefi.com/docs/security',
-      'title' => 'Helpefi Security & Compliance',
-      'description' => 'Helpefi security practices, certifications, and data protection policies.',
     ),
   ),
   'cta_title' => 'Benchmark Helpefi against Freshservice on real queues',

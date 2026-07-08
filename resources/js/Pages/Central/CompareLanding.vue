@@ -95,33 +95,11 @@ const accent = computed(() => {
             <div class="relative mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-24 lg:px-8">
                 <CentralBreadcrumbs />
 
-                <div class="mt-8 flex flex-wrap items-center gap-4" aria-label="Product logos">
-                    <img
-                        v-if="content.logo_us"
-                        :src="content.logo_us"
-                        :alt="`${platformName} logo`"
-                        width="180"
-                        height="48"
-                        class="h-10 w-auto rounded-lg ring-1 ring-white/10"
-                        loading="eager"
-                    >
-                    <span class="text-sm font-semibold uppercase tracking-wider text-slate-500">vs</span>
-                    <img
-                        v-if="content.logo_them"
-                        :src="content.logo_them"
-                        :alt="`${competitorName} logo`"
-                        width="180"
-                        height="48"
-                        class="h-10 w-auto rounded-lg ring-1 ring-white/10"
-                        loading="eager"
-                    >
-                </div>
-
                 <div class="mt-8 max-w-3xl">
-                    <span class="inline-flex rounded-full border px-4 py-1.5 text-xs font-semibold backdrop-blur" :class="accent.badge">
+                    <span v-if="content.badge" class="inline-flex rounded-full border px-4 py-1.5 text-xs font-semibold backdrop-blur" :class="accent.badge">
                         {{ content.badge }}
                     </span>
-                    <h1 class="mt-6 text-3xl font-extrabold leading-tight tracking-tight sm:text-5xl">
+                    <h1 class="text-3xl font-extrabold leading-tight tracking-tight sm:text-5xl" :class="content.badge ? 'mt-6' : ''">
                         {{ content.hero_title }}
                         <span class="mt-2 block bg-gradient-to-r bg-clip-text text-transparent" :class="accent.highlight">
                             {{ content.hero_highlight }}
@@ -192,8 +170,6 @@ const accent = computed(() => {
             :rows="rows"
             :platform-name="platformName"
             :competitor-name="competitorName"
-            :logo-us="content.logo_us"
-            :logo-them="content.logo_them"
             :eyebrow="chromeText('feature_comparison')"
             :disclaimer="chromeText('compare_disclaimer')"
         />

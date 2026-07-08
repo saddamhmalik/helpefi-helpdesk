@@ -261,11 +261,11 @@ Leaders should review inbox health weekly during the first quarter: unassigned b
     'updated_at' => '2026-07-08',
     'author' => 
     array (
-      'name' => 'Sarah Chen',
+      'name' => 'Malik S',
     ),
     'reviewer' =>
     array (
-      'name' => 'David Park',
+      'name' => 'Gandral V',
     ),
     'screenshots' => 
     array (
@@ -277,12 +277,6 @@ Leaders should review inbox health weekly during the first quarter: unassigned b
         'url' => 'https://www.g2.com/products/helpefi/reviews',
         'title' => 'Helpefi on G2',
         'description' => 'User reviews and ratings for Helpefi on G2.',
-      ),
-      1 => 
-      array (
-        'url' => 'https://helpefi.com/docs/security',
-        'title' => 'Helpefi Security & Compliance',
-        'description' => 'Helpefi security practices, certifications, and data protection policies.',
       ),
     ),
     'cta_title' => 'Unify your support inbox',
@@ -537,11 +531,11 @@ The architectural point is unity: AI is a layer on tickets, knowledge, and SLAsâ
     'updated_at' => '2026-07-08',
     'author' => 
     array (
-      'name' => 'Sarah Chen',
+      'name' => 'Malik S',
     ),
     'reviewer' =>
     array (
-      'name' => 'David Park',
+      'name' => 'Gandral V',
     ),
     'screenshots' => 
     array (
@@ -553,12 +547,6 @@ The architectural point is unity: AI is a layer on tickets, knowledge, and SLAsâ
         'url' => 'https://www.g2.com/products/helpefi/reviews',
         'title' => 'Helpefi on G2',
         'description' => 'User reviews and ratings for Helpefi on G2.',
-      ),
-      1 => 
-      array (
-        'url' => 'https://helpefi.com/docs/security',
-        'title' => 'Helpefi Security & Compliance',
-        'description' => 'Helpefi security practices, certifications, and data protection policies.',
       ),
     ),
     'cta_title' => 'Try AI-powered support today',
@@ -1101,11 +1089,11 @@ The architectural point is unity: AI is a layer on tickets, knowledge, and SLAsâ
     'updated_at' => '2026-07-08',
     'author' => 
     array (
-      'name' => 'Sarah Chen',
+      'name' => 'Malik S',
     ),
     'reviewer' =>
     array (
-      'name' => 'David Park',
+      'name' => 'Gandral V',
     ),
     'screenshots' => 
     array (
@@ -1117,12 +1105,6 @@ The architectural point is unity: AI is a layer on tickets, knowledge, and SLAsâ
         'url' => 'https://www.g2.com/products/helpefi/reviews',
         'title' => 'Helpefi on G2',
         'description' => 'User reviews and ratings for Helpefi on G2.',
-      ),
-      1 => 
-      array (
-        'url' => 'https://helpefi.com/docs/security',
-        'title' => 'Helpefi Security & Compliance',
-        'description' => 'Helpefi security practices, certifications, and data protection policies.',
       ),
     ),
     'cta_title' => 'Add live chat to your site',
@@ -1387,11 +1369,11 @@ The architectural point is unity: AI is a layer on tickets, knowledge, and SLAsâ
     'updated_at' => '2026-07-08',
     'author' => 
     array (
-      'name' => 'Sarah Chen',
+      'name' => 'Malik S',
     ),
     'reviewer' =>
     array (
-      'name' => 'David Park',
+      'name' => 'Gandral V',
     ),
     'screenshots' => 
     array (
@@ -1403,12 +1385,6 @@ The architectural point is unity: AI is a layer on tickets, knowledge, and SLAsâ
         'url' => 'https://www.g2.com/products/helpefi/reviews',
         'title' => 'Helpefi on G2',
         'description' => 'User reviews and ratings for Helpefi on G2.',
-      ),
-      1 => 
-      array (
-        'url' => 'https://helpefi.com/docs/security',
-        'title' => 'Helpefi Security & Compliance',
-        'description' => 'Helpefi security practices, certifications, and data protection policies.',
       ),
     ),
     'cta_title' => 'Upgrade from shared Gmail',
@@ -1673,11 +1649,11 @@ The architectural point is unity: AI is a layer on tickets, knowledge, and SLAsâ
     'updated_at' => '2026-07-08',
     'author' => 
     array (
-      'name' => 'Sarah Chen',
+      'name' => 'Malik S',
     ),
     'reviewer' =>
     array (
-      'name' => 'David Park',
+      'name' => 'Gandral V',
     ),
     'screenshots' => 
     array (
@@ -1689,12 +1665,6 @@ The architectural point is unity: AI is a layer on tickets, knowledge, and SLAsâ
         'url' => 'https://www.g2.com/products/helpefi/reviews',
         'title' => 'Helpefi on G2',
         'description' => 'User reviews and ratings for Helpefi on G2.',
-      ),
-      1 => 
-      array (
-        'url' => 'https://helpefi.com/docs/security',
-        'title' => 'Helpefi Security & Compliance',
-        'description' => 'Helpefi security practices, certifications, and data protection policies.',
       ),
     ),
     'cta_title' => 'Go omnichannel without the chaos',
@@ -1968,11 +1938,11 @@ Run quarterly SLA retrospectives with customer success and support leads: which 
     'updated_at' => '2026-07-08',
     'author' => 
     array (
-      'name' => 'Sarah Chen',
+      'name' => 'Malik S',
     ),
     'reviewer' =>
     array (
-      'name' => 'David Park',
+      'name' => 'Gandral V',
     ),
     'screenshots' => 
     array (
@@ -1984,12 +1954,6 @@ Run quarterly SLA retrospectives with customer success and support leads: which 
         'url' => 'https://www.g2.com/products/helpefi/reviews',
         'title' => 'Helpefi on G2',
         'description' => 'User reviews and ratings for Helpefi on G2.',
-      ),
-      1 => 
-      array (
-        'url' => 'https://helpefi.com/docs/security',
-        'title' => 'Helpefi Security & Compliance',
-        'description' => 'Helpefi security practices, certifications, and data protection policies.',
       ),
     ),
     'cta_title' => 'Hold your team to clear standards',
@@ -2254,11 +2218,11 @@ Run quarterly SLA retrospectives with customer success and support leads: which 
     'updated_at' => '2026-07-08',
     'author' => 
     array (
-      'name' => 'Sarah Chen',
+      'name' => 'Malik S',
     ),
     'reviewer' =>
     array (
-      'name' => 'David Park',
+      'name' => 'Gandral V',
     ),
     'screenshots' => 
     array (
@@ -2270,12 +2234,6 @@ Run quarterly SLA retrospectives with customer success and support leads: which 
         'url' => 'https://www.g2.com/products/helpefi/reviews',
         'title' => 'Helpefi on G2',
         'description' => 'User reviews and ratings for Helpefi on G2.',
-      ),
-      1 => 
-      array (
-        'url' => 'https://helpefi.com/docs/security',
-        'title' => 'Helpefi Security & Compliance',
-        'description' => 'Helpefi security practices, certifications, and data protection policies.',
       ),
     ),
     'cta_title' => 'Automate your support queue',
@@ -2540,11 +2498,11 @@ Run quarterly SLA retrospectives with customer success and support leads: which 
     'updated_at' => '2026-07-08',
     'author' => 
     array (
-      'name' => 'Sarah Chen',
+      'name' => 'Malik S',
     ),
     'reviewer' =>
     array (
-      'name' => 'David Park',
+      'name' => 'Gandral V',
     ),
     'screenshots' => 
     array (
@@ -2556,12 +2514,6 @@ Run quarterly SLA retrospectives with customer success and support leads: which 
         'url' => 'https://www.g2.com/products/helpefi/reviews',
         'title' => 'Helpefi on G2',
         'description' => 'User reviews and ratings for Helpefi on G2.',
-      ),
-      1 => 
-      array (
-        'url' => 'https://helpefi.com/docs/security',
-        'title' => 'Helpefi Security & Compliance',
-        'description' => 'Helpefi security practices, certifications, and data protection policies.',
       ),
     ),
     'cta_title' => 'Measure what matters',
@@ -2826,11 +2778,11 @@ Run quarterly SLA retrospectives with customer success and support leads: which 
     'updated_at' => '2026-07-08',
     'author' => 
     array (
-      'name' => 'Sarah Chen',
+      'name' => 'Malik S',
     ),
     'reviewer' =>
     array (
-      'name' => 'David Park',
+      'name' => 'Gandral V',
     ),
     'screenshots' => 
     array (
@@ -2842,12 +2794,6 @@ Run quarterly SLA retrospectives with customer success and support leads: which 
         'url' => 'https://www.g2.com/products/helpefi/reviews',
         'title' => 'Helpefi on G2',
         'description' => 'User reviews and ratings for Helpefi on G2.',
-      ),
-      1 => 
-      array (
-        'url' => 'https://helpefi.com/docs/security',
-        'title' => 'Helpefi Security & Compliance',
-        'description' => 'Helpefi security practices, certifications, and data protection policies.',
       ),
     ),
     'cta_title' => 'Launch your customer portal',
